@@ -20,19 +20,36 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $application_class_name = lib::get_class_name( 'database\application' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $script_class_name = lib::get_class_name( 'database\script' );
     $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
 
-    // join to limesurvey tables to get the survey name
-    if( $select->has_column( 'survey_title' ) )
+    $select->add_column(
+      'IF( script.sid IS NOT NULL, "Limesurvey", IF( script.pine_qnaire_id IS NOT NULL, "Pine", NULL ) )',
+      'application',
+      false
+    );
+
+    // join to limesurvey and pine qnaire tables to get the qnaire name
+    if( $select->has_column( 'qnaire_title' ) )
     {
+      // link to limesurvey survey list
       $survey_table_array = array();
       foreach( $surveys_class_name::get_titles() as $sid => $title )
         $survey_table_array[] = sprintf( 'SELECT %s sid, "%s" title', $sid, $title );
       $survey_table = sprintf( '( %s ) AS survey', implode( $survey_table_array, ' UNION ' ) );
       $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
-      $select->add_table_column( 'survey', 'title', 'survey_title' );
+
+      // link to pine qnaire list
+      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $qnaire_table_array = array();
+      foreach( $cenozo_manager->get( 'qnaire?no_activity=1&select={"column":["id","name"]}' ) as $obj )
+        $qnaire_table_array[] = sprintf( 'SELECT %s id, "%s" name', $obj->id, $obj->name );
+      $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( $qnaire_table_array, ' UNION ' ) );
+      $modifier->left_join( $qnaire_table, 'script.pine_qnaire_id', 'pine_qnaire.id' );
+
+      $select->add_column( 'IFNULL( survey.title, pine_qnaire.name )', 'qnaire_title', false );
     }
 
     $db_participant = NULL;
@@ -87,6 +104,17 @@ class module extends \cenozo\service\module
     }
 
     if( $select->has_column( 'url' ) )
-      $select->add_column( sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
+    {
+      $db_pine_application = $application_class_name::get_unique_record( 'name', 'pine' );
+      $select->add_column(
+        sprintf(
+          'IF( pine_qnaire_id IS NOT NULL, "%s/response/run/", CONCAT( "%s/index.php/", script.sid ) )',
+          $db_pine_application->url,
+          LIMESURVEY_URL
+        ),
+        'url',
+        false
+      );
+    }
   }
 }

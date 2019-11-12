@@ -7093,77 +7093,95 @@ cenozo.factory( 'CnScriptLauncherFactory', [
       this.token = undefined;
       this.deferred = $q.defer();
 
-      // if the script is repeated determine the token
-      if( self.script.repeated ) {
-        if( angular.isDefined( this.onReady ) ) this.onReady();
-        this.deferred.resolve();
-      } else {
+      // Pine scripts are managed differently than Limesurvey scripts
+      if( 'Pine' == this.script.application ) {
         CnHttpFactory.instance( {
-          path: 'script/' + self.script.id + '/token/' + self.identifier,
-          data: { select: { column: [ 'token', 'completed' ] } },
-          onError: function( response ) {
-            // ignore 404
-            if( 404 == response.status ) {
-              self.token = null;
-              if( angular.isDefined( self.onReady ) ) self.onReady();
-              self.deferred.resolve();
-            } else {
-              CnModalMessageFactory.httpError( response );
-            }
-          }
+          path: 'script/' + self.script.id + '/pine_response/' + self.identifier
         } ).get().then( function( response ) {
           self.token = response.data;
           if( angular.isDefined( self.onReady ) ) self.onReady();
           self.deferred.resolve();
         } );
-      }
 
-      // used by the launch function to open the script and add an update-check if necessary
-      function launchScript() {
-        // add a check to supporting scripts
-        if( self.script.supporting && !self.script.repeated ) CnHttpFactory.instance ( {
-          path: 'script/' + self.script.id + '/token/' + self.identifier + '?update_check=1'
-        } ).get();
-        // launch the script
-        var url = self.script.url + '?lang=' + self.lang + '&newtest=Y';
-        CnSession.scriptWindowHandler =
-          $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
-      }
-
-      this.launch = function() {
-        return this.deferred.promise.then( function() {
-          if( null == self.token ) {
-            // the token doesn't exist so create it
-            var modal = CnModalMessageFactory.instance( {
-              title: 'Please Wait',
-              message: 'Please wait while the participant\'s data is retrieved.',
-              block: true
-            } );
-            modal.show();
-
-            return CnHttpFactory.instance( {
-              path: 'script/' + self.script.id + '/token',
-              data: { identifier: self.identifier },
-              onError: function( response ) {
-                modal.close();
+        this.launch = function() {
+          return this.deferred.promise.then( function() {
+            // launch the script
+            CnSession.scriptWindowHandler = $window.open( self.script.url + self.token.token, 'cenozoScript' );
+          } );
+        };
+      } else {
+        // if the script is repeated determine the token
+        if( this.script.repeated ) {
+          if( angular.isDefined( this.onReady ) ) this.onReady();
+          this.deferred.resolve();
+        } else {
+          CnHttpFactory.instance( {
+            path: 'script/' + self.script.id + '/token/' + self.identifier,
+            data: { select: { column: [ 'token', 'completed' ] } },
+            onError: function( response ) {
+              // ignore 404
+              if( 404 == response.status ) {
+                self.token = null;
+                if( angular.isDefined( self.onReady ) ) self.onReady();
+                self.deferred.resolve();
+              } else {
                 CnModalMessageFactory.httpError( response );
               }
-            } ).post().then( function( response ) {
-              // close the wait message
-              modal.close();
+            }
+          } ).get().then( function( response ) {
+            self.token = response.data;
+            if( angular.isDefined( self.onReady ) ) self.onReady();
+            self.deferred.resolve();
+          } );
+        }
 
-              // now get the new token string we just created and use it to open the script window
-              return CnHttpFactory.instance( {
-                path: 'script/' + self.script.id + '/token/' + response.data
-              } ).get().then( function( response ) {
-                self.token = { token: response.data.token, completed: 'N' };
-                launchScript();
+        // used by the launch function to open the script and add an update-check if necessary
+        function launchScript() {
+          // add a check to supporting scripts
+          if( self.script.supporting && !self.script.repeated ) CnHttpFactory.instance ( {
+            path: 'script/' + self.script.id + '/token/' + self.identifier + '?update_check=1'
+          } ).get();
+          // launch the script
+          var url = self.script.url + '?lang=' + self.lang + '&newtest=Y';
+          CnSession.scriptWindowHandler =
+            $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
+        }
+
+        this.launch = function() {
+          return this.deferred.promise.then( function() {
+            if( null == self.token ) {
+              // the token doesn't exist so create it
+              var modal = CnModalMessageFactory.instance( {
+                title: 'Please Wait',
+                message: 'Please wait while the participant\'s data is retrieved.',
+                block: true
               } );
-            } );
-          } else {
-            launchScript();
-          }
-        } );
+              modal.show();
+
+              return CnHttpFactory.instance( {
+                path: 'script/' + self.script.id + '/token',
+                data: { identifier: self.identifier },
+                onError: function( response ) {
+                  modal.close();
+                  CnModalMessageFactory.httpError( response );
+                }
+              } ).post().then( function( response ) {
+                // close the wait message
+                modal.close();
+
+                // now get the new token string we just created and use it to open the script window
+                return CnHttpFactory.instance( {
+                  path: 'script/' + self.script.id + '/token/' + response.data
+                } ).get().then( function( response ) {
+                  self.token = { token: response.data.token, completed: 'N' };
+                  launchScript();
+                } );
+              } );
+            } else {
+              launchScript();
+            }
+          } );
+        }
       }
     };
 

@@ -25,6 +25,14 @@ class script extends record
   }
 
   /**
+   * TODO: document
+   */
+  public function get_type()
+  {
+    return !is_null( $this->pine_qnaire_id ) ? 'pine' : ( !is_null( $this->sid ) ? 'sid' : NULL );
+  }
+
+  /**
    * Adds all missing started events for this script
    * 
    * @param database\participant $db_participant
@@ -106,6 +114,8 @@ class script extends record
     $modifier = lib::create( 'database\modifier' );
 
     $select->add_column( 'sid' );
+    $select->add_column( 'pine_qnaire_id' );
+
     if( $started_events )
     {
       $select->add_column( 'started_event_type_id' );
@@ -122,76 +132,79 @@ class script extends record
 
     foreach( $db_application->get_script_list( $select, $modifier ) as $script )
     {
-      $old_sid = $survey_class_name::get_sid();
-      $survey_class_name::set_sid( $script['sid'] );
-
-      $survey_sel = lib::create( 'database\select' );
-      if( $started_events )
-        $survey_sel->add_column(
-          sprintf( 'CONVERT_TZ( startdate, "%s", "UTC" )', $server_timezone ),
-          'startdate',
-          false );
-      if( $finished_events )
-        $survey_sel->add_column(
-          sprintf( 'CONVERT_TZ( submitdate, "%s", "UTC" )', $server_timezone ),
-          'submitdate',
-          false );
-      $survey_sel->from( $survey_class_name::get_table_name() );
-      $survey_mod = lib::create( 'database\modifier' );
-      $tokens_class_name::where_token( $survey_mod, $db_participant, false );
-
-      foreach( $survey_class_name::select( $survey_sel, $survey_mod ) as $survey )
+      if( !is_null( $script['sid'] ) )
       {
-        // check if a start date exists within one minute of the survey's startdate and add it if not
-        if( $started_events && !is_null( $survey['startdate'] ) )
-        {
-          $from_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
-          $from_datetime->sub( new \DateInterval( 'PT1M' ) );
-          $to_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
-          $to_datetime->add( new \DateInterval( 'PT1M' ) );
+        $old_sid = $survey_class_name::get_sid();
+        $survey_class_name::set_sid( $script['sid'] );
 
-          $event_mod = lib::create( 'database\modifier' );
-          $event_mod->where( 'event_type_id', '=', $script['started_event_type_id'] );
-          $event_mod->where( 'datetime', '>=', $from_datetime );
-          $event_mod->where( 'datetime', '<=', $to_datetime );
-          if( 0 == $db_participant->get_event_count( $event_mod ) )
+        $survey_sel = lib::create( 'database\select' );
+        if( $started_events )
+          $survey_sel->add_column(
+            sprintf( 'CONVERT_TZ( startdate, "%s", "UTC" )', $server_timezone ),
+            'startdate',
+            false );
+        if( $finished_events )
+          $survey_sel->add_column(
+            sprintf( 'CONVERT_TZ( submitdate, "%s", "UTC" )', $server_timezone ),
+            'submitdate',
+            false );
+        $survey_sel->from( $survey_class_name::get_table_name() );
+        $survey_mod = lib::create( 'database\modifier' );
+        $tokens_class_name::where_token( $survey_mod, $db_participant, false );
+
+        foreach( $survey_class_name::select( $survey_sel, $survey_mod ) as $survey )
+        {
+          // check if a start date exists within one minute of the survey's startdate and add it if not
+          if( $started_events && !is_null( $survey['startdate'] ) )
           {
-            $db_event = lib::create( 'database\event' );
-            $db_event->participant_id = $db_participant->id;
-            $db_event->event_type_id = $script['started_event_type_id'];
-            $db_event->site_id = $db_site->id;
-            $db_event->user_id = $db_user->id;
-            $db_event->datetime = $survey['startdate'];
-            $db_event->save();
+            $from_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
+            $from_datetime->sub( new \DateInterval( 'PT1M' ) );
+            $to_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
+            $to_datetime->add( new \DateInterval( 'PT1M' ) );
+
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=', $script['started_event_type_id'] );
+            $event_mod->where( 'datetime', '>=', $from_datetime );
+            $event_mod->where( 'datetime', '<=', $to_datetime );
+            if( 0 == $db_participant->get_event_count( $event_mod ) )
+            {
+              $db_event = lib::create( 'database\event' );
+              $db_event->participant_id = $db_participant->id;
+              $db_event->event_type_id = $script['started_event_type_id'];
+              $db_event->site_id = $db_site->id;
+              $db_event->user_id = $db_user->id;
+              $db_event->datetime = $survey['startdate'];
+              $db_event->save();
+            }
+          }
+
+          // check if a complete date exists within one minute of the survey's submitdate and add it if not
+          if( $finished_events && !is_null( $survey['submitdate'] ) )
+          {
+            $from_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
+            $from_datetime->sub( new \DateInterval( 'PT1M' ) );
+            $to_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
+            $to_datetime->add( new \DateInterval( 'PT1M' ) );
+
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=', $script['finished_event_type_id'] );
+            $event_mod->where( 'datetime', '>=', $from_datetime );
+            $event_mod->where( 'datetime', '<=', $to_datetime );
+            if( 0 == $db_participant->get_event_count( $event_mod ) )
+            {
+              $db_event = lib::create( 'database\event' );
+              $db_event->participant_id = $db_participant->id;
+              $db_event->event_type_id = $script['finished_event_type_id'];
+              $db_event->site_id = $db_site->id;
+              $db_event->user_id = $db_user->id;
+              $db_event->datetime = $survey['submitdate'];
+              $db_event->save();
+            }
           }
         }
 
-        // check if a complete date exists within one minute of the survey's submitdate and add it if not
-        if( $finished_events && !is_null( $survey['submitdate'] ) )
-        {
-          $from_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
-          $from_datetime->sub( new \DateInterval( 'PT1M' ) );
-          $to_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
-          $to_datetime->add( new \DateInterval( 'PT1M' ) );
-
-          $event_mod = lib::create( 'database\modifier' );
-          $event_mod->where( 'event_type_id', '=', $script['finished_event_type_id'] );
-          $event_mod->where( 'datetime', '>=', $from_datetime );
-          $event_mod->where( 'datetime', '<=', $to_datetime );
-          if( 0 == $db_participant->get_event_count( $event_mod ) )
-          {
-            $db_event = lib::create( 'database\event' );
-            $db_event->participant_id = $db_participant->id;
-            $db_event->event_type_id = $script['finished_event_type_id'];
-            $db_event->site_id = $db_site->id;
-            $db_event->user_id = $db_user->id;
-            $db_event->datetime = $survey['submitdate'];
-            $db_event->save();
-          }
-        }
+        $survey_class_name::set_sid( $old_sid );
       }
-
-      $survey_class_name::set_sid( $old_sid );
     }
   }
 

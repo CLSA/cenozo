@@ -14,8 +14,11 @@ define( function() {
         column: 'script.name',
         title: 'Name'
       },
-      survey_title: {
-        title: 'Name'
+      application: {
+        title: 'Application'
+      },
+      qnaire_title: {
+        title: 'Questionnaire'
       },
       supporting: {
         title: 'Supporting',
@@ -42,7 +45,11 @@ define( function() {
       type: 'string'
     },
     sid: {
-      title: 'Survey',
+      title: 'Limesurvey Questionnaire',
+      type: 'enum'
+    },
+    pine_qnaire_id: {
+      title: 'Pine Questionnaire',
       type: 'enum'
     },
     supporting: {
@@ -165,6 +172,19 @@ define( function() {
                 self.metadata.columnList.sid.enumList = [];
                 response.data.forEach( function( item ) {
                   self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'pine_qnaire',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } }
+                }
+              } ).query().then( function( response ) {
+                self.metadata.columnList.pine_qnaire_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.pine_qnaire_id.enumList.push( { value: item.id, name: item.name } );
                 } );
               } ),
 
