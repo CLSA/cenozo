@@ -566,11 +566,11 @@ class ui extends \cenozo\base_object
    * The UI's module list
    * @var array
    */
-  private $module_list = array();
+  protected $module_list = array();
 
   /**
    * The UI's listtiem list
    * @var array
    */
-  private $listitem_list = array();
+  protected $listitem_list = array();
 }

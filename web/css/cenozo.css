@@ -154,6 +154,11 @@ input.color-input {
   margin-top: 50px;
 }
 
+.headerless-outer-view-frame {
+  padding: 0px;
+  min-width: 750px;
+}
+
 /* main frame showing */
 .inner-view-frame {
   padding: 0.7em 0.5em;
