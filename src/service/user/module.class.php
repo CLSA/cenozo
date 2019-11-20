@@ -101,6 +101,11 @@ class module extends \cenozo\service\site_restricted_module
       }
     }
 
+    // add empty values for site_id, role_id, and language_id (they are only used when adding new users so they will be ignored)
+    if( $select->has_column( 'site_id' ) ) $select->add_constant( NULL, 'site_id' );
+    if( $select->has_column( 'role_id' ) ) $select->add_constant( NULL, 'role_id' );
+    if( $select->has_column( 'language_id' ) ) $select->add_constant( NULL, 'language_id' );
+
     // add the total number of related records (we can't use parent::add_list_column() here)
     if( $select->has_column( 'role_list' ) ||
         $select->has_column( 'site_list' ) ||

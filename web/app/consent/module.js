@@ -43,18 +43,18 @@ define( function() {
     consent_type_id: {
       title: 'Consent Type',
       type: 'enum',
-      constant: 'view'
+      isConstant: 'view'
     },
     accept: {
       title: 'Accept',
       type: 'boolean',
-      constant: 'view'
+      isConstant: 'view'
     },
     written: {
       title: 'Written',
       type: 'boolean',
-      constant: 'view',
-      exclude: true
+      isConstant: 'view',
+      isExcluded: function( $state, model ) { return !model.isAdministrator(); }
     },
     datetime: {
       title: 'Date & Time',
@@ -160,9 +160,7 @@ define( function() {
           return consentType ? consentType.name : 'unknown';
         };
 
-        // only allow administrators to add written consent records
-        var mainInputGroup = self.module.inputGroupList.findByProperty( 'title', '' );
-        mainInputGroup.inputList.written.exclude = 3 > CnSession.role.tier;
+        this.isAdministrator = function() { return 'administrator' == CnSession.role.name; };
 
         // extend getMetadata
         this.getMetadata = function() {

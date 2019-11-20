@@ -43,7 +43,7 @@ define( function() {
       column: 'participant.uid',
       title: 'Participant',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     site_id: {
       title: 'Credited Site',

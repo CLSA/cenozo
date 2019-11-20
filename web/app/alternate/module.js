@@ -98,7 +98,7 @@ define( function() {
     decedent: {
       title: 'Decedent Responder',
       type: 'boolean',
-      constant: true
+      isConstant: function( $state, model ) { return !model.isAdministratorOrCurator(); }
     },
     emergency: {
       title: 'Emergency Contact',
@@ -124,23 +124,23 @@ define( function() {
       title: 'International',
       type: 'boolean',
       help: 'Cannot be changed once the phone number has been created.',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     phone_type: {
       title: 'Type',
       type: 'enum',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     phone_number: {
       title: 'Number',
       type: 'string',
       help: 'Must be in 000-000-0000 format.',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     phone_note: {
       title: 'Note',
       type: 'text',
-      exclude: 'view'
+      isExcluded: 'view'
     }
   } );
 
@@ -149,33 +149,33 @@ define( function() {
       title: 'International',
       type: 'boolean',
       help: 'Cannot be changed once the address has been created.',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     address_address1: {
       title: 'Address Line 1',
       type: 'string',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     address_address2: {
       title: 'Address Line 2',
       type: 'string',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     address_city: {
       title: 'City',
       type: 'string',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     address_postcode: {
       title: 'Postcode',
       type: 'string',
       help: 'Non-international postal codes must be in "A1A 1A1" format, zip codes in "01234" format.',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     address_note: {
       title: 'Note',
       type: 'text',
-      exclude: 'view'
+      isExcluded: 'view'
     }
   } );
 
@@ -498,8 +498,7 @@ define( function() {
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );
 
-        var mainInputGroup = module.inputGroupList.findByProperty( 'title', '' );
-        if( 2 < CnSession.role.tier || 'curator' == CnSession.role.name ) mainInputGroup.inputList.decedent.constant = false;
+        this.isAdministratorOrCurator = function() { return ['administrator', 'curator'].includes( CnSession.role.name ); }
 
         // extend getMetadata
         this.getMetadata = function() {

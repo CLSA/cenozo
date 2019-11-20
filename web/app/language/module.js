@@ -36,12 +36,12 @@ define( function() {
     name: {
       title: 'Name',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     code: {
       title: 'Code',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     active: {
       title: 'Active',
@@ -51,7 +51,7 @@ define( function() {
     participant_count: {
       title: 'Participants',
       type: 'string',
-      constant: true,
+      isConstant: true,
       help: 'Participants can only be added to this language by going directly to participant details.'
     }
   } );

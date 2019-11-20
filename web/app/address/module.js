@@ -61,7 +61,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       title: 'International',
       type: 'boolean',
       help: 'Cannot be changed once the address has been created.',
-      constant: 'view'
+      isConstant: 'view'
     },
     address1: {
       title: 'Address Line 1',
@@ -78,20 +78,26 @@ define( [ 'trace' ].reduce( function( list, name ) {
     region_id: {
       title: 'Region',
       type: 'enum',
-      exclude: 'add',
-      constant: true,
+      isExcluded: function( $state, model ) {
+        return angular.isUndefined( model.viewModel.record.international ) || model.viewModel.record.international ? true : 'add';
+      },
+      isConstant: true,
       help: 'The region cannot be changed directly, instead it is automatically updated based on the postcode.'
     },
     international_region: {
       title: 'Region',
       type: 'string',
-      exclude: true,
+      isExcluded: function( $state, model ) {
+        return angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
+      },
       help: 'International regions are unrestricted and are not automatically set by the postcode.'
     },
     international_country: {
       title: 'Country',
       type: 'string',
-      exclude: true
+      isExcluded: function( $state, model ) {
+        return angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
+      }
     },
     postcode: {
       title: 'Postcode',
@@ -102,13 +108,13 @@ define( [ 'trace' ].reduce( function( list, name ) {
       title: 'Timezone Offset',
       type: 'string',
       format: 'float',
-      exclude: 'add',
+      isExcluded: 'add',
       help: 'The number of hours difference between the address\' timezone and UTC.'
     },
     daylight_savings: {
       title: 'Daylight Savings',
       type: 'boolean',
-      exclude: 'add',
+      isExcluded: 'add',
       help: 'Whether the address observes daylight savings.'
     },
     note: {
@@ -151,8 +157,13 @@ define( [ 'trace' ].reduce( function( list, name ) {
               checkFunction( property );
 
               if( 'international' == property ) {
-                mainInputGroup.inputList.international_region.exclude = !cnRecordAddScope.record.international;
-                mainInputGroup.inputList.international_country.exclude = !cnRecordAddScope.record.international;
+                if( cnRecordAddScope.record.international ) {
+                  mainInputGroup.inputList.international_region.isExcluded = function() { return false; };
+                  mainInputGroup.inputList.international_country.isExcluded = function() { return false; };
+                } else {
+                  mainInputGroup.inputList.international_region.isExcluded = function() { return true; };
+                  mainInputGroup.inputList.international_country.isExcluded = function() { return true; };
+                }
               }
             };
           }, 500 );
@@ -205,8 +216,8 @@ define( [ 'trace' ].reduce( function( list, name ) {
           return this.$$onNew( record ).then( function() {
             var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
             if( mainInputGroup ) {
-              mainInputGroup.inputList.international_region.exclude = true;
-              mainInputGroup.inputList.international_country.exclude = true;
+              mainInputGroup.inputList.international_region.isExcluded = function() { return true; }
+              mainInputGroup.inputList.international_country.isExcluded = function() { return true; }
             }
           } );
         };
@@ -270,20 +281,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
           CnSession.setTimezone( { 'address_id': this.record.id } ).then( function() {
             $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
           } );
-        };
-
-        // once we have loaded the record show/hide the international inputs
-        this.onView = function( force ) {
-          this.onViewPromise = this.$$onView( force ).then( function() {
-            var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
-            if( mainInputGroup ) {
-              mainInputGroup.inputList.region_id.exclude = self.record.international ? true : 'add';
-              mainInputGroup.inputList.international_region.exclude = !self.record.international;
-              mainInputGroup.inputList.international_country.exclude = !self.record.international;
-            }
-          } );
-
-          return this.onViewPromise;
         };
 
         this.onPatch = function( data ) {

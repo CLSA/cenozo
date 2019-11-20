@@ -71,8 +71,8 @@ define( function() {
     region_id: {
       title: 'Region',
       type: 'enum',
-      exclude: 'add',
-      constant: true,
+      isExcluded: 'add',
+      isConstant: true,
       help: 'Cannot be changed once the site has been created.'
     },
     postcode: {

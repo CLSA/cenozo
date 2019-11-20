@@ -56,16 +56,16 @@ define( function() {
     login_failures: {
       title: 'Login Failures',
       type: 'string',
-      constant: true,
+      isConstant: true,
       help: 'Every time an invalid password is used to log in as this user this counter will go up.',
-      exclude: 'add'
+      isExcluded: 'add'
     },
     name: {
       title: 'Username',
       type: 'string',
       format: 'alpha_num',
       help: 'May only contain numbers, letters and underscores. Can only be defined when creating a new user.',
-      constant: 'view'
+      isConstant: 'view'
     },
     first_name: {
       title: 'First Name',
@@ -98,20 +98,20 @@ define( function() {
       title: 'Initial Site',
       type: 'enum',
       help: 'Which site to assign the user to',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     role_id: {
       title: 'Initial Role',
       type: 'enum',
       help: 'Which role to assign the user to',
-      exclude: 'view'
+      isExcluded: 'view'
     },
     language_id: {
       title: 'Restrict to Language',
       type: 'enum',
       help: 'If the user can only speak a single language you can define it here (this can be changed in the ' +
             'user\'s record after they have been created)',
-      exclude: 'view'
+      isExcluded: 'view'
     }
   } );
 

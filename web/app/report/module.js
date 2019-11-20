@@ -58,60 +58,60 @@ define( function() {
     report_schedule: {
       title: 'Automatically Generated',
       type: 'boolean',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     user: {
       column: 'user.name',
       title: 'User',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     site: {
       column: 'site.name',
       title: 'Site',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     role: {
       column: 'role.name',
       title: 'Role',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     format: {
       title: 'Format',
       type: 'enum',
-      constant: 'view'
+      isConstant: 'view'
     },
     stage: {
       title: 'Status',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     size: {
       title: 'Size',
       type: 'size',
       format: 'float',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     datetime: {
       title: 'Date & Time',
       type: 'datetimesecond',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     formatted_elapsed: {
       title: 'Elapsed',
       type: 'string',
       format: 'float',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     }
   } );
 

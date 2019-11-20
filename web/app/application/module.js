@@ -39,7 +39,7 @@ define( function() {
     name: {
       title: 'Name',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     title: {
       title: 'Title',
@@ -49,7 +49,7 @@ define( function() {
     application_type_id: {
       title: 'Type',
       type: 'enum',
-      constant: true
+      isConstant: true
     },
     url: {
       title: 'URL',
@@ -59,12 +59,12 @@ define( function() {
     version: {
       title: 'Version',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     release_based: {
       title: 'Release Based',
       type: 'boolean',
-      constant: true,
+      isConstant: true,
       help: 'Whether the application only has access to participants once they are released.'
     },
     update_queue: {
@@ -99,12 +99,12 @@ define( function() {
     participant_count: {
       title: 'Participants',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     site_count: {
       title: 'Sites',
       type: 'string',
-      constant: true
+      isConstant: true
     }
   } );
 

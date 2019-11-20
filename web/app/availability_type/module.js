@@ -30,7 +30,7 @@ define( function() {
     participant_count: {
       title: 'Participants',
       type: 'string',
-      constant: true,
+      isConstant: true,
       help: 'Participants can only be added to this availability type by going directly to participant details.'
     }
   } );

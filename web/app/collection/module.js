@@ -49,7 +49,7 @@ define( function() {
     locked: {
       title: 'Locked',
       type: 'boolean',
-      exclude: 'add',
+      isExcluded: 'add',
       help: 'If locked then only users in the access list will be able to make changes to the collection.'
     },
     description: {

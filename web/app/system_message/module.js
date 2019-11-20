@@ -43,13 +43,17 @@ define( function() {
       column: 'system_message.application_id',
       title: 'Application',
       type: 'enum',
+      isExcluded: function( $state, model ) { return model.hasAllSites() ? false : 'add'; },
+      isConstant: function( $state, model ) { return model.hasAllSites() ? false : 'view'; },
       help: 'Leaving the site blank will show the message across all applications.'
     },
     site_id: {
       title: 'Site',
       type: 'enum',
       help: 'Leaving the site blank will show the message across all sites.  If application is blank then this ' +
-            'will be ignored.'
+            'will be ignored.',
+      isExcluded: function( $state, model ) { return model.hasAllSites() ? false : 'add'; },
+      isConstant: function( $state, model ) { return model.hasAllSites() ? false : 'view'; },
     },
     role_id: {
       title: 'Role',
@@ -173,16 +177,7 @@ define( function() {
         this.listModel = CnSystemMessageListFactory.instance( this );
         this.viewModel = CnSystemMessageViewFactory.instance( this, root );
 
-        // make site_id constant if the user does not have all-site access
-        if( !CnSession.role.allSites ) {
-          var mainInputGroup = module.inputGroupList.findByProperty( 'title', '' );
-          if( mainInputGroup ) {
-            mainInputGroup.inputList.application_id.exclude = 'add';
-            mainInputGroup.inputList.application_id.constant = 'view';
-            mainInputGroup.inputList.site_id.exclude = 'add';
-            mainInputGroup.inputList.site_id.constant= 'view';
-          }
-        }
+        this.hasAllSites = function() { return CnSession.role.allSites; };
 
         // extend getMetadata
         this.getMetadata = function() {

@@ -47,8 +47,8 @@ define( function() {
       column: 'user.name',
       title: 'User',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     site_id: {
       title: 'Site',
@@ -68,7 +68,7 @@ define( function() {
     format: {
       title: 'Format',
       type: 'enum',
-      constant: 'view'
+      isConstant: 'view'
     }
   } );
 

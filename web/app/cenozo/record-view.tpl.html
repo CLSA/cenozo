@@ -56,7 +56,7 @@
       </div>
     </div>
     <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
-      <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}">
+      <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}" ng-if="groupHasVisibleInputs( group )">
         <div ng-if="0 < group.title.length"
              class="container-fluid bg-info"
              data-toggle="collapse"
@@ -76,7 +76,7 @@
         <div id="inputGroup{{ $index }}" class="collapse" ng-class="{'in':!group.initCollapsed}">
           <cn-view-input
             ng-repeat="input in group.inputArray"
-            ng-if="true != input.exclude && 'view' != input.exclude && 'hidden' != input.type"
+            ng-if="true != input.isExcluded( $state, model ) && 'view' != input.isExcluded( $state, model ) && 'hidden' != input.type"
             model="model"
             input="input"
             first="group.title.length && $first"

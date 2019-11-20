@@ -44,31 +44,31 @@ define( function() {
       title: 'Date & Time',
       type: 'datetimesecond',
       max: 'now',
-      exclude: 'add'
+      isExcluded: 'add'
     },
     user: {
       column: 'user.name',
       title: 'User',
       type: 'string',
-      exclude: 'add'
+      isExcluded: 'add'
     },
     site: {
       column: 'site.name',
       title: 'Site',
       type: 'string',
-      exclude: 'add'
+      isExcluded: 'add'
     },
     role: {
       column: 'role.name',
       title: 'Role',
       type: 'string',
-      exclude: 'add'
+      isExcluded: 'add'
     },
     application: {
       column: 'application.name',
       title: 'Application',
       type: 'string',
-      exclude: 'add'
+      isExcluded: 'add'
     },
     note: {
       title: 'Note',

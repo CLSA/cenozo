@@ -43,7 +43,7 @@ define( function() {
     datetime: {
       title: 'Date',
       type: 'datetime',
-      exclude: 'add'
+      isExcluded: 'add'
     }
   } );
 

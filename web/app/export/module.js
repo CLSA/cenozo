@@ -49,7 +49,7 @@ define( [
         select: 'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
         where: [ 'user.first_name', 'user.last_name', 'user.name' ]
       },
-      exclude: 'add'
+      isExcluded: 'add'
     },
     description: {
       title: 'Description',

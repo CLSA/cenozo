@@ -54,18 +54,18 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     uid: {
       title: 'Unique ID',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     cohort: {
       column: 'cohort.name',
       title: 'Cohort',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     status: {
       title: 'Status',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     global_note: {
       column: 'participant.global_note',
@@ -99,14 +99,13 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     exclusion: {
       title: 'Enrolled',
       type: 'string',
-      constant: true,
-      help: 'Whether the participant has been enrolled into the study, and if not then the reason they have ' +
-            'been excluded.'
+      isConstant: true,
+      help: 'Whether the participant has been enrolled into the study, and if not then the reason they have been excluded.'
     },
     hold: {
       title: 'Hold',
       type: 'string',
-      constant: true,
+      isConstant: true,
       action: {
         title: 'Change',
         isDisabled: function( $state, model ) {
@@ -123,7 +122,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     trace: {
       title: 'Trace',
       type: 'string',
-      constant: true,
+      isConstant: true,
       action: {
         title: 'Change',
         isDisabled: function( $state, model ) {
@@ -140,7 +139,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     proxy: {
       title: 'Proxy',
       type: 'string',
-      constant: true,
+      isConstant: true,
       action: {
         title: 'Change',
         isDisabled: function( $state, model ) {
@@ -161,12 +160,12 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       column: 'source.name',
       title: 'Source',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     sex: {
       title: 'Sex at Birth',
       type: 'enum',
-      constant: true
+      isConstant: true
     },
     current_sex: {
       title: 'Current Sex',
@@ -186,18 +185,25 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     date_of_death_accuracy: {
       title: 'Date of Death Accuracy',
       type: 'enum',
-      help: 'Defines how accurate the date of death is.'
+      help: 'Defines how accurate the date of death is.',
+      isConstant: function( $state, model ) {
+        return angular.isUndefined( model.viewModel.record.date_of_death ) || null == model.viewModel.record.date_of_death;
+      }
     },
     date_of_death_ministry: {
       title: 'Death Confirmed by Ministry',
       type: 'boolean',
-      help: 'Determines whether information about the participant\'s death is confirmed by a ministry'
+      help: 'Determines whether information about the participant\'s death is confirmed by a ministry',
+      isConstant: function( $state, model ) {
+        return angular.isUndefined( model.viewModel.record.date_of_death ) || null == model.viewModel.record.date_of_death;
+      }
     },
     age_group_id: {
       title: 'Age Group',
       type: 'enum',
       help: 'The age group that the participant belonged to when first recruited into the study. ' +
-            'Note that this won\'t necessarily reflect the participant\'s current age.'
+            'Note that this won\'t necessarily reflect the participant\'s current age.',
+      isConstant: function( $state, model ) { return !model.isAdministrator(); }
     },
     language_id: {
       title: 'Preferred Language',
@@ -210,7 +216,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       column: 'default_site.name',
       title: 'Default Site',
       type: 'string',
-      constant: true,
+      isConstant: true,
       help: 'The site the participant belongs to if a preferred site is not set.'
     },
     preferred_site_id: {
@@ -1172,11 +1178,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             if( self.record.honorific ) nameList.unshift( self.record.honorific );
             self.heading = 'Participant Details for ' + nameList.join( ' ' );
 
-            // don't allow date-of-death-accuracy and -ministry to be set unless the date-of-death is defined
-            var definingInputGroup = self.parentModel.module.inputGroupList.findByProperty( 'title', 'Defining Details' );
-            definingInputGroup.inputList.date_of_death_accuracy.constant = null == self.record.date_of_death;
-            definingInputGroup.inputList.date_of_death_ministry.constant = null == self.record.date_of_death;
-
             if( null != self.record.date_of_death ) {
               // only display the accurate parts of the date-of-death
               if( 'day unknown' == self.record.date_of_death_accuracy ) {
@@ -1337,17 +1338,11 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       var object = function( root ) {
         var self = this;
 
-        // before constructing the model change some input types depending on the role's tier
-        if( 3 > CnSession.role.tier ) {
-          var definingInputGroup = module.inputGroupList.findByProperty( 'title', 'Defining Details' );
-          if( definingInputGroup ) {
-            definingInputGroup.inputList.age_group_id.constant = true;
-          }
-        }
-
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnParticipantListFactory.instance( this );
         if( root ) this.viewModel = CnParticipantViewFactory.instance( this, root );
+
+        this.isAdministrator = function() { return 'administrator' == CnSession.role.name; };
 
         // extend getMetadata
         this.getMetadata = function() {

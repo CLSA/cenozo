@@ -257,13 +257,16 @@ angular.extend( cenozoApp, {
            *     email: requires a valid email address (<name>@<domain>.<type>)
            *   regex: A regular expression that the input must match
            *   maxLength: The maximum number of characters allowed
-           *   constant: one of the following:
-           *     true: makes the input immutable when adding or viewing
-           *     'add': makes the input immutable when adding but not viewing
-           *     'view': makes the input immutable when viewing but not adding
-           *   exclude: one of the following:
-           *     'add': excludes an input (and its data in the record) when adding
-           *     'view': excludes an input (and its data in the record) when viewing
+           *   isConstant: A function to determine if the input is immutable
+           *     The function can either return a boolean, "add" or "view" (default function returns false).
+           *     When the value is true or equal to the current state's action then the input is immutable.
+           *     This function will be passed two arguments: $state and model.
+           *     Can provide a boolean or string value instead of a function (will be converted to a function)
+           *   isExcluded: A function to determine if the input is excluded
+           *     The function can either return a boolean, "add" or "view" (default function returns false).
+           *     When the value is true or equal to the current state's action then the input is excluded.
+           *     This function will be passed two arguments: $state and model.
+           *     Can provide a boolean or string value instead of a function (will be converted to a function)
            *   help: help text that pops up when mousing over an input
            *   typeahead: { (for lookup-typeahead types only)
            *     table: the table to lookup values from
@@ -291,7 +294,21 @@ angular.extend( cenozoApp, {
            *   }
            * }
            */
-          addInput: function( groupTitle, key, input ) {
+          addInput: function( groupTitle, key, input, afterKey ) {
+            // private function used to validate and process input functions
+            function processInputFunction( fn, defaultValue ) {
+              if( angular.isUndefined( fn ) ) return function() { return defaultValue; }
+              else if( angular.isFunction( fn ) ) return fn;
+              else if( true === fn ) return function() { return true; };
+              else if( false === fn ) return function() { return false; };
+              else if( 'add' === fn ) return function() { return 'add'; };
+              else if( 'view' === fn ) return function() { return 'view'; };
+              return null;
+            }
+
+            // by default we add the input to the end of the list
+            if( angular.isUndefined( afterKey ) ) afterKey = null;
+
             // make sure the key is unique throughout all groups
             var foundGroup = null;
             if( this.inputGroupList.some( function( group ) {
@@ -308,12 +325,31 @@ angular.extend( cenozoApp, {
               // add the key to the input
               input.key = key;
 
+              // process the isConstant function
+              input.isConstant = processInputFunction( input.isConstant, false );
+              if( null == input.isConstant ) throw new Error(
+                'Input "' + input.key + '" has invalid isConstant value (must be a function, boolean, "add" or "view").'
+              );
+
+              // process the isExcluded function
+              input.isExcluded = processInputFunction( input.isExcluded, false );
+              if( null === input.isExcluded ) throw new Error(
+                'Input "' + input.key + '" has invalid isExcluded value (must be a function, boolean, "add" or "view").'
+              );
+
               // process the action if one exists
               if( angular.isDefined( input.action ) ) {
-                if( angular.isUndefined( input.action.isIncluded ) )
-                  input.action.isIncluded = function() { return true; }
-                if( angular.isUndefined( input.action.isDisabled ) )
-                  input.action.isDisabled = function() { return false; }
+                input.action.isIncluded = processInputFunction( input.action.isIncluded, true );
+                if( null == input.action.isIncluded ) throw new Error(
+                  'Input "' + input.key + '" has action, "' + input.action.title +
+                  '" with invalid isIncluded value (must be a function, boolean, "add" or "view").'
+                );
+
+                input.action.isDisabled = processInputFunction( input.action.isDisabled, false );
+                if( null == input.action.isDisabled ) throw new Error(
+                  'Input "' + input.key + '" has action, "' + input.action.title +
+                  '" with invalid isDisabled value (must be a function, boolean, "add" or "view").'
+                );
               }
 
               // create the group if it doesn't exist
@@ -326,36 +362,9 @@ angular.extend( cenozoApp, {
                 };
                 this.inputGroupList.push( group );
               }
-              group.inputList[key] = input;
-            }
-          },
-          addInputAfter: function( groupTitle, afterKey, key, input ) {
-            // make sure the key is unique throughout all groups
-            var foundGroup = null;
-            if( this.inputGroupList.some( function( group ) {
-              if( angular.isDefined( group.inputList[key] ) ) {
-                foundGroup = group;
-                return true;
-              }
-            } ) ) {
-              console.error(
-                'Cannot add input "%s" to group "%s" after "%s" as it already exists in the existing group "%s".',
-                key, groupTitle, afterKey, foundGroup.title
-              );
-            } else {
-              // add the key to the input
-              input.key = key;
 
-              // create the group if it doesn't exist
-              var group = this.inputGroupList.findByProperty( 'title', groupTitle );
-              if( !group ) {
-                console.error(
-                  'Cannot add input "%s" to group "%s" after "%s" as the group doesn\'t exist.',
-                  key, groupTitle, afterKey
-                );
-              } else {
-                cenozo.insertPropertyAfter( group.inputList, afterKey, key, input );
-              }
+              if( null != afterKey ) cenozo.insertPropertyAfter( group.inputList, afterKey, key, input );
+              else group.inputList[key] = input;
             }
           },
           addInputGroup: function( title, inputList, expanded ) {
@@ -843,7 +852,7 @@ angular.extend( cenozo, {
       key: key,
       title: restriction.title,
       type: this.getTypeFromRestriction( restriction ),
-      constant: 'view',
+      isConstant: 'view',
       help: restriction.description
     };
 
@@ -1443,6 +1452,13 @@ cenozo.directive( 'cnRecordAdd', [
           }
         };
 
+        // determines whether there are any visible inputs in a group
+        $scope.groupHasVisibleInputs = function( group ) {
+          return group.inputArray.some( function( input ) {
+            return true !== input.isExcluded( $state, $scope.model ) && 'add' != input.isExcluded( $state, $scope.model );
+          } );
+        };
+
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
@@ -1974,6 +1990,13 @@ cenozo.directive( 'cnRecordView', [
           if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' )
         };
 
+        // determines whether there are any visible inputs in a group
+        $scope.groupHasVisibleInputs = function( group ) {
+          return group.inputArray.some( function( input ) {
+            return true !== input.isExcluded( $state, $scope.model ) && 'view' != input.isExcluded( $state, $scope.model );
+          } );
+        };
+
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
@@ -2082,9 +2105,10 @@ cenozo.directive( 'cnViewInput', [
           var viewModel = $scope.model.viewModel;
 
           var width = 12;
+          var constant = $scope.input.isConstant( $scope.state, $scope.model );
           if( $scope.input.action && $scope.input.action.isIncluded( $scope.state, $scope.model ) ) width -= 2;
           if( $scope.model.getEditEnabled() &&
-              true !== $scope.input.constant && 'view' != $scope.input.constant &&
+              true !== constant && 'view' != constant &&
               viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
               // and to protect against null != emptry string
               !( !viewModel.record[$scope.input.key] && !viewModel.backupRecord[$scope.input.key] ) ) width--;
@@ -4205,8 +4229,8 @@ cenozo.factory( 'CnBaseListFactory', [
  * The base factory for all module View factories
  */
 cenozo.factory( 'CnBaseViewFactory', [
-  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$injector', '$filter', '$q',
-  function( CnSession, CnHttpFactory, CnModalMessageFactory, $injector, $filter, $q ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$injector', '$state', '$filter', '$q',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory, $injector, $state, $filter, $q ) {
     // mechanism to cache factories
     var factoryCacheList = {};
     function getFactory( name ) {
@@ -4545,7 +4569,8 @@ cenozo.factory( 'CnBaseViewFactory', [
               self.parentModel.module.inputGroupList.forEach( function( group ) {
                 for( var column in group.inputList ) {
                   var input = group.inputList[column];
-                  if( 'view' != input.exclude &&
+                  var exclude = input.isExcluded( $state, self.parentModel );
+                  if( true !== exclude && 'view' !== exclude &&
                       ['boolean','enum','rank'].includes( input.type ) &&
                       null === self.record[column] ) {
                     var metadata = self.parentModel.metadata.columnList[column];
@@ -4895,7 +4920,8 @@ cenozo.factory( 'CnBaseModelFactory', [
             self.module.inputGroupList.forEach( function( group ) {
               for( var column in group.inputList ) {
                 var input = group.inputList[column];
-                if( 'view' != input.exclude ) list[column] = input;
+                /*var exclude = input.isExcluded( $state, self );
+                if( true !== exclude && 'view' !== exclude )*/ list[column] = input;
               }
             } );
           }
@@ -4922,7 +4948,6 @@ cenozo.factory( 'CnBaseModelFactory', [
           }
 
           for( var key in list ) {
-            // skip excluded columns
             if( 'separator' == list[key].type ) continue;
 
             var parentTable = self.module.subject.snake;
@@ -5210,10 +5235,6 @@ cenozo.factory( 'CnBaseModelFactory', [
             data = self.module.inputGroupList.reduce( function( data, group ) {
               var inputArray = Object.keys( group.inputList ).map( function( key ) {
                 return group.inputList[key];
-              } ).filter( function( input ) {
-                return !removeList.includes( input.key ) &&
-                       stateSubject+'_id' != input.key &&
-                       type != input.exclude;
               } );
 
               if( 0 < inputArray.length ) data.push( {

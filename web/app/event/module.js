@@ -47,25 +47,25 @@ define( function() {
       column: 'site.name',
       title: 'Site',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     user_name: {
       column: 'user.name',
       title: 'Username',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     user_first_name: {
       column: 'user.first_name',
       title: 'First Name',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     user_last_name: {
       column: 'user.last_name',
       title: 'Last Name',
       type: 'string',
-      constant: true
+      isConstant: true
     }
   } );
 
@@ -74,37 +74,37 @@ define( function() {
       column: 'event_address.international',
       title: 'International',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     address1: {
       column: 'event_address.address1',
       title: 'Address Line 1',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     address2: {
       column: 'event_address.address2',
       title: 'Address Line 2',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     city: {
       column: 'event_address.city',
       title: 'City',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     region_id: {
       column: 'region.name',
       title: 'Region',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     postcode: {
       column: 'event_address.postcode',
       title: 'Postcode',
       type: 'string',
-      constant: true
+      isConstant: true
     }
   } );
 

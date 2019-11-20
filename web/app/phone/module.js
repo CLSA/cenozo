@@ -57,7 +57,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       title: 'International',
       type: 'boolean',
       help: 'Cannot be changed once the phone number has been created.',
-      constant: 'view'
+      isConstant: 'view'
     },
     rank: {
       title: 'Rank',

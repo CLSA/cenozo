@@ -61,6 +61,18 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $modifier->join( 'participant', 'alternate.participant_id', 'participant.id' );
 
+    // add empty values for address and phone number fields (they are only used when adding new alternates so they will be ignored)
+    if( $select->has_column( 'phone_international' ) ) $select->add_constant( NULL, 'phone_international' );
+    if( $select->has_column( 'phone_type' ) ) $select->add_constant( NULL, 'phone_type' );
+    if( $select->has_column( 'phone_number' ) ) $select->add_constant( NULL, 'phone_number' );
+    if( $select->has_column( 'phone_note' ) ) $select->add_constant( NULL, 'phone_note' );
+    if( $select->has_column( 'address_international' ) ) $select->add_constant( NULL, 'address_international' );
+    if( $select->has_column( 'address_address1' ) ) $select->add_constant( NULL, 'address_address1' );
+    if( $select->has_column( 'address_address2' ) ) $select->add_constant( NULL, 'address_address2' );
+    if( $select->has_column( 'address_city' ) ) $select->add_constant( NULL, 'address_city' );
+    if( $select->has_column( 'address_postcode' ) ) $select->add_constant( NULL, 'address_postcode' );
+    if( $select->has_column( 'address_note' ) ) $select->add_constant( NULL, 'address_note' );
+
     if( !is_null( $this->get_resource() ) )
     {
       // include the participant first/last/uid as supplemental data

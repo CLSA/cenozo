@@ -74,25 +74,25 @@ define( [], function() {
       column: 'participant.uid',
       title: 'Participant',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     user: {
       column: 'user.name',
       title: 'User',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     role: {
       column: 'role.name',
       title: 'Role',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     site: {
       column: 'site.name',
       title: 'Site',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     start_datetime: {
       column: 'assignment.start_datetime',
