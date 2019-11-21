@@ -38,6 +38,9 @@ class database extends \cenozo\base_object
     $this->execute( 'SET SESSION group_concat_max_len = 1000000' );
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
+    // used to make sure group_concat results goes beyond 1024 chars
+    $this->execute( 'SET group_concat_max_len = 65536', false );
+
     $this->read_schema();
   }
 
