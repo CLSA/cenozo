@@ -29,7 +29,77 @@ class script extends record
    */
   public function get_type()
   {
-    return !is_null( $this->pine_qnaire_id ) ? 'pine' : ( !is_null( $this->sid ) ? 'sid' : NULL );
+    return !is_null( $this->pine_qnaire_id ) ? 'pine' : ( !is_null( $this->sid ) ? 'limesurvey' : NULL );
+  }
+
+  /**
+   * TODO: document
+   */
+  public function add_started_event( $db_participant, $datetime )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
+    $db_site = $session->get_site();
+    $db_user = $session->get_user();
+
+    if( !is_null( $this->started_event_type_id ) )
+    {
+      // check if a start date exists within one minute of the datetime and add it if not
+      $from_datetime = $util_class_name::get_datetime_object( $datetime );
+      $from_datetime->sub( new \DateInterval( 'PT1M' ) );
+      $to_datetime = $util_class_name::get_datetime_object( $datetime );
+      $to_datetime->add( new \DateInterval( 'PT1M' ) );
+
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $this->started_event_type_id );
+      $event_mod->where( 'datetime', '>=', $from_datetime );
+      $event_mod->where( 'datetime', '<=', $to_datetime );
+      if( 0 == $db_participant->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $db_participant->id;
+        $db_event->event_type_id = $this->started_event_type_id;
+        $db_event->site_id = $db_site->id;
+        $db_event->user_id = $db_user->id;
+        $db_event->datetime = $util_class_name::get_datetime_object( $datetime );
+        $db_event->save();
+      }
+    }
+  }
+
+  /**
+   * TODO: document
+   */
+  public function add_finished_event( $db_participant, $datetime )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $session = lib::create( 'business\session' );
+    $db_site = $session->get_site();
+    $db_user = $session->get_user();
+
+    if( !is_null( $this->finished_event_type_id ) )
+    {
+      // check if a finish date exists within one minute of the datetime and add it if not
+      $from_datetime = $util_class_name::get_datetime_object( $datetime );
+      $from_datetime->sub( new \DateInterval( 'PT1M' ) );
+      $to_datetime = $util_class_name::get_datetime_object( $datetime );
+      $to_datetime->add( new \DateInterval( 'PT1M' ) );
+
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $this->finished_event_type_id );
+      $event_mod->where( 'datetime', '>=', $from_datetime );
+      $event_mod->where( 'datetime', '<=', $to_datetime );
+      if( 0 == $db_participant->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $db_participant->id;
+        $db_event->event_type_id = $this->finished_event_type_id;
+        $db_event->site_id = $db_site->id;
+        $db_event->user_id = $db_user->id;
+        $db_event->datetime = $util_class_name::get_datetime_object( $datetime );
+        $db_event->save();
+      }
+    }
   }
 
   /**
@@ -101,41 +171,24 @@ class script extends record
         __METHOD__ );
     }
 
-    $util_class_name = lib::get_class_name( 'util' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $session = lib::create( 'business\session' );
-    $db_application = $session->get_application();
-    $db_site = $session->get_site();
-    $db_user = $session->get_user();
+    $db_application = lib::create( 'business\session' )->get_application();
     $server_timezone = date_default_timezone_get();
 
-    $select = lib::create( 'database\select' );
     $modifier = lib::create( 'database\modifier' );
-
-    $select->add_column( 'sid' );
-    $select->add_column( 'pine_qnaire_id' );
-
-    if( $started_events )
-    {
-      $select->add_column( 'started_event_type_id' );
-      $modifier->where( 'started_event_type_id', '!=', NULL );
-    }
-    if( $finished_events )
-    {
-      $select->add_column( 'finished_event_type_id' );
-      $modifier->where( 'finished_event_type_id', '!=', NULL );
-    }
-    $select->from( 'script' );
+    if( $started_events ) $modifier->where( 'started_event_type_id', '!=', NULL );
+    if( $finished_events ) $modifier->where( 'finished_event_type_id', '!=', NULL );
     if( !is_null( $db_script ) ) $modifier->where( 'script.id', '=', $db_script->id );
     $modifier->where( 'repeated', '=', false );
 
-    foreach( $db_application->get_script_list( $select, $modifier ) as $script )
+    foreach( $db_application->get_script_object_list( $modifier ) as $db_script )
     {
-      if( !is_null( $script['sid'] ) )
+      // only limesurvey scripts need events added (Pine does this automatically)
+      if( !is_null( $db_script->sid ) )
       {
         $old_sid = $survey_class_name::get_sid();
-        $survey_class_name::set_sid( $script['sid'] );
+        $survey_class_name::set_sid( $db_script->sid );
 
         $survey_sel = lib::create( 'database\select' );
         if( $started_events )
@@ -156,51 +209,11 @@ class script extends record
         {
           // check if a start date exists within one minute of the survey's startdate and add it if not
           if( $started_events && !is_null( $survey['startdate'] ) )
-          {
-            $from_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
-            $from_datetime->sub( new \DateInterval( 'PT1M' ) );
-            $to_datetime = $util_class_name::get_datetime_object( $survey['startdate'] );
-            $to_datetime->add( new \DateInterval( 'PT1M' ) );
-
-            $event_mod = lib::create( 'database\modifier' );
-            $event_mod->where( 'event_type_id', '=', $script['started_event_type_id'] );
-            $event_mod->where( 'datetime', '>=', $from_datetime );
-            $event_mod->where( 'datetime', '<=', $to_datetime );
-            if( 0 == $db_participant->get_event_count( $event_mod ) )
-            {
-              $db_event = lib::create( 'database\event' );
-              $db_event->participant_id = $db_participant->id;
-              $db_event->event_type_id = $script['started_event_type_id'];
-              $db_event->site_id = $db_site->id;
-              $db_event->user_id = $db_user->id;
-              $db_event->datetime = $survey['startdate'];
-              $db_event->save();
-            }
-          }
+            $db_script->add_started_event( $db_participant, $survey['startdate'] );
 
           // check if a complete date exists within one minute of the survey's submitdate and add it if not
           if( $finished_events && !is_null( $survey['submitdate'] ) )
-          {
-            $from_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
-            $from_datetime->sub( new \DateInterval( 'PT1M' ) );
-            $to_datetime = $util_class_name::get_datetime_object( $survey['submitdate'] );
-            $to_datetime->add( new \DateInterval( 'PT1M' ) );
-
-            $event_mod = lib::create( 'database\modifier' );
-            $event_mod->where( 'event_type_id', '=', $script['finished_event_type_id'] );
-            $event_mod->where( 'datetime', '>=', $from_datetime );
-            $event_mod->where( 'datetime', '<=', $to_datetime );
-            if( 0 == $db_participant->get_event_count( $event_mod ) )
-            {
-              $db_event = lib::create( 'database\event' );
-              $db_event->participant_id = $db_participant->id;
-              $db_event->event_type_id = $script['finished_event_type_id'];
-              $db_event->site_id = $db_site->id;
-              $db_event->user_id = $db_user->id;
-              $db_event->datetime = $survey['submitdate'];
-              $db_event->save();
-            }
-          }
+            $db_script->add_finished_event( $db_participant, $survey['submitdate'] );
         }
 
         $survey_class_name::set_sid( $old_sid );
@@ -210,6 +223,7 @@ class script extends record
 
   /**
    * Extend parent method
+   * Note: this is used by limesurvey only (ignored by pine scripts)
    */
   public function get_token_count( $modifier )
   {

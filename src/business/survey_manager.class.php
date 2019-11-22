@@ -36,6 +36,7 @@ class survey_manager extends \cenozo\singleton
    * 
    * This method will try and fill in all columns of a token row, with the exception of the token
    * column.  To set the token use database\limesurvey\tokens::determine_token_string() static method.
+   * Note that this method is used for Limesurvey scripts only (not used for Pine)
    * @param database\script $db_script The script that the token belongs to
    * @param database\participant $db_participant The participant that the token belongs to
    * @param database\tokens $db_tokens The token to populate (if null a new one will be created)
@@ -44,6 +45,11 @@ class survey_manager extends \cenozo\singleton
    */
   public function populate_token( $db_script, $db_participant, $db_tokens = NULL )
   {
+    if( 'pine' == $db_script->get_type() )
+      throw lib::create( 'exception\runtime',
+        'The survey_manager::populate_token() should never be called for a Pine script.',
+        __METHOD__ );
+
     $data_manager = lib::create( 'business\data_manager' );
 
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
@@ -245,6 +251,7 @@ class survey_manager extends \cenozo\singleton
 
   /**
    * Resolves the supporting status of all participants who need a supporting script's status checked
+   * Note that this method is used for Limesurvey scripts only (not used for Pine)
    */
   public function process_all_supporting_script_checks()
   {
@@ -255,54 +262,61 @@ class survey_manager extends \cenozo\singleton
     $script_mod->where( 'supporting', '=', true );
     foreach( $script_class_name::select_objects( $script_mod ) as $db_script )
     {
-      $participant_class_name = lib::get_class_name( 'database\participant' );
-      $supporting_script_check_class_name = lib::get_class_name( 'database\supporting_script_check' );
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-      $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-
-      $old_tokens_sid = $tokens_class_name::get_sid();
-      $old_survey_sid = $survey_class_name::get_sid();
-      $tokens_class_name::set_sid( $db_script->sid );
-      $survey_class_name::set_sid( $db_script->sid );
-
-      $select = lib::create( 'database\select' );
-      $select->add_column( 'id' );
-      $select->add_column( 'participant_id' );
-      $select->add_table_column( 'participant', 'uid' );
-      $select->add_column( 'datetime' );
-      $select->add_table_column( 'survey', 'id', 'survey_id' );
-      $select->add_table_column( 'survey', 'submitdate IS NOT NULL', 'completed' );
-
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->join( 'participant', 'supporting_script_check.participant_id', 'participant.id' );
-      static::join_survey_and_token_tables( $db_script->sid, $modifier, true );
-
-      foreach( $supporting_script_check_class_name::select( $select, $modifier ) as $row )
+      if( 'pine' == $db_script->get_type() )
       {
-        $db_participant = lib::create( 'database\participant', $row['participant_id'] );
-        if( is_null( $row['survey_id'] ) )
-        { // there is no survey so remove the check
-          $supporting_script_check_class_name::delete_check( $db_participant, $db_script );
-        }
-        else if( $row['completed'] )
-        { // the survey is complete, process it
-          $this->process_supporting_script_check( $db_participant, $db_script );
-        }
-        else
-        { // check if the survey is out of date and delete it if it is
-          if( $supporting_script_check_class_name::delete_check( $db_participant, $db_script, true ) )
-          {
-            $survey_class_name::get_unique_record( 'token', $row['uid'] )->delete();
-            $tokens_class_name::get_unique_record( 'token', $row['uid'] )->delete();
-          }
-        }
-
-        $total++;
+        log::warning( 'Cenozo does not yet support Pine-based supporting scripts.' );
       }
+      else
+      {
+        $participant_class_name = lib::get_class_name( 'database\participant' );
+        $supporting_script_check_class_name = lib::get_class_name( 'database\supporting_script_check' );
+        $setting_manager = lib::create( 'business\setting_manager' );
+        $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+        $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
-      $tokens_class_name::set_sid( $old_tokens_sid );
-      $survey_class_name::set_sid( $old_survey_sid );
+        $old_tokens_sid = $tokens_class_name::get_sid();
+        $old_survey_sid = $survey_class_name::get_sid();
+        $tokens_class_name::set_sid( $db_script->sid );
+        $survey_class_name::set_sid( $db_script->sid );
+
+        $select = lib::create( 'database\select' );
+        $select->add_column( 'id' );
+        $select->add_column( 'participant_id' );
+        $select->add_table_column( 'participant', 'uid' );
+        $select->add_column( 'datetime' );
+        $select->add_table_column( 'survey', 'id', 'survey_id' );
+        $select->add_table_column( 'survey', 'submitdate IS NOT NULL', 'completed' );
+
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->join( 'participant', 'supporting_script_check.participant_id', 'participant.id' );
+        static::join_survey_and_token_tables( $db_script->sid, $modifier, true );
+
+        foreach( $supporting_script_check_class_name::select( $select, $modifier ) as $row )
+        {
+          $db_participant = lib::create( 'database\participant', $row['participant_id'] );
+          if( is_null( $row['survey_id'] ) )
+          { // there is no survey so remove the check
+            $supporting_script_check_class_name::delete_check( $db_participant, $db_script );
+          }
+          else if( $row['completed'] )
+          { // the survey is complete, process it
+            $this->process_supporting_script_check( $db_participant, $db_script );
+          }
+          else
+          { // check if the survey is out of date and delete it if it is
+            if( $supporting_script_check_class_name::delete_check( $db_participant, $db_script, true ) )
+            {
+              $survey_class_name::get_unique_record( 'token', $row['uid'] )->delete();
+              $tokens_class_name::get_unique_record( 'token', $row['uid'] )->delete();
+            }
+          }
+
+          $total++;
+        }
+
+        $tokens_class_name::set_sid( $old_tokens_sid );
+        $survey_class_name::set_sid( $old_survey_sid );
+      }
     }
 
     return $total;
@@ -311,6 +325,7 @@ class survey_manager extends \cenozo\singleton
   /**
    * Processes a participant's supporting script
    * Note that this method does nothing if the participant has not completed the supporting script
+   * Note that this method is used for Limesurvey scripts only (not used for Pine)
    * 
    * @param database\participant $db_participant
    * @param database\script $db_script
@@ -327,6 +342,10 @@ class survey_manager extends \cenozo\singleton
         'Tried to process non-supporting script "%s" as a supporting script (request ignored).',
         $db_script->name
       ) );
+    }
+    else if( 'pine' == $db_script->get_type() )
+    {
+      log::warning( 'Cenozo does not yet support Pine-based supporting scripts.' );
     }
     else
     {
@@ -562,6 +581,7 @@ class survey_manager extends \cenozo\singleton
 
   /**
    * Returns the survey id of the withdraw script
+   * Note that this method is used for Limesurvey scripts only (not used for Pine)
    * @access public
    */
   public function get_withdraw_sid()
@@ -591,6 +611,7 @@ class survey_manager extends \cenozo\singleton
 
   /**
    * Returns the survey id of the proxy_initiation script
+   * Note that this method is used for Limesurvey scripts only (not used for Pine)
    * @access public
    */
   public function get_proxy_initiation_sid()

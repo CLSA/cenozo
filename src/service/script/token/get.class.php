@@ -2,6 +2,8 @@
 /**
  * get.class.php
  * 
+ * Note that this service is used for Limesurvey scripts only (not used for Pine)
+ * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
@@ -36,6 +38,8 @@ class get extends \cenozo\service\get
 
       // make sure to set the token class name SID
       $db_script = $this->get_parent_record();
+      if( is_null( $db_script->sid ) )
+        throw lib::create( 'exception\runtime', 'Tried to call script/token/get service for Pine script.', __METHOD__ );
       $old_sid = $tokens_class_name::get_sid();
       $tokens_class_name::set_sid( $db_script->sid );
 

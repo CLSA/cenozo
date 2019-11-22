@@ -9,7 +9,8 @@ namespace cenozo\service\survey;
 use cenozo\lib, cenozo\log;
 
 /**
- * Performs operations which effect how this module is used in a service
+ * Performs operations which effect how this module is used in a service.
+ * This module is used to return Limesrvey surveys
  */
 class module extends \cenozo\service\module
 {

@@ -38,7 +38,6 @@ class get extends \cenozo\service\get
         }
         catch( \cenozo\exception\runtime $e )
         {
-          log::debug( $e );
           if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
 
           // 404 means the response doesn't exist yet, so create it
@@ -53,7 +52,7 @@ class get extends \cenozo\service\get
             $db_script->pine_qnaire_id,
             $db_participant->id
           ) );
-          $record = array( 'token' => $response['token'] );
+          $record = array( 'token' => $response->token );
         }
       }
     }

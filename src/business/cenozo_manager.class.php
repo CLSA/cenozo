@@ -39,47 +39,7 @@ class cenozo_manager extends \cenozo\base_object
    */
   public function get( $api_path )
   {
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $user = $setting_manager->get_setting( 'utility', 'username' );
-    $pass = $setting_manager->get_setting( 'utility', 'password' );
-
-    $code = 0;
-
-    // prepare cURL request
-    $url = sprintf( '%s/api/%s', $this->db_application->url, $api_path );
-
-    // set URL and other appropriate options
-    $curl = curl_init();
-    curl_setopt( $curl, CURLOPT_URL, $url );
-    curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
-    curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-    curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, $this->timeout );
-    curl_setopt( $curl, CURLOPT_HTTPHEADER,
-      array( sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', $user, $pass ) ) ) )
-    );
-
-    $response = curl_exec( $curl );
-    if( curl_errno( $curl ) )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Got error code %s when trying to connect to %s.  Message: %s',
-                 curl_errno( $curl ),
-                 $this->db_application->title,
-                 curl_error( $curl ) ),
-        __METHOD__ );
-    }
-    
-    $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-    if( 300 <= $code )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Got response code %s when trying to connect to %s.',
-                 $code,
-                 $this->db_application->title ),
-        __METHOD__ );
-    }
-
-    return json_decode( $response );
+    return $this->send( $api_path );
   }
 
   /**
@@ -92,10 +52,36 @@ class cenozo_manager extends \cenozo\base_object
    */
   public function post( $api_path, $data )
   {
+    return $this->send( $api_path, 'POST', $data );
+  }
+
+  /**
+   * Sends a curl PATCH request to the cenozo application
+   * 
+   * @param string $api_path The internal cenozo path (not including base url)
+   * @param string $data The patch data to send to the application
+   * @return curl resource
+   * @access public
+   */
+  public function patch( $api_path, $data )
+  {
+    return $this->send( $api_path, 'PATCH', $data );
+  }
+
+  /**
+   * Sends curl requests
+   * 
+   * @param string $api_path The internal cenozo path (not including base url)
+   * @return curl resource
+   * @access public
+   */
+  private function send( $api_path, $method = 'GET', $data = NULL )
+  {
     $util_class_name = lib::get_class_name( 'util' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $user = $setting_manager->get_setting( 'utility', 'username' );
     $pass = $setting_manager->get_setting( 'utility', 'password' );
+    $header_list = array( sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', $user, $pass ) ) ) );
 
     $code = 0;
 
@@ -108,18 +94,31 @@ class cenozo_manager extends \cenozo\base_object
     curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, false );
     curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
     curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, $this->timeout );
-    curl_setopt( $curl, CURLOPT_HTTPHEADER,
-      array( sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', $user, $pass ) ) ) )
-    );
-    curl_setopt( $curl, CURLOPT_POST, true );
-    curl_setopt( $curl, CURLOPT_POSTFIELDS, $util_class_name::json_encode( $data ) );
+
+    if( 'POST' == $method )
+    {
+      curl_setopt( $curl, CURLOPT_POST, true );
+    }
+    else if( 'PATCH' == $method )
+    {
+      curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PATCH' );
+    }
+
+    if( !is_null( $data ) )
+    {
+      $header_list[] = 'Content-Type: application/json';
+      curl_setopt( $curl, CURLOPT_POSTFIELDS, $util_class_name::json_encode( $data ) );
+    }
+
+    curl_setopt( $curl, CURLOPT_HTTPHEADER, $header_list );
 
     $response = curl_exec( $curl );
     if( curl_errno( $curl ) )
     {
       throw lib::create( 'exception\runtime',
-        sprintf( 'Got error code %s when trying to connect to %s.  Message: %s',
+        sprintf( 'Got error code %s when trying %s request to %s.  Message: %s',
                  curl_errno( $curl ),
+                 $method,
                  $this->db_application->title,
                  curl_error( $curl ) ),
         __METHOD__ );
@@ -129,15 +128,15 @@ class cenozo_manager extends \cenozo\base_object
     if( 300 <= $code )
     {
       throw lib::create( 'exception\runtime',
-        sprintf( 'Got response code %s when trying to connect to %s.',
+        sprintf( 'Got response code %s when trying %s request to %s.',
                  $code,
+                 $method,
                  $this->db_application->title ),
         __METHOD__ );
     }
 
     return json_decode( $response );
   }
-
   /**
    * The application to connect to
    * @var database\application

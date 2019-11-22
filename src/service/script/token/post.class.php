@@ -2,6 +2,8 @@
 /**
  * post.class.php
  * 
+ * Note that this service is used for Limesurvey scripts only (not used for Pine)
+ * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
@@ -19,9 +21,20 @@ class post extends \cenozo\service\post
 
     if( 300 > $this->status->get_code() )
     {
-      // must have a participant_id in the provided data
-      $data = $this->get_file_as_array();
-      if( !array_key_exists( 'identifier', $data ) ) $this->status->set_code( 400 );
+      // don't allow this service for pine scripts
+      if( is_null( $this->db_script ) ) $this->db_script = $this->get_parent_record();
+
+      if( 'pine' == $this->db_script->get_type() )
+      {
+        log::error( 'The script/token/post service should never be called for a Pine script.' );
+        $this->status->set_code( 400 );
+      }
+      else
+      {
+        // must have a participant_id in the provided data
+        $data = $this->get_file_as_array();
+        if( !array_key_exists( 'identifier', $data ) ) $this->status->set_code( 400 );
+      }
     }
   }
 
@@ -119,6 +132,8 @@ class post extends \cenozo\service\post
     {
       // make sure to set the token class name SID
       if( is_null( $this->db_script ) ) $this->db_script = $this->get_parent_record();
+      if( is_null( $this->db_script->sid ) )
+        throw lib::create( 'exception\runtime', 'Tried to call script/token/post service for Pine script.', __METHOD__ );
       $tokens_class_name = $this->get_record_class_name( $index );
       $old_sid = $tokens_class_name::get_sid();
       $tokens_class_name::set_sid( $this->db_script->sid );
