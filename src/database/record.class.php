@@ -34,6 +34,9 @@ abstract class record extends \cenozo\base_object
     $table_name = static::get_table_name();
     foreach( static::db()->get_column_names( $table_name ) as $column )
     {
+      // ignore timestamp columns
+      if( in_array( $column, array( 'update_timestamp', 'create_timestamp' ) ) ) continue;
+
       // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
       // 'start_datetime' then make the default the current date and time.
       // Because mysql does not allow setting the default value for a DATETIME column to be

@@ -60,6 +60,12 @@ class database extends \cenozo\base_object
     {
       $setting_manager = lib::create( 'business\setting_manager' );
 
+      // determine the database version number and whether defaults are defined in quotes
+      $database_version = $this->get_one( 'SELECT VERSION()' );
+      $quoted_defaults = false;
+      if( 1 == preg_match( '/^10\.([0-9]+)\./', $database_version, $matches ) )
+        $quoted_defaults = 2 < intval( $matches[1] );
+
       // determine the framework name
       $framework_name = sprintf(
         '%s%s',
@@ -87,6 +93,12 @@ class database extends \cenozo\base_object
       foreach( $rows as $row )
       {
         extract( $row ); // defines variables based on column values in query
+
+        // convert the column default if defaults are quoted
+        if( $quoted_defaults )
+          $column_default = is_null( $column_default ) || 'NULL' == $column_default
+                          ? NULL
+                          : preg_replace( "/^'(.*)'$/", '$1', $column_default );
 
         if( !array_key_exists( $table_name, $this->tables ) )
           $this->tables[$table_name] =
