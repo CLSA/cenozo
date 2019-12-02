@@ -222,7 +222,7 @@ class util
     }
     else if( is_string( $datetime ) || is_null( $datetime ) )
     {
-      if( 'CURRENT_TIMESTAMP' == $datetime ) $datetime = NULL;
+      $datetime = 1 == preg_match( '/null|current_timestamp(\(\))?/i', $datetime ) ? NULL : str_replace( "'", '', $datetime );
       $timezone_obj = NULL;
       if( is_object( $timezone ) )
       {
