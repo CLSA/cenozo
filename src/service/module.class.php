@@ -200,12 +200,13 @@ abstract class module extends \cenozo\base_object
    * @param string $joining_table Used to force a many-to-many relationship with the provided table name
    * @access public
    */
-  protected function add_count_column( $column_name, $table, $select, $modifier, $joining_table = NULL )
+  protected function add_count_column( $column_name, $table, $select, $modifier, $joining_table = NULL, $count = 'COUNT(*)' )
   {
     $db = lib::create( 'business\session' )->get_database();
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     $subject = $this->get_subject();
+    $subject_id = sprintf( '%s_id', $subject );
     $record_class_name = $this->service->get_record_class_name( $this->index );
     $join_table_name = sprintf( '%s_join_%s', $subject, $table );
     $table_primary_key = sprintf( '%s.id', $table );
@@ -222,34 +223,35 @@ abstract class module extends \cenozo\base_object
       }
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $subject );
-      $join_sel->add_column( 'id', $subject.'_id' );
-      $join_sel->add_column( 'IF( '.$joining_table.'.'.$table.'_id IS NOT NULL, COUNT(*), 0 )', $column_name, false );
+      $join_sel->add_column( 'id', $subject_id );
+      $join_sel->add_column( sprintf( 'IF( %s.%s_id IS NOT NULL, %s, 0 )', $joining_table, $table, $count ), $column_name, false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( $joining_table, $subject_primary_key, $joining_table.'.'.$subject.'_id' );
+      $join_mod->left_join( $joining_table, $subject_primary_key, sprintf( '%s.%s', $joining_table, $subject_id ) );
       $join_mod->group( $subject_primary_key );
 
       $modifier->left_join(
-        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s ) AS %s', $join_sel->get_sql(), $join_mod->get_sql(), $join_table_name ),
         $subject_primary_key,
-        $join_table_name.'.'.$subject.'_id' );
-      $select->add_column( 'IFNULL( '.$column_name.', 0 )', $column_name, false );
+        sprintf( '%s.%s', $join_table_name, $subject_id )
+      );
+      $select->add_column( sprintf( 'IFNULL( %s, 0 )', $column_name ), $column_name, false );
     }
     else
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $subject );
-      $join_sel->add_column( 'id', $subject.'_id' );
-      $join_sel->add_column( 'IF( '.$table_primary_key.' IS NULL, 0, COUNT( * ) )', $column_name, false );
+      $join_sel->add_column( 'id', $subject_id );
+      $join_sel->add_column( sprintf( 'IF( %s IS NULL, 0, %s )', $table_primary_key, $count ), $column_name, false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( $table, $subject_primary_key, $table.'.'.$subject.'_id' );
+      $join_mod->left_join( $table, $subject_primary_key, sprintf( '%s.%s', $table, $subject_id ) );
       $join_mod->group( $subject_primary_key );
 
       $modifier->join(
-        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s ) AS %s', $join_sel->get_sql(), $join_mod->get_sql(), $join_table_name ),
         $subject_primary_key,
-        $join_table_name.'.'.$subject.'_id'
+        sprintf( '%s.%s', $join_table_name, $subject_id )
       );
       $select->add_table_column( $join_table_name, $column_name );
     }
@@ -274,6 +276,7 @@ abstract class module extends \cenozo\base_object
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     $subject = $this->get_subject();
+    $subject_id = sprintf( '%s_id', $subject );
     $record_class_name = $this->service->get_record_class_name( $this->index );
     $join_table_name = sprintf( '%s_join_%s', $subject, $table );
     $table_primary_key = sprintf( '%s.id', $table );
@@ -290,7 +293,7 @@ abstract class module extends \cenozo\base_object
       }
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $joining_table );
-      $join_sel->add_column( $subject.'_id' );
+      $join_sel->add_column( $subject_id );
       $join_sel->add_column(
         sprintf(
           'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )',
@@ -304,20 +307,21 @@ abstract class module extends \cenozo\base_object
       );
 
       if( is_null( $join_mod ) ) $join_mod = lib::create( 'database\modifier' );
-      $join_mod->join( $table, $joining_table.'.'.$table.'_id', $table_primary_key );
-      $join_mod->group( $subject.'_id' );
+      $join_mod->join( $table, sprintf( '%s.%s_id', $joining_table, $table ), $table_primary_key );
+      $join_mod->group( $subject_id );
 
       $modifier->left_join(
-        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s ) AS %s', $join_sel->get_sql(), $join_mod->get_sql(), $join_table_name ),
         $subject_primary_key,
-        $join_table_name.'.'.$subject.'_id' );
+        sprintf( '%s.%s', $join_table_name, $subject_id )
+      );
       $select->add_table_column( $join_table_name, $column_name );
     }
     else
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $subject );
-      $join_sel->add_column( 'id', $subject.'_id' );
+      $join_sel->add_column( 'id', $subject_id );
       $join_sel->add_column(
         sprintf( 'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )', $table, $column, $table, $column ),
         $column_name,
@@ -325,13 +329,13 @@ abstract class module extends \cenozo\base_object
       );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->left_join( $table, $subject_primary_key, $table.'.'.$subject.'_id' );
+      $join_mod->left_join( $table, $subject_primary_key, sprintf( '%s.%s', $table, $subject_id ) );
       $join_mod->group( $subject_primary_key );
 
       $modifier->join(
-        sprintf( '( %s %s ) AS '.$join_table_name, $join_sel->get_sql(), $join_mod->get_sql() ),
+        sprintf( '( %s %s ) AS %s', $join_sel->get_sql(), $join_mod->get_sql(), $join_table_name ),
         $subject_primary_key,
-        $join_table_name.'.'.$subject.'_id'
+        sprintf( '%s.%s', $join_table_name, $subject_id )
       );
       $select->add_table_column( $join_table_name, $column_name );
     }
