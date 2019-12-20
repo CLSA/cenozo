@@ -42,19 +42,8 @@ class post extends \cenozo\service\post
    */
   protected function create_resource( $index )
   {
-    $util_class_name = lib::get_class_name( 'util' );
-
-    $resource = null;
-    if( 'interview' == $this->get_subject( $index ) )
-    {
-      $resource = $this->get_parent_record()->get_effective_interview( false );
-      if( !is_null( $resource ) ) $resource->start_datetime = $util_class_name::get_datetime_object();
-    }
-    else
-    {
-      $resource = parent::create_resource( $index );
-    }
-
-    return $resource;
+    return 'interview' == $this->get_subject( $index ) ?
+      $this->get_parent_record()->get_effective_interview( false ) :
+      parent::create_resource( $index );
   }
 }

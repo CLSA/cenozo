@@ -175,12 +175,6 @@ class module extends \cenozo\service\site_restricted_participant_module
         throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
 
       $db_interview = $this->db_participant->get_effective_interview();
-      if( is_null( $db_interview->start_datetime ) )
-      {
-        $db_interview->start_datetime = $now;
-        $db_interview->save();
-      }
-
       $record->user_id = $session->get_user()->id;
       $record->role_id = $session->get_role()->id;
       $record->site_id = $session->get_site()->id;
