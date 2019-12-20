@@ -25,7 +25,10 @@ class script extends record
   }
 
   /**
-   * TODO: document
+   * Returns whether the script is in Pine or Limesurvey
+   * 
+   * @return string
+   * @access public
    */
   public function get_type()
   {
@@ -33,7 +36,11 @@ class script extends record
   }
 
   /**
-   * TODO: document
+   * Adds a started event to the participant for this script
+   * 
+   * @param database\participant $db_participant The event's participant
+   * @param datetime $datetime The event's datetime
+   * @access public
    */
   public function add_started_event( $db_participant, $datetime )
   {
@@ -68,7 +75,11 @@ class script extends record
   }
 
   /**
-   * TODO: document
+   * Adds a finished event to the participant for this script
+   * 
+   * @param database\participant $db_participant The event's participant
+   * @param datetime $datetime The event's datetime
+   * @access public
    */
   public function add_finished_event( $db_participant, $datetime )
   {
