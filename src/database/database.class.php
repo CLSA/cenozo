@@ -75,7 +75,6 @@ class database extends \cenozo\base_object
 
       $column_mod = lib::create( 'database\modifier' );
       $column_mod->where( 'table_schema', 'IN', $schema_list, false );
-      $column_mod->where( 'column_type', '!=', '"longtext"', false );
       $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
       $column_mod->where( 'column_type', '!=', '"longblob"', false );
       $column_mod->order( 'table_name' );
