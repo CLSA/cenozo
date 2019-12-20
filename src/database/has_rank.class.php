@@ -14,6 +14,16 @@ use cenozo\lib, cenozo\log;
 abstract class has_rank extends record
 {
   /**
+   * Returns the rank parent
+   * @return string
+   * @access public
+   */
+  public static function get_rank_parent()
+  {
+    return static::$rank_parent;
+  }
+
+  /**
    * Overrides the parent class so manage ranks.
    * 
    * If the record has a rank which already exists it will push the current record and all that
