@@ -255,6 +255,7 @@ angular.extend( cenozoApp, {
            *     alphanum: will only accept numbers and letters
            *     alpha_num: will only accept numbers, letters and underscores
            *     email: requires a valid email address (<name>@<domain>.<type>)
+           *     seconds: takes input in number of seconds and displays as 0d 0:00:00 format
            *   regex: A regular expression that the input must match
            *   maxLength: The maximum number of characters allowed
            *   isConstant: A function to determine if the input is immutable
@@ -339,6 +340,7 @@ angular.extend( cenozoApp, {
 
               // process the action if one exists
               if( angular.isDefined( input.action ) ) {
+                if( angular.isUndefined( input.action.id ) ) input.action.id = input.action.title;
                 input.action.isIncluded = processInputFunction( input.action.isIncluded, true );
                 if( null == input.action.isIncluded ) throw new Error(
                   'Input "' + input.key + '" has action, "' + input.action.title +
@@ -406,10 +408,9 @@ angular.extend( cenozoApp, {
           addExtraOperation: function( type, extraObject ) {
             if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
-            if( angular.isUndefined( extraObject.isIncluded ) )
-              extraObject.isIncluded = function() { return true; }
-            if( angular.isUndefined( extraObject.isDisabled ) )
-              extraObject.isDisabled = function() { return false; }
+            if( angular.isUndefined( extraObject.id ) ) extraObject.id = extraObject.title;
+            if( angular.isUndefined( extraObject.isIncluded ) ) extraObject.isIncluded = function() { return true; }
+            if( angular.isUndefined( extraObject.isDisabled ) ) extraObject.isDisabled = function() { return false; }
             this.removeExtraOperation( type, extraObject.title ); // remove first, so we replace
             this.extraOperationList[type].push( extraObject );
           },
@@ -435,17 +436,13 @@ angular.extend( cenozoApp, {
             if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation group with invalid type "' + type + '".' );
             if( angular.isUndefined( extraGroup.id ) ) extraGroup.id = extraGroup.title;
-            if( angular.isUndefined( extraGroup.isIncluded ) )
-              extraGroup.isIncluded = function() { return true; }
-            if( angular.isUndefined( extraGroup.isDisabled ) )
-              extraGroup.isDisabled = function() { return false; }
+            if( angular.isUndefined( extraGroup.isIncluded ) ) extraGroup.isIncluded = function() { return true; }
+            if( angular.isUndefined( extraGroup.isDisabled ) ) extraGroup.isDisabled = function() { return false; }
             if( angular.isUndefined( extraGroup.classes ) ) extraGroup.classes = '';
             extraGroup.classes += ' dropdown-toggle';
             extraGroup.operations.forEach( function( extraObject ) {
-              if( angular.isUndefined( extraObject.isIncluded ) )
-                extraObject.isIncluded = function() { return true; }
-              if( angular.isUndefined( extraObject.isDisabled ) )
-                extraObject.isDisabled = function() { return false; }
+              if( angular.isUndefined( extraObject.isIncluded ) ) extraObject.isIncluded = function() { return true; }
+              if( angular.isUndefined( extraObject.isDisabled ) ) extraObject.isDisabled = function() { return false; }
             } );
             this.removeExtraOperation( type, extraGroup.title ); // remove first, so we replace
             this.extraOperationList[type].push( extraGroup );
@@ -2797,6 +2794,32 @@ cenozo.filter( 'cnRestrictType', function() {
     return input;
   };
 } );
+
+/* ######################################################################################################## */
+
+/**
+ * Formats datetimes
+ */
+cenozo.filter( 'cnSeconds', [
+  function() {
+    return function( input ) {
+      var output;
+      if( angular.isUndefined( input ) || null === input ) {
+        output = '(empty)';
+      } else {
+        var days = Math.floor( input / (24*60*60) );
+        var hours = Math.floor( input % (24*60*60) / (60*60) );
+        var minutes = Math.floor( input % (60*60) / 60 );
+        var seconds = input % 60;
+        output = ( 0 < days ? days + 'd ' : '' ) +
+                 hours + ":" +
+                 minutes.toString().padStart( 2, '0' ) + ':' +
+                 seconds.toString().padStart( 2, '0' );
+      }
+      return output;
+    };
+  }
+] );
 
 /* ######################################################################################################## */
 
@@ -5434,6 +5457,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          *     string: any string (use format for numbers, etc)
          *     text: any long string
          *     size: a data size (will be formated as KB, MB, GB, etc)
+         *     seconds: takes input in number of seconds and displays as 0d 0:00:00 format
          *   column: the database column to reference
          *   width: a CSS style width to set on the column
          *   align: a CSS style alignment to set on the column
@@ -5449,6 +5473,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           else if( 'rank' == type ) column.filter = 'cnOrdinal';
           else if( 'size' == type ) column.filter = 'cnSize';
           else if( 'boolean' == type ) column.filter = 'cnYesNo';
+          else if( 'seconds' == type ) column.filter = 'cnSeconds';
           else if( 'text' == type )
             column.filter = 'cnStub:' + ( angular.isDefined( column.limit ) ? column.limit : 10 );
 

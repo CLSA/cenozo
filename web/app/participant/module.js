@@ -107,6 +107,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       type: 'string',
       isConstant: true,
       action: {
+        id: 'change_hold',
         title: 'Change',
         isDisabled: function( $state, model ) {
           return !( model.viewModel.holdModel && model.viewModel.holdModel.getAddEnabled() );
@@ -124,6 +125,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       type: 'string',
       isConstant: true,
       action: {
+        id: 'change_trace',
         title: 'Change',
         isDisabled: function( $state, model ) {
           return !( model.viewModel.traceModel && model.viewModel.traceModel.getAddEnabled() );
@@ -141,6 +143,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       type: 'string',
       isConstant: true,
       action: {
+        id: 'change_proxy',
         title: 'Change',
         isDisabled: function( $state, model ) {
           return !( model.viewModel.proxyModel && model.viewModel.proxyModel.getAddEnabled() );
