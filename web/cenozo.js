@@ -227,6 +227,16 @@ angular.extend( cenozoApp, {
             if( this.framework ) modules.push( cenozoApp.getFileUrl( this.subject.snake, 'module.extend.js' ) );
             return modules;
           },
+          // a function used to validate and process input functions
+          processInputFunction: function( fn, defaultValue ) {
+            if( angular.isUndefined( fn ) ) return function() { return defaultValue; }
+            else if( angular.isFunction( fn ) ) return fn;
+            else if( true === fn ) return function() { return true; };
+            else if( false === fn ) return function() { return false; };
+            else if( 'add' === fn ) return function() { return 'add'; };
+            else if( 'view' === fn ) return function() { return 'view'; };
+            return null;
+          },
           /**
            * Inputs are added in the following form:
            * key: {
@@ -296,17 +306,6 @@ angular.extend( cenozoApp, {
            * }
            */
           addInput: function( groupTitle, key, input, afterKey ) {
-            // private function used to validate and process input functions
-            function processInputFunction( fn, defaultValue ) {
-              if( angular.isUndefined( fn ) ) return function() { return defaultValue; }
-              else if( angular.isFunction( fn ) ) return fn;
-              else if( true === fn ) return function() { return true; };
-              else if( false === fn ) return function() { return false; };
-              else if( 'add' === fn ) return function() { return 'add'; };
-              else if( 'view' === fn ) return function() { return 'view'; };
-              return null;
-            }
-
             // by default we add the input to the end of the list
             if( angular.isUndefined( afterKey ) ) afterKey = null;
 
@@ -327,13 +326,13 @@ angular.extend( cenozoApp, {
               input.key = key;
 
               // process the isConstant function
-              input.isConstant = processInputFunction( input.isConstant, false );
+              input.isConstant = this.processInputFunction( input.isConstant, false );
               if( null == input.isConstant ) throw new Error(
                 'Input "' + input.key + '" has invalid isConstant value (must be a function, boolean, "add" or "view").'
               );
 
               // process the isExcluded function
-              input.isExcluded = processInputFunction( input.isExcluded, false );
+              input.isExcluded = this.processInputFunction( input.isExcluded, false );
               if( null === input.isExcluded ) throw new Error(
                 'Input "' + input.key + '" has invalid isExcluded value (must be a function, boolean, "add" or "view").'
               );
@@ -341,13 +340,13 @@ angular.extend( cenozoApp, {
               // process the action if one exists
               if( angular.isDefined( input.action ) ) {
                 if( angular.isUndefined( input.action.id ) ) input.action.id = input.action.title;
-                input.action.isIncluded = processInputFunction( input.action.isIncluded, true );
+                input.action.isIncluded = this.processInputFunction( input.action.isIncluded, true );
                 if( null == input.action.isIncluded ) throw new Error(
                   'Input "' + input.key + '" has action, "' + input.action.title +
                   '" with invalid isIncluded value (must be a function, boolean, "add" or "view").'
                 );
 
-                input.action.isDisabled = processInputFunction( input.action.isDisabled, false );
+                input.action.isDisabled = this.processInputFunction( input.action.isDisabled, false );
                 if( null == input.action.isDisabled ) throw new Error(
                   'Input "' + input.key + '" has action, "' + input.action.title +
                   '" with invalid isDisabled value (must be a function, boolean, "add" or "view").'
@@ -409,8 +408,8 @@ angular.extend( cenozoApp, {
             if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
             if( angular.isUndefined( extraObject.id ) ) extraObject.id = extraObject.title;
-            if( angular.isUndefined( extraObject.isIncluded ) ) extraObject.isIncluded = function() { return true; }
-            if( angular.isUndefined( extraObject.isDisabled ) ) extraObject.isDisabled = function() { return false; }
+            extraObject.isIncluded = this.processInputFunction( extraObject.isIncluded, true );
+            extraObject.isDisabled = this.processInputFunction( extraObject.isDisabled, false );
             this.removeExtraOperation( type, extraObject.title ); // remove first, so we replace
             this.extraOperationList[type].push( extraObject );
           },
@@ -433,16 +432,17 @@ angular.extend( cenozoApp, {
            *          which is to be included in a drop-down list when the group button is clicked
            */
           addExtraOperationGroup: function( type, extraGroup ) {
+            var module = this;
             if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation group with invalid type "' + type + '".' );
             if( angular.isUndefined( extraGroup.id ) ) extraGroup.id = extraGroup.title;
-            if( angular.isUndefined( extraGroup.isIncluded ) ) extraGroup.isIncluded = function() { return true; }
-            if( angular.isUndefined( extraGroup.isDisabled ) ) extraGroup.isDisabled = function() { return false; }
             if( angular.isUndefined( extraGroup.classes ) ) extraGroup.classes = '';
+            extraGroup.isIncluded = this.processInputFunction( extraGroup.isIncluded, true );
+            extraGroup.isDisabled = this.processInputFunction( extraGroup.isDisabled, false );
             extraGroup.classes += ' dropdown-toggle';
             extraGroup.operations.forEach( function( extraObject ) {
-              if( angular.isUndefined( extraObject.isIncluded ) ) extraObject.isIncluded = function() { return true; }
-              if( angular.isUndefined( extraObject.isDisabled ) ) extraObject.isDisabled = function() { return false; }
+              extraObject.isIncluded = module.processInputFunction( extraObject.isIncluded, true );
+              extraObject.isDisabled = module.processInputFunction( extraObject.isDisabled, false );
             } );
             this.removeExtraOperation( type, extraGroup.title ); // remove first, so we replace
             this.extraOperationList[type].push( extraGroup );
@@ -849,7 +849,8 @@ angular.extend( cenozo, {
       key: key,
       title: restriction.title,
       type: this.getTypeFromRestriction( restriction ),
-      isConstant: 'view',
+      isConstant: function() { return 'view'; },
+      isExcluded: function() { return false; },
       help: restriction.description
     };
 
@@ -2100,10 +2101,20 @@ cenozo.directive( 'cnViewInput', [
 
         $scope.getColClass = function() {
           var viewModel = $scope.model.viewModel;
-
           var width = 12;
+
+          // convert old-form "included" expression to isIncluded function
+          if( angular.isUndefined( $scope.input.isIncluded ) && angular.isDefined( $scope.input.included ) )
+            $scope.input.isIncluded = $scope.input.included;
+          $scope.input.isIncluded = $scope.model.module.processInputFunction( $scope.input.isIncluded, true );
+
+          // convert old-form "constant" expression to isConstant function
+          if( angular.isUndefined( $scope.input.isConstant ) && angular.isDefined( $scope.input.constant ) )
+            $scope.input.isConstant = $scope.input.constant;
+          $scope.input.isConstant = $scope.model.module.processInputFunction( $scope.input.isConstant, false );
+
           var constant = $scope.input.isConstant( $scope.state, $scope.model );
-          if( $scope.input.action && $scope.input.action.isIncluded( $scope.state, $scope.model ) ) width -= 2;
+          if( $scope.input.action && $scope.input.isIncluded( $scope.state, $scope.model ) ) width -= 2;
           if( $scope.model.getEditEnabled() &&
               true !== constant && 'view' != constant &&
               viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
@@ -4592,7 +4603,7 @@ cenozo.factory( 'CnBaseViewFactory', [
               self.parentModel.module.inputGroupList.forEach( function( group ) {
                 for( var column in group.inputList ) {
                   var input = group.inputList[column];
-                  var exclude = input.isExcluded( $state, self.parentModel );
+                  var exclude = angular.isDefined( input.isExcluded ) && input.isExcluded( $state, self.parentModel );
                   if( true !== exclude && 'view' !== exclude &&
                       ['boolean','enum','rank'].includes( input.type ) &&
                       null === self.record[column] ) {
@@ -4943,8 +4954,7 @@ cenozo.factory( 'CnBaseModelFactory', [
             self.module.inputGroupList.forEach( function( group ) {
               for( var column in group.inputList ) {
                 var input = group.inputList[column];
-                /*var exclude = input.isExcluded( $state, self );
-                if( true !== exclude && 'view' !== exclude )*/ list[column] = input;
+                list[column] = input;
               }
             } );
           }
