@@ -27,9 +27,13 @@ class report_schedule extends base_report
     $join_mod->where( 'report_schedule.id', '=', 'report.report_schedule_id', false );
     $join_mod->where(
       "CASE report_schedule.schedule\n".
-      "  WHEN 'daily' THEN DATE( report.datetime ) < DATE( UTC_TIMESTAMP() )\n".
-      "  WHEN 'weekly' THEN WEEK( report.datetime ) < WEEK( UTC_TIMESTAMP() )\n".
-      "  WHEN 'monthly' THEN YEAR( report.datetime ) < YEAR( UTC_TIMESTAMP() ) OR\n".
+      "  WHEN 'daily' THEN\n".
+      "    DATE( report.datetime ) < DATE( UTC_TIMESTAMP() )\n".
+      "  WHEN 'weekly' THEN\n".
+      "    YEAR( report.datetime ) < YEAR( UTC_TIMESTAMP() ) OR\n".
+      "    WEEK( report.datetime ) < WEEK( UTC_TIMESTAMP() )\n".
+      "  WHEN 'monthly' THEN\n".
+      "    YEAR( report.datetime ) < YEAR( UTC_TIMESTAMP() ) OR\n".
       "    MONTH( report.datetime ) < MONTH( UTC_TIMESTAMP() )\n".
       "  ELSE false\n".
       "END", '=', false );
