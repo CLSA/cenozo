@@ -52,6 +52,7 @@ class survey_manager extends \cenozo\singleton
 
     $data_manager = lib::create( 'business\data_manager' );
 
+    $util_class_name = lib::get_class_name( 'util' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $old_sid = $tokens_class_name::get_sid();
     $tokens_class_name::set_sid( $db_script->sid );
@@ -74,9 +75,11 @@ class survey_manager extends \cenozo\singleton
         if( !$data_manager->is_value( $value ) ) $invalid = true;
         else
         {
-          $db_tokens->$key = 0 === strpos( $value, 'participant.' )
-                           ? $data_manager->get_participant_value( $db_participant, $value )
-                           : $data_manager->get_value( $value );
+          $db_tokens->$key = $util_class_name::utf8_encode(
+            0 === strpos( $value, 'participant.' ) ?
+              $data_manager->get_participant_value( $db_participant, $value ) :
+              $data_manager->get_value( $value )
+          );
         }
       }
       catch( \cenozo\exception\argument $e )
