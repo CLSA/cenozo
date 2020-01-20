@@ -26,6 +26,7 @@ class query extends \cenozo\service\query
    */
   protected function execute()
   {
+    /*
     $sel_string = $this->get_argument( 'select', NULL );
     $mod_string = $this->get_argument( 'modifier', NULL );
 
@@ -37,5 +38,7 @@ class query extends \cenozo\service\query
     $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
     $data = $cenozo_manager->get( $url );
     $this->set_data( $data );
+    */
+    $this->set_data( array() );
   }
 }

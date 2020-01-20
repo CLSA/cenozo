@@ -41,6 +41,7 @@ class module extends \cenozo\service\module
       $survey_table = sprintf( '( %s ) AS survey', implode( $survey_table_array, ' UNION ' ) );
       $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
 
+      /*
       // link to pine qnaire list
       $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
       $qnaire_table_array = array();
@@ -50,6 +51,8 @@ class module extends \cenozo\service\module
       $modifier->left_join( $qnaire_table, 'script.pine_qnaire_id', 'pine_qnaire.id' );
 
       $select->add_column( 'IFNULL( survey.title, pine_qnaire.name )', 'qnaire_title', false );
+      */
+      $select->add_column( 'survey.title', 'qnaire_title', false );
     }
 
     $db_participant = NULL;
@@ -109,7 +112,7 @@ class module extends \cenozo\service\module
       $select->add_column(
         sprintf(
           'IF( pine_qnaire_id IS NOT NULL, "%s/response/run/", CONCAT( "%s/index.php/", script.sid ) )',
-          $db_pine_application->url,
+          is_object( $db_pine_application ) ? $db_pine_application->url : '',
           LIMESURVEY_URL
         ),
         'url',
