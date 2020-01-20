@@ -302,7 +302,9 @@ class database extends \cenozo\base_object
    */
   public function column_exists( $table_name, $column_name )
   {
-    return array_key_exists( $table_name, $this->tables ) &&
+    return is_string( $table_name ) &&
+           is_string( $column_name ) &&
+           array_key_exists( $table_name, $this->tables ) &&
            array_key_exists( $column_name, $this->tables[$table_name]['columns'] );
   }
 
