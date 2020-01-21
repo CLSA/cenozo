@@ -41,18 +41,22 @@ class module extends \cenozo\service\module
       $survey_table = sprintf( '( %s ) AS survey', implode( $survey_table_array, ' UNION ' ) );
       $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
 
-      /*
       // link to pine qnaire list
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
-      $qnaire_table_array = array();
-      foreach( $cenozo_manager->get( 'qnaire?no_activity=1&select={"column":["id","name"]}' ) as $obj )
-        $qnaire_table_array[] = sprintf( 'SELECT %s id, "%s" name', $obj->id, $obj->name );
-      $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( $qnaire_table_array, ' UNION ' ) );
-      $modifier->left_join( $qnaire_table, 'script.pine_qnaire_id', 'pine_qnaire.id' );
+      $select->add_column( 'survey.title', 'qnaire_title', false ); // the default if the following doesn't work
 
-      $select->add_column( 'IFNULL( survey.title, pine_qnaire.name )', 'qnaire_title', false );
-      */
-      $select->add_column( 'survey.title', 'qnaire_title', false );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      if( $cenozo_manager->exists() )
+      {
+        $qnaire_table_array = array();
+        foreach( $cenozo_manager->get( 'qnaire?no_activity=1&select={"column":["id","name"]}' ) as $obj )
+          $qnaire_table_array[] = sprintf( 'SELECT %s id, "%s" name', $obj->id, $obj->name );
+        if( 0 < count( $qnaire_table_array ) )
+        {
+          $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( $qnaire_table_array, ' UNION ' ) );
+          $modifier->left_join( $qnaire_table, 'script.pine_qnaire_id', 'pine_qnaire.id' );
+          $select->add_column( 'IFNULL( survey.title, pine_qnaire.name )', 'qnaire_title', false );
+        }
+      }
     }
 
     $db_participant = NULL;

@@ -31,6 +31,16 @@ class cenozo_manager extends \cenozo\base_object
   }
 
   /**
+   * Determines whether the application exists
+   * @return boolean
+   * @access public
+   */
+  public function exists()
+  {
+    return !is_null( $this->db_application );
+  }
+
+  /**
    * Sends a curl GET request to the cenozo application
    * 
    * @param string $api_path The internal cenozo path (not including base url)
@@ -77,6 +87,8 @@ class cenozo_manager extends \cenozo\base_object
    */
   private function send( $api_path, $method = 'GET', $data = NULL )
   {
+    if( !$this->exists() ) return NULL;
+
     $util_class_name = lib::get_class_name( 'util' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $user = $setting_manager->get_setting( 'utility', 'username' );
