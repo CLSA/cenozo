@@ -5,6 +5,7 @@ SOURCE phone.sql
 SOURCE script.sql
 SOURCE export_file.sql
 SOURCE participant.sql
+SOURCE consent.sql
 
 SOURCE update_version_number.sql
 
