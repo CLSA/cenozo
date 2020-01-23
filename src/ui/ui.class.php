@@ -124,9 +124,10 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
-      'jurisdiction', 'language', 'overview', 'participant', 'phone', 'proxy', 'proxy_type','quota', 'region',
-      'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result',
-      'site', 'source', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
+      'jurisdiction', 'language', 'overview', 'mail', 'participant', 'phone', 'proxy', 'proxy_type','quota',
+      'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
+      'search_result', 'site', 'source', 'study_phase', 'system_message', 'trace', 'trace_type', 'user',
+      'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -312,6 +313,7 @@ class ui extends \cenozo\base_object
         if( $use_interview_module ) $module->add_child( 'interview' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
+        $module->add_child( 'mail' );
         $module->add_child( 'hold' );
         $module->add_child( 'trace' );
         $module->add_child( 'proxy' );
