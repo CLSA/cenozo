@@ -14,7 +14,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
     name: {
       singular: 'email',
       plural: 'emails',
-      possessive: 'email\''
+      possessive: 'email\'s'
     },
     columnList: {
       uid: {
@@ -56,13 +56,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
       isConstant: function( $state, model ) {
         // TODO: make constant when viewing and sent is not null
         return 'mail' != model.getSubjectFromState() || 'view' == model.getActionFromState();
-      }
-    },
-    title: {
-      title: 'Title',
-      type: 'string',
-      isConstant: function( $state, model ) {
-        return 'view' == model.getActionFromState() && null != model.viewModel.record.sent_datetime;
       }
     },
     from_name: {
