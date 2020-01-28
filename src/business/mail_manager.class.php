@@ -28,19 +28,6 @@ class mail_manager extends \cenozo\base_object
   }
 
   /**
-   * Sets the reply-to of the mail
-   * 
-   * @param string $address The email address (DO NOT include angle brackets <>)
-   * @param string $name The name (may be NULL if no name is required)
-   */
-  public function reply_to( $address, $name = NULL )
-  {
-    $reply_to = static::get_email( array( 'name' => $name, 'address' => $address ) );
-    if( is_null( $from ) ) log::warning( sprintf( 'Tried to set email "Reply-To" field to invalid address: "%s"', $address ) );
-    $this->reply_to_email = $reply_to;
-  }
-
-  /**
    * Sets the mail's list of recipients
    * 
    * This will replace any existing emails with the list provided
@@ -111,6 +98,8 @@ class mail_manager extends \cenozo\base_object
 
     // process the "from" email
     $from = $this->from_email;
+
+    // if we have no from then use the default from and reply-to addresses
     if( is_null( $from ) )
     {
       // if there is no "from" email then use the default
@@ -120,20 +109,8 @@ class mail_manager extends \cenozo\base_object
       );
     }
     $headers[] = is_null( $from['name'] )
-               ? sprintf( 'From: %s', $from['address'] )
-               : sprintf( 'From: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $from['name'] ), $from['address'] );
-
-    // include the reply-to argument
-    if( !is_null( $this->reply_to_email ) )
-    {
-      $headers[] = is_null( $this->reply_to_email['name'] )
-                 ? sprintf( 'Reply-To: %s', $this->reply_to_email['address'] )
-                 : sprintf(
-                     'Reply-To: %s <%s>',
-                     iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->reply_to_email['name'] ),
-                     $this->reply_to_email['address']
-                   );
-    }
+               ? sprintf( 'Reply-To: %s', $from['address'] )
+               : sprintf( 'Reply-To: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $from['name'] ), $from['address'] );
 
     // process the "to" email list
     $to_list = array();
@@ -245,11 +222,6 @@ class mail_manager extends \cenozo\base_object
    * The email that the mail is from
    */
   protected $from_email = NULL;
-
-  /**
-   * The reply-to address to include in the email message
-   */
-  protected $reply_to_email = NULL;
 
   /**
    * The list of recipients to address the mail to
