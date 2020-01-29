@@ -66,7 +66,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       }
     },
     from_address: {
-      title: 'From address',
+      title: 'From Address',
       type: 'string',
       format: 'email',
       help: 'Must be in the format "account@domain.name".',
@@ -82,7 +82,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       }
     },
     to_address: {
-      title: 'To',
+      title: 'To Address',
       type: 'string',
       format: 'email',
       help: 'Must be in the format "account@domain.name".',
@@ -91,7 +91,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       }
     },
     cc_address: {
-      title: 'CC',
+      title: 'Carbon Copy (CC)',
       type: 'string',
       help: 'May be a comma-delimited list of email addresses in the format "account@domain.name".',
       isConstant: function( $state, model ) {
@@ -99,7 +99,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       }
     },
     bcc_address: {
-      title: 'BCC',
+      title: 'Blind Carbon Copy (BCC)',
       type: 'string',
       help: 'May be a comma-delimited list of email addresses in the format "account@domain.name".',
       isConstant: function( $state, model ) {
