@@ -142,7 +142,8 @@ define( [ 'trace' ].reduce( function( list, name ) {
     },
     note: {
       title: 'Note',
-      type: 'text'
+      type: 'text',
+      help: 'Notes are for internal use only. Participants will not see this note.'
     }
   } );
 
