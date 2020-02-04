@@ -34,7 +34,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
         type: 'boolean'
       },
       title: {
-        title: 'Title'
+        title: 'Subject'
       }
     },
     defaultOrder: {
@@ -127,7 +127,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       isConstant: true
     },
     title: {
-      title: 'Title',
+      title: 'Subject',
       type: 'string',
       isConstant: function( $state, model ) {
         return 'view' == model.getActionFromState() && null != model.viewModel.record.sent_datetime;
