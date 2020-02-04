@@ -6510,7 +6510,8 @@ cenozo.service( 'CnModalMessageFactory', [
         closeText: 'Close',
         error: false,
         block: false,
-        print: false
+        print: false,
+        html: false
       } );
       angular.extend( this, params );
 

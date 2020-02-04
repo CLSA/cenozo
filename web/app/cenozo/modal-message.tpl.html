@@ -3,7 +3,8 @@
     <h4 class="modal-title">{{ model.title }}</h4>
   </div>
   <div class="modal-body allow-select" ng-class="{ 'text-danger': error }">
-    <span style="white-space: pre-wrap;">{{ model.message }}</span>
+    <span ng-if="!model.html" style="white-space: pre-wrap;">{{ model.message }}</span>
+    <span ng-if="model.html" ng-bind-html="model.message"></span>
     <small ng-if="small" style="white-space: pre-wrap;"><br>{{ model.small }}</small>
   </div>
   <div class="modal-footer bg-info" ng-if="!block">
