@@ -14,6 +14,13 @@ use cenozo\lib, cenozo\log;
 class mail_manager extends \cenozo\base_object
 {
   /**
+   * Defines whether the mail should be encoded as HTML
+   * 
+   * @param boolean $enabled
+   */
+  public function set_html( $enabled ) { $this->html = $enabled; }
+
+  /**
    * Set who the mail is from (if not defined then the default from email address will be used (from settings)
    * 
    * @param string $address The email address (DO NOT include angle brackets <>)
@@ -83,7 +90,19 @@ class mail_manager extends \cenozo\base_object
   /**
    * Sets the body of the mail
    */
-  public function set_body( $body ) { $this->body = $body; }
+  public function set_body( $body )
+  {
+    $db_application = lib::create( 'business\session' )->get_application();
+
+    $this->body = $body;
+
+    // add the application's mail header/footer
+    if( !is_null( $db_application->mail_header ) ) $this->body = sprintf( "%s\n%s", $db_application->mail_header, $this->body );
+    if( !is_null( $db_application->mail_footer ) ) $this->body = sprintf( "%s\n%s", $this->body, $db_application->mail_footer );
+
+    // if the body contains the <html> tag then assume this is an html encoded email
+    if( false !== strpos( $this->body, '<html>' ) ) $this->html = true;
+  }
 
   /**
    * Sends the email to the provided recipient(s)
@@ -92,6 +111,13 @@ class mail_manager extends \cenozo\base_object
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $headers = array();
+
+    // define html headers if requested
+    if( $this->html )
+    {
+      $headers[] = 'MIME-Version: 1.0';
+      $headers[] = 'Content-type: text/html; charset=iso-8859-1';
+    }
 
     // validate mandatory fields
     if( 0 == count( $this->to_list ) || is_null( $this->title ) || is_null( $this->body ) ) return false;
@@ -217,6 +243,11 @@ class mail_manager extends \cenozo\base_object
 
     return $email;
   }
+
+  /**
+   * Whether to encode the mail as HTML
+   */
+  protected $html = false;
 
   /**
    * The email that the mail is from

@@ -87,6 +87,16 @@ define( function() {
       type: 'text',
       help: 'A message which is added after the login box.  This text may contain HTML markup.'
     },
+    mail_header: {
+      title: 'Mail Header',
+      type: 'text',
+      help: 'A header which is added to all emails sent out by the application.  This text may contain HTML markup.'
+    },
+    mail_footer: {
+      title: 'Mail Footer',
+      type: 'text',
+      help: 'A footer which is added to all emails sent out by the application.  This text may contain HTML markup.'
+    },
     country: {
       title: 'Country',
       type: 'string'
