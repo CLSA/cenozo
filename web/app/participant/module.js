@@ -658,6 +658,29 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       }
     },
 
+    Mail: {
+      active: true,
+      framework: true,
+      promise: function( historyList, $state, CnHttpFactory ) {
+        return CnHttpFactory.instance( {
+          path: 'participant/' + $state.params.identifier + '/mail',
+          data: {
+            select: { column: [ 'sent_datetime', 'title', 'note' ] },
+            modifier: { where: { column: 'sent_datetime', operator: '!=', value: null } }
+          }
+        } ).query().then( function( response ) {
+          response.data.forEach( function( item ) {
+            historyList.push( {
+              datetime: item.sent_datetime,
+              category: 'Mail',
+              title: 'sent "' + item.title + '"',
+              description: item.note
+            } );
+          } );
+        } );
+      }
+    },
+
     Note: {
       active: true,
       framework: true,
