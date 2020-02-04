@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS mail (
   note TEXT NULL DEFAULT NULL,
   PRIMARY KEY (id),
   INDEX fk_participant_id (participant_id ASC),
+  UNIQUE INDEX uq_participant_id_scheduled_datetime (participant_id ASC, schedule_datetime ASC),
   CONSTRAINT fk_mail_participant_id
     FOREIGN KEY (participant_id)
     REFERENCES participant (id)
