@@ -50,7 +50,7 @@ class mail extends record
         foreach( explode( ',', $this->cc_address ) as $address ) $mail_manager->cc( trim( $address ) );
       if( !is_null( $this->bcc_address ) )
         foreach( explode( ',', $this->bcc_address ) as $address ) $mail_manager->bcc( trim( $address ) );
-      $mail_manager->set_title( $this->title );
+      $mail_manager->set_subject( $this->subject );
       $mail_manager->set_body( $this->body );
       
       $this->sent = $setting_manager->get_setting( 'mail', 'enabled' ) && $mail_manager->send();

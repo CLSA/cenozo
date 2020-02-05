@@ -83,9 +83,9 @@ class mail_manager extends \cenozo\base_object
   public function bcc( $address, $name = NULL ) { $this->add_email( 'bcc', $address, $name ); }
 
   /**
-   * Sets the title of the mail
+   * Sets the subject of the mail
    */
-  public function set_title( $title ) { $this->title = $title; }
+  public function set_subject( $subject ) { $this->subject = $subject; }
 
   /**
    * Sets the body of the mail
@@ -120,7 +120,7 @@ class mail_manager extends \cenozo\base_object
     }
 
     // validate mandatory fields
-    if( 0 == count( $this->to_list ) || is_null( $this->title ) || is_null( $this->body ) ) return false;
+    if( 0 == count( $this->to_list ) || is_null( $this->subject ) || is_null( $this->body ) ) return false;
 
     // process the "from" email
     $from = $this->from_email;
@@ -167,7 +167,7 @@ class mail_manager extends \cenozo\base_object
     {
       log::info( sprintf(
         'Request to send mail "%s" to "%s" not being sent since the mail system is disabled.',
-        $this->title,
+        $this->subject,
         implode( ', ', $to_list )
       ) );
 
@@ -176,7 +176,7 @@ class mail_manager extends \cenozo\base_object
 
     return mail(
       implode( ', ', $to_list ),
-      iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->title ),
+      iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->subject ),
       iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->body ),
       implode( "\r\n", $headers )
     );
@@ -270,9 +270,9 @@ class mail_manager extends \cenozo\base_object
   protected $bcc_list = array();
 
   /**
-   * The title of the mail
+   * The subject of the mail
    */
-  protected $title = NULL;
+  protected $subject = NULL;
 
   /**
    * the body of the mail

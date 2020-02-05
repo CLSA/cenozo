@@ -665,7 +665,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         return CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/mail',
           data: {
-            select: { column: [ 'sent_datetime', 'title', 'note' ] },
+            select: { column: [ 'sent_datetime', 'subject', 'note' ] },
             modifier: { where: { column: 'sent_datetime', operator: '!=', value: null } }
           }
         } ).query().then( function( response ) {
@@ -673,7 +673,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             historyList.push( {
               datetime: item.sent_datetime,
               category: 'Mail',
-              title: 'sent "' + item.title + '"',
+              title: 'sent "' + item.subject + '"',
               description: item.note
             } );
           } );

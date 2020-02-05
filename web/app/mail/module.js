@@ -33,7 +33,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
         title: 'Sent',
         type: 'boolean'
       },
-      title: {
+      subject: {
         title: 'Subject'
       }
     },
@@ -54,7 +54,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
         where: [ 'participant.first_name', 'participant.last_name', 'uid' ]
       },
       isConstant: function( $state, model ) {
-        // TODO: make constant when viewing and sent is not null
         return 'mail' != model.getSubjectFromState() || 'view' == model.getActionFromState();
       }
     },
@@ -126,7 +125,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       isExcluded: 'add',
       isConstant: true
     },
-    title: {
+    subject: {
       title: 'Subject',
       type: 'string',
       isConstant: function( $state, model ) {
