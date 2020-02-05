@@ -97,7 +97,14 @@ class mail_manager extends \cenozo\base_object
     $this->body = $body;
 
     // add the application's mail header/footer
-    if( !is_null( $db_application->mail_header ) ) $this->body = sprintf( "%s\n%s", $db_application->mail_header, $this->body );
+    if( !is_null( $db_application->mail_header ) )
+    {
+      // if the header has html but the body doesn't then convert line breaks to <br>s
+      if( false !== strpos( $db_application->mail_header, '<html>' ) && 0 == preg_match( '/<[^>]+>/', $this->body ) )
+        $this->body = preg_replace( '/\r?\n/', '<br>$0', $this->body );
+      $this->body = sprintf( "%s\n%s", $db_application->mail_header, $this->body );
+    }
+
     if( !is_null( $db_application->mail_footer ) ) $this->body = sprintf( "%s\n%s", $this->body, $db_application->mail_footer );
 
     // if the body contains the <html> tag then assume this is an html encoded email
