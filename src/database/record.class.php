@@ -466,6 +466,25 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * Get the passive column value
+   * 
+   * This method should only be used when you need to know the old, transient column value after
+   * __set() was called but before save() is called to write it to the database.
+   * @param string $column_name The name of the column
+   * @return mixed
+   * @throws exception\argument
+   * @access protected
+   */
+  protected function get_passive_column_value( $column_name )
+  {
+    // make sure the column exists
+    if( !static::column_exists( $column_name ) )
+      throw lib::create( 'exception\argument', 'column_name', $column_name, __METHOD__ );
+
+    return $this->passive_column_values[$column_name];
+  }
+
+  /**
    * Returns all column values in the record as an associative array
    * 
    * @param database\select $select Defines which columns to return
