@@ -87,6 +87,16 @@ define( function() {
       type: 'text',
       help: 'A message which is added after the login box.  This text may contain HTML markup.'
     },
+    mail_name: {
+      title: 'Mail Name',
+      type: 'string',
+      help: 'The default value for the "From Name" field when sending emails.'
+    },
+    mail_address: {
+      title: 'Mail Address',
+      type: 'string',
+      help: 'The default value for the "From Address" field when sending emails.'
+    },
     mail_header: {
       title: 'Mail Header',
       type: 'text',

@@ -58,7 +58,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       }
     },
     from_name: {
-      title: 'From name',
+      title: 'From Name',
       type: 'string',
       isConstant: function( $state, model ) {
         return 'view' == model.getActionFromState() && null != model.viewModel.record.sent_datetime;
@@ -74,7 +74,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       }
     },
     to_name: {
-      title: 'To name',
+      title: 'To Name',
       type: 'string',
       isConstant: function( $state, model ) {
         return 'view' == model.getActionFromState() && null != model.viewModel.record.sent_datetime;
@@ -198,8 +198,8 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnMailAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
+    'CnBaseAddFactory', 'CnHttpFactory', '$q',
+    function( CnBaseAddFactory, CnHttpFactory, $q ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -207,15 +207,25 @@ define( [ 'trace' ].reduce( function( list, name ) {
         this.onNew = function( record ) {
           return this.$$onNew( record ).then( function() {
             var parent = self.parentModel.getParentIdentifier();
-            return CnHttpFactory.instance( {
-              path: parent.subject + '/' + parent.identifier,
-              data: { select: { column: [ 'honorific', 'first_name', 'other_name', 'last_name', 'email' ] } }
-            } ).get().then( function( response ) {
-              record.to_name = response.data.honorific + ' ' + response.data.first_name;
-              if( response.data.other_name ) record.to_name += ' (' + response.data.other_name + ')';
-              record.to_name += ' ' + response.data.last_name;
-              record.to_address = response.data.email;
-            } );
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'application/0',
+                data: { select: { column: [ 'mail_name', 'mail_address' ] } }
+              } ).get().then( function( response ) {
+                record.from_name = response.data.mail_name;
+                record.from_address = response.data.mail_address;
+              } ),
+
+              CnHttpFactory.instance( {
+                path: parent.subject + '/' + parent.identifier,
+                data: { select: { column: [ 'honorific', 'first_name', 'other_name', 'last_name', 'email' ] } }
+              } ).get().then( function( response ) {
+                record.to_name = response.data.honorific + ' ' + response.data.first_name;
+                if( response.data.other_name ) record.to_name += ' (' + response.data.other_name + ')';
+                record.to_name += ' ' + response.data.last_name;
+                record.to_address = response.data.email;
+              } )
+            ] );
           } );
         };
       };
