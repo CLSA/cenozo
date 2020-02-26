@@ -244,15 +244,15 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnMailViewFactory', [
-    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
-    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
+    'CnBaseViewFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+    function( CnBaseViewFactory, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
         this.preview = function() {
           return CnHttpFactory.instance( {
-            path: 'application/' + CnSession.application.id,
+            path: 'application/0',
             data: { select: { column: [ 'mail_header', 'mail_footer' ] } }
           } ).get().then( function( response ) {
             var body = self.record.body;
