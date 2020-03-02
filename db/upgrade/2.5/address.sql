@@ -1,3 +1,11 @@
+SELECT "Adding default value to timezone_offset column in address table" AS "";
+
+ALTER TABLE address MODIFY timezone_offset FLOAT NOT NULL DEFAULT 0;
+
+SELECT "Adding default value to daylight_savings column in address table" AS "";
+
+ALTER TABLE address MODIFY daylight_savings TINYINT(1) NOT NULL DEFAULT 0;
+
 SELECT "Fixing bugs in address triggers" AS "";
 
 DELIMITER $$
