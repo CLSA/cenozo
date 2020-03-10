@@ -108,6 +108,41 @@ class opal_manager extends \cenozo\singleton
   }
 
   /**
+   * Returns the number of records in a table or view
+   * 
+   * @param string $datasource The datasource to get a value from
+   * @param string $table The table or view to get the values from
+   * @return integer
+   * @throws exception\runtime
+   * @access public
+   */
+  public function count( $datasource, $table )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $arguments = array(
+      'datasource' => $datasource,
+      'table' => $table
+    );
+
+    $object = NULL;
+    $variables = NULL;
+
+    $arguments['counts'] = 'true';
+    $response = $this->send( $arguments );
+
+    $object = $util_class_name::json_decode( $response );
+    if( !is_object( $object ) || !property_exists( $object, 'valueSetCount' ) )
+    {
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Unrecognized response from Opal service for datasource "%s" and table "%s"', $datasource, $table ),
+        __METHOD__ );
+    }
+
+    return $object->valueSetCount;
+  }
+
+  /**
    * Returns all values in a table or view
    * 
    * @param string $datasource The datasource to get a value from
@@ -148,7 +183,7 @@ class opal_manager extends \cenozo\singleton
           sprintf( 'Unrecognized response from Opal service for datasource "%s" and table "%s"', $datasource, $table ),
           __METHOD__ );
       }
-      
+
       $variables = $object->variables;
       if( property_exists( $object, 'valueSets' ) ) $valueSets = array_merge( $valueSets, $object->valueSets );
 
@@ -331,7 +366,7 @@ class opal_manager extends \cenozo\singleton
       $postfix = array();
       foreach( $arguments as $key => $value )
       {
-        if( in_array( $key, array( 'offset', 'limit' ) ) ) $postfix[] = sprintf( '%s=%s', $key, $value );
+        if( in_array( $key, array( 'counts', 'offset', 'limit' ) ) ) $postfix[] = sprintf( '%s=%s', $key, $value );
         else $url .= is_null( $value ) ? sprintf( '/%s', $key ) : sprintf( '/%s/%s', $key, rawurlencode( $value ) );
       }
 
