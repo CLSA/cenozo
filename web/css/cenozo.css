@@ -479,3 +479,4 @@ cn-slider div.bubble.limit, [cn-slider] div.bubble.limit { color: #777; }
 }
 
 .color-red, label.color-red, input.color-red, textarea.color-red, label.color-red > i { color: red; border-color: red; }
+.max-width-full { max-width: 100% }
