@@ -700,4 +700,46 @@ class util
 
     return iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $encoded_data );
   }
+
+  /**
+   * Converts raw data from the database into CSV format
+   * 
+   * This method will alter the data including:
+   *   convert datetime formats
+   *   converts timezones
+   * @param database\user $db_user Which user to use when determining datetime formats
+   * @return string (with newlines)
+   * @static
+   * @access public
+   */
+  public static function convert_date_to_language( $date_string, $lang = 'en' )
+  {
+    if( 'fr' == $lang )
+    {
+      $date_string = str_replace( ' at ', ' à ', $date_string );
+
+      $date_string = str_replace( 'Monday', 'lundi', $date_string );
+      $date_string = str_replace( 'Tuesday', 'mardi', $date_string );
+      $date_string = str_replace( 'Wednesday', 'mercredi', $date_string );
+      $date_string = str_replace( 'Thursday', 'jeudi', $date_string );
+      $date_string = str_replace( 'Friday', 'vendredi', $date_string );
+      $date_string = str_replace( 'Saturday', 'samedi', $date_string );
+      $date_string = str_replace( 'Sunday', 'dimanche', $date_string );
+
+      $date_string = str_replace( 'January', 'janvier', $date_string );
+      $date_string = str_replace( 'February', 'février', $date_string );
+      $date_string = str_replace( 'March', 'mars', $date_string );
+      $date_string = str_replace( 'April', 'avril', $date_string );
+      $date_string = str_replace( 'May', 'mai', $date_string );
+      $date_string = str_replace( 'June', 'juin', $date_string );
+      $date_string = str_replace( 'July', 'juillet', $date_string );
+      $date_string = str_replace( 'August', 'août', $date_string );
+      $date_string = str_replace( 'September', 'septembre', $date_string );
+      $date_string = str_replace( 'October', 'octobre', $date_string );
+      $date_string = str_replace( 'November', 'novembre', $date_string );
+      $date_string = str_replace( 'December', 'décembre', $date_string );
+    }
+
+    return $date_string;
+  }
 }
