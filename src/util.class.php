@@ -554,13 +554,14 @@ class util
   /**
    * Encodes any variable/object/array into a json string
    * @param mixed $arg
+   * @params bitmask $options See PHP's json_encode docs for more details
    * @return string
    * @static
    * @access public
    */
-  public static function json_encode( $arg )
+  public static function json_encode( $arg, $options = 0 )
   {
-    return json_encode( self::utf8_encode( $arg ) );
+    return json_encode( self::utf8_encode( $arg ), $options );
   }
 
   /**
