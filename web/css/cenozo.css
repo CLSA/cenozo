@@ -7,6 +7,7 @@ option[disabled="disabled"] { color: #ccc; }
 blockquote { font-size: 100%; }
 .larger { font-size: 120% }
 input.larger { height: 38px }
+select.larger { height: 38px }
 a { text-decoration: none !important; }
 iframe { padding: 0px; margin: 0px; border: 0px; }
 sup { font-size: 110%; }
