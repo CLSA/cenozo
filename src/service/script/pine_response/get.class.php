@@ -30,7 +30,7 @@ class get extends \cenozo\service\get
         try
         {
           $response = $cenozo_manager->get( sprintf(
-            'qnaire/%d/response/participant_id=%d?no_activity=1&select={"column":["token"]}',
+            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
             $db_script->pine_qnaire_id,
             $db_participant->id
           ) );
@@ -40,15 +40,15 @@ class get extends \cenozo\service\get
         {
           if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
 
-          // 404 means the response doesn't exist yet, so create it
+          // 404 means the respondent doesn't exist yet, so create it
           $cenozo_manager->post(
-            sprintf( 'qnaire/%d/response', $db_script->pine_qnaire_id ),
+            sprintf( 'qnaire/%d/respondent?no_mail=1', $db_script->pine_qnaire_id ),
             array( 'participant_id' => $db_participant->id )
           );
 
           // now get the token which was just created
           $response = $cenozo_manager->get( sprintf(
-            'qnaire/%d/response/participant_id=%d?no_activity=1&select={"column":["token"]}',
+            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
             $db_script->pine_qnaire_id,
             $db_participant->id
           ) );

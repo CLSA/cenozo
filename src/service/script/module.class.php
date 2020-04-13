@@ -115,7 +115,7 @@ class module extends \cenozo\service\module
       $db_pine_application = $application_class_name::get_unique_record( 'name', 'pine' );
       $select->add_column(
         sprintf(
-          'IF( pine_qnaire_id IS NOT NULL, "%s/response/run/", CONCAT( "%s/index.php/", script.sid ) )',
+          'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", CONCAT( "%s/index.php/", script.sid ) )',
           is_object( $db_pine_application ) ? $db_pine_application->url : '',
           LIMESURVEY_URL
         ),
