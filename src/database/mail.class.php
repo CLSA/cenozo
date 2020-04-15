@@ -53,7 +53,7 @@ class mail extends record
       $mail_manager->set_subject( $this->subject );
       $mail_manager->set_body( $this->body );
       
-      $this->sent = $setting_manager->get_setting( 'mail', 'enabled' ) && $mail_manager->send();
+      $this->sent = $mail_manager->send(); // this won't send if the mail manager is disabled
       $this->sent_datetime = $util_class_name::get_datetime_object();
       $this->save();
     }

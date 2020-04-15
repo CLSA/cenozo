@@ -141,34 +141,13 @@ class mail_manager extends \cenozo\base_object
         'name' => $setting_manager->get_setting( 'mail', 'default_from_name' )
       );
     }
-    $headers[] = is_null( $from['name'] )
-               ? sprintf( 'Reply-To: %s', $from['address'] )
-               : sprintf( 'Reply-To: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $from['name'] ), $from['address'] );
+    $headers[] = sprintf( 'Reply-To: %s', static::encode_email( $from ) );
 
-    // process the "to" email list
+    // process the "to", "cc" and "bcc" email lists
     $to_list = array();
-    foreach( $this->to_list as $email )
-    {
-      $to_list[] = is_null( $email['name'] )
-                 ? sprintf( '%s', $email['address'] )
-                 : sprintf( '%s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $email['address'] );
-    }
-
-    // process the "cc" email list
-    foreach( $this->cc_list as $email )
-    {
-      $headers[] = is_null( $email['name'] )
-                 ? sprintf( 'Cc: %s', $email['address'] )
-                 : sprintf( 'Cc: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $email['address'] );
-    }
-
-    // process the "bcc" email list
-    foreach( $this->bcc_list as $email )
-    {
-      $headers[] = is_null( $email['name'] )
-                 ? sprintf( 'Bcc: %s', $email['address'] )
-                 : sprintf( 'Bcc: %s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $email['address'] );
-    }
+    foreach( $this->to_list as $email ) $to_list[] = static::encode_email( $email );
+    foreach( $this->cc_list as $email ) $headers[] = sprintf( 'Cc: %s', static::encode_email( $email ) );
+    foreach( $this->bcc_list as $email ) $headers[] = sprintf( 'Bcc: %s', static::encode_email( $email ) );
 
     if( !$setting_manager->get_setting( 'mail', 'enabled' ) )
     {
@@ -249,6 +228,16 @@ class mail_manager extends \cenozo\base_object
     if( !array_key_exists( 'name', $email ) ) $email['name'] = NULL;
 
     return $email;
+  }
+
+  /**
+   * TODO: document
+   */
+  protected static function encode_email( $email )
+  {
+    $to = mb_encode_mimeheader( $email['address'], 'UTF-8', 'Q' );
+    if( !is_null( $email['name'] ) ) $to = sprintf( '%s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $to );
+    return $to;
   }
 
   /**
