@@ -66,8 +66,8 @@ class script extends record
         $db_event = lib::create( 'database\event' );
         $db_event->participant_id = $db_participant->id;
         $db_event->event_type_id = $this->started_event_type_id;
-        $db_event->site_id = $db_site->id;
-        $db_event->user_id = $db_user->id;
+        if( !is_null( $db_site ) ) $db_event->site_id = $db_site->id;
+        if( !is_null( $db_user ) ) $db_event->user_id = $db_user->id;
         $db_event->datetime = $util_class_name::get_datetime_object( $datetime );
         $db_event->save();
       }
