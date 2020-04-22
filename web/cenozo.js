@@ -1077,8 +1077,10 @@ cenozo.directive( 'cnAutofocus', [
   function( $timeout ) {
     return {
       restrict: 'A',
-      link: function( scope, element ) {
-        $timeout( function() { element[0].focus(); }, 100 );
+      link: function( scope, element, attrs ) {
+        // focus if there is no argument or the argument evaluates to true
+        var focus = '' === attrs.cnAutofocus ? 'true' : attrs.cnAutofocus;
+        if( scope.$eval( focus ) ) $timeout( function() { element[0].focus(); }, 100 );
       }
     };
   }
