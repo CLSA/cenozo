@@ -403,7 +403,7 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
+          return self.$$getMetadata().then( function() {
             return $q.all( [
               CnHttpFactory.instance( {
                 path: 'application_type/name=' + CnSession.application.type + '/role',
