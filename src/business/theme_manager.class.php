@@ -108,22 +108,22 @@ class theme_manager extends \cenozo\singleton
   /**
    * Internal cache of colors generated for get_color()
    * @var array
-   * @access private
+   * @access protected
    */
-  private $theme_color_list = array();
+  protected $theme_color_list = array();
 
   /**
    * The base theme colors.
-   * @access private
+   * @access protected
    */
-  private $base_theme_color = array();
+  protected $base_theme_color = array();
 
   /**
    * A CSS template used when writing the theme.css file
    * @var
-   * @access private
+   * @access protected
    */
-  private $css_template = <<<'CSS'
+  protected $css_template = <<<'CSS'
 /* primary colours */
 a, .text-primary,
 .pagination > li > a,
