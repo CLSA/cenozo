@@ -149,22 +149,17 @@ define( [ 'trace' ].reduce( function( list, name ) {
           $scope.$on( 'cnRecordAdd ready', function( event, data ) {
             cnRecordAddScope = data;
 
-            // add/remove inputs based on whether international is set to true or false
+            // setup the international columns based on the international column's state
             var mainInputGroup = $scope.model.module.inputGroupList.findByProperty( 'title', '' );
-            var checkFunction = cnRecordAddScope.check;
-            cnRecordAddScope.check = function( property ) {
-              // run the original check function first
-              checkFunction( property );
-
-              if( 'international' == property ) {
-                if( cnRecordAddScope.record.international ) {
-                  mainInputGroup.inputList.international_region.isExcluded = function() { return false; };
-                  mainInputGroup.inputList.international_country.isExcluded = function() { return false; };
-                } else {
-                  mainInputGroup.inputList.international_region.isExcluded = function() { return true; };
-                  mainInputGroup.inputList.international_country.isExcluded = function() { return true; };
-                }
-              }
+            mainInputGroup.inputList.international_region.isExcluded = function( $state, model ) {
+              return 'add_address' == model.getActionFromState() ?
+                !cnRecordAddScope.record.international :
+                angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
+            };
+            mainInputGroup.inputList.international_country.isExcluded = function( $state, model ) {
+              return 'add_address' == model.getActionFromState() ?
+                !cnRecordAddScope.record.international :
+                angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
             };
           }, 500 );
         }
@@ -210,17 +205,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
         var traceModel = CnTraceModelFactory.root;
-
-        // make sure that columns are showing as they should when we first create a new address record
-        this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
-            var mainInputGroup = parentModel.module.inputGroupList.findByProperty( 'title', '' );
-            if( mainInputGroup ) {
-              mainInputGroup.inputList.international_region.isExcluded = function() { return true; }
-              mainInputGroup.inputList.international_country.isExcluded = function() { return true; }
-            }
-          } );
-        };
 
         this.onAdd = function( record ) {
           var identifier = this.parentModel.getParentIdentifier();
