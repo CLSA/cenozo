@@ -205,7 +205,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
         CnBaseAddFactory.construct( this, parentModel );
 
         this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
+          return self.$$onNew( record ).then( function() {
             var parent = self.parentModel.getParentIdentifier();
             return $q.all( [
               CnHttpFactory.instance( {
