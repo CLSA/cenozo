@@ -360,6 +360,14 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
+   * Returns the service's path
+   * 
+   * @return string
+   * @access public
+   */
+  public function get_path() { return $this->path; }
+
+  /**
    * Returns the service's method
    * 
    * @return string
