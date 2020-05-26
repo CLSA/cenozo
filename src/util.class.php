@@ -703,19 +703,17 @@ class util
   }
 
   /**
-   * Converts raw data from the database into CSV format
+   * Converts a date to a different language
    * 
-   * This method will alter the data including:
-   *   convert datetime formats
-   *   converts timezones
-   * @param database\user $db_user Which user to use when determining datetime formats
-   * @return string (with newlines)
+   * @param string $date_string The date string to convert
+   * @param database\language $db_language The language to change it to
+   * @return string
    * @static
    * @access public
    */
-  public static function convert_date_to_language( $date_string, $lang = 'en' )
+  public static function convert_datetime_language( $date_string, $db_language )
   {
-    if( 'fr' == $lang )
+    if( 'fr' == $db_language->code )
     {
       $date_string = str_replace( ' at ', ' à ', $date_string );
 
@@ -739,6 +737,19 @@ class util
       $date_string = str_replace( 'October', 'octobre', $date_string );
       $date_string = str_replace( 'November', 'novembre', $date_string );
       $date_string = str_replace( 'December', 'décembre', $date_string );
+
+      $date_string = str_replace( 'PDT', 'HAP', $date_string );
+      $date_string = str_replace( 'MDT', 'HAR', $date_string );
+      $date_string = str_replace( 'CDT', 'HAC', $date_string );
+      $date_string = str_replace( 'EDT', 'HAE', $date_string );
+      $date_string = str_replace( 'ADT', 'HAA', $date_string );
+      $date_string = str_replace( 'NDT', 'HAT', $date_string );
+      $date_string = str_replace( 'PST', 'HNP', $date_string );
+      $date_string = str_replace( 'MST', 'HNR', $date_string );
+      $date_string = str_replace( 'CST', 'HNC', $date_string );
+      $date_string = str_replace( 'EST', 'HNE', $date_string );
+      $date_string = str_replace( 'AST', 'HNA', $date_string );
+      $date_string = str_replace( 'NST', 'HNT', $date_string );
     }
 
     return $date_string;

@@ -161,6 +161,15 @@ class address extends has_rank
   }
 
   /**
+   * Returns the address' timezone as a DateTimeZone object
+   * @access public
+   */
+  public function get_timezone_object()
+  {
+    return new \DateTimeZone( $this->get_timezone_name() );
+  }
+
+  /**
    * The type of record which the record has a rank for.
    * @var string
    * @access protected
