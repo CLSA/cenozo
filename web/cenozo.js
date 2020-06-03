@@ -2070,6 +2070,9 @@ cenozo.directive( 'cnUpload', [
             scope.$apply( function () {
               modelSetter( scope, element[0].files[0] );
               scope.$eval( attrs.cnUpload );
+
+              // emit that the upload is ready
+              scope.$emit( 'cnUpload read', scope );
             } );
           }
           reader.readAsDataURL( element[0].files[0] );
@@ -2792,6 +2795,20 @@ cenozo.filter( 'cnRange', function() {
     max = parseInt( max );
     for( var i = min; i <= max; i++ ) input.push( i );
     return input;
+  };
+} );
+
+/* ######################################################################################################## */
+
+/**
+ * Performs a string replace on the input
+ */
+cenozo.filter( 'cnStrReplace', function () {
+  return function( input, from, to ) {
+    input = input || '';
+    from = from || '';
+    to = to || '';
+    return input.replace( new RegExp( from, 'g' ), to );
   };
 } );
 
