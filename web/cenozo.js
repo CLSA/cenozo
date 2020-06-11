@@ -2841,10 +2841,9 @@ cenozo.filter( 'cnSeconds', [
         var hours = Math.floor( input % (24*60*60) / (60*60) );
         var minutes = Math.floor( input % (60*60) / 60 );
         var seconds = input % 60;
-        output = ( 0 < days ? days + 'd ' : '' ) +
-                 hours + ":" +
-                 minutes.toString().padStart( 2, '0' ) + ':' +
-                 seconds.toString().padStart( 2, '0' );
+        var minStr = angular.isDefined( String.prototype.padStart ) ? minutes.toString().padStart( 2, '0' ) : minutes;
+        var secStr = angular.isDefined( String.prototype.padStart ) ? seconds.toString().padStart( 2, '0' ) : seconds;
+        output = ( 0 < days ? days + 'd ' : '' ) + hours + ":" + minStr + ':' + secStr;
       }
       return output;
     };
