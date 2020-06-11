@@ -35,47 +35,52 @@ class activity extends record
   {
     $util_class_name = lib::get_class_name( 'util' );
 
+    $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_user = $session->get_user();
     $db_site = $session->get_site();
     $db_role = $session->get_role();
 
-    // close all open activity that doesn't match the session's current application/user/site/role
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'application_id', '=', $db_application->id );
-    $modifier->where( 'user_id', '=', $db_user->id );
-    $modifier->where( 'end_datetime', '=', NULL );
-    $modifier->where_bracket( true );
-    $modifier->where( 'site_id', '!=', $db_site->id );
-    $modifier->or_where( 'role_id', '!=', $db_role->id );
-    $modifier->where_bracket( false );
-
-    try
+    // ignore if this is the utility account
+    if( $setting_manager->get_setting( 'utility', 'username' ) != $db_user->name )
     {
-      // the following often causes deadlocks but the are safe to ignore (caught and ignored below)
-      static::db()->execute( sprintf(
-        'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
-        $modifier->get_sql() ), true, true );
-
-      // create a new activity if there isn't already one open
+      // close all open activity that doesn't match the session's current application/user/site/role
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'application_id', '=', $db_application->id );
-      $modifier->where( 'site_id', '=', $db_site->id );
-      $modifier->where( 'role_id', '=', $db_role->id );
+      $modifier->where( 'user_id', '=', $db_user->id );
       $modifier->where( 'end_datetime', '=', NULL );
-      if( 0 == $db_user->get_activity_count( $modifier ) )
+      $modifier->where_bracket( true );
+      $modifier->where( 'site_id', '!=', $db_site->id );
+      $modifier->or_where( 'role_id', '!=', $db_role->id );
+      $modifier->where_bracket( false );
+
+      try
       {
-        $db_activity = new static();
-        $db_activity->application_id = $db_application->id;
-        $db_activity->user_id = $db_user->id;
-        $db_activity->site_id = $db_site->id;
-        $db_activity->role_id = $db_role->id;
-        $db_activity->start_datetime = $util_class_name::get_datetime_object();
-        $db_activity->save();
+        // the following often causes deadlocks but the are safe to ignore (caught and ignored below)
+        static::db()->execute( sprintf(
+          'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
+          $modifier->get_sql() ), true, true );
+
+        // create a new activity if there isn't already one open
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'application_id', '=', $db_application->id );
+        $modifier->where( 'site_id', '=', $db_site->id );
+        $modifier->where( 'role_id', '=', $db_role->id );
+        $modifier->where( 'end_datetime', '=', NULL );
+        if( 0 == $db_user->get_activity_count( $modifier ) )
+        {
+          $db_activity = new static();
+          $db_activity->application_id = $db_application->id;
+          $db_activity->user_id = $db_user->id;
+          $db_activity->site_id = $db_site->id;
+          $db_activity->role_id = $db_role->id;
+          $db_activity->start_datetime = $util_class_name::get_datetime_object();
+          $db_activity->save();
+        }
       }
+      catch( \cenozo\exception\notice $e ) {} // ignore notices
     }
-    catch( \cenozo\exception\notice $e ) {} // ignore notices
   }
 
   /**
@@ -90,6 +95,7 @@ class activity extends record
    */
   public static function close_lapsed( $db_user = NULL )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
     $db_application = lib::create( 'business\session' )->get_application();
 
     $affected_rows = 0;
@@ -106,7 +112,7 @@ class activity extends record
         "\n".'SET end_datetime = datetime %s',
         $modifier->get_sql() ) );
     }
-    else
+    else if( $setting_manager->get_setting( 'utility', 'username' ) != $db_user->name )
     {
       // close all open activity by this user
       $modifier = lib::create( 'database\modifier' );
