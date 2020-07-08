@@ -112,10 +112,27 @@ class database extends \cenozo\base_object
         $this->tables[$table_name]['columns'][$column_name] =
           array( 'data_type' => $data_type,
                  'type' => $column_type,
+                 'json' => false,
                  'default' => $column_default,
                  'max_length' => $character_maximum_length,
                  'required' => $is_nullable,
                  'key' => $column_key );
+      }
+
+      $check_mod = lib::create( 'database\modifier' );
+      $check_mod->where( 'constraint_schema', 'IN', $schema_list, false );
+
+      $rows = $this->get_all(
+        sprintf( 'SELECT table_name, constraint_name AS column_name '."\n".
+                 'FROM information_schema.check_constraints %s',
+                 $check_mod->get_sql() ),
+        false ); // do not add table names
+
+      // record the check constraints
+      foreach( $rows as $row )
+      {
+        extract( $row ); // defines $table_name, $constraint_name and $column_name
+        $this->tables[$table_name]['columns'][$column_name]['json'] = true;
       }
 
       $constraint_mod = lib::create( 'database\modifier' );
@@ -368,6 +385,24 @@ class database extends \cenozo\base_object
                  $column_name ), __METHOD__ );
 
     return $this->tables[$table_name]['columns'][$column_name]['data_type'];
+  }
+
+  /**
+   * Returns whether a column is being check constrained into JSON format
+   * @param string $table_name The name of the table to check for.
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return boolean
+   * @access public
+   */
+  public function get_column_json( $table_name, $column_name )
+  {
+    if( !$this->column_exists( $table_name, $column_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Tried to get json status for "%s.%s" which doesn\'t exist.',
+                 $table_name,
+                 $column_name ), __METHOD__ );
+
+    return $this->tables[$table_name]['columns'][$column_name]['json'];
   }
 
   /**
@@ -750,10 +785,11 @@ class database extends \cenozo\base_object
    * The returned value will be put in double quotes unless the input is null in which case NULL
    * is returned.
    * @param string $string The string to format for use in a query.
+   * @param boolean $json Whether the string being encoded is in JSON format
    * @return string
    * @access public
    */
-  public function format_string( $string )
+  public function format_string( $string, $json = false )
   {
     // NULL values are returned as a MySQL NULL value
     if( is_null( $string ) ) return 'NULL';
@@ -763,8 +799,9 @@ class database extends \cenozo\base_object
 
     // trim whitespace from the begining and end of the string and replace unusual characters
     if( is_string( $string ) ) $string = trim( str_replace(
-      array( ' ', '`', '“', "’'", '¸', '–' ),
-      array( ' ', "'", '"', '"', ',', '-' ),
+      array( ' ', '`', '“', '”', "’'", '¸', '–' ),
+      // note that when converting double quotes in a JSON string they must be escaped by two backslashes
+      array( ' ', "'", $json ? '\\"' : '"', $json ? '\\"' : '"', $json ? '\\"' : '"', ',', '-' ),
       $string
     ) );
 
