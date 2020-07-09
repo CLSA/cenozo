@@ -119,20 +119,27 @@ class database extends \cenozo\base_object
                  'key' => $column_key );
       }
 
-      $check_mod = lib::create( 'database\modifier' );
-      $check_mod->where( 'constraint_schema', 'IN', $schema_list, false );
-
-      $rows = $this->get_all(
-        sprintf( 'SELECT table_name, constraint_name AS column_name '."\n".
-                 'FROM information_schema.check_constraints %s',
-                 $check_mod->get_sql() ),
-        false ); // do not add table names
-
-      // record the check constraints
-      foreach( $rows as $row )
+      if( $this->get_one(
+        'SELECT COUNT(*) '.
+        'FROM information_schema.tables '.
+        'WHERE table_schema = "information_schema" '.
+        'AND table_name = "check_constraints"' ) )
       {
-        extract( $row ); // defines $table_name, $constraint_name and $column_name
-        $this->tables[$table_name]['columns'][$column_name]['json'] = true;
+        $check_mod = lib::create( 'database\modifier' );
+        $check_mod->where( 'constraint_schema', 'IN', $schema_list, false );
+
+        $rows = $this->get_all(
+          sprintf( 'SELECT table_name, constraint_name AS column_name '."\n".
+                   'FROM information_schema.check_constraints %s',
+                   $check_mod->get_sql() ),
+          false ); // do not add table names
+
+        // record the check constraints
+        foreach( $rows as $row )
+        {
+          extract( $row ); // defines $table_name, $constraint_name and $column_name
+          $this->tables[$table_name]['columns'][$column_name]['json'] = true;
+        }
       }
 
       $constraint_mod = lib::create( 'database\modifier' );
