@@ -133,6 +133,16 @@
           maxlength="{{ input.maxLength }}"
           ng-readonly="true === input.isConstant( state, model ) || 'add' == input.isConstant( state, model )"
           ng-required="model.metadata.columnList[input.key].required"></textarea>
+        <div ng-switch-when="file" ng-init="file=model.addModel.fileList.findByProperty( 'key', input.key )">
+          <input
+            type="file"
+            ng-attr-id="{{ input.key }}"
+            name="name"
+            class="form-control"
+            ng-model="file.file"
+            cn-upload="file.getFilename()">
+          </input>
+        </div>
         <div ng-switch-when="days" class="row">
           <div class="col-sm-1" style="width: 14.28%">
             <label class="checkbox" style="left: 20px" for="sunday">

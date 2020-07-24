@@ -203,6 +203,7 @@
                 <button class="btn btn-default pull-right"
                         style="margin-top: -6px"
                         ng-if="model.getEditEnabled() &&
+                               !model.metadata.columnList[input.key].required &&
                                true !== input.isConstant( state, model ) &&
                                'view' !== input.isConstant( state, model )"
                         ng-click="file.remove()">Remove</button>
