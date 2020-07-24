@@ -3348,6 +3348,7 @@ cenozo.factory( 'CnBaseAddFactory', [
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
+        object.fileList = [];
         object.heading = 'Create ' + parentModel.module.name.singular.ucWords();
 
         /**
@@ -3372,13 +3373,22 @@ cenozo.factory( 'CnBaseAddFactory', [
         cenozo.addExtendableFunction( object, 'onAdd', function( record ) {
           var self = this;
           if( !this.parentModel.getAddEnabled() ) throw new Error( 'Calling onAdd() but add is not enabled.' );
+
+          // add uploaded filename details to the record
+          self.fileList.forEach( function( file ) { record[file.key] = file.getFilename(); } );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
           httpObj.onError = function( response ) { self.onAddError( response ); };
+
           return CnHttpFactory.instance( httpObj ).post().then( function( response ) {
             angular.extend( record, {
               id: response.data,
               getIdentifier: function() { return self.parentModel.getIdentifierFromRecord( record ); }
             } );
+
+            self.fileList.forEach( function( file ) {
+              file.upload( self.parentModel.getServiceResourcePath( record.getIdentifier() ) );
+            } );
+
             self.afterAddFunctions.forEach( function( fn ) { fn( record ); } );
           } );
         } );
@@ -3491,6 +3501,42 @@ cenozo.factory( 'CnBaseAddFactory', [
         cenozo.addExtendableFunction( object, 'transitionOnCancel', function() {
           this.parentModel.transitionToLastState();
         } );
+
+        /**
+         * Configures file-type inputs for the add service
+         */
+        cenozo.addExtendableFunction( object, 'configureFileInput', function( key ) {
+          var self = this;
+
+          // replace any existing file details
+          var index = this.fileList.findIndexByProperty( 'key', key );
+          if( null != index ) this.fileList.splice( index, 1 );
+
+          this.fileList.push( {
+            key: key,
+            file: null,
+            uploading: false,
+            getFilename: function() {
+              var obj = this;
+              var data = new FormData();
+              data.append( 'file', obj.file );
+              var fileDetails = data.get( 'file' );
+              return fileDetails.name;
+            },
+            upload: function( path ) {
+              var obj = this;
+              obj.uploading = true;
+
+              // upload the file
+              return CnHttpFactory.instance( {
+                path: path + '?file=' + obj.key,
+                data: obj.file,
+                format: 'unknown'
+              } ).patch().finally( function() { obj.uploading = false; } );
+            }
+          } );
+        } );
+
       }
     };
   }
@@ -4716,7 +4762,6 @@ cenozo.factory( 'CnBaseViewFactory', [
             }
           } );
         } );
-
 
         /**
          * The state transition to execute after clicking the view parent button (may have multiple)
