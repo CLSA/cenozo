@@ -6219,6 +6219,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
       };
 
       // service vars which can be defined by the contructor's params
+      this.locale = 'en';
       this.date = null;
       this.viewingDate = null;
       this.title = 'Title';
@@ -6231,6 +6232,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
       this.minuteStep = 1;
       this.secondStep = 1;
       angular.extend( this, params );
+
+      moment.locale( this.locale );
 
       // service vars/functions which cannot be defined by the constructor's params
 
@@ -6454,6 +6457,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
             templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-datetime.tpl.html' ),
             controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
               $scope.local = self;
+              $scope.weekdayNameList = moment.weekdaysShort();
               $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
               $scope.todayDisabled = !self.isDateAllowed( moment(), 'day' );
               $scope.ok = function() {

@@ -1,6 +1,6 @@
 <form ng-submit="ok()" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">Select a value for {{ local.title }}</h4>
+    <h4 class="modal-title">{{ 'fr' == local.locale ? 'Sélectionner une valeur pour' : 'Select a value for' }} {{ local.title }}</h4>
   </div>
   <div class="modal-body">
     <div>
@@ -30,13 +30,7 @@
               </th>
             </tr>
             <tr ng-if="'day' == local.mode">
-              <th class="text-center"><small>Sun</small></th>
-              <th class="text-center"><small>Mon</small></th>
-              <th class="text-center"><small>Tue</small></th>
-              <th class="text-center"><small>Wed</small></th>
-              <th class="text-center"><small>Thu</small></th>
-              <th class="text-center"><small>Fri</small></th>
-              <th class="text-center"><small>Sat</small></th>
+              <th class="text-center" ng-repeat="weekdayName in weekdayNameList"><small>{{ weekdayName }}</small></th>
             </tr>
           </thead>
           <tbody>
@@ -105,7 +99,7 @@
               type="button"
               class="btn btn-info"
               ng-click="local.select('now')"
-              ng-disabled="nowDisabled">Now</button>
+              ng-disabled="nowDisabled">{{ 'fr' == local.locale ? 'Maintenant' : 'Now' }}</button>
       <button ng-if="'timesecond' != local.pickerType &&
                      'timesecond_notz' != local.pickerType &&
                      'time' != local.pickerType &&
@@ -113,13 +107,13 @@
               type="button"
               class="btn btn-info"
               ng-click="local.select('today')"
-              ng-disabled="todayDisabled">Today</button>
+              ng-disabled="todayDisabled">{{ 'fr' == local.locale ? "Aujourd'hui" : 'Today' }}</button>
       <button ng-if="local.emptyAllowed"
               type="button"
               class="btn btn-warning"
-              ng-click="local.select(null)">Empty</button>
+              ng-click="local.select(null)">{{ 'fr' == local.locale ? "Ne s'applique pas" : 'Empty' }}</button>
     </div>
-    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">{{ 'fr' == local.locale ? 'Annuler' : 'Cancel' }}</button>
     <button type="submit" class="btn btn-primary" ng-autofocus>OK</button>
   </div>
 </form>
