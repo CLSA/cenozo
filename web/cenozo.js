@@ -3505,7 +3505,8 @@ cenozo.factory( 'CnBaseAddFactory', [
         /**
          * Configures file-type inputs for the add service
          */
-        cenozo.addExtendableFunction( object, 'configureFileInput', function( key ) {
+        cenozo.addExtendableFunction( object, 'configureFileInput', function( key, format ) {
+          if( angular.isUndefined( format ) ) format = 'unknown';
           var self = this;
 
           // replace any existing file details
@@ -3531,7 +3532,7 @@ cenozo.factory( 'CnBaseAddFactory', [
               return CnHttpFactory.instance( {
                 path: path + '?file=' + obj.key,
                 data: obj.file,
-                format: 'unknown'
+                format: format
               } ).patch().finally( function() { obj.uploading = false; } );
             }
           } );
@@ -4692,7 +4693,8 @@ cenozo.factory( 'CnBaseViewFactory', [
         /**
          * Configures file-type inputs for the view
          */
-        cenozo.addExtendableFunction( object, 'configureFileInput', function( key ) {
+        cenozo.addExtendableFunction( object, 'configureFileInput', function( key, format ) {
+          if( angular.isUndefined( format ) ) format = 'unknown';
           var self = this;
 
           // replace any existing file details
@@ -4717,7 +4719,7 @@ cenozo.factory( 'CnBaseViewFactory', [
               var obj = this;
               return CnHttpFactory.instance( {
                 path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key,
-                format: 'unknown'
+                format: format
               } ).file();
             },
             remove: function() {
@@ -4748,7 +4750,7 @@ cenozo.factory( 'CnBaseViewFactory', [
                 return CnHttpFactory.instance( {
                   path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key,
                   data: obj.file,
-                  format: 'unknown'
+                  format: format
                 } ).patch()
               } ).then( function() {
                 return obj.updateFileSize().then( function() {
