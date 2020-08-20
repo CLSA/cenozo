@@ -814,7 +814,7 @@ angular.extend( cenozo, {
     var scope = cenozo.getScopeByQuerySelector( '#' + property );
     if( scope ) {
       // fake the innerForm name property if the element is a filename
-      if( property.match( '_filename' ) && angular.isUndefined( scope.$parent.innerForm.name ) ) {
+      if( property.match( 'filename' ) && angular.isUndefined( scope.$parent.innerForm.name ) ) {
         scope.$parent.innerForm.name = {
           $dirty: false,
           $invalid: false,
