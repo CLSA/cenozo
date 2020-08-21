@@ -231,7 +231,9 @@ class mail_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Encodes email addresses in UTF-8 (ensures names and addresses with accents will work)
+   * @param array $email Contains "address" and may contain "name"
+   * @return array
    */
   protected static function encode_email( $email )
   {
