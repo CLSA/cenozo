@@ -263,7 +263,7 @@ class semaphore extends \cenozo\base_object
    * The amount of memory reserved by the shared memory resource
    * @const int
    */
-  const SHARED_MEMORY_SIZE = 512;
+  const SHARED_MEMORY_SIZE = 16384;
 
   /**
    * The index of the process count variable in shared memory
