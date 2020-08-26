@@ -371,7 +371,7 @@ class data_manager extends \cenozo\singleton
       $event_list = $db_participant->get_event_list( NULL, $event_mod );
       if( 0 < count( $event_list ) )
       {
-        if( array_key_exists( $column, $event_list[0] ) )
+        if( !array_key_exists( $column, $event_list[0] ) )
           throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
         $value = $event_list[0][$column];
       }
@@ -543,7 +543,7 @@ class data_manager extends \cenozo\singleton
 
         if( 0 < count( $phone_list ) )
         {
-          if( array_key_exists( $column, $phone_list[0] ) )
+          if( !array_key_exists( $column, $phone_list[0] ) )
             throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
           $value = $phone_list[0][$column];
         }
