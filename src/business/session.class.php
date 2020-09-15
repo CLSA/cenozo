@@ -353,6 +353,16 @@ class session extends \cenozo\singleton
         {
           if( !$this->db_user->active )
           {
+            $utility = $setting_manager->get_setting( 'utility', 'username' );
+            if( $utility == $this->db_user->name )
+            {
+              // show a warning in the log if the utility account has been disabled
+              log::warning( sprintf(
+                'The utility account, "%s", is not active.  Until it has been reactivated the application\'s reports, '.
+                'cron jobs, and other utility functions will not work correctly.',
+                $utility
+              ) );
+            }
             $this->logout();
           }
           else
