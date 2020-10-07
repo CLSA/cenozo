@@ -7232,7 +7232,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
         this.launch = function() {
           return this.deferred.promise.then( function() {
             // launch the script
-            CnSession.scriptWindowHandler = $window.open( self.script.url + self.token.token, 'cenozoScript' );
+            CnSession.scriptWindowHandler = $window.open( self.script.url + self.token.token + '?show_hidden=1', 'cenozoScript' );
           } );
         };
       } else {

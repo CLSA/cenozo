@@ -10,8 +10,8 @@ define( function() {
       possessive: 'hold type\'s'
     },
     columnList: {
-      type: { title: 'Type' },
-      name: { title: 'Name' },
+      type: { column: 'hold_type.type', title: 'Type' },
+      name: { column: 'hold_type.name', title: 'Name' },
       participant_count: {
         title: 'Participants',
         type: 'number'
