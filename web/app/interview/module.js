@@ -48,13 +48,15 @@ define( function() {
     site_id: {
       title: 'Credited Site',
       type: 'enum',
-      help: 'This determines which site is credited with the completed interview.'
+      help: 'This determines which site is credited with the completed interview.',
+      isConstant: function( $state, model ) { return !model.isAdministrator(); }
     },
     start_datetime: {
       column: 'interview.start_datetime',
       title: 'Start Date & Time',
       type: 'datetimesecond',
       max: 'end_datetime',
+      isConstant: function( $state, model ) { return !model.isAdministrator(); },
       help: 'When the first call from the first assignment was made for this interview.'
     },
     end_datetime: {
@@ -63,6 +65,7 @@ define( function() {
       type: 'datetimesecond',
       min: 'start_datetime',
       max: 'now',
+      isConstant: function( $state, model ) { return !model.isAdministrator(); },
       help: 'Will remain blank until the questionnaire is finished.'
     },
     note: {
@@ -132,14 +135,16 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewModelFactory', [
     'CnBaseModelFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
-    'CnHttpFactory', 'CnModalMessageFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseModelFactory, CnInterviewListFactory, CnInterviewViewFactory,
-              CnHttpFactory, CnModalMessageFactory ) {
+             CnSession,  CnHttpFactory, CnModalMessageFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this, root );
+
+        this.isAdministrator = function() { return 'administrator' == CnSession.role.name; }
 
         // Adding an interview is special, instead of transitioning to an add dialog a command can be
         // sent to the server to directly add a new interview
