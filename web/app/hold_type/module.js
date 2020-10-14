@@ -21,7 +21,7 @@ define( function() {
       }
     },
     defaultOrder: {
-      column: 'CONCAT( type, " ", name )',
+      column: 'CONCAT( hold_type.type, " ", hold_type.name )',
       reverse: false
     }
   } );
