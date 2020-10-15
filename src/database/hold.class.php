@@ -51,7 +51,8 @@ class hold extends record
     // only add the hold if the last hold does not agree with the new consent record
     // (withdrawn but accepting or not withdrawn and not accepting)
     $db_last_hold = $db_consent->get_participant()->get_last_hold();
-    $last_is_withdrawn = is_null( $db_last_hold ) ? false : ( false !== strpos( $db_last_hold->get_hold_type()->name, 'Withdrawn' ) );
+    $db_last_hold_type = is_null( $db_last_hold ) ? NULL : $db_last_hold->get_hold_type();
+    $last_is_withdrawn = !is_null( $db_last_hold_type ) && false !== strpos( $db_last_hold_type->name, 'Withdrawn' );
     if( $last_is_withdrawn == $db_consent->accept )
     {
       $db_hold = new static();
