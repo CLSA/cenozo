@@ -207,7 +207,11 @@ class module extends \cenozo\service\site_restricted_module
           $voip_manager = lib::create( 'business\voip_manager' );
           $voip_manager->rebuild_call_list();
           $user_list = array_reduce( $voip_manager->get_call_list(), function( $list, $voip_call ) {
-            if( 'Up' == $voip_call->get_state() ) array_push( $list, $voip_call->get_user() );
+            if( 'Up' == $voip_call->get_state() )
+            {
+              $user = $voip_call->get_user();
+              if( !is_null( $user ) ) array_push( $list, $user );
+            }
             return $list;
           }, array() );
           sort( $user_list );
