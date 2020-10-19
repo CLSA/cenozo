@@ -892,7 +892,7 @@ angular.extend( cenozo, {
             } );
             if( restriction.null_allowed ) input.enumList.push( {
               value: '_NULL_',
-              name: 'identifier' == restriction.name ? 'UID' : '(empty)'
+              name: 'identifier' == restriction.subject ? 'UID' : '(empty)'
             } );
           } );
         } )

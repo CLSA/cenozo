@@ -176,7 +176,9 @@ class base_report_module extends \cenozo\service\site_restricted_module
       $select->add_column( 'id' );
       $select->add_column( 'name' );
       $select->add_column( 'subject' );
-      foreach( $db_report_type->get_report_restriction_list( $select ) as $report_restriction )
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->order( 'rank' );
+      foreach( $db_report_type->get_report_restriction_list( $select, $modifier ) as $report_restriction )
       {
         $column = 'restrict_'.$report_restriction['name'];
 

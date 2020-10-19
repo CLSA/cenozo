@@ -110,6 +110,7 @@ abstract class base_report extends \cenozo\database\record
         $modifier->join( 'report_restriction', 'report_has_report_restriction.report_restriction_id', 'report_restriction.id' );
         $modifier->where( 'report_id', '=', $this->id );
         $modifier->where( 'report_restriction.restriction_type', '=', 'table' );
+        $modifier->where( 'report_restriction.name', '=', 'participant_list_identifier' );
         $modifier->where( 'report_restriction.subject', '=', 'identifier' );
 
         $sql = sprintf( '%s%s', $select->get_sql(), $modifier->get_sql() );

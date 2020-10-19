@@ -21,11 +21,20 @@ class contact extends \cenozo\business\report\base_report
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
+    // determine which identifier to display
+    $db_display_identifier = NULL;
+    foreach( $this->get_restriction_list() as $restriction )
+      if( 'display_identifier' == $restriction['name'] && '_NULL_' != $restriction['value'] )
+        $db_display_identifier = lib::create( 'database\identifier', $restriction['value'] );
+
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
     $select->add_column( 'cohort.name', 'Cohort', false );
     $select->add_column( 'language.name', 'Language', false );
-    $select->add_column( 'uid', 'UID' );
+
+    if( is_null( $db_display_identifier ) ) $select->add_column( 'uid', 'UID' );
+    else $select->add_column( 'participant_identifier.value', sprintf( '%s ID', $db_display_identifier->name ), false );
+
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'last_name', 'Last Name' );
@@ -54,6 +63,15 @@ class contact extends \cenozo\business\report\base_report
       ')', 'Consent', false );
 
     $modifier = lib::create( 'database\modifier' );
+
+    if( !is_null( $db_display_identifier ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'participant_identifier.participant_id', false );
+      $join_mod->where( 'participant_identifier.identifier_id', '=', $db_display_identifier->id );
+      $modifier->join_modifier( 'participant_identifier', $join_mod, 'left' );
+    }
+
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );

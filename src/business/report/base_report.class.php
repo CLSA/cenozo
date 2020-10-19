@@ -356,10 +356,9 @@ abstract class base_report extends \cenozo\base_object
         {
           $modifier->where( 'participant_site.site_id', '=', $value );
         }
-        else if( 'identifier' == $restriction['subject'] )
+        else if( 'participant_list_identifier' == $restriction['name'] && 'identifier' == $restriction['subject'] )
         {
-          $this->db_identifier = lib::create( 'database\identifier', $value );
-          log::debug( is_null( $this->db_identifier ) ? NULL : $this->db_identifier->id );
+          if( !is_null( $value ) ) $this->db_participant_list_identifier = lib::create( 'database\identifier', $value );
         }
         else // determine all other relationships directly
         {
@@ -385,16 +384,15 @@ abstract class base_report extends \cenozo\base_object
       }
       else if( 'identifier_list' == $restriction['restriction_type'] )
       {
-        log::debug( is_null( $this->db_identifier ) ? NULL : $this->db_identifier->id, $restriction['value'] );
         // use the raw value since the identifier list cannot be _NULL_
-        if( is_null( $this->db_identifier ) )
+        if( is_null( $this->db_participant_list_identifier ) )
         {
           $modifier->where( 'uid', 'IN', explode( ' ', $restriction['value'] ) );
         }
         else
         {
           $modifier->join( 'participant_identifier', 'participant.id', 'participant_identifier.participant_id' );
-          $modifier->where( 'participant_identifier.identifier_id', '=', $this->db_identifier->id );
+          $modifier->where( 'participant_identifier.identifier_id', '=', $this->db_participant_list_identifier->id );
           $modifier->where( 'participant_identifier.value', 'IN', explode( ' ', $restriction['value'] ) );
         }
       }
@@ -573,10 +571,10 @@ abstract class base_report extends \cenozo\base_object
 
   /**
    * Identifies the identifier to use when there is an identifier_list restriction
-   * @var database\idendifier $db_identifier
+   * @var database\idendifier $db_participant_list_identifier
    * @access protected
    */
-  protected $db_identifier = NULL;
+  protected $db_participant_list_identifier = NULL;
 
   /**
    * An associative array of all reports to put in the report.
