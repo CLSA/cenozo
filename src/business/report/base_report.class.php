@@ -199,13 +199,14 @@ abstract class base_report extends \cenozo\base_object
         );
         $join_mod->where( 'report_has_report_restriction.report_id', '=', $this->db_report->id );
         $modifier->join_modifier( 'report_has_report_restriction', $join_mod, 'left' );
-        $modifier->where( 'report_restriction.restriction_type', '!=', 'uid_list' );
+        $modifier->where( 'report_restriction.restriction_type', '!=', 'identifier_list' );
         $modifier->order( 'report_restriction.rank' );
         $rows = $this->db_report->get_report_type()->get_report_restriction_list( $select, $modifier );
         $settings = array();
         foreach( $rows as $index => $setting )
         {
           $value = $setting['Value'];
+
           if( '(empty)' != $value )
           {
             if( 'table' == $setting['type'] )
@@ -234,6 +235,9 @@ abstract class base_report extends \cenozo\base_object
               $value = is_null( $value ) ? '(all)' : $value;
             }
           }
+          // empty values for identifiers means we're using the native UID
+          else if( 'identifier' == $setting['subject'] ) $value = 'UID';
+
           $settings[] = array( 'Parameter' => $setting['title'], 'Value' => $value );
         }
 
@@ -352,6 +356,11 @@ abstract class base_report extends \cenozo\base_object
         {
           $modifier->where( 'participant_site.site_id', '=', $value );
         }
+        else if( 'identifier' == $restriction['subject'] )
+        {
+          $this->db_identifier = lib::create( 'database\identifier', $value );
+          log::debug( is_null( $this->db_identifier ) ? NULL : $this->db_identifier->id );
+        }
         else // determine all other relationships directly
         {
           $restriction_table_class_name =
@@ -374,10 +383,20 @@ abstract class base_report extends \cenozo\base_object
           }
         }
       }
-      else if( 'uid_list' == $restriction['restriction_type'] )
+      else if( 'identifier_list' == $restriction['restriction_type'] )
       {
-        // use the raw value since the uid list cannot be _NULL_
-        $modifier->where( 'uid', 'IN', explode( ' ', $restriction['value'] ) );
+        log::debug( is_null( $this->db_identifier ) ? NULL : $this->db_identifier->id, $restriction['value'] );
+        // use the raw value since the identifier list cannot be _NULL_
+        if( is_null( $this->db_identifier ) )
+        {
+          $modifier->where( 'uid', 'IN', explode( ' ', $restriction['value'] ) );
+        }
+        else
+        {
+          $modifier->join( 'participant_identifier', 'participant.id', 'participant_identifier.participant_id' );
+          $modifier->where( 'participant_identifier.identifier_id', '=', $this->db_identifier->id );
+          $modifier->where( 'participant_identifier.value', 'IN', explode( ' ', $restriction['value'] ) );
+        }
       }
       else if( 'string' == $restriction['restriction_type'] )
       {
@@ -473,6 +492,7 @@ abstract class base_report extends \cenozo\base_object
     $select->add_column( 'null_allowed' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'custom', '=', $custom );
+    $modifier->order( 'rank' );
     return $this->db_report->get_report_restriction_list( $select, $modifier );
   }
 
@@ -550,6 +570,13 @@ abstract class base_report extends \cenozo\base_object
    * @access protected
    */
   protected $db_site = NULL;
+
+  /**
+   * Identifies the identifier to use when there is an identifier_list restriction
+   * @var database\idendifier $db_identifier
+   * @access protected
+   */
+  protected $db_identifier = NULL;
 
   /**
    * An associative array of all reports to put in the report.

@@ -17,36 +17,8 @@
         participants.
       </p>
       <hr />
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <span class="allow-select">
-            <strong>Participant selection</strong>
-          </span>
-          <span class="pull-right">
-            <span ng-if="model.confirmInProgress">working, please wait...</span>
-            <span ng-if="!model.confirmInProgress">
-              {{ model.confirmedCount ?
-                 model.confirmedCount + ' participants confirmed' :
-                 'no confirmed participants' }}
-              <i class="glyphicon" ng-class="model.confirmedCount ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
-            </span>
-          </span>
-        </div>
-        <textarea id="uidListString"
-                  name="uidListString"
-                  cn-elastic
-                  ng-change="model.uidListStringChanged()"
-                  ng-model="model.uidListString"
-                  ng-disabled="model.confirmInProgress"
-                  class="form-control no-rounding"></textarea>
-        <div class="form-footer text-right rounded-bottom bg-info">
-          <button type="button"
-                  class="btn btn-primary"
-                  ng-disabled="null != model.confirmedCount || model.confirmInProgress"
-                  ng-click="confirm()">Confirm List</button>
-        </div>
-      </div>
-      <div ng-if="model.confirmedCount">
+      <cn-participant-selection model="model.participantSelection"></cn-participant-selection>
+      <div ng-if="model.participantSelection.confirmedCount">
         <ul class="nav nav-tabs">
           <li ng-class="{'active':'participant'==tab}"><a ng-click="tab='participant'">Participant</a></li>
           <li ng-class="{'active':'consent'==tab}"><a ng-click="tab='consent'">Consent</a></li>
@@ -132,7 +104,7 @@
           <div class="form-footer text-right rounded-bottom bg-info">
             <button type="button"
                     class="btn btn-primary"
-                    ng-disabled="!model.confirmedCount || !model.hasActiveInputs"
+                    ng-disabled="!model.participantSelection.confirmedCount || !model.hasActiveInputs"
                     ng-click="model.applyMultiedit( 'participant' )">Change Details</button>
           </div>
         </div>
@@ -211,7 +183,7 @@
           <div class="form-footer text-right rounded-bottom bg-info">
             <button type="button"
                     class="btn btn-primary"
-                    ng-disabled="!model.confirmedCount"
+                    ng-disabled="!model.participantSelection.confirmedCount"
                     ng-click="model.applyMultiedit( 'consent' )">Add Consents</button>
           </div>
         </div>
@@ -265,7 +237,7 @@
           <div class="form-footer text-right rounded-bottom bg-info">
             <button type="button"
                     class="btn btn-primary"
-                    ng-disabled="!model.confirmedCount"
+                    ng-disabled="!model.participantSelection.confirmedCount"
                     ng-click="model.applyMultiedit( 'collection' )">
               {{ 'add' == model.collectionOperation ? 'Add To Collection' : 'Remove From Collection' }}
             </button>
@@ -346,7 +318,7 @@
           <div class="form-footer text-right rounded-bottom bg-info">
             <button type="button"
                     class="btn btn-primary"
-                    ng-disabled="!model.confirmedCount"
+                    ng-disabled="!model.participantSelection.confirmedCount"
                     ng-click="model.applyMultiedit( 'event' )">Add Events</button>
           </div>
         </div>
@@ -426,7 +398,7 @@
           <div class="form-footer text-right rounded-bottom bg-info">
             <button type="button"
                     class="btn btn-primary"
-                    ng-disabled="!model.confirmedCount"
+                    ng-disabled="!model.participantSelection.confirmedCount"
                     ng-click="model.applyMultiedit( 'hold' )">Add Holds</button>
           </div>
         </div>
@@ -466,7 +438,7 @@
           <div class="form-footer text-right rounded-bottom bg-info">
             <button type="button"
                     class="btn btn-primary"
-                    ng-disabled="!model.confirmedCount || 0 == model.note.note.length"
+                    ng-disabled="!model.participantSelection.confirmedCount || 0 == model.note.note.length"
                     ng-click="model.applyMultiedit( 'note' )">Add Notes</button>
           </div>
         </div>

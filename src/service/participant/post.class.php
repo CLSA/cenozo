@@ -78,21 +78,33 @@ class post extends \cenozo\service\service
     {
       // This is a special service since participants cannot be added to the system through the web interface.
       // Instead, this service provides participant-based utility functions.
-      if( property_exists( $file, 'uid_list' ) )
+      if( property_exists( $file, 'identifier_list' ) )
       {
-        $uid_list = $participant_class_name::get_valid_uid_list( $file->uid_list );
+        $identifier_id = property_exists( $file, 'identifier_id' ) ? $file->identifier_id : NULL;
+        $db_identifier = is_null( $identifier_id ) ? NULL : lib::create( 'database\identifier', $identifier_id );
+        $identifier_list = $participant_class_name::get_valid_identifier_list( $db_identifier, $file->identifier_list );
+
         $select = lib::create( 'database\select' );
         $select->from( 'participant' );
         $select->add_column( 'id', 'participant_id' );
         $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'uid', 'IN', $uid_list );
+        if( is_null( $identifier_id ) )
+        {
+          $modifier->where( 'uid', 'IN', $identifier_list );
+        }
+        else
+        {
+          $modifier->join( 'participant_identifier', 'participant.id', 'participant_identifier.participant_id' );
+          $modifier->where( 'participant_identifier.identifier_id', '=', $identifier_id );
+          $modifier->where( 'participant_identifier.value', 'IN', $identifier_list );
+        }
 
         if( property_exists( $file, 'input_list' ) )
-        { // change each column/value pair in the uid-list
+        { // change each column/value pair in the identifier list
           $this->set_data( $participant_class_name::multiedit( $modifier, (array) $file->input_list ) );
         }
         else if( property_exists( $file, 'consent' ) )
-        { // add the given consent record to all participants in the uid_list
+        { // add the given consent record to all participants in the identifier_list
           $db_consent = lib::create( 'database\consent' );
           foreach( $file->consent as $column => $value ) $db_consent->$column = $value;
           $this->set_data( $db_consent->save_list( $select, $modifier ) );
@@ -106,7 +118,7 @@ class post extends \cenozo\service\service
                 !property_exists( $file->collection, 'operation' ) ||
                 !in_array( $file->collection->operation, array( 'add', 'remove' ) ) )
             {
-              $this->status->set_code( 400 ); // must provide a uid_list
+              $this->status->set_code( 400 ); // must provide a identifier_list
             }
             else
             {
@@ -171,12 +183,12 @@ class post extends \cenozo\service\service
           $db_note->datetime = $util_class_name::get_datetime_object();
           $this->set_data( $db_note->save_list( $select, $modifier ) );
         }
-        else // return a list of all valid uids
+        else // return a list of all valid identifiers
         {
-          $this->set_data( $uid_list );
+          $this->set_data( $identifier_list );
         }
       }
-      else $this->status->set_code( 400 ); // must provide a uid_list
+      else $this->status->set_code( 400 ); // must provide a identifier_list
     }
   }
 

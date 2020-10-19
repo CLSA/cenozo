@@ -233,29 +233,40 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportAddFactory', [
-    'CnBaseAddFactory', '$q',
-    function( CnBaseAddFactory, $q ) {
+    'CnBaseAddFactory', 'CnModalMessageFactory', '$q',
+    function( CnBaseAddFactory, CnModalMessageFactory, $q ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
-        // transition to viewing the new record instead of the default functionality
-        this.transitionOnSave = function( record ) { parentModel.transitionToViewState( record ); };
+        angular.extend( this, {
+          // transition to viewing the new record instead of the default functionality
+          transitionOnSave: function( record ) { parentModel.transitionToViewState( record ); },
 
-        this.onNew = function( record ) {
-          return $q.all( [
-            this.$$onNew( record ),
-            this.parentModel.getMetadata()
-          ] ).then( function() {
-            for( var column in self.parentModel.metadata.columnList ) {
-              var meta = self.parentModel.metadata.columnList[column];
-              if( angular.isDefined( meta.restriction_type ) ) {
-                if( cenozo.isDatetimeType( meta.restriction_type ) ) record[column] = null;
-                else if( 'boolean' == meta.restriction_type && meta.required ) record[column] = true;
+          onNew: function( record ) {
+            return $q.all( [
+              this.$$onNew( record ),
+              this.parentModel.getMetadata()
+            ] ).then( function() {
+              for( var column in self.parentModel.metadata.columnList ) {
+                var meta = self.parentModel.metadata.columnList[column];
+                if( angular.isDefined( meta.restriction_type ) ) {
+                  if( cenozo.isDatetimeType( meta.restriction_type ) ) record[column] = null;
+                  else if( 'boolean' == meta.restriction_type && meta.required ) record[column] = true;
+                }
               }
-            }
-          } );
-        };
+            } );
+          },
+
+          onAddError: function( response ) {
+            if( 306 == response.status ) {
+              CnModalMessageFactory.instance( {
+                title: 'Please Note',
+                message: response.data
+              } ).show();
+            } else this.$$onAddError( response );
+          }
+        } );
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -297,7 +308,7 @@ define( function() {
                 response.data.forEach( function( restriction ) {
                   var key = 'restrict_' + restriction.name;
                   if( 'table' == restriction.restriction_type ) {
-                    self.record[key] = parseInt( restriction.value );
+                    self.record[key] = '_NULL_' == restriction.value ? restriction.value : parseInt( restriction.value );
                   } else if( 'boolean' == restriction.restriction_type ) {
                     self.record[key] = '1' == restriction.value;
                   } else {

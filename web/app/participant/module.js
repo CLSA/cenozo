@@ -983,12 +983,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               title: 'Multi-Edit'
             } ]
           );
-
-          // trigger the elastic directive when confirming the participant selection
-          $scope.confirm = function() {
-            $scope.model.confirm()
-            $timeout( function() { angular.element( '#uidListString' ).trigger( 'elastic' ) }, 100 );
-          };
         }
       };
     }
@@ -1012,12 +1006,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               title: 'Multi-Edit'
             } ]
           );
-
-          // trigger the elastic directive when confirming the participant selection
-          $scope.confirm = function() {
-            $scope.model.confirm()
-            $timeout( function() { angular.element( '#uidListString' ).trigger( 'elastic' ) }, 100 );
-          };
         }
       };
     }
@@ -1656,31 +1644,31 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantMultieditFactory', [
-    'CnSession', 'CnHttpFactory',
+    'CnSession', 'CnHttpFactory', 'CnParticipantSelectionFactory',
     'CnModalDatetimeFactory', 'CnModalMessageFactory',
     'CnConsentModelFactory', 'CnEventModelFactory', 'CnHoldModelFactory', 'CnParticipantModelFactory',
     'CnProxyModelFactory',
-    function( CnSession, CnHttpFactory,
+    function( CnSession, CnHttpFactory, CnParticipantSelectionFactory,
               CnModalDatetimeFactory, CnModalMessageFactory,
               CnConsentModelFactory, CnEventModelFactory, CnHoldModelFactory, CnParticipantModelFactory,
               CnProxyModelFactory ) {
       var object = function() {
         var self = this;
-        this.module = module;
-        this.confirmInProgress = false;
-        this.confirmedCount = null;
-        this.uidListString = '';
-        this.activeInput = '';
-        this.hasActiveInputs = false;
-        this.participantInputList = null;
-        this.consentInputList = null;
-        this.collectionList = null;
-        this.collectionOperation = 'add';
-        this.collectionId = undefined;
-        this.eventInputList = null;
-        this.holdInputList = null;
-        this.proxyInputList = null;
-        this.note = { sticky: 0, note: '' };
+        angular.extend( this, {
+          module: module,
+          participantSelection: CnParticipantSelectionFactory.instance(),
+          activeInput: '',
+          hasActiveInputs: false,
+          participantInputList: null,
+          consentInputList: null,
+          collectionList: null,
+          collectionOperation: 'add',
+          collectionId: undefined,
+          eventInputList: null,
+          holdInputList: null,
+          proxyInputList: null,
+          note: { sticky: 0, note: '' }
+        } );
 
         // given a module and metadata this function will build an input list
         function processInputList( list, module, metadata ) {
@@ -1806,45 +1794,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           );
         } );
 
-        this.uidListStringChanged = function() {
-          this.confirmedCount = null;
-        };
-
-        this.confirm = function() {
-          this.confirmInProgress = true;
-          this.confirmedCount = null;
-          var uidRegex = new RegExp( CnSession.application.uidRegex );
-
-          // clean up the uid list
-          var fixedList =
-            this.uidListString.toUpperCase() // convert to uppercase
-                        .replace( /[\s,;|\/]/g, ' ' ) // replace whitespace and separation chars with a space
-                        .replace( /[^a-zA-Z0-9 ]/g, '' ) // remove anything that isn't a letter, number of space
-                        .split( ' ' ) // delimite string by spaces and create array from result
-                        .filter( function( uid ) { // match UIDs (eg: A123456)
-                          return null != uid.match( uidRegex );
-                        } )
-                        .filter( function( uid, index, array ) { // make array unique
-                          return index <= array.indexOf( uid );
-                        } )
-                        .sort(); // sort the array
-
-          // now confirm UID list with server
-          if( 0 == fixedList.length ) {
-            self.uidListString = '';
-            self.confirmInProgress = false;
-          } else {
-            CnHttpFactory.instance( {
-              path: 'participant',
-              data: { uid_list: fixedList }
-            } ).post().then( function( response ) {
-              self.confirmedCount = response.data.length;
-              self.uidListString = response.data.join( ' ' );
-              self.confirmInProgress = false;
-            } );
-          }
-        };
-
         this.selectDatetime = function( input ) {
           CnModalDatetimeFactory.instance( {
             title: input.title,
@@ -1879,7 +1828,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           // test the formats of all columns
           var error = false;
           var messageObj = { title: null, message: null };
-          var uidList = this.uidListString.split( ' ' );
+          var identifierList = self.participantSelection.getIdentifierList();
           if( 'consent' == type ) {
             var inputList = this.consentInputList;
             var model = CnConsentModelFactory.root;
@@ -1915,7 +1864,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
             var model = CnParticipantModelFactory.root;
             messageObj.title = 'Participant Details Updated';
-            messageObj.message = 'The listed details have been successfully updated on ' + uidList.length +
+            messageObj.message = 'The listed details have been successfully updated on ' + identifierList.length +
               ' participant records.'
           } else if( 'proxy' == type ) {
             var inputList = this.proxyInputList;
@@ -1937,7 +1886,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
 
           if( !error ) {
-            var data = { uid_list: uidList };
+            var data = {
+              identifier_id: self.participantSelection.identifierId,
+              identifier_list: identifierList
+            };
             if( 'collection' == type ) {
               data.collection = { id: this.collectionId, operation: this.collectionOperation };
             } else if( 'note' == type ) {

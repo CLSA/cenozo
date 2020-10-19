@@ -100,17 +100,33 @@ abstract class base_report extends \cenozo\database\record
     else
     {
       // process the value, if necessary
-      if( 'uid_list' == $db_report_restriction->restriction_type )
+      if( 'identifier_list' == $db_report_restriction->restriction_type )
       {
-        $uid_list = $participant_class_name::get_valid_uid_list( $value );
+        // check the identifier restriction
+        $select = lib::create( 'database\select' );
+        $select->from( 'report_has_report_restriction' );
+        $select->add_column( 'value' );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->join( 'report_restriction', 'report_has_report_restriction.report_restriction_id', 'report_restriction.id' );
+        $modifier->where( 'report_id', '=', $this->id );
+        $modifier->where( 'report_restriction.restriction_type', '=', 'table' );
+        $modifier->where( 'report_restriction.subject', '=', 'identifier' );
 
-        if( $db_report_restriction->mandatory && 0 == count( $uid_list ) )
+        $sql = sprintf( '%s%s', $select->get_sql(), $modifier->get_sql() );
+        $identifier_id = static::db()->execute( $sql );
+
+        $db_identifier = '_NULL_' == $identifier_id ? NULL : lib::create( 'database\identifier', $identifier_id );
+        $identifier_list = $participant_class_name::get_valid_identifier_list( $db_identifier, $value );
+
+        if( $db_report_restriction->mandatory && 0 == count( $identifier_list ) )
+        {
           throw lib::create( 'exception\notice',
-            'The participant list you generated resulted in no participants. '.
-            'Please check your input and try again.',
-            __METHOD__ );
+            'The participant list you provided resulted in no participants.  Please check your input and try again.',
+            __METHOD__
+          );
+        }
 
-        $value = implode( ' ', $uid_list );
+        $value = implode( ' ', $identifier_list );
       }
 
       $sql = sprintf(

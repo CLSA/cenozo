@@ -833,7 +833,7 @@ angular.extend( cenozo, {
     var type = restriction.restriction_type;
     if( 'table' == type ) return 'enum';
     else if( 'boolean' == type ) return 'boolean';
-    else if( 'uid_list' == type ) return 'text';
+    else if( 'identifier_list' == type ) return 'text';
     else if( 'integer' == type ) return 'string';
     else if( 'decimal' == type ) return 'string';
     else if( 'enum' == type ) return 'enum';
@@ -890,7 +890,10 @@ angular.extend( cenozo, {
             response.data.forEach( function( item ) {
               input.enumList.push( { value: item.id, name: item.name } );
             } );
-            if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
+            if( restriction.null_allowed ) input.enumList.push( {
+              value: '_NULL_',
+              name: 'identifier' == restriction.name ? 'UID' : '(empty)'
+            } );
           } );
         } )
       );
@@ -1283,6 +1286,29 @@ cenozo.directive( 'cnOptionsDisabled', [
         } );
       }
     };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * A form for selecting a group of participants
+ * @attr model: an instance of CnParticipantSelectionFactory
+ */
+cenozo.directive( 'cnParticipantSelection', [
+  'CnHttpFactory', '$timeout',
+  function( CnHttpFactory, $timeout ) {
+    return {
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'participant-selection.tpl.html' ),
+      restrict: 'E',
+      scope: { model: '=' },
+      controller: [ '$scope', function( $scope ) {
+        $scope.confirm = function() {
+          $scope.model.confirm();
+          $timeout( function() { angular.element( '#identifierListString' ).trigger( 'elastic' ) }, 100 );
+        };
+      } ]
+    }
   }
 ] );
 
@@ -6743,6 +6769,101 @@ cenozo.service( 'CnModalInputFactory', [
           } ]
         } ).result;
       };
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * The factory used to select multiple participants
+ */
+cenozo.factory( 'CnParticipantSelectionFactory', [
+  'CnSession', 'CnHttpFactory', '$q',
+  function( CnSession, CnHttpFactory, $q ) {
+    var object = function( params ) {
+      var self = this;
+      var uidIdentifier = { id: null, name: 'UID', regex: CnSession.application.uidRegex };
+      this.path = 'participant';
+      this.data = {};
+      angular.extend( this, params );
+      angular.extend( this, {
+        responseFn: function( model, response ) {
+          model.confirmedCount = response.data.length;
+          model.identifierListString = response.data.join( ' ' );
+          model.confirmInProgress = false;
+        },
+        confirmInProgress: false,
+        confirmedCount: null,
+        identifierListString: '',
+        identifierListStringChanged: function() { self.confirmedCount = null; },
+        identifierId: null,
+        identifierList: [],
+        reset: function() {
+          self.confirmInProgress = false;
+          self.confirmedCount = null;
+          self.identifierListString = '';
+
+          // load the identifier list
+          self.identifierList = [];
+          CnHttpFactory.instance( {
+            path: 'identifier'
+          } ).query().then( function( response ) {
+            self.identifierList = [ uidIdentifier ];
+            self.identifierList = self.identifierList.concat( response.data );
+          } );
+        },
+        selectIdentifier: function() { self.confirmedCount = null; },
+        getIdentifierList: function() { return self.identifierListString.split( ' ' ); },
+        confirm: function() {
+          self.confirmInProgress = true;
+          self.confirmedCount = null;
+
+          var identifier = self.identifierList.findByProperty( 'id', self.identifierId );
+          var regex = identifier.regex ? new RegExp( identifier.regex ) : null;
+
+          // clean up the identifier list
+          var fixedList =
+            self.identifierListString.toUpperCase()
+                        // replace whitespace and separation chars with a space
+                        .replace( /[\s,;|\/]/g, ' ' )
+                        // remove anything that isn't a letter, number, underscore or space
+                        .replace( /[^a-zA-Z0-9_ ]/g, '' )
+                        // delimite string by spaces and create array from result
+                        .split( ' ' )
+                        // match UIDs (eg: A123456)
+                        .filter( function( identifier ) { return null == regex || null != identifier.match( regex ); } )
+                        // make array unique
+                        .filter( function( identifier, index, array ) { return index <= array.indexOf( identifier ); } )
+                        .sort();
+
+          // now confirm UID list with server
+          var data = angular.copy( self.data );
+          if( angular.isUndefined( data.identifier_id ) ) data.identifier_id = self.identifierId;
+          if( angular.isUndefined( data.identifier_list ) ) data.identifier_list = fixedList;
+
+          var promiseList = [];
+          if( 0 == fixedList.length ) {
+            self.identifierListString = '';
+            self.confirmInProgress = false;
+          } else {
+            promiseList.push(
+              CnHttpFactory.instance( {
+                path: self.path,
+                data: data
+              } ).post().then( function( response ) {
+                self.responseFn( self, response );
+              } )
+            );
+          }
+
+          return $q.all( promiseList );
+        }
+      } );
+
+      self.reset();
     };
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };

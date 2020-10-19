@@ -1,0 +1,67 @@
+<div class="container-fluid bg-primary rounded-top"><h4>Import Participant Identifiers</h4></div>
+<form name="form" class="form-horizontal" novalidate>
+  <div class="form-body">
+    <div class="form-group">
+      <label for="name" class="control-label col-sm-2">Import File</label>
+      <div class="col-sm-10">
+        <input
+          id="name"
+          class="col-sm-10 form-control"
+          type="file"
+          ng-model="model.viewModel.file"
+          cn-upload="model.viewModel.file"
+          onchange="angular.element(this).scope().model.viewModel.checkImport()"
+          ng-disabled="model.viewModel.working"
+          ng-required="true"></select>
+      </div>
+    </div>
+  </div>
+  <div ng-if="null != model.viewModel.fileCheckResults" class="form-body">
+    <div class="form-group">
+      <label for="name" class="control-label col-sm-2">File Details</label>
+      <div class="col-sm-10 form-text">
+        <div>Number of valid participant identifiers: {{ model.viewModel.fileCheckResults.valid_count }}</div>
+        <div>Number of errors: {{ model.viewModel.fileCheckResults.error_count }}</div>
+        <div>Number of warnings: {{ model.viewModel.fileCheckResults.warning_count }}</div>
+        <div ng-if="0 < model.viewModel.fileCheckResults.error_list.length">
+          <h4 class="text-primary">Error List</h4>
+          <div ng-repeat="error in model.viewModel.fileCheckResults.error_list" class="text-danger">
+            Line {{ error.line }}: {{ error.message }}
+          </div>
+          <div ng-if="model.viewModel.fileCheckResults.error_count > model.viewModel.fileCheckResults.error_list.length"
+               class="text-warning">
+            ( {{ model.viewModel.fileCheckResults.error_count - model.viewModel.fileCheckResults.error_list.length }}
+            additional errors not shown )
+          </div>
+        </div>
+        <div ng-if="0 < model.viewModel.fileCheckResults.warning_list.length">
+          <h4 class="text-primary">Warning List</h4>
+          <div ng-repeat="warning in model.viewModel.fileCheckResults.warning_list" class="text-warning">
+            Line {{ warning.line }}: {{ warning.message }}
+          </div>
+          <div ng-if="model.viewModel.fileCheckResults.warning_count > model.viewModel.fileCheckResults.warning_list.length"
+               class="text-warning">
+            ( {{ model.viewModel.fileCheckResults.warning_count - model.viewModel.fileCheckResults.warning_list.length }}
+            additional warnings not shown )
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div ng-if="model.viewModel.import" class="container-fluid">
+    <div class="panel panel-info">
+      <div class="panel-heading"><h4>Import Summary</h4></div>
+      <div class="panel-body">
+      </div>
+    </div>
+  </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <button type="button" class="btn btn-default" ng-click="model.viewModel.cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary"
+            ng-disabled="!model.viewModel.file ||
+                         model.viewModel.working ||
+                         0 < model.viewModel.fileCheckResults.error_count ||
+                         !model.viewModel.fileCheckResults.valid_count"
+            ng-click="model.viewModel.applyImport()">Import</button>
+  </div>
+</form>

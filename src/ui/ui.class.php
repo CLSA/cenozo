@@ -124,10 +124,10 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'application', 'application_type', 'availability_type',
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
-      'jurisdiction', 'language', 'overview', 'mail', 'participant', 'phone', 'proxy', 'proxy_type','quota',
-      'region', 'region_site', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
-      'search_result', 'site', 'source', 'study_phase', 'system_message', 'trace', 'trace_type', 'user',
-      'writelog'
+      'identifier', 'jurisdiction', 'language', 'overview', 'mail', 'participant', 'participant_identifier',
+      'phone', 'proxy', 'proxy_type','quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
+      'report_schedule', 'report_type', 'search_result', 'site', 'source', 'study_phase', 'system_message',
+      'trace', 'trace_type', 'user', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -304,6 +304,11 @@ class ui extends \cenozo\base_object
         $module->add_child( 'role' );
         $module->add_child( 'participant' );
       }
+      else if( 'identifier' == $module->get_subject() )
+      {
+        $module->add_child( 'participant_identifier' );
+        $module->add_action( 'import', '/{identifier}' );
+      }
       else if( 'interview' == $module->get_subject() )
       {
         $module->add_child( 'assignment' );
@@ -403,6 +408,7 @@ class ui extends \cenozo\base_object
     $this->add_listitem( 'Event Types', 'event_type' );
     if( $extended ) $this->add_listitem( 'Form Types', 'form_type' );
     $this->add_listitem( 'Hold Types', 'hold_type' );
+    $this->add_listitem( 'Identifiers', 'identifier' );
     if( $setting_manager->get_setting( 'module', 'interview' ) )
     {
       $this->add_listitem( 'Interviews', 'interview' );

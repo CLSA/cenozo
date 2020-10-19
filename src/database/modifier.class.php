@@ -808,12 +808,13 @@ class modifier extends \cenozo\base_object
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
    * 
    * @param boolean $count Whether the modifier is to be used for a single-value COUNT query
+   * @param boolean $exclude_join Whether to exclude any joins
    * @return string
    * @access public
    */
-  public function get_sql( $count = false )
+  public function get_sql( $count = false, $exclude_join = false )
   {
-    $sql = $this->get_join();
+    $sql = $exclude_join ? '' : $this->get_join();
     if( $where = $this->get_where() ) $sql .= sprintf( "\nWHERE %s", $where );
     if( $group = $this->get_group() ) $sql .= sprintf( "\nGROUP BY %s", $group );
     if( $having = $this->get_having() ) $sql .= sprintf( "\nHAVING %s", $having );
@@ -825,6 +826,14 @@ class modifier extends \cenozo\base_object
     }
 
     return $sql;
+  }
+
+  /**
+   * Convenience method
+   */
+  public function get_sql_without_joins( $count = false )
+  {
+    return $this->get_sql( $count, true );
   }
 
   /**

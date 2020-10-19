@@ -918,35 +918,40 @@ class participant extends record
   }
 
   /**
-   * Returns a list of UIDs which the application and current role has access to
+   * Returns a list of identifiers which the application and current role have access to
    * 
-   * @param array|string $uid_list An array or string of UIDs
+   * @param database\identifier $db_identifier The identifier to use (NULL will use the native UID identifier)
+   * @param array|string $identifier_list An array or string of identifiers
    * @static
    * @access public
    */
-  public static function get_valid_uid_list( $uid_list, $modifier = NULL )
+  public static function get_valid_identifier_list( $db_identifier, $identifier_list, $modifier = NULL )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
-    $uid_regex = $setting_manager->get_setting( 'general', 'uid_regex' );
+    $regex = is_null( $db_identifier ) ? $setting_manager->get_setting( 'general', 'uid_regex' ) : $db_identifier->regex;
 
-    $output_uid_list = array();
+    $output_identifier_list = array();
 
-    if( !is_array( $uid_list ) )
+    if( !is_array( $identifier_list ) )
     {
       // sanitize the entries
-      $uid_list = explode( ' ', // delimite string by spaces and create array from result
-                  preg_replace( '/[^a-zA-Z0-9 ]/', '', // remove anything that isn't a letter, number of space
-                  preg_replace( '/[\s,;|\/]/', ' ', // replace whitespace and separation chars with a space
-                  strtoupper( $uid_list ) ) ) ); // convert to uppercase
+      $identifier_list =
+        explode( ' ', // delimite string by spaces and create array from result
+        preg_replace( '/[^a-zA-Z0-9_ ]/', '', // remove anything that isn't a letter, number, underscore or space
+        preg_replace( '/[\s,;|\/]/', ' ', // replace whitespace and separation chars with a space
+        strtoupper( $identifier_list ) ) ) ); // convert to uppercase
     }
 
-    // match UIDs (eg: A123456)
-    $uid_list = array_filter( $uid_list, function( $string ) {
-      global $uid_regex;
-      return 1 == preg_match( sprintf( '/%s/', $uid_regex ), $string );
-    } );
+    // match identifiers based on regex
+    if( !is_null( $regex ) )
+    {
+      $identifier_list = array_filter( $identifier_list, function( $string ) {
+        global $regex;
+        return 1 == preg_match( sprintf( '/%s/', $regex ), $string );
+      } );
+    }
 
-    if( 0 < count( $uid_list ) )
+    if( 0 < count( $identifier_list ) )
     {
       $session = lib::create( 'business\session' );
       $db_application = $session->get_application();
@@ -954,16 +959,29 @@ class participant extends record
       $db_role = $session->get_role();
 
       // make list unique and sort it
-      $uid_list = array_unique( $uid_list );
-      sort( $uid_list );
+      $identifier_list = array_unique( $identifier_list );
+      sort( $identifier_list );
+
+      $select = lib::create( 'database\select' );
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
       // go through the list and remove invalid UIDs
-      $select = lib::create( 'database\select' );
-      $select->add_column( 'uid' );
-      $select->from( 'participant' );
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'uid', 'IN', $uid_list );
-      $modifier->order( 'uid' );
+      if( is_null( $db_identifier ) )
+      {
+        $select->add_column( 'uid', 'identifier' );
+        $select->from( 'participant' );
+        $modifier->where( 'uid', 'IN', $identifier_list );
+        $modifier->order( 'uid' );
+      }
+      else
+      {
+        $select->add_table_column( 'participant_identifier', 'value', 'identifier' );
+        $select->from( 'participant' );
+        $modifier->join( 'participant_identifier', 'participant.id', 'participant_identifier.participant_id' );
+        $modifier->where( 'participant_identifier.identifier_id', '=', $db_identifier->id );
+        $modifier->where( 'participant_identifier.value', 'IN', $identifier_list );
+        $modifier->order( 'participant_identifier.value' );
+      }
 
       // restrict to participants in this application
       $sub_mod = lib::create( 'database\modifier' );
@@ -984,10 +1002,22 @@ class participant extends record
       }
 
       // prepare the select and modifier objects
-      foreach( static::select( $select, $modifier ) as $row ) $output_uid_list[] = $row['uid'];
+      foreach( static::select( $select, $modifier ) as $row ) $output_identifier_list[] = $row['identifier'];
     }
 
-    return $output_uid_list;
+    return $output_identifier_list;
+  }
+
+  /**
+   * Convenience method
+   * 
+   * @param array|string $uid_list An array or string of UIDs
+   * @static
+   * @access public
+   */
+  public static function get_valid_uid_list( $uid_list, $modifier = NULL )
+  {
+    return static::get_valid_identifier_list( NULL, $uid_list, $modifier );
   }
 
   /**
@@ -1007,7 +1037,7 @@ class participant extends record
 
     $success = true;
     $preferred_site_id = false;
-    $sql = 'UPDATE participant ';
+    $sql = sprintf( 'UPDATE participant %s ', $modifier->get_join() );
     $first = true;
     foreach( $columns as $column => $value )
     {
@@ -1033,24 +1063,25 @@ class participant extends record
     if( false !== $preferred_site_id )
     {
       $db_application = lib::create( 'business\session' )->get_application();
-      $preferred_site_mod = lib::create( 'database\modifier' );
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
-      $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-      $preferred_site_mod->join_modifier( 'application_has_participant', $join_mod );
+      $application_has_participant_mod = lib::create( 'database\modifier' );
+      $application_has_participant_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
+      $application_has_participant_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+      $join_mod->join_modifier( 'application_has_participant', $application_has_participant_mod );
 
-      $sql = sprintf( 'UPDATE participant %s'."\n".
+      $sql = sprintf( 'UPDATE participant %s %s'."\n".
                       'SET preferred_site_id = %s %s',
-                      $preferred_site_mod->get_sql(),
+                      $modifier->get_join(),
+                      $join_mod->get_sql(),
                       static::db()->format_string( $preferred_site_id ),
-                      $modifier->get_sql() );
+                      $modifier->get_sql_without_joins() );
 
       $success = static::db()->execute( $sql );
     }
 
     if( $success && !$first )
     {
-      $sql .= ' '.$modifier->get_sql();
+      $sql .= ' '.$modifier->get_sql_without_joins();
       $success = static::db()->execute( $sql );
     }
 
