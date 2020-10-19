@@ -15,6 +15,7 @@ define( function() {
       possessive: 'participant identifier\'s'
     },
     columnList: {
+      identifier: { column: 'identifier.name', title: 'Identifier' },
       uid: { column: 'participant.uid', title: 'UID' },
       value: { title: 'Value' }
     },
