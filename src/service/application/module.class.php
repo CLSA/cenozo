@@ -20,6 +20,13 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $modifier->left_join( 'study_phase', 'application.study_phase_id', 'study_phase.id' );
+    $modifier->left_join( 'study', 'study_phase.study_id', 'study.id' );
+
+    // add the combined study-study_phase names
+    if( $select->has_column( 'study_phase' ) )
+      $select->add_column( 'IF( study.name IS NULL, NULL, CONCAT_WS( " ", study.name, study_phase.name ) )', 'study_phase', false );
+
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
     {

@@ -5,7 +5,7 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
-namespace cenozo\service\study_phase;
+namespace cenozo\service\study;
 use cenozo\lib, cenozo\log;
 
 /**
@@ -20,6 +20,6 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $modifier->join( 'study', 'study_phase.study_id', 'study.id' );
+    $modifier->left_join( 'consent_type', 'study.consent_type_id', 'consent_type.id' );
   }
 }

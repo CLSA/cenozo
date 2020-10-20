@@ -241,7 +241,26 @@ class application extends record
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'study_phase', 'application.study_phase_id', 'study_phase.id' );
+    $modifier->where( 'study_phase.study_id', '=', $db_study_phase->study_id );
     $modifier->where( 'study_phase.rank', '=', $db_study_phase->rank - 1 );
+    $application_list = static::select_objects( $modifier );
+    return 0 < count( $application_list ) ? current( $application_list ) : NULL;
+  }
+
+  /**
+   * Gets the next application based on study-phase
+   * @return database\application
+   * @access public
+   */
+  public function get_next_application()
+  {
+    $db_study_phase = $this->get_study_phase();
+    if( is_null( $db_study_phase ) ) return NULL;
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'study_phase', 'application.study_phase_id', 'study_phase.id' );
+    $modifier->where( 'study_phase.study_id', '=', $db_study_phase->study_id );
+    $modifier->where( 'study_phase.rank', '=', $db_study_phase->rank + 1 );
     $application_list = static::select_objects( $modifier );
     return 0 < count( $application_list ) ? current( $application_list ) : NULL;
   }

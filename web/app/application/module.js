@@ -11,6 +11,8 @@ define( function() {
     },
     columnList: {
       title: { title: 'Title' },
+      application_type: { column: 'application_type.name', title: 'Type' },
+      study_phase: { title: 'Study Phase' },
       version: { title: 'Version' },
       release_based: {
         title: 'Released',
@@ -50,6 +52,10 @@ define( function() {
       title: 'Type',
       type: 'enum',
       isConstant: true
+    },
+    study_phase_id: {
+      title: 'Study Phase',
+      type: 'enum'
     },
     url: {
       title: 'URL',
@@ -221,6 +227,22 @@ define( function() {
                   self.metadata.columnList.application_type_id.enumList.push( {
                     value: item.id,
                     name: item.name
+                  } );
+                } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'study_phase',
+                data: {
+                  select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
+                  modifier: { order: { 'study.name': false, 'study_phase.rank': false } }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.study_phase_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.study_phase_id.enumList.push( {
+                    value: item.id,
+                    name: [ item.study, item.name ].join( ' ' )
                   } );
                 } );
               } )
