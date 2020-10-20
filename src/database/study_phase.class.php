@@ -3,7 +3,6 @@
  * study_phase.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filestudy_phase
  */
 
 namespace cenozo\database;

@@ -3,7 +3,6 @@
  * quota.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filequota
  */
 
 namespace cenozo\database;
