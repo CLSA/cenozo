@@ -12,7 +12,7 @@ CREATE PROCEDURE patch_study()
       ( "CLSA" ),
       ( "COVID-19 Questionnaire" ),
       ( "COVID-19 Antibody" ),
-      ( "COVID-19 Dried Blood Spot" ),
+      ( "COVID-19 DBS" ),
       ( "COVID-19 Brain" );
     ELSEIF "b1" = @test THEN
       INSERT IGNORE INTO study( name ) VALUES
