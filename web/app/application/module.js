@@ -55,7 +55,8 @@ define( function() {
     },
     study_phase_id: {
       title: 'Study Phase',
-      type: 'enum'
+      type: 'enum',
+      isExcluded: function( $state, model ) { return !model.showStudyPhase(); }
     },
     url: {
       title: 'URL',
@@ -202,19 +203,24 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [
     'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationViewFactory',
-    'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationViewFactory,
-              CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnApplicationListFactory.instance( this );
         this.viewModel = CnApplicationViewFactory.instance( this, root );
 
+        this.showStudyPhase = function() {
+          return angular.isDefined( CnSession.application ) &&
+                 [ 'beartooth', 'cedar', 'mastodon', 'sabretooth' ].includes( CnSession.application.type );
+        };
+
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
-            return $q.all( [
+            var promiseList = [
               CnHttpFactory.instance( {
                 path: 'application_type',
                 data: {
@@ -229,24 +235,29 @@ define( function() {
                     name: item.name
                   } );
                 } );
-              } ),
-
-              CnHttpFactory.instance( {
-                path: 'study_phase',
-                data: {
-                  select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
-                  modifier: { order: { 'study.name': false, 'study_phase.rank': false } }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.study_phase_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.study_phase_id.enumList.push( {
-                    value: item.id,
-                    name: [ item.study, item.name ].join( ' ' )
-                  } );
-                } );
               } )
-            ] );
+            ];
+
+            if( self.showStudyPhase() ) {
+              promiseList.push( CnHttpFactory.instance( {
+                  path: 'study_phase',
+                  data: {
+                    select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
+                    modifier: { order: { 'study.name': false, 'study_phase.rank': false } }
+                  }
+                } ).query().then( function success( response ) {
+                  self.metadata.columnList.study_phase_id.enumList = [];
+                  response.data.forEach( function( item ) {
+                    self.metadata.columnList.study_phase_id.enumList.push( {
+                      value: item.id,
+                      name: [ item.study, item.name ].join( ' ' )
+                    } );
+                  } );
+                } )
+              );
+            }
+
+            return $q.all( promiseList );
           } );
         };
       };
