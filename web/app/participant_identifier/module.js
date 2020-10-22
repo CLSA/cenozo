@@ -36,7 +36,7 @@ define( function() {
         where: [ 'participant.first_name', 'participant.last_name', 'uid' ]
       }
     },
-    value: { type: 'string' }
+    value: { type: 'string', title: 'Value' }
   } );
 
   /* ######################################################################################################## */
