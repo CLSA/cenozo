@@ -60,8 +60,9 @@ class cenozo_manager extends \cenozo\base_object
    * @return curl resource
    * @access public
    */
-  public function post( $api_path, $data )
+  public function post( $api_path, $data = NULL )
   {
+    if( is_null( $data ) ) $data = new \stdClass;
     return $this->send( $api_path, 'POST', $data );
   }
 
@@ -73,8 +74,9 @@ class cenozo_manager extends \cenozo\base_object
    * @return curl resource
    * @access public
    */
-  public function patch( $api_path, $data )
+  public function patch( $api_path, $data = NULL )
   {
+    if( is_null( $data ) ) $data = new \stdClass;
     return $this->send( $api_path, 'PATCH', $data );
   }
 

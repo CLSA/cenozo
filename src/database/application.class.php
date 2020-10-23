@@ -264,4 +264,18 @@ class application extends record
     $application_list = static::select_objects( $modifier );
     return 0 < count( $application_list ) ? current( $application_list ) : NULL;
   }
+
+  /**
+   * Returns the extra consent type
+   * 
+   * Note, this will return NULL ff the application doesn't use a study phase or the study phase belongs to
+   * a study which doesn't have an extra consent type.
+   */
+  public function get_extra_consent_type()
+  {
+    $db_extra_consent_type = NULL;
+    $db_study_phase = $this->get_study_phase();
+    if( !is_null( $db_study_phase ) ) $db_extra_consent_type = $db_study_phase->get_study()->get_consent_type();
+    return $db_extra_consent_type;
+  }
 }
