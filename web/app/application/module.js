@@ -48,9 +48,10 @@ define( function() {
       type: 'string',
       help: 'A user-friendly name for the service, may contain any characters.'
     },
-    application_type_id: {
+    application_type: {
+      column: 'application_type.name',
       title: 'Type',
-      type: 'enum',
+      type: 'string',
       isConstant: true
     },
     study_phase_id: {
@@ -73,6 +74,13 @@ define( function() {
       type: 'boolean',
       isConstant: true,
       help: 'Whether the application only has access to participants once they are released.'
+    },
+    allow_missing_consent: {
+      title: 'Allow Missing Consent',
+      type: 'boolean',
+      isExcluded: function( $state, model ) {
+        return !model.showStudyPhase() || !model.viewModel.record.study_phase_id;
+      }
     },
     update_queue: {
       title: 'Update Queue',
@@ -136,21 +144,6 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnApplicationAdd', [
-    'CnApplicationModelFactory',
-    function( CnApplicationModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnApplicationModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnApplicationList', [
     'CnApplicationModelFactory',
     function( CnApplicationModelFactory ) {
@@ -203,9 +196,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [
     'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory', '$state', '$q',
     function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory, $state, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -213,30 +206,20 @@ define( function() {
         this.viewModel = CnApplicationViewFactory.instance( this, root );
 
         this.showStudyPhase = function() {
-          return angular.isDefined( CnSession.application ) &&
+          // NOTE: we need to declare a temp variable, otherwise this function returns an undefined value
+          var show = // only show when viewing the right type of application
+                 'application' == self.getSubjectFromState() &&
+                 'view' == self.getActionFromState() &&
+                 [ 'beartooth', 'cedar', 'mastodon', 'sabretooth' ].includes( self.viewModel.record.application_type ) &&
+                 // and only show when we're USING the right type of application
                  [ 'beartooth', 'cedar', 'mastodon', 'sabretooth' ].includes( CnSession.application.type );
+          return show;
         };
 
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
-            var promiseList = [
-              CnHttpFactory.instance( {
-                path: 'application_type',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.application_type_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.application_type_id.enumList.push( {
-                    value: item.id,
-                    name: item.name
-                  } );
-                } );
-              } )
-            ];
+            var promiseList = [];
 
             if( self.showStudyPhase() ) {
               promiseList.push( CnHttpFactory.instance( {

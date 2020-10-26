@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE application.sql
 SOURCE identifier.sql
 SOURCE participant_identifier.sql
 SOURCE report_restriction.sql

@@ -28,7 +28,7 @@ class consent extends record
 
     // get the most recent consent BEFORE updating the record
     $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
-    $current_accept = is_null( $db_last_consent ) ? true : $db_last_consent->accept;
+    $old_accept = is_null( $db_last_consent ) ? 'none' : $db_last_consent->accept;
 
     // change to accept column or no effective qnaire means we don't have to worry about the queue or qnaire reminders
     parent::save();
@@ -46,9 +46,10 @@ class consent extends record
 
     // get the most recent consent AFTER updating the record
     $db_latest_consent = $db_participant->get_last_consent( $db_consent_type );
-    $new_accept = is_null( $db_latest_consent ) ? true : $db_latest_consent->accept;
+    $new_accept = is_null( $db_latest_consent ) ? 'none' : $db_latest_consent->accept;
 
-    if( $current_accept != $new_accept ) static::update_applications( $db_participant, $db_consent_type, $new_accept );
+    if( $old_accept != $new_accept )
+      static::update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept );
   }
 
   /**
@@ -64,15 +65,16 @@ class consent extends record
 
     // get the most recent consent BEFORE deleting the record
     $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
-    $current_accept = is_null( $db_last_consent ) ? true : $db_last_consent->accept;
+    $old_accept = is_null( $db_last_consent ) ? 'none' : $db_last_consent->accept;
 
     parent::delete();
 
     // get the most recent consent AFTER deleting the record
     $db_latest_consent = $db_participant->get_last_consent( $db_consent_type );
-    $new_accept = is_null( $db_latest_consent ) ? true : $db_latest_consent->accept;
+    $new_accept = is_null( $db_latest_consent ) ? 'none' : $db_latest_consent->accept;
 
-    if( $current_accept != $new_accept ) static::update_applications( $db_participant, $db_consent_type, $new_accept );
+    if( $old_accept != $new_accept )
+      static::update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept );
   }
 
   /**
@@ -80,9 +82,10 @@ class consent extends record
    * 
    * @param database\participant $db_participant
    * @param database\consent_type $db_consent_type
-   * @param boolean $accept
+   * @param boolean $old_accept The value of the consent before the change
+   * @param boolean $new_accept The value of the consent after the change
    */
-  private static function update_applications( $db_participant, $db_consent_type, $accept )
+  private static function update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept )
   {
     $application_class_name = lib::get_class_name( 'database\application' );
 
@@ -110,25 +113,38 @@ class consent extends record
 
         if( !is_null( $consent_type ) )
         {
-          try
+          // NOTE: the following check is a bit complicated.  We only want to update applications when we're changing
+          // the participant's effective consent status.  However, the application may considers a missing consent to
+          // either be allowed or not allowed.  The following three statements, ORed together, solves that requirement
+          if(
+            // neither old or new is empty means we must update the app
+            ( 'none' != $old_accept && 'none' != $new_accept ) ||
+            // old is empty and new (which has to be true or false) is not the same as whether we allow missing consent
+            ( 'none' == $old_accept && $new_accept != $db_application->allow_missing_consent ) ||
+            // new is empty and old (which has to be true or false) is not the same as whether we allow missing consent
+            ( 'none' == $new_accept && $old_accept != $db_application->allow_missing_consent ) )
           {
-            $cenozo_manager = lib::create( 'business\cenozo_manager', $db_application );
-            $cenozo_manager->patch( sprintf( 'participant/%s?repopulate=1', $db_participant->id ) );
-
-            if( 'extra' == $consent_type )
+            try
             {
-              // either resend or remove mail, based on the new consent accept value
-              $cenozo_manager->patch( sprintf(
-                'participant/%s?interview_mail=%s',
-                $db_participant->id,
-                $accept ? 'resend' : 'remove'
-              ) );
+              $cenozo_manager = lib::create( 'business\cenozo_manager', $db_application );
+              $cenozo_manager->patch( sprintf( 'participant/%s?repopulate=1', $db_participant->id ) );
+
+              if( 'extra' == $consent_type )
+              {
+                
+                // either resend or remove mail, based on the new consent accept value
+                $cenozo_manager->patch( sprintf(
+                  'participant/%s?interview_mail=%s',
+                  $db_participant->id,
+                  $accept ? 'resend' : 'remove'
+                ) );
+              }
             }
-          }
-          catch( \cenozo\exception\runtime $e )
-          {
-            // note runtime errors but keep processing anyway
-            log::error( $e->get_message() );
+            catch( \cenozo\exception\runtime $e )
+            {
+              // note runtime errors but keep processing anyway
+              log::error( $e->get_message() );
+            }
           }
         }
       }
