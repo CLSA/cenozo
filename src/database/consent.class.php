@@ -48,7 +48,7 @@ class consent extends record
     $db_latest_consent = $db_participant->get_last_consent( $db_consent_type );
     $new_accept = is_null( $db_latest_consent ) ? 'none' : $db_latest_consent->accept;
 
-    if( $old_accept != $new_accept )
+    if( $old_accept !== $new_accept )
       static::update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept );
   }
 
@@ -73,7 +73,7 @@ class consent extends record
     $db_latest_consent = $db_participant->get_last_consent( $db_consent_type );
     $new_accept = is_null( $db_latest_consent ) ? 'none' : $db_latest_consent->accept;
 
-    if( $old_accept != $new_accept )
+    if( $old_accept !== $new_accept )
       static::update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept );
   }
 
@@ -118,11 +118,11 @@ class consent extends record
           // either be allowed or not allowed.  The following three statements, ORed together, solves that requirement
           if(
             // neither old or new is empty means we must update the app
-            ( 'none' != $old_accept && 'none' != $new_accept ) ||
+            ( 'none' !== $old_accept && 'none' !== $new_accept ) ||
             // old is empty and new (which has to be true or false) is not the same as whether we allow missing consent
-            ( 'none' == $old_accept && $new_accept != $db_application->allow_missing_consent ) ||
+            ( 'none' === $old_accept && $new_accept !== $db_application->allow_missing_consent ) ||
             // new is empty and old (which has to be true or false) is not the same as whether we allow missing consent
-            ( 'none' == $new_accept && $old_accept != $db_application->allow_missing_consent ) )
+            ( 'none' === $new_accept && $old_accept !== $db_application->allow_missing_consent ) )
           {
             try
             {
@@ -131,7 +131,11 @@ class consent extends record
 
               if( 'extra' == $consent_type )
               {
-                
+                // whether we're effectively changing to positive or negative consent depends on the application
+                $accept = 'none' === $new_accept
+                        ? $db_application->allow_missing_consent
+                        : $new_accept;
+
                 // either resend or remove mail, based on the new consent accept value
                 $cenozo_manager->patch( sprintf(
                   'participant/%s?interview_mail=%s',
