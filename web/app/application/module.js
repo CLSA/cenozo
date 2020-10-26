@@ -80,7 +80,8 @@ define( function() {
       type: 'boolean',
       isExcluded: function( $state, model ) {
         return !model.showStudyPhase() || !model.viewModel.record.study_phase_id;
-      }
+      },
+      help: 'This is used when the application is tied to a study which is restricted by an extra consent type.  When this is the case this new field determines whether or not a missing consent record (of that type) should result in a participant being included or not included in a study.'
     },
     update_queue: {
       title: 'Update Queue',
