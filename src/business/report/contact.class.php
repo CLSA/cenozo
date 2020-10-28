@@ -38,6 +38,7 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'last_name', 'Last Name' );
+    $select->add_column( 'IFNULL( phone.number, "" )', 'Phone', false );
     $select->add_column( 'address.address1', 'Address1', false );
     $select->add_column( 'address.address2', 'Address2', false );
     $select->add_column( 'address.city', 'City', false );
@@ -83,6 +84,10 @@ class contact extends \cenozo\business\report\base_report
     $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
     $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
     $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'phone.participant_id', false );
+    $join_mod->where( 'phone.rank', '=', 1 );
+    $modifier->join_modifier( 'phone', $join_mod, 'left' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->left_join( 'address', 'participant_first_address.address_id', 'address.id' );
     $modifier->left_join( 'region', 'address.region_id', 'region.id' );
