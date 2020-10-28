@@ -114,7 +114,7 @@ abstract class base_report extends \cenozo\database\record
         $modifier->where( 'report_restriction.subject', '=', 'identifier' );
 
         $sql = sprintf( '%s%s', $select->get_sql(), $modifier->get_sql() );
-        $identifier_id = static::db()->execute( $sql );
+        $identifier_id = static::db()->get_one( $sql );
 
         $db_identifier = '_NULL_' == $identifier_id ? NULL : lib::create( 'database\identifier', $identifier_id );
         $identifier_list = $participant_class_name::get_valid_identifier_list( $db_identifier, $value );
