@@ -8,6 +8,8 @@ SOURCE participant_identifier.sql
 SOURCE report_restriction.sql
 SOURCE study.sql
 SOURCE study_phase.sql
+SOURCE stratum.sql
+SOURCE stratum_has_participant.sql
 
 SOURCE update_version_number.sql
 

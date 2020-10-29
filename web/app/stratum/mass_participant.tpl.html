@@ -1,0 +1,63 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top"><h4>Manage Participants for "{{ model.stratumName }}"</h4></div>
+  <form name="form" class="form-horizontal" novalidate>
+    <div class="form-body container-fluid">
+      <div class="container-fluid text-info">
+        This utility allows you to add or remove lists of participants to or from the <strong>{{ model.stratumName }}</strong>
+        stratum.  In order to proceed you must first select which participants to add or remove.  This can be done by
+        typing the unique identifiers (ie: A123456) of all participants you wish to have included in the operation, then
+        confirm that list to ensure each of the identifiers can be linked to a participant.
+      </div>
+      <hr />
+      <div class="form-group">
+        <label for="operation" class="col-sm-3 control-label">Operation</label>
+        <div class="col-sm-9">
+          <div class="input-group">
+            <select ng-attr-id="operation"
+                    name="operation"
+                    ng-model="model.operation"
+                    ng-change="model.inputsChanged()"
+                    class="form-control"
+                    ng-required="true">
+              <option value="add">add</option>
+              <option value="remove">remove</option>
+            </select>
+          </div>
+          <div class="vertical-spacer container-fluid text-warning">
+            <strong>NOTE:</strong>
+            <span ng-if="'add' == model.operation">
+              When adding participants only participants which do not already belong to this or another stratum
+            </span>
+            <span ng-if="'remove' == model.operation">
+              When removing participants only participants which belong to this stratum
+            </span>
+            will be included in the final selection list after the "Confirm List" button is clicked.
+            will be included in the final selection list after the "Confirm List" button is clicked.
+          </div>
+        </div>
+      </div>
+      <cn-participant-selection model="model.participantSelection"></cn-participant-selection>
+      <div ng-if="model.participantSelection.confirmedCount">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <strong>Confirm selection</strong>
+          </div>
+          <div class="container-fluid panel-body">
+            You have selected a total of {{ model.participantSelection.confirmedCount }} new participants to add to the stratum.
+            If you wish to proceed you may click the "{{ model.operation | cnUCWords }} Participants" button below, or you may
+            make changes to the participant selection list above.
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="model.working"
+                    cn-really-message="Are you sure you wish to add {{ model.participantSelection.confirmedCount }} participants to the stratum?"
+                    ng-click="model.proceed()">
+                      {{ model.working ? 'Working...' : ( model.operation | cnUCWords ) + ' Participants' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -30,13 +30,20 @@ CREATE TABLE IF NOT EXISTS study (
   create_timestamp TIMESTAMP NOT NULL,
   name VARCHAR(45) NOT NULL,
   consent_type_id INT UNSIGNED NULL DEFAULT NULL,
+  complete_event_type_id INT UNSIGNED NULL DEFAULT NULL,
   description TEXT NULL DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE INDEX uq_name (name ASC),
   INDEX fk_consent_type_id (consent_type_id ASC),
+  INDEX fk_complete_event_type_id (complete_event_type_id ASC),
   CONSTRAINT fk_study_consent_type_id
     FOREIGN KEY (consent_type_id)
     REFERENCES consent_type (id)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_study_complete_event_type_id
+    FOREIGN KEY (complete_event_type_id)
+    REFERENCES event_type (id)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

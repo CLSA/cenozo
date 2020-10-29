@@ -13,6 +13,7 @@ define( function() {
     columnList: {
       name: { title: 'Name' },
       consent_type: { column: 'consent_type.name', title: 'Consent Type' },
+      completed_event_type: { column: 'event_type.name', title: 'Completed Event Type' },
       description: { title: 'Description', align: 'left' }
     },
     defaultOrder: {
@@ -30,6 +31,11 @@ define( function() {
       title: 'Extra Consent Type',
       type: 'enum',
       help: 'If selected then participants have withdrawn from the study when this consent-type is negative.'
+    },
+    completed_event_type_id: {
+      title: 'Completed Event Type',
+      type: 'enum',
+      help: 'If selected then this event-type identifies when the study is complete.'
     },
     description: {
       title: 'Description',
@@ -111,8 +117,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnStudyModelFactory', [
-    'CnBaseModelFactory', 'CnStudyListFactory', 'CnStudyAddFactory', 'CnStudyViewFactory', 'CnHttpFactory',
-    function( CnBaseModelFactory, CnStudyListFactory, CnStudyAddFactory, CnStudyViewFactory, CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnStudyListFactory', 'CnStudyAddFactory', 'CnStudyViewFactory', 'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnStudyListFactory, CnStudyAddFactory, CnStudyViewFactory, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -123,21 +129,39 @@ define( function() {
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'consent_type',
-              data: {
-                select: { column: [ 'id', 'name' ] }, 
-                modifier: { order: 'name' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.consent_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.consent_type_id.enumList.push( {
-                  value: item.id,
-                  name: item.name
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: 'consent_type',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.consent_type_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.consent_type_id.enumList.push( {
+                    value: item.id,
+                    name: item.name
+                  } );
                 } );
-              } );
-            } );
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'event_type',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.completed_event_type_id.enumList = [];
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.completed_event_type_id.enumList.push( {
+                    value: item.id,
+                    name: item.name
+                  } );
+                } );
+              } )
+            ] );
           } );
         };
       };

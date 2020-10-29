@@ -126,7 +126,7 @@ class ui extends \cenozo\base_object
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
       'identifier', 'jurisdiction', 'language', 'overview', 'mail', 'participant', 'participant_identifier',
       'phone', 'proxy', 'proxy_type','quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
-      'report_schedule', 'report_type', 'search_result', 'site', 'source', 'study', 'study_phase',
+      'report_schedule', 'report_type', 'search_result', 'site', 'source', 'stratum', 'study', 'study_phase',
       'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
 
@@ -369,9 +369,15 @@ class ui extends \cenozo\base_object
       {
         $module->add_child( 'participant' );
       }
+      else if( 'stratum' == $module->get_subject() )
+      {
+        $module->add_choose( 'participant' );
+        $module->add_action( 'mass_participant', '/{identifier}' );
+      }
       else if( 'study' == $module->get_subject() )
       {
         $module->add_child( 'study_phase' );
+        $module->add_child( 'stratum' );
       }
       else if( 'trace_type' == $module->get_subject() )
       {
