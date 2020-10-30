@@ -466,34 +466,29 @@ class participant extends record
   }
 
   /**
-   * Returns the quota that this participant belongs to (NULL if none)
-   * @return database\quota $db_quota
+   * Returns the stratum that this participant belongs to for the current application (NULL if none)
+   * @return database\stratum $db_stratum
    * @access public
    */
-  public function get_quota()
+  public function get_stratum()
   {
-    // no primary key means no quota
+    // no primary key means no stratum
     if( is_null( $this->id ) ) return NULL;
 
+    // no study phase means no stratum
+    $db_study_phase = lib::create( 'business\session' )->get_application()->get_study_phase();
+    if( is_null( $db_study_phase ) ) return NULL;
+
     $select = lib::create( 'database\select' );
-    $select->from( 'participant' );
-    $select->add_table_column( 'quota', 'id' );
+    $select->from( 'stratum_has_participant' );
+    $select->add_column( 'stratum_id' );
+
     $modifier = lib::create( 'database\modifier' );
-    $modifier->join( 'participant_primary_address',
-      'participant.id', 'participant_primary_address.participant_id' );
-    $modifier->join( 'address', 'participant_primary_address.address_id', 'address.id' );
-    $modifier->join( 'participant_site', 'participant.id', 'participant_site.participant_id' );
+    $modifier->join( 'stratum', 'stratum_has_participant.stratum_id', 'stratum.id' );
+    $modifier->where( 'stratum.study_id', '=', $db_study_phase->study_id );
 
-    $join_mod = lib::create( 'database\modifier' );
-    $join_mod->where( 'address.region_id', '=', 'quota.region_id' );
-    $join_mod->where( 'participant_site.default_site_id', '=', 'quota.site_id' );
-    $join_mod->where( 'participant.sex', '=', 'quota.sex' );
-    $join_mod->where( 'participant.age_group_id', '=', 'quota.age_group_id' );
-    $modifier->join_modifier( 'quota', $join_mod );
-    $modifier->where( 'participant.id', '=', $this->id );
-
-    $quota_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
-    return $quota_id ? lib::create( 'database\quota', $quota_id ) : NULL;
+    $stratum_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $stratum_id ? lib::create( 'database\stratum', $stratum_id ) : NULL;
   }
 
   /**
@@ -543,7 +538,7 @@ class participant extends record
    * @param array $data An associative array of the following data.  Possible values include:
    *        participant columns:
    *          source cohort grouping honorific first_name other_name last_name sex date_of_birth language availability_type
-   *          callback override_quota email mass_email low_education global_note
+   *          callback email mass_email low_education global_note
    *        address columns: (may have _1, _2, etc, suffixes)
    *          address1 address2 city postcode address_note
    *        phone coluns: ( may have _1, _2, etc, suffixes)
@@ -743,14 +738,6 @@ class participant extends record
       $datetime = $util_class_name::get_datetime_object( $data['callback'], $db_user->get_timezone_object() );
       $datetime->setTimezone( new \DateTimeZone( 'UTC' ) );
       $db_participant->callback = $datetime;
-    }
-
-    if( array_key_exists( 'override_quota', $data ) && !is_null( $data['override_quota'] ) )
-    {
-      $value = is_string( $data['override_quota'] ) ? strtolower( $data['override_quota'] ) : $data['override_quota'];
-      if( !in_array( $value, $valid_boolean_list, true ) )
-        return sprintf( 'Invalid boolean format for override-quota "%s".', $data['override_quota'] );
-      $db_participant->override_quota = in_array( $value, $valid_positive_list, true );
     }
 
     if( array_key_exists( 'email', $data ) && !is_null( $data['email'] ) )

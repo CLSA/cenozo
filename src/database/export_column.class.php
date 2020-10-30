@@ -55,10 +55,8 @@ class export_column extends has_rank
       {
         $sub_table_name = substr( $column_name, 0, -3 );
         $table_name .= '_'.$sub_table_name;
-        $column_name = 'age_group' == $sub_table_name
-                     ? sprintf( 'CONCAT( %s.lower, " to ", %s.upper )', $table_name, $table_name )
-                     : 'name';
-        $table_prefix = 'age_group' != $sub_table_name;
+        $column_name = 'name';
+        $table_prefix = true;
       }
 
       if( $table_prefix ) $column_name = $table_name.'.'.$column_name;

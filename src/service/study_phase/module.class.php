@@ -20,6 +20,12 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $db_application = lib::create( 'business\session' )->get_application();
+
     $modifier->join( 'study', 'study_phase.study_id', 'study.id' );
+
+    // if the application has a study-phase then only show the parent study's phases
+    $db_study_phase = $db_application->get_study_phase();
+    if( !is_null( $db_study_phase ) ) $modifier->where( 'study_phase.study_id', '=', $db_study_phase->study_id );
   }
 }

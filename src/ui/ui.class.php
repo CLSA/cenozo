@@ -125,7 +125,7 @@ class ui extends \cenozo\base_object
       'callback', 'cohort', 'collection', 'consent', 'consent_type', 'event', 'event_type', 'export',
       'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold', 'hold_type',
       'identifier', 'jurisdiction', 'language', 'overview', 'mail', 'participant', 'participant_identifier',
-      'phone', 'proxy', 'proxy_type','quota', 'region', 'region_site', 'role', 'report', 'report_restriction',
+      'phone', 'proxy', 'proxy_type', 'region', 'region_site', 'role', 'report', 'report_restriction',
       'report_schedule', 'report_type', 'search_result', 'site', 'source', 'stratum', 'study', 'study_phase',
       'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
@@ -431,7 +431,6 @@ class ui extends \cenozo\base_object
     if( 2 <= $db_role->tier ) $this->add_listitem( 'Overviews', 'overview' );
     $this->add_listitem( 'Participants', 'participant' );
     $this->add_listitem( 'Proxy Types', 'proxy_type' );
-    $this->add_listitem( 'Quotas', 'quota' );
     if( $setting_manager->get_setting( 'module', 'recording' ) )
     {
       if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );
@@ -441,6 +440,7 @@ class ui extends \cenozo\base_object
     $this->add_listitem( 'Settings', 'setting' );
     if( $db_role->all_sites ) $this->add_listitem( 'Sites', 'site' );
     if( $extended ) $this->add_listitem( 'Sources', 'source' );
+    $this->add_listitem( 'Strata', 'stratum' );
     $this->add_listitem( 'Studies', 'study' );
     if( 2 <= $db_role->tier ) $this->add_listitem( 'System Messages', 'system_message' );
     $this->add_listitem( 'Users', 'user' );

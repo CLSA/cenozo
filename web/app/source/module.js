@@ -11,8 +11,8 @@ define( function() {
     },
     columnList: {
       name: { title: 'Name' },
-      override_quota: {
-        title: 'Override Quota',
+      override_stratum: {
+        title: 'Override Stratum',
         type: 'boolean'
       },
       participant_count: {
@@ -31,8 +31,8 @@ define( function() {
       title: 'Name',
       type: 'string'
     },
-    override_quota: {
-      title: 'Override Quota',
+    override_stratum: {
+      title: 'Override Stratum Restrictions',
       type: 'boolean'
     },
     description: {

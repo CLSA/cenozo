@@ -17,6 +17,7 @@ define( function() {
     columnList: {
       name: { title: 'Name' },
       participant_count: { title: 'Participants', type: 'number' },
+      refused_count: { title: 'Refused', type: 'number' },
       consented_count: { title: 'Consented', type: 'number' },
       completed_count: { title: 'Completed', type: 'number' },
       description: { title: 'Description', align: 'left' }
@@ -29,6 +30,10 @@ define( function() {
 
   module.addInputGroup( '', {
     name: { title: 'Name', type: 'string' },
+    participant_count: { title: 'Total Participants', type: 'string', isConstant: true },
+    refused_count: { title: 'Total Refused Consent', type: 'string', isConstant: true },
+    consented_count: { title: 'Total Accepted Consent', type: 'string', isConstant: true },
+    completed_count: { title: 'Total Completed Event', type: 'string', isConstant: true },
     description: { title: 'Description', type: 'text' }
   } );
 

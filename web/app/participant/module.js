@@ -201,13 +201,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         return angular.isUndefined( model.viewModel.record.date_of_death ) || null == model.viewModel.record.date_of_death;
       }
     },
-    age_group_id: {
-      title: 'Age Group',
-      type: 'enum',
-      help: 'The age group that the participant belonged to when first recruited into the study. ' +
-            'Note that this won\'t necessarily reflect the participant\'s current age.',
-      isConstant: function( $state, model ) { return !model.isAdministrator(); }
-    },
     language_id: {
       title: 'Preferred Language',
       type: 'enum'
@@ -1202,7 +1195,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                   self.formattedRecord.date_of_death.replace( /[A-Za-z]+ [0-9]+,/, '' );
               }
 
-              // if the date of death is defined then show age a death instead of current age
+              // if the date of death is defined then show age of death instead of current age
               var age = moment( self.record.date_of_death ).diff( self.record.date_of_birth, 'years' );
               self.formattedRecord.date_of_birth = self.formattedRecord.date_of_birth.replace( / \(.*\)/, '' );
               self.formattedRecord.date_of_death += ' (' + age + ' year' + ( 1 == age ? '' : 's' ) + ' old)';
@@ -1362,22 +1355,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
             return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'age_group',
-                data: {
-                  select: { column: [ 'id', 'lower', 'upper' ] },
-                  modifier: { order: { lower: false } }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.age_group_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.age_group_id.enumList.push( {
-                    value: item.id,
-                    name: item.lower + ' to ' + item.upper
-                  } );
-                } );
-              } ),
-
               CnHttpFactory.instance( {
                 path: 'availability_type',
                 data: {
@@ -1559,7 +1536,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           'language',
           'availability_type',
           'callback',
-          'override_quota',
           'email',
           'mass_email',
           'low_education',

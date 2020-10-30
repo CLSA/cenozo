@@ -10,6 +10,10 @@ SOURCE study.sql
 SOURCE study_phase.sql
 SOURCE stratum.sql
 SOURCE stratum_has_participant.sql
+SOURCE source.sql
+SOURCE quota.sql
+SOURCE participant.sql
+SOURCE age_group.sql
 
 SOURCE update_version_number.sql
 
