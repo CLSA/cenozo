@@ -14,6 +14,7 @@ SOURCE source.sql
 SOURCE quota.sql
 SOURCE participant.sql
 SOURCE age_group.sql
+SOURCE export_column.sql
 
 SOURCE update_version_number.sql
 
