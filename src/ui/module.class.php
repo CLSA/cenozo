@@ -109,6 +109,23 @@ class module extends \cenozo\base_object
   public function add_child( $name, $before = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $service_class_name = lib::get_class_name( 'database\service' );
+
+    $db_role = lib::create( 'business\session' )->get_role();
+    $db_service = $service_class_name::get_unique_record(
+      array( 'method', 'subject', 'resource' ),
+      array( 'GET', $name, false )
+    );
+
+    // if the role doesn't have query access to the module then ignore it
+    if( $db_service->restricted )
+    {
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'service.subject', '=', $name );
+      $modifier->where( 'service.method', '=', 'GET' );
+      $modifier->where( 'service.resource', '=', 0 );
+      if( 0 == $db_role->get_service_count( $modifier ) ) return;
+    }
 
     // remove the child if it already exists
     $index = array_search( $name, $this->child_list );
@@ -154,6 +171,23 @@ class module extends \cenozo\base_object
   public function add_choose( $name, $before = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
+    $service_class_name = lib::get_class_name( 'database\service' );
+
+    $db_role = lib::create( 'business\session' )->get_role();
+    $db_service = $service_class_name::get_unique_record(
+      array( 'method', 'subject', 'resource' ),
+      array( 'GET', $name, false )
+    );
+
+    // if the role doesn't have query access to the module then ignore it
+    if( $db_service->restricted )
+    {
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'service.subject', '=', $name );
+      $modifier->where( 'service.method', '=', 'GET' );
+      $modifier->where( 'service.resource', '=', 0 );
+      if( 0 == $db_role->get_service_count( $modifier ) ) return;
+    }
 
     // remove the choose if it already exists
     $index = array_search( $name, $this->choose_list );
