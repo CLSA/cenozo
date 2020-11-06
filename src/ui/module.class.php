@@ -118,7 +118,7 @@ class module extends \cenozo\base_object
     );
 
     // if the role doesn't have query access to the module then ignore it
-    if( $db_service->restricted )
+    if( !is_null( $db_service ) && $db_service->restricted )
     {
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'service.subject', '=', $name );
@@ -180,7 +180,7 @@ class module extends \cenozo\base_object
     );
 
     // if the role doesn't have query access to the module then ignore it
-    if( $db_service->restricted )
+    if( !is_null( $db_service ) && $db_service->restricted )
     {
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'service.subject', '=', $name );
