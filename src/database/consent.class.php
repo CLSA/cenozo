@@ -48,8 +48,7 @@ class consent extends record
     $db_latest_consent = $db_participant->get_last_consent( $db_consent_type );
     $new_accept = is_null( $db_latest_consent ) ? 'none' : $db_latest_consent->accept;
 
-    if( $old_accept !== $new_accept )
-      static::update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept );
+    if( $old_accept !== $new_accept ) static::update_applications( $db_participant, $db_consent_type );
   }
 
   /**
@@ -73,8 +72,7 @@ class consent extends record
     $db_latest_consent = $db_participant->get_last_consent( $db_consent_type );
     $new_accept = is_null( $db_latest_consent ) ? 'none' : $db_latest_consent->accept;
 
-    if( $old_accept !== $new_accept )
-      static::update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept );
+    if( $old_accept !== $new_accept ) static::update_applications( $db_participant, $db_consent_type );
   }
 
   /**
@@ -82,10 +80,8 @@ class consent extends record
    * 
    * @param database\participant $db_participant
    * @param database\consent_type $db_consent_type
-   * @param boolean $old_accept The value of the consent before the change
-   * @param boolean $new_accept The value of the consent after the change
    */
-  private static function update_applications( $db_participant, $db_consent_type, $old_accept, $new_accept )
+  private static function update_applications( $db_participant, $db_consent_type )
   {
     $application_class_name = lib::get_class_name( 'database\application' );
 
@@ -113,42 +109,15 @@ class consent extends record
 
         if( !is_null( $consent_type ) )
         {
-          // NOTE: the following check is a bit complicated.  We only want to update applications when we're changing
-          // the participant's effective consent status.  However, the application may considers a missing consent to
-          // either be allowed or not allowed.  The following three statements, ORed together, solves that requirement
-          if(
-            // neither old or new is empty means we must update the app
-            ( 'none' !== $old_accept && 'none' !== $new_accept ) ||
-            // old is empty and new (which has to be true or false) is not the same as whether we allow missing consent
-            ( 'none' === $old_accept && $new_accept !== $db_application->allow_missing_consent ) ||
-            // new is empty and old (which has to be true or false) is not the same as whether we allow missing consent
-            ( 'none' === $new_accept && $old_accept !== $db_application->allow_missing_consent ) )
+          try
           {
-            try
-            {
-              $cenozo_manager = lib::create( 'business\cenozo_manager', $db_application );
-              $cenozo_manager->patch( sprintf( 'participant/%s?repopulate=1', $db_participant->id ) );
-
-              if( 'extra' == $consent_type )
-              {
-                // whether we're effectively changing to positive or negative consent depends on the application
-                $accept = 'none' === $new_accept
-                        ? $db_application->allow_missing_consent
-                        : $new_accept;
-
-                // either resend or remove mail, based on the new consent accept value
-                $cenozo_manager->patch( sprintf(
-                  'participant/%s?interview_mail=%s',
-                  $db_participant->id,
-                  $accept ? 'resend' : 'remove'
-                ) );
-              }
-            }
-            catch( \cenozo\exception\runtime $e )
-            {
-              // note runtime errors but keep processing anyway
-              log::error( $e->get_message() );
-            }
+            $cenozo_manager = lib::create( 'business\cenozo_manager', $db_application );
+            $cenozo_manager->patch( sprintf( 'participant/%s?repopulate=1', $db_participant->id ) );
+          }
+          catch( \cenozo\exception\runtime $e )
+          {
+            // note runtime errors but keep processing anyway
+            log::error( $e->get_message() );
           }
         }
       }
