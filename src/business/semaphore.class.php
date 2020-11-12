@@ -35,6 +35,25 @@ class semaphore extends \cenozo\base_object
   }
 
   /**
+   * Destructor
+   * 
+   * Release any shared memory
+   */
+  public function __destruct()
+  {
+    // release shared memory if any is still left unaccounted for
+    if( !is_null( $this->resource ) )
+    {
+      log::warning( sprintf(
+        'Semaphore with %d iteration(s) still exists at end of process, releasing memory.',
+        $this->iteration
+      ) );
+      $this->iteration = 1;
+      $this->release();
+    }
+  }
+
+  /**
    * Acquire a semaphore
    * 
    * This will block other semaphores from proceeding until it is released by using the
@@ -114,8 +133,7 @@ class semaphore extends \cenozo\base_object
       $process_count = $this->get_variable( self::PROCESS_COUNT_INDEX );
       if( is_null( $process_count ) )
       {
-        log::error( 'Tried to decrement the process count for a semaphore but it '.
-                  'already has a value of 0' );
+        log::error( 'Tried to decrement the process count for a semaphore but it already has a value of 0' );
       }
       else
       {
@@ -132,46 +150,6 @@ class semaphore extends \cenozo\base_object
         log::error( 'Unable to release semaphore' );
       $this->resource = NULL;
     }
-  }
-
-  /**
-   * Get the number of times a semaphore has been requested for a particular file (full path)
-   * 
-   * This will return the number of semaphores for the given file name.  This will include
-   * a semaphore which is currently processing in addition to all blocked processes.
-   * @param string $filename The full path of the filename index of the semaphore
-   * @param string $name A reference name for the semaphore (may be NULL)
-   * @return int
-   * @throws exception\notice
-   * @access public
-   * @static
-   */
-  public static function get_process_count( $filename, $name = NULL )
-  {
-    $key = self::get_key( $filename, $name );
-    $memory = shm_attach( $key, self::SHARED_MEMORY_SIZE );
-    if( false === $memory )
-    {
-      log::error( 'Unable to aquire shared memory' );
-      throw lib::create( 'exception\notice',
-        'The server is busy, please wait a few seconds then click the refresh button.',
-        __METHOD__ );
-    }
-
-    $value = 0;
-    if( shm_has_var( $memory, self::PROCESS_COUNT_INDEX ) )
-    {
-      $value = shm_get_var( $memory, self::PROCESS_COUNT_INDEX );
-      if( false === $value )
-      {
-        log::error( "Failed to retreive value from shared memory" );
-        throw lib::create( 'exception\notice',
-          'The server is busy, please wait a few seconds then click the refresh button.',
-          __METHOD__ );
-      }
-    }
-
-    return $value;
   }
 
   /**
@@ -263,7 +241,7 @@ class semaphore extends \cenozo\base_object
    * The amount of memory reserved by the shared memory resource
    * @const int
    */
-  const SHARED_MEMORY_SIZE = 16384;
+  const SHARED_MEMORY_SIZE = 1024;
 
   /**
    * The index of the process count variable in shared memory
