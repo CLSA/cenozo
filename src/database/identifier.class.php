@@ -14,6 +14,18 @@ use cenozo\lib, cenozo\log;
 class identifier extends record
 {
   /**
+   * Returns the participant given their identifier
+   * @param string $identifier
+   * @return database\participant
+   */
+  function get_participant( $identifier )
+  {
+    $participant_identifier_class_name = lib::get_class_name( 'database\participant_identifier' );
+    $db_participant_identifier = $participant_identifier_class_name::get_unique_record( 'value', $identifier );
+    return is_null( $db_participant_identifier ) ? NULL : $db_participant_identifier->get_participant();
+  }
+
+  /**
    * Checks or imports CSV data as new participant identifiers
    * 
    * @param string $csv_data
