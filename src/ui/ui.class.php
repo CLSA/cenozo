@@ -158,7 +158,9 @@ class ui extends \cenozo\base_object
     $use_interview_module = $setting_manager->get_setting( 'module', 'interview' );
     $use_recording_module = $setting_manager->get_setting( 'module', 'recording' );
     $use_script_module = $setting_manager->get_setting( 'module', 'script' );
-    $db_role = lib::create( 'business\session' )->get_role();
+    $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
+    $db_application = $session->get_application();
 
     $select = lib::create( 'database\select' );
     $select->add_column( 'subject' );
@@ -242,7 +244,7 @@ class ui extends \cenozo\base_object
       // add child/choose actions to certain modules
       if( 'application' == $module->get_subject() )
       {
-        $module->add_child( 'cohort' );
+        if( $db_application->update_participant_site ) $module->add_child( 'cohort' );
         $module->add_child( 'role' );
         $module->add_choose( 'site' );
         $module->add_choose( 'script' );

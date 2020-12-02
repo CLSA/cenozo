@@ -22,6 +22,10 @@ define( function() {
         title: 'Queued',
         type: 'boolean'
       },
+      update_participant_site: {
+        title: 'Update Sites',
+        type: 'boolean'
+      },
       participant_count: {
         title: 'Participants',
         type: 'number'
@@ -79,6 +83,11 @@ define( function() {
       title: 'Update Queue',
       type: 'boolean',
       help: 'Whether the application has a queue which should be updated when changes are made to the database.'
+    },
+    update_participant_site: {
+      title: 'Update Participant Sites',
+      type: 'boolean',
+      help: 'Whether the application assigns participants to sites based on jurisdictions or region-sites.'
     },
     primary_color: {
       title: 'Primary Colour',
