@@ -567,7 +567,6 @@ class database extends \cenozo\base_object
   public function execute( $sql, $add_database_names = true, $ignore_deadlocks = false )
   {
     $util_class_name = lib::get_class_name( 'util' );
-//    $sql = $util_class_name::convert_charset( $sql );
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
@@ -617,7 +616,6 @@ class database extends \cenozo\base_object
   public function get_one( $sql, $add_database_names = true )
   {
     $util_class_name = lib::get_class_name( 'util' );
-//    $sql = $util_class_name::convert_charset( $sql );
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
@@ -655,7 +653,6 @@ class database extends \cenozo\base_object
   public function get_row( $sql, $add_database_names = true )
   {
     $util_class_name = lib::get_class_name( 'util' );
-//    $sql = $util_class_name::convert_charset( $sql );
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
@@ -697,7 +694,6 @@ class database extends \cenozo\base_object
   public function get_all( $sql, $add_database_names = true )
   {
     $util_class_name = lib::get_class_name( 'util' );
-//    $sql = $util_class_name::convert_charset( $sql );
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
@@ -736,7 +732,6 @@ class database extends \cenozo\base_object
   public function get_col( $sql, $add_database_names = true )
   {
     $util_class_name = lib::get_class_name( 'util' );
-//    $sql = $util_class_name::convert_charset( $sql );
 
     if( $add_database_names ) $sql = $this->add_database_names( $sql );
 
