@@ -552,6 +552,19 @@ class util
   }
 
   /**
+   * Converts a string to the correct character set.
+   * 
+   * The application is current set to use Windows-1252//TRANSLIT.  This coincides with the database charset utf8mb4
+   * @param string $string
+   * @return string
+   * @access public
+   */
+  public static function convert_charset( $string )
+  {
+    return iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $string );
+  }
+
+  /**
    * Encodes any variable/object/array into a json string
    * @param mixed $arg
    * @params bitmask $options See PHP's json_encode docs for more details
@@ -699,7 +712,7 @@ class util
       $encoded_data .= implode( ',', $row )."\n";
     }
 
-    return iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $encoded_data );
+    return static::convert_charset( $encoded_data );
   }
 
   /**
