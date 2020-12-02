@@ -819,7 +819,7 @@ abstract class service extends \cenozo\base_object
         }
         else if( 'text/plain' == $mime_type )
         {
-          $this->encoded_data = iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->encoded_data );
+          $this->encoded_data = $util_class_name::convert_charset( $this->encoded_data );
         }
         else // 'application/json' == $encoding
         {

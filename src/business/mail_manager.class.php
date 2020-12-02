@@ -116,6 +116,8 @@ class mail_manager extends \cenozo\base_object
    */
   public function send()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $setting_manager = lib::create( 'business\setting_manager' );
     $headers = array();
 
@@ -162,8 +164,8 @@ class mail_manager extends \cenozo\base_object
 
     return mail(
       implode( ', ', $to_list ),
-      iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->subject ),
-      iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $this->body ),
+      $util_class_name::convert_charset( $this->subject ),
+      $util_class_name::convert_charset( $this->body ),
       implode( "\r\n", $headers )
     );
   }
@@ -237,8 +239,10 @@ class mail_manager extends \cenozo\base_object
    */
   protected static function encode_email( $email )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     $to = mb_encode_mimeheader( $email['address'], 'UTF-8', 'Q' );
-    if( !is_null( $email['name'] ) ) $to = sprintf( '%s <%s>', iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $email['name'] ), $to );
+    if( !is_null( $email['name'] ) ) $to = sprintf( '%s <%s>', $util_class_name::convert_charset( $email['name'] ), $to );
     return $to;
   }
 
