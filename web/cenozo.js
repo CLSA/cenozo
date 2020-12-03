@@ -1539,12 +1539,17 @@ cenozo.directive( 'cnAddInput', [
         record: '=',
         formattedRecord: '=',
         input: '=',
+        noHelpIndicator: '=',
         model: '=',
         first: '='
       },
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnAddInput';
         $scope.state = $state;
+
+        $scope.getTitle = function() {
+           return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
+        };
 
         $scope.check = function() { $scope.$parent.check( $scope.input.key ); }
 
@@ -2124,11 +2129,16 @@ cenozo.directive( 'cnViewInput', [
         model: '=',
         first: '=',
         noCols: '=',
+        noHelpIndicator: '=',
         condensed: '='
       },
       controller: [ '$scope', function( $scope ) {
         $scope.directive = 'cnViewInput';
         $scope.state = $state;
+
+        $scope.getTitle = function() {
+           return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
+        };
 
         $scope.getColClass = function() {
           var viewModel = $scope.model.viewModel;

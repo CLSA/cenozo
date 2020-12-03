@@ -7,7 +7,7 @@
            class="control-label"
            ng-class="{ 'col-sm-3': !noCols }"
            uib-tooltip-html="input.help"
-           ng-bind-html="input.title + ( input.help ? '<sup>ⓘ</sup>' : '' )"></label>
+           ng-bind-html="getTitle()"></label>
     <div class="row" ng-class="noCols ? 'col-sm-12' : 'col-sm-9'">
       <div ng-class="getColClass()">
         <div class="input-group"
