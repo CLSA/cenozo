@@ -110,7 +110,7 @@ define( function() {
   cenozo.providers.factory( 'CnStudyViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root, 'study_phase' ); }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

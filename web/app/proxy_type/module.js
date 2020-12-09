@@ -78,7 +78,7 @@ define( function() {
     function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
         // allow administrators add/delete of roles and participants
         this.deferred.promise.then( function() {

@@ -472,7 +472,7 @@ define( function() {
     'CnBaseViewFactory', 'CnHttpFactory',
     function( CnBaseViewFactory, CnHttpFactory ) {
       var object = function( parentModel, root ) {
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'address' );
         this.onViewPromise = null;
 
         // track the promise returned by the onView function

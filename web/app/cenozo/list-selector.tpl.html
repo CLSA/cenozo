@@ -1,0 +1,26 @@
+<div class="record-list rounded vertical-spacer" ng-if="1 < ( model.module.children.length + model.module.choosing.length )">
+  <div class="container-fluid bg-primary rounded-top"><h4>List Selector</h4></div>
+  <div class="container-fluid bg-info rounded-bottom">
+    <div class="btn-toolbar vertical-spacer" role="toolbar">
+      <button ng-repeat="child in model.module.children"
+           ng-init="list=model.viewModel[child.subject.camel+'Model'].listModel"
+           ng-if="model.viewModel[child.subject.camel+'Model']"
+                ng-click="model.viewModel.setTab( child.subject.snake )"
+                ng-bind-html="(
+                  child.name.plural + ( list.isLoading ?  '(...)' : ' (' + list.total + ')' )
+                ) | cnUCWords"
+                class="btn btn-group"
+                ng-class="child.subject.snake == model.viewModel.tab ? 'btn-primary' : 'btn-default'">
+      </button>
+      <button ng-repeat="child in model.module.choosing"
+           ng-if="model.viewModel[child.subject.camel+'Model']"
+                ng-click="model.viewModel.setTab( child.subject.snake )"
+                ng-bind-html="(
+                  child.name.plural + ' (' + model.viewModel[child.subject.camel+'Model'].listModel.total + ')'
+                ) | cnUCWords"
+                class="btn btn-group"
+                ng-class="child.subject.snake == model.viewModel.tab ? 'btn-primary' : 'btn-default'">
+      </button>
+    </div>
+  </div>
+</div>

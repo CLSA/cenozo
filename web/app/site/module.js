@@ -163,7 +163,7 @@ define( function() {
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'access' );
 
         // extend the onPatch function
         this.onPatch = function( data ) {

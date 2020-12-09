@@ -1226,6 +1226,22 @@ cenozo.directive( 'cnKeyboardShortcut',
 /* ######################################################################################################## */
 
 /**
+ * Used by cnViewRecord to select which list to show
+ * @attr model: An instance of the subject's model
+ */
+cenozo.directive( 'cnListSelector',
+  function() {
+    return {
+      templateUrl: cenozo.getFileUrl( 'cenozo', 'list-selector.tpl.html' ),
+      restrict: 'E',
+      scope: { model: '=' }
+    };
+  }
+);
+
+/* ######################################################################################################## */
+
+/**
  * Shows a loading component
  */
 cenozo.directive( 'cnLoading',
@@ -1725,6 +1741,8 @@ cenozo.directive( 'cnRecordList', [
         model: '=',
         removeColumns: '@',
         initCollapsed: '=',
+        noRefresh: '@',
+        noReports: '@',
         disableEmptyToEnd: '='
       },
       controller: [ '$scope', '$element', function( $scope, $element ) {
@@ -4377,7 +4395,7 @@ cenozo.factory( 'CnBaseViewFactory', [
     };
 
     return {
-      construct: function( object, parentModel, addDependencies ) {
+      construct: function( object, parentModel, addDependencies, defaultTab ) {
         if( angular.isUndefined( addDependencies ) ) addDependencies = false;
         object.parentModel = parentModel;
         object.heading = parentModel.module.name.singular.ucWords() + ' Details';
@@ -4391,6 +4409,15 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.isLoading = false;
         object.isFileListLoading = false;
         object.deferred = $q.defer();
+        if( angular.isDefined( defaultTab ) ) {
+          object.tab = object.parentModel.getQueryParameter( 'tab' );
+          if( angular.isUndefined( object.tab ) ) object.tab = defaultTab;
+          object.setTab = function( tab ) {
+            object.tab = tab;
+            object.parentModel.setQueryParameter( 'tab', object.tab );
+            object.parentModel.reloadState( false, false, 'replace' );
+          };
+        }
 
         // for all dependencies require its files, inject and set up the model
         var promiseList = parentModel.module.children.concat( parentModel.module.choosing ).reduce(

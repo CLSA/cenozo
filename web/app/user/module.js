@@ -265,7 +265,7 @@ define( function() {
     function( CnBaseViewFactory, CnModalConfirmFactory, CnModalMessageFactory, CnSession, CnHttpFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'access' );
         this.listenToCallIncluded = false;
         this.listenToCallDisabled = true;
 

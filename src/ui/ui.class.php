@@ -218,7 +218,7 @@ class ui extends \cenozo\base_object
       }
       else if( 'GET' == $service['method'] )
       {
-        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}' );
+        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}?{tab}' );
         else $module->add_action( 'list', '?{page}&{restrict}&{order}&{reverse}' );
       }
       else if( 'PATCH' == $service['method'] )

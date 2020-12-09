@@ -124,7 +124,7 @@ define( function() {
     function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'report' );
         this.onViewPromise = null;
 
         // track the promise returned by the onView function

@@ -1066,7 +1066,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               $window, $q, $state ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'address' );
         this.onViewPromise = null;
         this.scriptLaunchers = {};
         this.hasDecedent = null;

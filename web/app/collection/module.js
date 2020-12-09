@@ -127,7 +127,7 @@ define( function() {
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.userModel ) ) self.userModel.listModel.heading = 'User Control List';

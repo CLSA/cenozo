@@ -226,7 +226,7 @@ define( function() {
   cenozo.providers.factory( 'CnStratumViewFactory', [
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root, 'participant' ); };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
