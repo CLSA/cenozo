@@ -1,22 +1,26 @@
 <cn-record-view model="model"></cn-record-view>
 <cn-list-selector model="model"></cn-list-selector>
-<div ng-show="child.subject.snake==model.viewModel.tab" ng-repeat="child in model.module.children">
+<div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
+     ng-repeat="child in model.module.children"
+     class="vertical-spacer">
   <cn-record-list ng-if="'application' != child.subject.snake &&
                          model.viewModel[child.subject.camel+'Model']"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
-<div ng-show="child.subject.snake==model.viewModel.tab" ng-repeat="child in model.module.choosing">
+<div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
+     ng-repeat="child in model.module.choosing"
+     class="vertical-spacer">
   <cn-record-list ng-if="'collection' != child.subject.snake &&
                          model.viewModel[child.subject.camel+'Model']"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
-<div ng-show="'application'==model.viewModel.tab" class="panel panel-default">
+<div ng-show="'application'==model.viewModel.tab" class="vertical-spacer">
   <cn-record-list ng-if="model.viewModel.applicationModel"
                   model="model.viewModel.applicationModel"
                   remove-columns="version release_based update_queue participant_count site_count">
   </cn-record-list>
 </div>
-<div ng-show="'collection'==model.viewModel.tab">
+<div ng-show="'collection'==model.viewModel.tab" class="vertical-spacer">
   <cn-record-list ng-if="model.viewModel.collectionModel"
                   model="model.viewModel.collectionModel"
                   remove-columns="active user_count"></cn-record-list>

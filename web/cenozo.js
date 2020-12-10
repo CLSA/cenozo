@@ -4417,6 +4417,8 @@ cenozo.factory( 'CnBaseViewFactory', [
             object.parentModel.setQueryParameter( 'tab', object.tab );
             object.parentModel.reloadState( false, false, 'replace' );
           };
+        } else {
+          object.tab = null;
         }
 
         // for all dependencies require its files, inject and set up the model

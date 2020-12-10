@@ -50,6 +50,7 @@ define( function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnApplicationTypeListFactory.instance( this );
+        this.getViewEnabled = function() { return false; };
       };
 
       return {
