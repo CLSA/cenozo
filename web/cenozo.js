@@ -4466,6 +4466,27 @@ cenozo.factory( 'CnBaseViewFactory', [
         }
 
         /**
+         * Determines which children/choosing lists to include in the standard view
+         */
+        cenozo.addExtendableFunction( object, 'getChildList', function() {
+          var self = this;
+          return this.parentModel.module.children
+            .concat( this.parentModel.module.choosing )
+            .filter( function( child ) {
+              var name = child.subject.camel + 'Model';
+              return self[name] && self[name].listModel;
+            } );
+        } );
+
+        /**
+         * Determines which children/choosing lists to include in the standard view
+         */
+        cenozo.addExtendableFunction( object, 'getChildTitle', function( child ) {
+          var list = this[child.subject.camel + 'Model'].listModel;
+          return child.name.singular.ucWords() + ( list.isLoading ?  '(...)' : ' (' + list.total + ')' )
+        } );
+
+        /**
          * Updates a property of the formatted copy of the record
          */
         cenozo.addExtendableFunction( object, 'updateFormattedRecord', function( property, type ) {
