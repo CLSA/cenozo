@@ -1,9 +1,12 @@
 <cn-record-view model="model"></cn-record-view>
-<div class="vertical-spacer" ng-repeat="child in model.module.children">
-  <cn-record-list ng-if="model.viewModel[child.subject.camel+'Model']"
-                  model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
+<cn-list-selector model="model"></cn-list-selector>
+<div ng-show="child.subject.snake == model.viewModel.tab"
+     ng-repeat="child in model.viewModel.getChildList()"
+     ng-if="'column' != child.subject.snake && 'restriction' != child.subject.snake"
+     class="vertical-spacer">
+  <cn-record-list model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
-<div class="record-view rounded vertical-spacer">
+<div ng-show="'column' == model.viewModel.tab" class="record-view rounded vertical-spacer">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
       Columns
@@ -89,7 +92,7 @@
     </div>
   </div>
 </div>
-<div class="record-view rounded vertical-spacer">
+<div ng-show="'restriction' == model.viewModel.tab" class="record-view rounded vertical-spacer">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
       Restrictions

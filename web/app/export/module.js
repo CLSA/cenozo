@@ -161,9 +161,31 @@ define( [
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'export_file' );
 
         angular.extend( this, {
+          // create a custom child list that includes the column and restriction dialogs
+          customChildList: null,
+          getChildList: function() {
+            if( null == this.customChildList ) {
+              this.customChildList = this.$$getChildList().concat( [
+                { subject: { camel: 'column', snake: 'column' } },
+                { subject: { camel: 'restriction', snake: 'restriction' } }
+              ] );
+            }
+            return this.customChildList;
+          },
+
+          // extend the child title to properly name the custom column and restriction dialogs
+          getChildTitle: function( child ) {
+            if( 'column' == child.subject.snake ) {
+              return 'Columns (' + ( this.columnListIsLoading ? '...' : this.columnList.length ) + ')';
+            } else if( 'restriction' == child.subject.snake ) {
+              return 'Restrictions (' + ( this.restrictionListIsLoading ? '...' : this.restrictionList.length ) + ')';
+            }
+            return this.$$getChildTitle( child );
+          },
+
           createDuplicateExport: function() {
             return CnHttpFactory.instance( {
               path: 'export?duplicate_export_id=' + self.record.id
@@ -172,6 +194,7 @@ define( [
               return self.parentModel.transitionToViewState( record );
             } );
           },
+
           onView: function() {
             return this.$$onView().then( function() {
               return CnHttpFactory.instance( {
@@ -255,7 +278,9 @@ define( [
               } );
             } );
           },
+          
           promise: null, // defined below
+          
           modelList: {
             participant: CnParticipantModelFactory.root,
             site: CnSiteModelFactory.root,
@@ -269,11 +294,13 @@ define( [
             proxy: CnProxyModelFactory.root,
             trace: CnTraceModelFactory.root
           },
+          
           extendedSiteSelection: 'mastodon' == CnSession.application.type,
           columnListIsLoading: true,
           restrictionListIsLoading: true,
           participantCount: 0,
           restrictionList: [],
+          
           tableRestrictionList: {
             auxiliary: {
               isLoading: false,
@@ -370,6 +397,7 @@ define( [
               list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
+          
           tableColumnList: {
             auxiliary: {
               isLoading: false,
@@ -427,8 +455,10 @@ define( [
               list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
+          
           newColumn: {},
           columnList: [],
+          
           subtypeList: {
             site: [
               { key: 'effective', name: 'Effective', inUse: false },

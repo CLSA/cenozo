@@ -2,16 +2,9 @@
 <div ng-if="showChildren">
   <cn-list-selector model="model"></cn-list-selector>
   <div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
-       ng-repeat="child in model.module.children"
+       ng-repeat="child in model.viewModel.getChildList()"
        class="vertical-spacer">
-    <cn-record-list ng-if="model.viewModel[child.subject.camel+'Model']"
-                    model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
-  </div>
-  <div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
-       ng-repeat="child in model.module.choosing"
-       class="vertical-spacer">
-    <cn-record-list ng-if="model.viewModel[child.subject.camel+'Model']"
-                    model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
+    <cn-record-list model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
   </div>
 </div>
 <div class="well vertical-spacer text-info" ng-if="!showChildren">

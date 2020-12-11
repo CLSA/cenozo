@@ -2049,7 +2049,7 @@ cenozo.directive( 'cnRecordView', [
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
-      link: function( scope, element, attrs ) {
+      link: function( scope ) {
         if( angular.isUndefined( scope.model ) ) {
           console.error( 'Cannot render cn-record-view, no model provided.' );
         } else {
@@ -2062,13 +2062,9 @@ cenozo.directive( 'cnRecordView', [
             scope.heading = heading ? heading : scope.model.module.name.singular.ucWords() + ' Details';
           } );
 
-          if( angular.isDefined( attrs.viewTitle ) ) {
-            scope.viewTitle = attrs.viewTitle;
-          } else {
-            scope.viewTitle = angular.isDefined( scope.model.viewTitle )
-                            ? scope.model.viewTitle
-                            : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
-          }
+          scope.viewTitle = angular.isDefined( scope.model.viewTitle )
+                          ? scope.model.viewTitle
+                          : 'View ' + scope.model.module.name.singular.ucWords() + ' List';
 
           // watch the model's viewTitle in case it changes
           scope.$watch( 'model.viewTitle', function( viewTitle ) {

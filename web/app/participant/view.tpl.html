@@ -1,27 +1,14 @@
 <cn-record-view model="model"></cn-record-view>
 <cn-list-selector model="model"></cn-list-selector>
 <div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
-     ng-repeat="child in model.module.children"
+     ng-repeat="child in model.viewModel.getChildList()"
+     ng-switch="child.subject.snake"
      class="vertical-spacer">
-  <cn-record-list ng-if="'application' != child.subject.snake &&
-                         model.viewModel[child.subject.camel+'Model']"
-                  model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
-</div>
-<div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
-     ng-repeat="child in model.module.choosing"
-     class="vertical-spacer">
-  <cn-record-list ng-if="'collection' != child.subject.snake &&
-                         model.viewModel[child.subject.camel+'Model']"
-                  model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
-</div>
-<div ng-show="'application'==model.viewModel.tab" class="vertical-spacer">
-  <cn-record-list ng-if="model.viewModel.applicationModel"
-                  model="model.viewModel.applicationModel"
-                  remove-columns="version release_based update_queue participant_count site_count">
-  </cn-record-list>
-</div>
-<div ng-show="'collection'==model.viewModel.tab" class="vertical-spacer">
-  <cn-record-list ng-if="model.viewModel.collectionModel"
-                  model="model.viewModel.collectionModel"
-                  remove-columns="active user_count"></cn-record-list>
+  <cn-record-list ng-switch-when="application"
+                  remove-columns="version release_based update_queue participant_count site_count"
+                  model="model.viewModelApplication"></cn-record-list>
+  <cn-record-list ng-switch-when="collection"
+                  remove-columns="active user_count"
+                  model="model.viewModelCollection"></cn-record-list>
+  <cn-record-list ng-switch-default model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
