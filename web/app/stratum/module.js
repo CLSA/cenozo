@@ -226,7 +226,16 @@ define( function() {
   cenozo.providers.factory( 'CnStratumViewFactory', [
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.participantModel ) ) {
+            self.participantModel.getChooseEnabled = function() { return false; };
+          }
+        } );
+      };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
