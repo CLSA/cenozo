@@ -215,7 +215,7 @@ abstract class base_report extends \cenozo\base_object
               else
               {
                 $record = lib::create( sprintf( 'database\%s', $setting['subject'] ), $value );
-                $value = $record->name;
+                $value = $record->column_exists( 'name' ) ? $record->name : $record->id;
               }
             }
             else if( 'date' == $setting['type'] )
