@@ -6,9 +6,9 @@
      class="vertical-spacer">
   <cn-record-list ng-switch-when="application"
                   remove-columns="version release_based update_queue participant_count site_count"
-                  model="model.viewModelApplication"></cn-record-list>
+                  model="model.viewModel.applicationModel"></cn-record-list>
   <cn-record-list ng-switch-when="collection"
                   remove-columns="active user_count"
-                  model="model.viewModelCollection"></cn-record-list>
+                  model="model.viewModel.collectionModel"></cn-record-list>
   <cn-record-list ng-switch-default model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
