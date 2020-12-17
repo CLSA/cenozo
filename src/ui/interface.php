@@ -118,7 +118,7 @@
         <div class="navbar-header">
           <a class="navbar-brand" data-toggle="dropdown"><?php echo APP_TITLE; ?></a>
           <ul class="dropdown-menu navigation-menu">
-            <li ng-controller="MenuCtrl">
+            <li class="navigation-menu-inner" ng-controller="MenuCtrl">
               <div class="container-fluid operation-list">
                 <div class="btn-group btn-group-justified">
                   <div class="btn-group" ng-repeat="operation in operationList">

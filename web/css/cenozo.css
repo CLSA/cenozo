@@ -218,7 +218,7 @@ tfoot, .modal-footer {
   position: fixed;
   width: 100%;
   top: 0px;
-  box-shadow: 0px 3px 3px #a0a0a0;
+  box-shadow: 0px 3px 10px #404040;
 }
 
 .open > .navigation-menu {
@@ -235,11 +235,16 @@ tfoot, .modal-footer {
   border: white;
   border-radius: 0px;
   width: 100%;
-  box-shadow: 0px 3px 3px #a0a0a0;
-  -webkit-transition: opacity 500ms ease, visibility 500ms ease;
-  -moz-transition: opacity 500ms ease, visibility 500ms ease;
-  -o-transition: opacity 500ms ease, visibility 500ms ease;
-  transition: opacity 500ms ease, visibility 500ms ease;
+  box-shadow: 0px 2000px 0px 2000px #00000080;
+  -webkit-transition: all 500ms ease-in-out;
+  -moz-transition: all 500ms ease-in-out;
+  -o-transition: all 500ms ease-in-out;
+  transition: all 500ms ease-in-out;
+}
+
+.navigation-menu-inner {
+  margin-top: -5px;
+  box-shadow: 0px 10px 30px 10px #000000;
 }
 
 .navigation-group {
