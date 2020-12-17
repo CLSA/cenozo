@@ -4405,9 +4405,8 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.isLoading = false;
         object.isFileListLoading = false;
         object.deferred = $q.defer();
-        if( angular.isDefined( defaultTab ) ) {
-          object.tab = object.parentModel.getQueryParameter( 'tab' );
-          if( angular.isUndefined( object.tab ) ) object.tab = defaultTab;
+        object.defaultTab = defaultTab;
+        if( angular.isDefined( object.defaultTab ) ) {
           object.setTab = function( tab ) {
             object.tab = tab;
             object.parentModel.setQueryParameter( 'tab', object.tab );
@@ -4679,8 +4678,13 @@ cenozo.factory( 'CnBaseViewFactory', [
           var self = this;
           if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
 
+          if( angular.isUndefined( object.parentModel.getQueryParameter( 'tab' ) ) )
+
           this.isLoading = true;
           this.isFileListLoading = true;
+
+          this.tab = this.parentModel.getQueryParameter( 'tab' );
+          if( angular.isUndefined( this.tab ) ) this.tab = this.defaultTab;
 
           // first clear the record
           for( var column in this.record )
