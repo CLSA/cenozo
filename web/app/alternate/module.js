@@ -339,9 +339,10 @@ define( function() {
 
           CnHttpFactory.instance( {
             path: 'alternate/' + $state.params.identifier,
-            data: { select: { column: [ 'first_name', 'last_name' ] } }
+            data: { select: { column: [ 'id', 'first_name', 'last_name' ] } }
           } ).get().then( function( response ) {
             $scope.name = response.data.first_name + ' ' + response.data.last_name;
+            $scope.id = response.data.id;
           } );
 
           // create an array from the history categories object
@@ -356,19 +357,7 @@ define( function() {
 
           $scope.refresh = function() {
             $scope.isLoading = true;
-            $scope.model.onView().then( function() {
-              CnSession.setBreadcrumbTrail(
-                [ {
-                  title: 'Alternates',
-                  go: function() { $state.go( 'alternate.list' ); }
-                }, {
-                  title: $scope.uid,
-                  go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
-                }, {
-                  title: 'History'
-                } ]
-              );
-            } ).finally( function finished() { $scope.isLoading = false; } );
+            $scope.model.onView().finally( function finished() { $scope.isLoading = false; } );
           };
           $scope.refresh();
         }
