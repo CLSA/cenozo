@@ -1359,7 +1359,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 path: 'availability_type',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: { order: 'name', limit: 1000 }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.availability_type_id.enumList = [];
@@ -1376,7 +1376,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                   select: { column: [ 'id', 'name', 'code' ] },
                   modifier: {
                     where: { column: 'active', operator: '=', value: true },
-                    order: 'name'
+                    order: 'name',
+                    limit: 1000
                   }
                 }
               } ).query().then( function success( response ) {
@@ -1394,7 +1395,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: { order: 'name', limit: 1000 }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.preferred_site_id = { enumList: [] };

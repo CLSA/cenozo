@@ -137,7 +137,7 @@ define( function() {
                 path: 'role',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } },
+                  modifier: { order: { name: false }, limit: 1000 },
                   granting: true // only return roles which we can grant access to
                 }
               } ).query().then( function success( response ) {
@@ -151,7 +151,7 @@ define( function() {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } },
+                  modifier: { order: { name: false }, limit: 1000 },
                   granting: true // only return sites which we can grant access to
                 }
               } ).query().then( function success( response ) {

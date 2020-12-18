@@ -146,7 +146,8 @@ define( function() {
                       operator: '=',
                       value: true
                     },
-                    order: 'name'
+                    order: 'name',
+                    limit: 1000
                   }
                 }
               } ).query().then( function success( response ) {
@@ -166,7 +167,8 @@ define( function() {
                       operator: '=',
                       value: CnSession.application.country
                     },
-                    order: 'name'
+                    order: 'name',
+                    limit: 1000
                   }
                 }
               } ).query().then( function success( response ) {
@@ -180,7 +182,7 @@ define( function() {
                 path: 'application/0/site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: { order: 'name', limit: 1000 }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];

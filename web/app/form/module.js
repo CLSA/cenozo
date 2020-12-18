@@ -136,7 +136,7 @@ define( function() {
               path: 'form_type',
               data: {
                 select: { column: [ 'id', 'title' ] },
-                modifier: { order: 'title' }
+                modifier: { order: 'title', limit: 1000 }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.form_type_id.enumList = [];

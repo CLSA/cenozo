@@ -169,7 +169,7 @@ define( function() {
               path: 'consent_type',
               data: {
                 select: { column: [ 'id', 'name', 'access' ] },
-                modifier: { order: 'name' }
+                modifier: { order: 'name', limit: 1000 }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.consent_type_id.enumList = [];

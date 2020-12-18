@@ -166,7 +166,7 @@ define( function() {
                 path: 'survey',
                 data: {
                   select: { column: [ 'sid', 'title' ] },
-                  modifier: { order: { title: false } }
+                  modifier: { order: { title: false }, limit: 1000 }
                 }
               } ).query().then( function( response ) {
                 self.metadata.columnList.sid.enumList = [];
@@ -179,7 +179,7 @@ define( function() {
                 path: 'pine_qnaire',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } }
+                  modifier: { order: { name: false }, limit: 1000 }
                 }
               } ).query().then( function( response ) {
                 self.metadata.columnList.pine_qnaire_id.enumList = [];
@@ -192,7 +192,7 @@ define( function() {
                 path: 'event_type',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: { order: 'name', limit: 1000 }
                 }
               } ).query().then( function( response ) {
                 self.metadata.columnList.started_event_type_id.enumList = [];

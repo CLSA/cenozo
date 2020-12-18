@@ -156,7 +156,7 @@ define( function() {
                     { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
                   ]
                 },
-                modifier: { order: ['country','name'], limit: 100 }
+                modifier: { order: ['country','name'], limit: 1000 }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.region_id.enumList = [];

@@ -207,7 +207,7 @@ define( function() {
               path: 'hold_type',
               data: {
                 select: { column: [ 'id', 'type', 'name', 'access', 'system' ] },
-                modifier: { order: [ 'type', 'name' ] }
+                modifier: { order: [ 'type', 'name' ], limit: 1000 }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.hold_type_id.enumList = [];

@@ -329,7 +329,7 @@ define( function() {
                     path: 'site',
                     data: {
                       select: { column: [ 'id', 'name' ] },
-                      modifier: { order: 'name' }
+                      modifier: { order: 'name', limit: 1000 }
                     }
                   } ).query().then( function success( response ) {
                     self.metadata.columnList.site_id.enumList = [];
@@ -342,7 +342,7 @@ define( function() {
                     path: 'report_type/' + reportTypeIdentifier + '/role',
                     data: {
                       select: { column: [ 'id', 'name' ] },
-                      modifier: { order: 'name' }
+                      modifier: { order: 'name', limit: 1000 }
                     }
                   } ).query().then( function success( response ) {
                     self.metadata.columnList.role_id.enumList = [];
@@ -353,7 +353,7 @@ define( function() {
 
                   CnHttpFactory.instance( {
                     path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
-                    data: { modifier: { order: { rank: false } } }
+                    data: { modifier: { order: { rank: false }, limit: 1000 } }
                   } ).get().then( function( response ) {
                     // replace all restrictions from the module and metadata
                     var inputPromiseList = [];

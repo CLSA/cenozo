@@ -177,7 +177,7 @@ define( function() {
               path: 'site',
               data: {
                 select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
+                modifier: { order: 'name', limit: 1000 }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.site_id.enumList = [];

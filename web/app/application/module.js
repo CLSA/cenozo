@@ -228,7 +228,7 @@ define( function() {
                   path: 'study_phase',
                   data: {
                     select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
-                    modifier: { order: { 'study.name': false, 'study_phase.rank': false } }
+                    modifier: { order: { 'study.name': false, 'study_phase.rank': false }, limit: 1000 }
                   }
                 } ).query().then( function success( response ) {
                   self.metadata.columnList.study_phase_id.enumList = [];
