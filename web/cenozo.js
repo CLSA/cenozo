@@ -4405,7 +4405,7 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.isLoading = false;
         object.isFileListLoading = false;
         object.deferred = $q.defer();
-        object.defaultTab = defaultTab;
+        object.defaultTab = angular.isUndefined( defaultTab ) ? null : defaultTab;
         if( angular.isDefined( object.defaultTab ) ) {
           object.setTab = function( tab ) {
             object.tab = tab;
