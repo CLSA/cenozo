@@ -304,7 +304,7 @@ abstract class record extends \cenozo\base_object
     // and add the values from the set list to the select object as constants
     foreach( $set_list as $column => $value ) $select->add_constant( $value, $column, NULL, false );
 
-    $sql = sprintf( 'INSERT INTO %s ('."\n".'  %s'."\n".')'."\n".'%s %s',
+    $sql = sprintf( 'INSERT IGNORE INTO %s ('."\n".'  %s'."\n".')'."\n".'%s %s',
                     $table_name,
                     implode( ",\n  ", $columns ),
                     $select->get_sql(),
