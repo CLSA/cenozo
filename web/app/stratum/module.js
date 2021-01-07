@@ -20,7 +20,7 @@ define( function() {
       refused_count: { title: 'Refused', type: 'number' },
       consented_count: { title: 'Consented', type: 'number' },
       completed_count: { title: 'Completed', type: 'number' },
-      description: { title: 'Description', align: 'left' }
+      description: { column: 'stratum.description', title: 'Description', align: 'left' }
     },
     defaultOrder: {
       column: 'name',
