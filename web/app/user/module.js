@@ -232,10 +232,12 @@ define( function() {
               data: { select: { column: [ 'name', 'first_name', 'last_name' ] } }
             } ).get().then( function( response ) {
               var user = response.data;
+              var message = 'email' == column
+                          ? 'The email address, "' + newRecord[column] + '", is already registered to '
+                          : 'The username, "' + newRecord[column] + '", already exists and belongs to ';
               CnModalConfirmFactory.instance( {
                 title: 'User Already Exists',
-                message: 'The username you are trying to create already exists and belongs to ' +
-                  user.first_name + ' ' + user.last_name + '. ' +
+                message: message + user.first_name + ' ' + user.last_name + '. ' +
                   'Would you like to view the user\'s details so that you can grant them access ' +
                   'to the requested site and role?'
               } ).show().then( function( response ) {
