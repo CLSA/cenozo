@@ -267,6 +267,11 @@ define( [ 'trace' ].reduce( function( list, name ) {
           } );
         };
 
+        this.onView = function( force ) {
+          this.onViewPromise = this.$$onView( force );
+          return this.onViewPromise;
+        };
+
         this.onPatch = function( data ) {
           var identifier = this.parentModel.getParentIdentifier();
           if( angular.isDefined( data.active ) ) {

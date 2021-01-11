@@ -185,7 +185,7 @@ class util
     $offset = $offset;
     if( $daylight_savings && 1 == date( 'I' ) ) $offset++;
     $offset = -$offset; // Etc has +/- reversed, 'cause that's not confusing...
-    if( 0 <= $offset ) $offset = '+'.$offset;
+    if( 0 <= $offset ) $offset = '+'.abs( $offset ); // because we can have -0 for some reason...
     return 'Etc/GMT'.$offset;
   }
 
