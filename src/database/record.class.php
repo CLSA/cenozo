@@ -255,6 +255,38 @@ abstract class record extends \cenozo\base_object
 
     if( 0 < strlen( $sets ) )
     {
+      // if there is a pair of start/end date or datetime columns then make sure they aren't backwards
+      if( static::column_exists( 'start_date' ) && static::column_exists( 'end_date' ) &&
+          !is_null( $this->start_date ) && !is_null( $this->end_date ) &&
+          $this->start_date > $this->end_date )
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf(
+            'Tried to save %s record id %d with date start/end mismatch: start (%s) > end (%s)',
+            $table_name,
+            is_null( $this->id ) ? '(null)' : $this->id,
+            $this->start_date->format( 'Y-m-d' ),
+            $this->end_date->format( 'Y-m-d' )
+          ),
+          __METHOD__
+        );
+      }
+      else if( static::column_exists( 'start_datetime' ) && static::column_exists( 'end_datetime' ) &&
+               !is_null( $this->start_datetime ) && !is_null( $this->end_datetime ) &&
+               $this->start_datetime > $this->end_datetime )
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf(
+            'Tried to save %s record id %d with datetime start/end mismatch: start (%s UTC) > end (%s UTC)',
+            $table_name,
+            is_null( $this->id ) ? '(null)' : $this->id,
+            $this->start_datetime->format( 'Y-m-d H:i:s' ),
+            $this->end_datetime->format( 'Y-m-d H:i:s' )
+          ),
+          __METHOD__
+        );
+      }
+
       // either insert or update the row based on whether the primary key is set
       $sql = sprintf(
         is_null( $primary_key_value ) ?
