@@ -49,14 +49,14 @@ define( function() {
       title: 'Credited Site',
       type: 'enum',
       help: 'This determines which site is credited with the completed interview.',
-      isConstant: function( $state, model ) { return !model.isAdministrator(); }
+      isConstant: function( $state, model ) { return !model.isRole( 'administrator' ); }
     },
     start_datetime: {
       column: 'interview.start_datetime',
       title: 'Start Date & Time',
       type: 'datetimesecond',
       max: 'end_datetime',
-      isConstant: function( $state, model ) { return !model.isAdministrator(); },
+      isConstant: function( $state, model ) { return !model.isRole( 'administrator' ); },
       help: 'When the first call from the first assignment was made for this interview.'
     },
     end_datetime: {
@@ -65,7 +65,7 @@ define( function() {
       type: 'datetimesecond',
       min: 'start_datetime',
       max: 'now',
-      isConstant: function( $state, model ) { return !model.isAdministrator(); },
+      isConstant: function( $state, model ) { return !model.isRole( 'administrator' ); },
       help: 'Will remain blank until the questionnaire is finished.'
     },
     note: {
@@ -143,8 +143,6 @@ define( function() {
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this, root );
-
-        this.isAdministrator = function() { return 'administrator' == CnSession.role.name; }
 
         // Adding an interview is special, instead of transitioning to an add dialog a command can be
         // sent to the server to directly add a new interview

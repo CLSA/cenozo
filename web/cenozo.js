@@ -4902,6 +4902,15 @@ cenozo.factory( 'CnBaseModelFactory', [
         var self = object;
 
         /**
+         * A convenience method that determines whether the current role is included in the provided list.
+         * For example: isRole( 'administrator', 'supervisor' ) will return true if the current user is logged
+         * in as an administrator or supervisor.
+         */
+        cenozo.addExtendableFunction( self, 'isRole', function( ...args ) {
+          return args.some( role => role == CnSession.role.name );
+        } );
+
+        /**
          * get the identifier based on what is in the model's module
          */
         cenozo.addExtendableFunction( self, 'getIdentifierFromRecord', function( record, valueOnly ) {

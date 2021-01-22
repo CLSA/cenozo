@@ -54,7 +54,7 @@ define( function() {
       title: 'Written',
       type: 'boolean',
       isConstant: 'view',
-      isExcluded: function( $state, model ) { return !model.isAdministrator(); }
+      isExcluded: function( $state, model ) { return !model.isRole( 'administrator' ); }
     },
     datetime: {
       title: 'Date & Time',
@@ -159,8 +159,6 @@ define( function() {
             'value', this.viewModel.record.consent_type_id );
           return consentType ? consentType.name : 'unknown';
         };
-
-        this.isAdministrator = function() { return 'administrator' == CnSession.role.name; };
 
         // extend getMetadata
         this.getMetadata = function() {

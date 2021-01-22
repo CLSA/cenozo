@@ -1349,8 +1349,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         this.listModel = CnParticipantListFactory.instance( this );
         if( root ) this.viewModel = CnParticipantViewFactory.instance( this, root );
 
-        this.isAdministrator = function() { return 'administrator' == CnSession.role.name; };
-
         // extend getMetadata
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {

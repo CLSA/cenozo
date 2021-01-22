@@ -98,7 +98,7 @@ define( function() {
     decedent: {
       title: 'Decedent Responder',
       type: 'boolean',
-      isConstant: function( $state, model ) { return !model.isAdministratorOrCurator(); }
+      isConstant: function( $state, model ) { return !model.isRole( 'administrator', 'curator' ); }
     },
     emergency: {
       title: 'Emergency Contact',
@@ -486,8 +486,6 @@ define( function() {
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );
-
-        this.isAdministratorOrCurator = function() { return ['administrator', 'curator'].includes( CnSession.role.name ); }
 
         // extend getMetadata
         this.getMetadata = function() {
