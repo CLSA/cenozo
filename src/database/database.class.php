@@ -572,8 +572,9 @@ class database extends \cenozo\base_object
 
     if( self::$debug )
     {
+      $method = self::$backtrace ? 'warning' : 'debug';
       $time = $util_class_name::get_elapsed_time();
-      log::debug( "(DB) executing:\n".$sql );
+      log::$method( "(DB) executing:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -621,8 +622,9 @@ class database extends \cenozo\base_object
 
     if( true === self::$debug )
     {
+      $method = self::$backtrace ? 'warning' : 'debug';
       $time = $util_class_name::get_elapsed_time();
-      log::debug( "(DB) getting one:\n".$sql );
+      log::$method( "(DB) getting one:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -658,8 +660,9 @@ class database extends \cenozo\base_object
 
     if( true === self::$debug )
     {
+      $method = self::$backtrace ? 'warning' : 'debug';
       $time = $util_class_name::get_elapsed_time();
-      log::debug( "(DB) getting row:\n".$sql );
+      log::$method( "(DB) getting row:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -699,8 +702,9 @@ class database extends \cenozo\base_object
 
     if( true === self::$debug )
     {
+      $method = self::$backtrace ? 'warning' : 'debug';
       $time = $util_class_name::get_elapsed_time();
-      log::debug( "(DB) getting all:\n".$sql );
+      log::$method( "(DB) getting all:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -737,8 +741,9 @@ class database extends \cenozo\base_object
 
     if( true === self::$debug )
     {
+      $method = self::$backtrace ? 'warning' : 'debug';
       $time = $util_class_name::get_elapsed_time();
-      log::debug( "(DB) getting col:\n".$sql );
+      log::$method( "(DB) getting col:\n".$sql );
     }
     $result = $this->connection->query( $sql );
     if( false === $result )
@@ -1072,6 +1077,14 @@ class database extends \cenozo\base_object
    * @access public
    */
   public static $debug = false;
+
+  /**
+   * When set to true debug queries will include a backtrace
+   * @var boolean
+   * @static
+   * @access public
+   */
+  public static $backtrace = false;
 
   /**
    * Holds all table information including database, columns, unique key constraints.
