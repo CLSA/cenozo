@@ -219,6 +219,17 @@ class data_manager extends \cenozo\singleton
             $value = $db_address->address1;
             if( !is_null( $db_address->address2 ) ) $value .= ' '.$db_address->address2;
           }
+          else if( 'full' == $column )
+          {
+            $value = $db_address->address1;
+            if( !is_null( $db_address->address2 ) ) $value .= ' '.$db_address->address2;
+            $value .= sprintf(
+              ', %s, %s, %s',
+              $db_address->city,
+              $db_address->get_region()->code,
+              $db_address->postcode
+            );
+          }
           else
           {
             if( !$db_address->column_exists( $column ) )
