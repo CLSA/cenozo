@@ -226,7 +226,7 @@ class data_manager extends \cenozo\singleton
             $value .= sprintf(
               ', %s, %s, %s',
               $db_address->city,
-              $db_address->get_region()->code,
+              $db_address->get_region()->abbreviation,
               $db_address->postcode
             );
           }
