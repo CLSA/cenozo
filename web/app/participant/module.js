@@ -177,7 +177,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     date_of_birth: {
       title: 'Date of Birth',
       type: 'dob',
-      max: 'now'
+      max: 'now',
+      isConstant: function( $state, model ) { return !model.isRole( 'administrator' ); }
     },
     date_of_death: {
       title: 'Date of Death',

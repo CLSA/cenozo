@@ -66,6 +66,10 @@ class patch extends \cenozo\service\patch
 
       // make sure that only tier 2+ roles can reverse a proxy initiation
       if( $this->reverse_proxy_initiation && 2 > $db_role->tier ) $this->status->set_code( 403 );
+
+      // only admins can change the date of birth
+      $patch_array = parent::get_file_as_array();
+      if( array_key_exists( 'date_of_birth', $patch_array ) && 3 > $db_role->tier ) $this->status->set_code( 403 );
     }
   }
 
