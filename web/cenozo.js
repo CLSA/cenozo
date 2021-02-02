@@ -767,7 +767,7 @@ angular.extend( cenozo, {
       var baseAddUrl = angular.isDefined( module.actions.view )
                      ? module.actions.view.replace( '{identifier}', '{parentIdentifier}' )
                      : '{parentIdentifier}';
-      baseAddUrl = '/view' + baseAddUrl;
+      baseAddUrl = '/view' + baseAddUrl.replace( /\?.*/, '' ); // remove query parameters
       module.children.forEach( function( child ) {
         var childModule = cenozoApp.module( child.subject.snake );
         if( angular.isDefined( childModule.actions.add ) ) {
