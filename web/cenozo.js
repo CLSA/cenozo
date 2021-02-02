@@ -3934,6 +3934,9 @@ cenozo.factory( 'CnBaseListFactory', [
   function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q ) {
     return {
       construct: function( object, parentModel ) {
+        if( angular.isUndefined( parentModel.module.defaultOrder ) )
+          throw new Error( 'Cannot create list factory, module.defaultOrder is missing.' );
+
         object.parentModel = parentModel;
         object.heading = parentModel.module.name.singular.ucWords() + ' List';
         object.order = object.parentModel.module.defaultOrder;
