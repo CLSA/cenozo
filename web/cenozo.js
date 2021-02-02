@@ -3415,6 +3415,16 @@ cenozo.factory( 'CnBaseAddFactory', [
         object.afterAddFunctions = [];
 
         /**
+         * Determines whether a file has been selected for the given property
+         * 
+         * @param string property
+         * @return boolean
+         */
+        cenozo.addExtendableFunction( object, 'hasFile', function( property ) {
+          return angular.isDefined( this.fileList.findByProperty( 'key', property ).getFilename() );
+        } );
+
+        /**
          * Sends a new record to the server.
          * 
          * @param object record: The record to add
@@ -3487,6 +3497,9 @@ cenozo.factory( 'CnBaseAddFactory', [
           for( var column in record )
             if( record.hasOwnProperty( column ) )
               record[column] = null;
+
+          // reset all files from previous uploads
+          self.fileList.forEach( function( file ) { file.file = null; } );
 
           // load the metadata and use it to apply default values to the record
           return this.parentModel.metadata.getPromise().then( function() {
