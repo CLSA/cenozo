@@ -1,5 +1,6 @@
 <div class="record-list rounded">
   <div class="container-fluid bg-primary rounded-top"
+       ng-if="!simple"
        data-toggle="collapse"
        data-target="#{{ model.module.subject.camel }}List"
        ng-click="collapsed = !collapsed"
@@ -161,7 +162,7 @@
             </td>
         </tr>
       </tbody>
-      <tfoot class="bg-info">
+      <tfoot class="bg-info" ng-if="!simple">
         <tr>
           <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
               class="rounded-bottom">

@@ -1739,6 +1739,7 @@ cenozo.directive( 'cnRecordList', [
       restrict: 'E',
       scope: {
         model: '=',
+        simple: '@',
         removeColumns: '@',
         initCollapsed: '=',
         noRefresh: '@',
