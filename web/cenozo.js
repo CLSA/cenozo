@@ -5004,18 +5004,19 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * determine whether a query parameter belongs to the model
          */
-        cenozo.addExtendableFunction( self, 'hasQueryParameter', function( name ) {
+        cenozo.addExtendableFunction( self, 'hasQueryParameter', function( name, global ) {
+          if( angular.isUndefined( global ) ) global = false;
           return angular.isDefined( $state.current.url ) &&
                  $state.current.url.includes( '{' + name + '}' ) &&
-                 self.getSubjectFromState() == self.queryParameterSubject;
+                 ( global || self.getSubjectFromState() == self.queryParameterSubject );
         } );
 
         /**
          * return a query parameter (will be undefined if it doesn't belong to the model)
          */
-        cenozo.addExtendableFunction( self, 'getQueryParameter', function( name ) {
+        cenozo.addExtendableFunction( self, 'getQueryParameter', function( name, global ) {
           var parameter = undefined;
-          if( self.hasQueryParameter( name ) ) {
+          if( self.hasQueryParameter( name, global ) ) {
             var parameter = $state.params[name];
             // convert string booleans to true booleans
             if( 'false' === parameter ) parameter = false;
@@ -5027,8 +5028,8 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * sets a query parameter (does nothing if it doesn't belong to the model)
          */
-        cenozo.addExtendableFunction( self, 'setQueryParameter', function( name, value ) {
-          if( self.hasQueryParameter( name ) ) {
+        cenozo.addExtendableFunction( self, 'setQueryParameter', function( name, value, global ) {
+          if( self.hasQueryParameter( name, global ) ) {
             if( angular.isUndefined( value ) ) {
               if( angular.isDefined( $state.params[name] ) ) delete $state.params[name];
             } else {
