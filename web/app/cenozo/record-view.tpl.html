@@ -38,7 +38,7 @@
                 ng-disabled="isDeleting"
                 cn-really-message="Are you sure you want to delete this {{ model.module.name.singular }}?"
                 cn-really-click="delete()">
-          <i class="glyphicon glyphicon-remove-sign"></i> Delete
+          <i class="glyphicon glyphicon-remove-sign"></i> {{ getDeleteText() }}
         </button>
         <button ng-if="!hasParent()"
                 type="button"
@@ -51,7 +51,7 @@
                 type="button"
                 class="btn btn-primary"
                 ng-click="viewParent( parent.subject )">
-          View {{ parentName( parent.subject ) }}
+          {{ getViewText( parent.subject ) }}
         </button>
       </div>
     </div>
@@ -95,7 +95,7 @@
                 ng-disabled="isDeleting"
                 cn-really-message="Are you sure you want to delete this {{ model.module.name.singular }}?"
                 cn-really-click="delete()">
-          <i class="glyphicon glyphicon-remove-sign"></i> Delete
+          <i class="glyphicon glyphicon-remove-sign"></i> {{ getDeleteText() }}
         </button>
         <button ng-if="!hasParent() && model.getListEnabled()"
                 type="button"
@@ -108,7 +108,7 @@
                 type="button"
                 class="btn btn-primary"
                 ng-click="viewParent( parent.subject )">
-          View {{ parentName( parent.subject ) }}
+          {{ getViewText( parent.subject ) }}
         </button>
       </div>
     </div>

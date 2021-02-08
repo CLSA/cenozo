@@ -1380,9 +1380,52 @@ cenozo.directive( 'cnRecordAdd', [
         removeInputs: '@'
       },
       controller: [ '$scope', function( $scope ) {
-        $scope.directive = 'cnRecordAdd';
-        $scope.record = {};
-        $scope.isComplete = false;
+        angular.extend( $scope, {
+          directive: 'cnRecordAdd',
+          record: {},
+          isComplete: false,
+          getCancelText: function() { return 'Cancel'; },
+          getSaveText: function() { return 'Save'; },
+          cancel: function() { $scope.model.addModel.transitionOnCancel(); },
+
+          check: function( property ) {
+            // convert size types and write record property from formatted record
+            var input = $scope.model.module.getInput( property );
+            if( 'size' == input.type )
+              $scope.record[property] =
+                $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
+
+            // test the format
+            var element = cenozo.getFormElement( property );
+            if( element ) {
+              element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
+              cenozo.updateFormElement( element, true );
+            }
+          },
+
+          save: function() {
+            if( !$scope.form.$valid ) {
+              // dirty all inputs so we can find the problem
+              cenozo.forEachFormElement( 'form', function( element ) { element.$dirty = true; } );
+            } else {
+              $scope.isAdding = true;
+              $scope.model.addModel.onAdd( $scope.record ).then( function( response ) {
+                // create a new record to be created (in case another record is added)
+                $scope.form.$setPristine();
+                $scope.model.addModel.transitionOnSave( $scope.record );
+                $scope.model.addModel.onNew( $scope.record );
+              } ).finally( function() { $scope.isAdding = false; } );
+            }
+          },
+
+          // determines whether there are any visible inputs in a group
+          groupHasVisibleInputs: function( group ) {
+            return group.inputArray.some( function( input ) {
+              return true !== input.isExcluded( $state, $scope.model ) && 'add' != input.isExcluded( $state, $scope.model );
+            } );
+          }
+        } );
+
         $scope.model.addModel.onNew( $scope.record ).then( function() {
           $scope.model.metadata.getPromise().then( function() {
             if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) )
@@ -1460,49 +1503,12 @@ cenozo.directive( 'cnRecordAdd', [
               } );
             } );
           } );
-        } ).finally( function() { $scope.isComplete = true; } );
+        } ).finally( function() {
+          $scope.isComplete = true;
 
-        $scope.cancel = function() { $scope.model.addModel.transitionOnCancel(); };
-
-        $scope.check = function( property ) {
-          // convert size types and write record property from formatted record
-          var input = $scope.model.module.getInput( property );
-          if( 'size' == input.type )
-            $scope.record[property] =
-              $filter( 'cnSize' )( $scope.formattedRecord[property].join( ' ' ), true );
-
-          // test the format
-          var element = cenozo.getFormElement( property );
-          if( element ) {
-            element.$error.format = !$scope.model.testFormat( property, $scope.record[property] );
-            cenozo.updateFormElement( element, true );
-          }
-        };
-
-        $scope.save = function() {
-          if( !$scope.form.$valid ) {
-            // dirty all inputs so we can find the problem
-            cenozo.forEachFormElement( 'form', function( element ) { element.$dirty = true; } );
-          } else {
-            $scope.isAdding = true;
-            $scope.model.addModel.onAdd( $scope.record ).then( function( response ) {
-              // create a new record to be created (in case another record is added)
-              $scope.form.$setPristine();
-              $scope.model.addModel.transitionOnSave( $scope.record );
-              $scope.model.addModel.onNew( $scope.record );
-            } ).finally( function() { $scope.isAdding = false; } );
-          }
-        };
-
-        // determines whether there are any visible inputs in a group
-        $scope.groupHasVisibleInputs = function( group ) {
-          return group.inputArray.some( function( input ) {
-            return true !== input.isExcluded( $state, $scope.model ) && 'add' != input.isExcluded( $state, $scope.model );
-          } );
-        };
-
-        // emit that the directive is ready
-        $scope.$emit( $scope.directive + ' ready', $scope );
+          // emit that the directive is ready
+          $scope.$emit( $scope.directive + ' ready', $scope );
+        } );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1883,9 +1889,144 @@ cenozo.directive( 'cnRecordView', [
       },
       controller: [ '$scope', function( $scope ) {
         var patchPromise = $q.all();
-        $scope.directive = 'cnRecordView';
-        $scope.isComplete = false;
-        $scope.showTimestamps = 2 < CnSession.role.tier;
+
+        angular.extend( $scope, {
+          directive: 'cnRecordView',
+          isComplete: false,
+          showTimestamps: 2 < CnSession.role.tier,
+          getDeleteText: function() { return 'Delete'; },
+          getViewText: function( subject ) { return 'View ' + $scope.parentName( subject ); },
+
+          refresh: function() {
+            if( $scope.isComplete ) {
+              $scope.isComplete = false;
+              patchPromise.then( function() {
+                $scope.model.viewModel.onView().then( function() {
+                  // trigger a keyup to get cn-elastic to fire
+                  angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' );
+                } ).finally( function() {
+                  // reset the error status
+                  cenozo.forEachFormElement( 'form', function( element ) {
+                    element.$error = {};
+                    cenozo.updateFormElement( element, true );
+                  } );
+                  $scope.isComplete = true;
+                } );
+              } );
+            }
+          },
+
+          patch: function( property ) {
+            if( $scope.model.getEditEnabled() ) {
+              // This function is sometimes called when it shouldn't with the record having all null or undefined values.
+              // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
+              if( angular.isUndefined( $scope.model.viewModel.record[property] ) ) {
+                var valid = false;
+                for( var prop in $scope.model.viewModel.record ) {
+                  if( angular.isDefined( $scope.model.viewModel.record[prop] ) && null !== $scope.model.viewModel.record[prop] ) {
+                    valid = true;
+                    break;
+                  }
+                }
+
+                if( !valid ) {
+                  console.warn( 'Invalid call to patch() detected and ignored.' );
+                  return;
+                }
+              }
+
+              var element = cenozo.getFormElement( property );
+              var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
+
+              if( element ) {
+                element.$error.format = !valid;
+                cenozo.updateFormElement( element, true );
+              }
+
+              if( valid ) {
+                // convert size types and write record property from formatted record
+                if( null != $scope.input && 'size' == $scope.input.type )
+                  $scope.model.viewModel.record[property] =
+                    $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
+
+                // validation passed, proceed with patch
+                var data = {};
+                data[property] = $scope.model.viewModel.record[property];
+
+                // get the identifier now (in case it is changed before it is used below)
+                var identifier = $scope.model.viewModel.record.getIdentifier();
+                patchPromise = $scope.model.viewModel.onPatch( data ).then( function() {
+                  // if the data in the identifier was patched then reload with the new url
+                  if( identifier.split( /[;=]/ ).includes( property ) ) {
+                    $scope.model.setQueryParameter( 'identifier', identifier );
+                    $scope.model.reloadState();
+                  } else {
+                    var currentElement = cenozo.getFormElement( property );
+                    if( currentElement ) {
+                      if( currentElement.$error.conflict ) {
+                        cenozo.forEachFormElement( 'form', function( element ) {
+                          element.$error.conflict = false;
+                          cenozo.updateFormElement( element, true );
+                        } );
+                      }
+                    }
+
+                    // update the formatted value
+                    $scope.model.viewModel.updateFormattedRecord( property );
+                  }
+                } );
+              }
+            }
+          },
+
+          getReport: function( format ) {
+            $scope.model.viewModel.onReport( format ).then( function() {
+              saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
+            } );
+          },
+
+          hasParent: function() { return angular.isDefined( $scope.model.module.identifier.parent ); },
+
+          parentExists: function( subject ) {
+            if( !$scope.hasParent() ) return false;
+            var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
+            if( null === parent ) return false;
+            return $scope.model.viewModel.record[parent.alias];
+          },
+
+          parentName: function( subject ) {
+            // get the name from the parent module
+            return cenozoApp.module( subject ).name.singular.ucWords();
+          },
+
+          viewParent: function( subject ) {
+            $scope.model.viewModel.transitionOnViewParent( subject );
+          },
+
+          delete: function() {
+            $scope.isDeleting = true;
+            if( $scope.model.getDeleteEnabled() ) {
+              $scope.model.viewModel.onDelete().then( function() {
+                $scope.model.viewModel.transitionOnDelete();
+              } ).finally( function() { $scope.isDeleting = false; } );
+            }
+          },
+
+          onGroupClick: function( group, index ) {
+            // toggle the group's collapsed state
+            group.collapsed = !group.collapsed;
+            // trigger a keyup to get cn-elastic to fire
+            if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' )
+          },
+
+          // determines whether there are any visible inputs in a group
+          groupHasVisibleInputs: function( group ) {
+            return group.inputArray.some( function( input ) {
+              return true !== input.isExcluded( $state, $scope.model ) && 'view' != input.isExcluded( $state, $scope.model );
+            } );
+          }
+        } );
+
         $scope.model.viewModel.onView().then( function() {
           if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
@@ -1916,139 +2057,12 @@ cenozo.directive( 'cnRecordView', [
               } );
             } );
           }
-        } ).finally( function() { $scope.isComplete = true; } );
+        } ).finally( function() {
+          $scope.isComplete = true;
 
-        $scope.refresh = function() {
-          if( $scope.isComplete ) {
-            $scope.isComplete = false;
-            patchPromise.then( function() {
-              $scope.model.viewModel.onView().then( function() {
-                // trigger a keyup to get cn-elastic to fire
-                angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' );
-              } ).finally( function() {
-                // reset the error status
-                cenozo.forEachFormElement( 'form', function( element ) {
-                  element.$error = {};
-                  cenozo.updateFormElement( element, true );
-                } );
-                $scope.isComplete = true;
-              } );
-            } );
-          }
-        };
-
-        $scope.patch = function( property ) {
-          if( $scope.model.getEditEnabled() ) {
-            // This function is sometimes called when it shouldn't with the record having all null or undefined values.
-            // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
-            if( angular.isUndefined( $scope.model.viewModel.record[property] ) ) {
-              var valid = false;
-              for( var prop in $scope.model.viewModel.record ) {
-                if( angular.isDefined( $scope.model.viewModel.record[prop] ) && null !== $scope.model.viewModel.record[prop] ) {
-                  valid = true;
-                  break;
-                }
-              }
-
-              if( !valid ) {
-                console.warn( 'Invalid call to patch() detected and ignored.' );
-                return;
-              }
-            }
-
-            var element = cenozo.getFormElement( property );
-            var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
-
-            if( element ) {
-              element.$error.format = !valid;
-              cenozo.updateFormElement( element, true );
-            }
-
-            if( valid ) {
-              // convert size types and write record property from formatted record
-              if( null != $scope.input && 'size' == $scope.input.type )
-                $scope.model.viewModel.record[property] =
-                  $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
-
-              // validation passed, proceed with patch
-              var data = {};
-              data[property] = $scope.model.viewModel.record[property];
-
-              // get the identifier now (in case it is changed before it is used below)
-              var identifier = $scope.model.viewModel.record.getIdentifier();
-              patchPromise = $scope.model.viewModel.onPatch( data ).then( function() {
-                // if the data in the identifier was patched then reload with the new url
-                if( identifier.split( /[;=]/ ).includes( property ) ) {
-                  $scope.model.setQueryParameter( 'identifier', identifier );
-                  $scope.model.reloadState();
-                } else {
-                  var currentElement = cenozo.getFormElement( property );
-                  if( currentElement ) {
-                    if( currentElement.$error.conflict ) {
-                      cenozo.forEachFormElement( 'form', function( element ) {
-                        element.$error.conflict = false;
-                        cenozo.updateFormElement( element, true );
-                      } );
-                    }
-                  }
-
-                  // update the formatted value
-                  $scope.model.viewModel.updateFormattedRecord( property );
-                }
-              } );
-            }
-          }
-        };
-
-        $scope.getReport = function( format ) {
-          $scope.model.viewModel.onReport( format ).then( function() {
-            saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
-          } );
-        };
-
-        $scope.hasParent = function() { return angular.isDefined( $scope.model.module.identifier.parent ); }
-
-        $scope.parentExists = function( subject ) {
-          if( !$scope.hasParent() ) return false;
-          var parent = $scope.model.module.identifier.parent.findByProperty( 'subject', subject );
-          if( null === parent ) return false;
-          return $scope.model.viewModel.record[parent.alias];
-        };
-
-        $scope.parentName = function( subject ) {
-          // get the name from the parent module
-          return cenozoApp.module( subject ).name.singular.ucWords();
-        };
-
-        $scope.viewParent = function( subject ) {
-          $scope.model.viewModel.transitionOnViewParent( subject );
-        };
-
-        $scope.delete = function() {
-          $scope.isDeleting = true;
-          if( $scope.model.getDeleteEnabled() ) {
-            $scope.model.viewModel.onDelete().then( function() {
-              $scope.model.viewModel.transitionOnDelete();
-            } ).finally( function() { $scope.isDeleting = false; } );
-          }
-        };
-
-        $scope.onGroupClick = function( group, index ) {
-          // toggle the group's collapsed state
-          group.collapsed = !group.collapsed;
-          // trigger a keyup to get cn-elastic to fire
-          if( !group.collapsed ) angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' )
-        };
-
-        // determines whether there are any visible inputs in a group
-        $scope.groupHasVisibleInputs = function( group ) {
-          return group.inputArray.some( function( input ) {
-            return true !== input.isExcluded( $state, $scope.model ) && 'view' != input.isExcluded( $state, $scope.model );
-          } );
-        };
-
-        // emit that the directive is ready
-        $scope.$emit( $scope.directive + ' ready', $scope );
+          // emit that the directive is ready
+          $scope.$emit( $scope.directive + ' ready', $scope );
+        } );
       } ],
       link: function( scope ) {
         if( angular.isUndefined( scope.model ) ) {
