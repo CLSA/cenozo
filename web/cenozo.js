@@ -1753,73 +1753,75 @@ cenozo.directive( 'cnRecordList', [
         disableEmptyToEnd: '='
       },
       controller: [ '$scope', '$element', function( $scope, $element ) {
-        $scope.directive = 'cnRecordList';
-        $scope.reportTypeListOpen = false;
-        $scope.applyingChoose = false;
+        angular.extend( $scope, {
+          directive: 'cnRecordList',
+          reportTypeListOpen: false,
+          applyingChoose: false,
+          getAddText: function() { return 'Add'; },
+
+          refresh: function() {
+            if( !$scope.model.listModel.isLoading ) {
+              $scope.model.listModel.onList( true );
+            }
+          },
+
+          toggleReportTypeDropdown: function() {
+            $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
+          },
+
+          getReport: function( format ) {
+            $scope.model.listModel.onReport( format ).then( function() {
+              saveAs( $scope.model.listModel.reportBlob, $scope.model.listModel.reportFilename );
+            } );
+            $scope.toggleReportTypeDropdown();
+          },
+
+          addRecord: function() {
+            if( $scope.model.getAddEnabled() ) $scope.model.listModel.transitionOnAdd();
+          },
+
+          deleteRecord: function( record ) {
+            if( $scope.model.getDeleteEnabled() ) {
+              if( !$scope.isDeleting.includes( record.id ) ) $scope.isDeleting.push( record.id );
+              var index = $scope.isDeleting.indexOf( record.id );
+              $scope.model.listModel.onDelete( record ).finally(
+                function() { if( 0 <= index ) $scope.isDeleting.splice( index, 1 ); }
+              );
+            }
+          },
+
+          chooseRecord: function( record ) {
+            if( $scope.model.getChooseEnabled() ) {
+              if( $scope.model.listModel.chooseMode ) {
+                // record.chosen shows in the list which record is selected
+                record.chosen = record.chosen ? 0 : 1;
+                // record.chosenNow keeps track of which records to apply if the changes are committed
+                record.chosenNow = record.chosen;
+              }
+            }
+          },
+
+          selectRecord: function( record ) {
+            if( $scope.model.getViewEnabled() ) {
+              $scope.model.listModel.onSelect( record );
+            }
+          },
+
+          applyChosenRecords: function() {
+            if( $scope.model.getChooseEnabled() ) {
+              if( $scope.model.listModel.chooseMode ) {
+                $scope.applyingChoose = true;
+                $scope.model.listModel.onApplyChosen().finally( function() { $scope.applyingChoose = false; } );
+              }
+            }
+          }
+        } );
 
         $scope.model.listModel.onList( true ).then( function() {
           if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
+          // emit that the directive is ready
+          $scope.$emit( $scope.directive + ' ready', $scope );
         } );
-
-        $scope.refresh = function() {
-          if( !$scope.model.listModel.isLoading ) {
-            $scope.model.listModel.onList( true );
-          }
-        };
-
-        $scope.toggleReportTypeDropdown = function() {
-          $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
-        };
-
-        $scope.getReport = function( format ) {
-          $scope.model.listModel.onReport( format ).then( function() {
-            saveAs( $scope.model.listModel.reportBlob, $scope.model.listModel.reportFilename );
-          } );
-          $scope.toggleReportTypeDropdown();
-        };
-
-        $scope.addRecord = function() {
-          if( $scope.model.getAddEnabled() ) $scope.model.listModel.transitionOnAdd();
-        };
-
-        $scope.deleteRecord = function( record ) {
-          if( $scope.model.getDeleteEnabled() ) {
-            if( !$scope.isDeleting.includes( record.id ) ) $scope.isDeleting.push( record.id );
-            var index = $scope.isDeleting.indexOf( record.id );
-            $scope.model.listModel.onDelete( record ).finally(
-              function() { if( 0 <= index ) $scope.isDeleting.splice( index, 1 ); }
-            );
-          }
-        };
-
-        $scope.chooseRecord = function( record ) {
-          if( $scope.model.getChooseEnabled() ) {
-            if( $scope.model.listModel.chooseMode ) {
-              // record.chosen shows in the list which record is selected
-              record.chosen = record.chosen ? 0 : 1;
-              // record.chosenNow keeps track of which records to apply if the changes are committed
-              record.chosenNow = record.chosen;
-            }
-          }
-        };
-
-        $scope.selectRecord = function( record ) {
-          if( $scope.model.getViewEnabled() ) {
-            $scope.model.listModel.onSelect( record );
-          }
-        };
-
-        $scope.applyChosenRecords = function() {
-          if( $scope.model.getChooseEnabled() ) {
-            if( $scope.model.listModel.chooseMode ) {
-              $scope.applyingChoose = true;
-              $scope.model.listModel.onApplyChosen().finally( function() { $scope.applyingChoose = false; } );
-            }
-          }
-        };
-
-        // emit that the directive is ready
-        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {

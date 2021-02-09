@@ -185,7 +185,7 @@
               <button class="btn btn-default pull-right"
                       ng-if="model.getAddEnabled()"
                       ng-click="addRecord()">
-                <i class="glyphicon glyphicon-plus"></i> Add
+                <i class="glyphicon glyphicon-plus"></i> {{ getAddText() }}
               </button>
             </div>
             <div class="btn-group pull-right" ng-if="model.getChooseEnabled()">
