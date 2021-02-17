@@ -1505,10 +1505,10 @@ cenozo.directive( 'cnRecordAdd', [
           } );
         } ).finally( function() {
           $scope.isComplete = true;
-
-          // emit that the directive is ready
-          $scope.$emit( $scope.directive + ' ready', $scope );
         } );
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1819,9 +1819,10 @@ cenozo.directive( 'cnRecordList', [
 
         $scope.model.listModel.onList( true ).then( function() {
           if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
-          // emit that the directive is ready
-          $scope.$emit( $scope.directive + ' ready', $scope );
         } );
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -2061,10 +2062,10 @@ cenozo.directive( 'cnRecordView', [
           }
         } ).finally( function() {
           $scope.isComplete = true;
-
-          // emit that the directive is ready
-          $scope.$emit( $scope.directive + ' ready', $scope );
         } );
+
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope ) {
         if( angular.isUndefined( scope.model ) ) {
