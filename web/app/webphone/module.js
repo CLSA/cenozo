@@ -23,12 +23,7 @@ define( function() {
           CnSession.setBreadcrumbTrail( [ { title: 'Webphone' } ] );
 
           $scope.tab = 'server';
-          $scope.javaHelp =
-            'If you see a "Java Application Blocked" message or the box above doesn\'t display the webphone ' +
-            'interface then you must grant access to this website in your Java Control Panel. ' +
-            'From your computer launch the "Configure Java" program, click on the "Security" tab then add ' +
-            '"' + window.location.origin + '" to the Exception Site List.  Then restart your web browser ' +
-            'and allow the webphone to be run on your computer (it is not a security risk).';
+          $scope.webphoneHelp = 'If the box above doesn\'t display the webphone interface then please contact support.';
         }
       };
     }
