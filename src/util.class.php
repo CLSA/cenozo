@@ -565,6 +565,32 @@ class util
   }
 
   /**
+   * Fully encode a URL string
+   * @param string $input
+   * @static
+   * @return string
+   * @access public
+   */
+  public static function full_urlencode( $input )
+  {
+    $output = '';
+
+    for( $index = 0; $index < strlen( $input ); $index++ )
+    {
+      $hex = dechex( ord( $input[$index] ) );
+      $output = '' == $hex
+              ? $output.urlencode($input[$index])
+              : $output .'%'.( ( strlen( $hex ) == 1 ) ? ( '0'.strtoupper( $hex ) ) : ( strtoupper( $hex ) ) );
+    }
+    $output = str_replace( '+', '%20', $output );
+    $output = str_replace( '_', '%5F', $output );
+    $output = str_replace( '.', '%2E', $output );
+    $output = str_replace( '-', '%2D', $output );
+
+    return $output;
+  }
+
+  /**
    * Encodes any variable/object/array into a json string
    * @param mixed $arg
    * @params bitmask $options See PHP's json_encode docs for more details
