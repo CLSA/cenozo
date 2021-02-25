@@ -32,6 +32,7 @@ class head extends read
     $util_class_name = lib::get_class_name( 'util' );
     $record_class_name = $this->get_leaf_record_class_name();
     $this->columns = $record_class_name::db()->get_column_details( $this->get_leaf_subject() );
+    foreach( $this->columns as $index => $column ) unset( $this->columns[$index]['key'] );
   }
 
   /**
