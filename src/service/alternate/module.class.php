@@ -110,8 +110,8 @@ class module extends \cenozo\service\site_restricted_participant_module
                   'IF( alternate, "alternate", NULL )',
                   'IF( decedent, "decedent", NULL )',
                   'IF( emergency, "emergency", NULL )',
-                  'IF( informant, "informant", NULL )',
-                  'IF( proxy, "proxy", NULL )' );
+                  'IF( informant, "proxy IP", NULL )',
+                  'IF( proxy, "proxy DM", NULL )' );
       $select->add_column( $column, 'types', false );
     }
   }
