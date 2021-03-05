@@ -29,7 +29,7 @@ define( function() {
   module.addInputGroup( '', {
     type: {
       title: 'Type',
-      type: 'string'
+      type: 'enum'
     },
     name: {
       title: 'Name',
