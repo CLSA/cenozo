@@ -20,3 +20,7 @@ Load timezone information into mysql:
 Apache Mod Rewrite:
   sudo a2enmod rewrite
   edit /etc/apache2/apache2.conf, change AllowOverride from None to All in <Directory /var/www/></Directory>
+
+Turn off Apache's private tmp feature:
+  edit /etc/systemd/system/multi-user.target.wants/apache2.service
+  set PrivateTmp=false
