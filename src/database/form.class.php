@@ -83,6 +83,22 @@ class form extends record
   }
 
   /**
+   * Adds proxy consent data and associates it to this form
+   * 
+   * @param string $type The type of consent (see consent_type.name)
+   * @param int $alternate_id The primary key of the alternate associated with the consent.
+   * @param array $consent An associative array containing "datetime" and "accept" keys
+   * @return database\consent The consent record created by this method
+   * @access public
+   */
+  public function add_proxy_consent( $type, $alternate_id, $consent, $note = NULL )
+  {
+    // same as a consent form but associate the alternate as well
+    $this->add_consent( $type, $consent, $note );
+    $this->add_association( 'alternate', $alternate_id );
+  }
+
+  /**
    * Adds hin data and associates it to this form
    * 
    * @param string $type The type of hin (see hin_type.name)
