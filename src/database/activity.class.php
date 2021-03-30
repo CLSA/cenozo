@@ -58,9 +58,11 @@ class activity extends record
       try
       {
         // the following often causes deadlocks but the are safe to ignore (caught and ignored below)
-        static::db()->execute( sprintf(
-          'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s',
-          $modifier->get_sql() ), true, true );
+        static::db()->execute(
+          sprintf( 'UPDATE activity SET end_datetime = UTC_TIMESTAMP() %s', $modifier->get_sql() ),
+          true,
+          true // ignore deadlocks
+        );
 
         // create a new activity if there isn't already one open
         $modifier = lib::create( 'database\modifier' );
@@ -106,11 +108,16 @@ class activity extends record
       $modifier->where( 'activity.application_id', '=', $db_application->id );
       $modifier->where( 'end_datetime', '=', NULL );
 
-      $affected_rows = static::db()->execute( sprintf(
-        'UPDATE activity'.
-        "\n".'JOIN access USING( user_id, role_id, site_id )'.
-        "\n".'SET end_datetime = datetime %s',
-        $modifier->get_sql() ) );
+      $affected_rows = static::db()->execute(
+        sprintf(
+          'UPDATE activity'.
+          "\n".'JOIN access USING( user_id, role_id, site_id )'.
+          "\n".'SET end_datetime = datetime %s',
+          $modifier->get_sql()
+        ),
+        true,
+        true // ignore deadlocks
+      );
     }
     else if( $setting_manager->get_setting( 'utility', 'username' ) != $db_user->name )
     {
