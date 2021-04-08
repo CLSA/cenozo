@@ -112,10 +112,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         isDisabled: function( $state, model ) {
           return !( model.viewModel.holdModel && model.viewModel.holdModel.getAddEnabled() );
         },
-        operation: function( $state, model ) {
-          model.viewModel.onViewPromise.then( function() {
-            $state.go( 'participant.add_hold', { parentIdentifier: model.viewModel.record.getIdentifier() } );
-          } );
+        operation: async function( $state, model ) {
+          await model.viewModel.onViewPromise;
+          await $state.go( 'participant.add_hold', { parentIdentifier: model.viewModel.record.getIdentifier() } );
         }
       },
       help: 'Whether the participant is currently in a hold.'
@@ -130,10 +129,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         isDisabled: function( $state, model ) {
           return !( model.viewModel.traceModel && model.viewModel.traceModel.getAddEnabled() );
         },
-        operation: function( $state, model ) {
-          model.viewModel.onViewPromise.then( function() {
-            $state.go( 'participant.add_trace', { parentIdentifier: model.viewModel.record.getIdentifier() } );
-          } );
+        operation: async function( $state, model ) {
+          await model.viewModel.onViewPromise;
+          await $state.go( 'participant.add_trace', { parentIdentifier: model.viewModel.record.getIdentifier() } );
         }
       },
       help: 'Whether the participant currently requires tracing.'
@@ -148,10 +146,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         isDisabled: function( $state, model ) {
           return !( model.viewModel.proxyModel && model.viewModel.proxyModel.getAddEnabled() );
         },
-        operation: function( $state, model ) {
-          model.viewModel.onViewPromise.then( function() {
-            $state.go( 'participant.add_proxy', { parentIdentifier: model.viewModel.record.getIdentifier() } );
-          } );
+        operation: async function( $state, model ) {
+          await model.viewModel.onViewPromise;
+          await $state.go( 'participant.add_proxy', { parentIdentifier: model.viewModel.record.getIdentifier() } );
         }
       },
       help: 'Whether the participant requires a proxy, and if so then what their proxy status is.'
@@ -259,10 +256,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   if( angular.isDefined( module.actions.notes ) ) {
     module.addExtraOperation( 'view', {
       title: 'Notes',
-      operation: function( $state, model ) {
-        model.viewModel.onViewPromise.then( function() {
-          $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
-        } );
+      operation: async function( $state, model ) {
+        await model.viewModel.onViewPromise;
+        await $state.go( 'participant.notes', { identifier: model.viewModel.record.getIdentifier() } );
       }
     } );
   }
@@ -270,10 +266,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   if( angular.isDefined( module.actions.history ) ) {
     module.addExtraOperation( 'view', {
       title: 'History',
-      operation: function( $state, model ) {
-        model.viewModel.onViewPromise.then( function() {
-          $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
-        } );
+      operation: async function( $state, model ) {
+        await model.viewModel.onViewPromise;
+        await $state.go( 'participant.history', { identifier: model.viewModel.record.getIdentifier() } );
       }
     } );
   }
@@ -281,8 +276,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   module.addExtraOperation( 'view', {
     title: 'Use Timezone',
     help: "Changes to the same timezone as the participant's first active address",
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() { model.viewModel.useTimezone(); } );
+    operation: async function( $state, model ) {
+      await model.viewModel.onViewPromise;
+      await model.viewModel.useTimezone();
     }
   } );
 
@@ -363,7 +359,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     module.addExtraOperation( 'list', {
       title: 'Search',
       isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-      operation: function( $state, model ) { $state.go( 'search_result.list' ); }
+      operation: async function( $state, model ) { await $state.go( 'search_result.list' ); }
     } );
   }
 
@@ -371,7 +367,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     module.addExtraOperation( 'list', {
       title: 'Import',
       isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-      operation: function( $state, model ) { $state.go( 'participant.import' ); }
+      operation: async function( $state, model ) { await $state.go( 'participant.import' ); }
     } );
   }
 
@@ -379,7 +375,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     module.addExtraOperation( 'list', {
       title: 'Multiedit',
       isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-      operation: function( $state, model ) { $state.go( 'participant.multiedit' ); }
+      operation: async function( $state, model ) { await $state.go( 'participant.multiedit' ); }
     } );
   }
 
@@ -389,7 +385,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       module.addExtraOperation( 'list', {
         title: 'Export',
         isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-        operation: function( $state, model ) { $state.go( 'export.list' ); }
+        operation: async function( $state, model ) { await $state.go( 'export.list' ); }
       } );
     }
   } catch( err ) {}
@@ -398,7 +394,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
    * The historyCategoryList object stores the following information
    *   category:
    *     active: whether or not to show the category in the history list by default
-   *     promise: a function which gets all history items for that category and which must return a promise
+   *     promise: an async function which gets all history items for that category
    * 
    * This can be extended by applications by adding new history categories or changing existing ones.
    * Note: make sure the category name (the object's property) matches the property set in the historyList
@@ -408,8 +404,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Address: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/address',
           data: {
             modifier: {
@@ -431,18 +427,18 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            var description = item.address1;
-            if( item.address2 ) description += '\n' + item.address2;
-            description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
-            if( item.international ) description += "\n(international)";
-            historyList.push( {
-              datetime: item.create_timestamp,
-              category: 'Address',
-              title: 'added rank ' + item.rank,
-              description: description
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          var description = item.address1;
+          if( item.address2 ) description += '\n' + item.address2;
+          description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
+          if( item.international ) description += "\n(international)";
+          historyList.push( {
+            datetime: item.create_timestamp,
+            category: 'Address',
+            title: 'added rank ' + item.rank,
+            description: description
           } );
         } );
       }
@@ -451,8 +447,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Alternate: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/alternate',
           data: {
             select: { column: [
@@ -467,29 +463,29 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               'last_name'
             ] }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            var description = ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n';
-            var list = [];
-            if( item.alternate ) list.push( 'alternate contact' );
-            if( item.decedent ) list.push( 'decedent responder' );
-            if( item.emergency ) list.push( 'emergency contact' );
-            if( item.informant ) list.push( 'information provider' );
-            if( item.proxy ) list.push( 'proxy decision maker' );
-            if( 0 == list.length ) {
-              description = '(not registiered for any role)';
-            } else {
-              list.forEach( function( name, index, array ) {
-                if( 0 < index ) description += index == array.length - 1 ? ' and ' : ', ';
-                description += name;
-              } );
-            }
-            historyList.push( {
-              datetime: item.create_timestamp,
-              category: 'Alternate',
-              title: 'added ' + item.first_name + ' ' + item.last_name,
-              description: item.first_name + ' ' + item.last_name + description
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          var description = ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n';
+          var list = [];
+          if( item.alternate ) list.push( 'alternate contact' );
+          if( item.decedent ) list.push( 'decedent responder' );
+          if( item.emergency ) list.push( 'emergency contact' );
+          if( item.informant ) list.push( 'information provider' );
+          if( item.proxy ) list.push( 'proxy decision maker' );
+          if( 0 == list.length ) {
+            description = '(not registiered for any role)';
+          } else {
+            list.forEach( function( name, index, array ) {
+              if( 0 < index ) description += index == array.length - 1 ? ' and ' : ', ';
+              description += name;
             } );
+          }
+          historyList.push( {
+            datetime: item.create_timestamp,
+            category: 'Alternate',
+            title: 'added ' + item.first_name + ' ' + item.last_name,
+            description: item.first_name + ' ' + item.last_name + description
           } );
         } );
       }
@@ -498,8 +494,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Consent: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/consent',
           data: {
             modifier: {
@@ -520,15 +516,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Consent',
-              title: ( item.written ? 'Written' : 'Verbal' ) + ' "' + item.name + '" ' +
-                     ( item.accept ? 'accepted' : 'rejected' ),
-              description: item.description + '\n' + item.note
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Consent',
+            title: ( item.written ? 'Written' : 'Verbal' ) + ' "' + item.name + '" ' +
+                   ( item.accept ? 'accepted' : 'rejected' ),
+            description: item.description + '\n' + item.note
           } );
         } );
       }
@@ -537,8 +533,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Event: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/event',
           data: {
             modifier: {
@@ -559,14 +555,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Event',
-              title: 'added "' + item.name + '"',
-              description: item.description
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Event',
+            title: 'added "' + item.name + '"',
+            description: item.description
           } );
         } );
       }
@@ -575,8 +571,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Form: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/form',
           data: {
             modifier: {
@@ -597,14 +593,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.date,
-              category: 'Form',
-              title: 'added "' + item.name + '"',
-              description: item.description
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.date,
+            category: 'Form',
+            title: 'added "' + item.name + '"',
+            description: item.description
           } );
         } );
       }
@@ -613,8 +609,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Hold: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/hold',
           data: {
             modifier: {
@@ -639,14 +635,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Hold',
-              title: null == item.type ? 'removed hold' : 'added "' + item.type + ' ' + item.name + '"',
-              description: null == item.type ? '' : item.description
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Hold',
+            title: null == item.type ? 'removed hold' : 'added "' + item.type + ' ' + item.name + '"',
+            description: null == item.type ? '' : item.description
           } );
         } );
       }
@@ -655,21 +651,21 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Mail: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/mail',
           data: {
             select: { column: [ 'sent_datetime', 'subject', 'note' ] },
             modifier: { where: { column: 'sent_datetime', operator: '!=', value: null } }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.sent_datetime,
-              category: 'Mail',
-              title: 'sent "' + item.subject + '"',
-              description: item.note
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.sent_datetime,
+            category: 'Mail',
+            title: 'sent "' + item.subject + '"',
+            description: item.note
           } );
         } );
       }
@@ -678,8 +674,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Note: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/note',
           data: {
             modifier: {
@@ -702,14 +698,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Note',
-              title: 'added by ' + item.user_first + ' ' + item.user_last,
-              description: item.note
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Note',
+            title: 'added by ' + item.user_first + ' ' + item.user_last,
+            description: item.note
           } );
         } );
       }
@@ -718,20 +714,20 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Phone: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/phone',
           data: {
             select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.create_timestamp,
-              category: 'Phone',
-              title: 'added rank ' + item.rank,
-              description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.create_timestamp,
+            category: 'Phone',
+            title: 'added rank ' + item.rank,
+            description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
           } );
         } );
       }
@@ -740,8 +736,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Proxy: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/proxy',
           data: {
             modifier: {
@@ -763,14 +759,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Proxy',
-              title: null == item.name ? 'removed proxy' : 'added proxy: "' + item.name + '"',
-              description: null == item.name ? '' : item.description
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Proxy',
+            title: null == item.name ? 'removed proxy' : 'added proxy: "' + item.name + '"',
+            description: null == item.name ? '' : item.description
           } );
         } );
       }
@@ -779,8 +775,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     Trace: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/trace',
           data: {
             modifier: {
@@ -805,15 +801,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Trace',
-              title: ( null == item.name ? 'removed trace' : 'added to "' + item.name + '"' ) +
-                     ' by ' + item.first_name + ' ' + item.last_name,
-              description: item.note
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Trace',
+            title: ( null == item.name ? 'removed trace' : 'added to "' + item.name + '"' ) +
+                   ' by ' + item.first_name + ' ' + item.last_name,
+            description: item.note
           } );
         } );
       }
@@ -826,66 +822,62 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     cenozoApp.module( 'assignment' );
     module.historyCategoryList.Assignment = {
       active: true,
-      promise: function( historyList, $state, CnHttpFactory, $q ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/interview',
           data: {
             modifier: { order: { start_datetime: true } },
             select: { column: [ 'id' ] }
           }
-        } ).query().then( function( response ) {
-          var promiseArray = [];
-          response.data.forEach( function( item ) {
-            promiseArray.push(
-              CnHttpFactory.instance( {
-                path: 'interview/' + item.id + '/assignment',
-                data: {
-                  modifier: { order: { start_datetime: true } },
-                  select: {
-                    column: [ 'start_datetime', 'end_datetime', {
-                      table: 'user',
-                      column: 'first_name',
-                      alias: 'user_first'
-                    }, {
-                      table: 'user',
-                      column: 'last_name',
-                      alias: 'user_last'
-                    }, {
-                      table: 'site',
-                      column: 'name',
-                      alias: 'site'
-                    }, {
-                      table: 'script',
-                      column: 'name',
-                      alias: 'script'
-                    } ]
-                  }
-                }
-              } ).query().then( function( response ) {
-                response.data.forEach( function( item ) {
-                  if( null != item.start_datetime ) {
-                    historyList.push( {
-                      datetime: item.start_datetime,
-                      category: 'Assignment',
-                      title: 'started by ' + item.user_first + ' ' + item.user_last,
-                      description: 'Started an assignment for the "' + item.script + '" questionnaire.\n' +
-                                   'Assigned from the ' + item.site + ' site.'
-                    } );
-                  }
-                  if( null != item.end_datetime ) {
-                    historyList.push( {
-                      datetime: item.end_datetime,
-                      category: 'Assignment',
-                      title: 'completed by ' + item.user_first + ' ' + item.user_last,
-                      description: 'Completed an assignment for the "' + item.script + '" questionnaire.\n' +
-                                   'Assigned from the ' + item.site + ' site.'
-                    } );
-                  }
-                } );
-              } )
-            );
+        } ).query();
+
+        response.data.forEach( async function( participant ) {
+          var subResponse = await CnHttpFactory.instance( {
+            path: 'interview/' + participant.id + '/assignment',
+            data: {
+              modifier: { order: { start_datetime: true } },
+              select: {
+                column: [ 'start_datetime', 'end_datetime', {
+                  table: 'user',
+                  column: 'first_name',
+                  alias: 'user_first'
+                }, {
+                  table: 'user',
+                  column: 'last_name',
+                  alias: 'user_last'
+                }, {
+                  table: 'site',
+                  column: 'name',
+                  alias: 'site'
+                }, {
+                  table: 'script',
+                  column: 'name',
+                  alias: 'script'
+                } ]
+              }
+            }
+          } ).query();
+
+          subResponse.data.forEach( function( assignment ) {
+            if( null != assignment.start_datetime ) {
+              historyList.push( {
+                datetime: assignment.start_datetime,
+                category: 'Assignment',
+                title: 'started by ' + assignment.user_first + ' ' + assignment.user_last,
+                description: 'Started an assignment for the "' + assignment.script + '" questionnaire.\n' +
+                             'Assigned from the ' + assignment.site + ' site.'
+              } );
+            }
+            if( null != assignment.end_datetime ) {
+              historyList.push( {
+                datetime: assignment.end_datetime,
+                category: 'Assignment',
+                title: 'completed by ' + assignment.user_first + ' ' + assignment.user_last,
+                description: 'Completed an assignment for the "' + assignment.script + '" questionnaire.\n' +
+                             'Assigned from the ' + assignment.site + ' site.'
+              } );
+            }
           } );
-          return $q.all( promiseArray );
         } );
       }
     };
@@ -898,19 +890,16 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       return {
         templateUrl: cenozo.getFileUrl( 'cenozo', 'history.tpl.html' ),
         restrict: 'E',
-        controller: function( $scope ) {
+        controller: async function( $scope ) {
           $scope.isLoading = false;
           $scope.model = CnParticipantHistoryFactory.instance();
 
-          CnHttpFactory.instance( {
+          var response = await CnHttpFactory.instance( {
             path: 'participant/' + $state.params.identifier,
             data: { select: { column: [ 'uid', 'first_name', 'last_name' ] } }
-          } ).get().then( function( response ) {
-            $scope.uid = response.data.uid;
-            $scope.name = response.data.first_name + ' ' +
-                          response.data.last_name + ' (' +
-                          response.data.uid + ')';
-          } );
+          } ).get();
+          $scope.uid = response.data.uid;
+          $scope.name = response.data.first_name + ' ' + response.data.last_name + ' (' + response.data.uid + ')';
 
           // create an array from the history categories object
           $scope.historyCategoryArray = [];
@@ -922,21 +911,24 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
           }
 
-          $scope.refresh = function() {
-            $scope.isLoading = true;
-            $scope.model.onView().then( function() {
+          $scope.refresh = async function() {
+            try {
+              $scope.isLoading = true;
+              await $scope.model.onView();
               CnSession.setBreadcrumbTrail(
                 [ {
                   title: 'Participants',
-                  go: function() { $state.go( 'participant.list' ); }
+                  go: async function() { await $state.go( 'participant.list' ); }
                 }, {
                   title: $scope.uid,
-                  go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+                  go: async function() { await $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
                 }, {
                   title: 'History'
                 } ]
               );
-            } ).finally( function finished() { $scope.isLoading = false; } );
+            } finally {
+              $scope.isLoading = false;
+            }
           };
           $scope.refresh();
         }
@@ -972,7 +964,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Participants',
-              go: function() { $state.go( 'participant.list' ); }
+              go: async function() { await $state.go( 'participant.list' ); }
             }, {
               title: 'Multi-Edit'
             } ]
@@ -995,7 +987,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Participants',
-              go: function() { $state.go( 'participant.list' ); }
+              go: async function() { await $state.go( 'participant.list' ); }
             }, {
               title: 'Multi-Edit'
             } ]
@@ -1061,47 +1053,240 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   cenozo.providers.factory( 'CnParticipantViewFactory', [
     'CnBaseViewFactory',
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory', 'CnScriptLauncherFactory',
-    '$window', '$q', '$state',
+    '$window', '$state',
     function( CnBaseViewFactory,
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalConfirmFactory, CnScriptLauncherFactory,
-              $window, $q, $state ) {
+              $window, $state ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'address' );
-        this.onViewPromise = null;
-        this.scriptLaunchers = {};
-        this.hasDecedent = null;
-        this.hasQualityControl = null;
-        this.hasWithdraw = null;
-        this.allowDecedent = false;
-        this.allowProxyInitiation = false;
-        this.allowQualityControl = false;
-        this.allowWithdraw = false;
-        this.allowReverseWithdraw = 3 <= CnSession.role.tier;
-        this.allowReverseProxyInitiation = 3 <= CnSession.role.tier;
 
-        this.useTimezone = function() {
-          CnSession.setTimezone( { 'participant_id': this.record.id } ).then( function() {
-            $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
-          } );
-        };
+        angular.extend( this, {
+          onViewPromise: null,
+          scriptLaunchers: {},
+          hasDecedent: null,
+          hasQualityControl: null,
+          hasWithdraw: null,
+          allowDecedent: false,
+          allowProxyInitiation: false,
+          allowQualityControl: false,
+          allowWithdraw: false,
+          allowReverseWithdraw: 3 <= CnSession.role.tier,
+          allowReverseProxyInitiation: 3 <= CnSession.role.tier,
+
+          useTimezone: async function() {
+            await CnSession.setTimezone( { 'participant_id': this.record.id } );
+            await $state.go( 'self.wait' )
+            await $window.location.reload();
+          },
+
+          onView: async function( force ) {
+            var self = this;
+
+            // always assume that the decedent script is not allowed (until more details are found below)
+            angular.extend( this, {
+              hasDecedent: null,
+              hasQualityControl: null,
+              hasWithdraw: null,
+              allowDecedent: 'mastodon' == CnSession.application.type && CnSession.role.allSites,
+              allowQualityControl: false,
+              allowWithdraw: false
+            } ); 
+
+            // only create launchers for each supporting script if the script module is activated
+            if( CnSession.moduleList.includes( 'script' ) ) {
+              CnSession.supportingScriptList.forEach( async function( script ) {
+                if( null != script.name.match( /Decedent/ ) ) {
+                  // only check for the decedent token if we're allowed to launch the script
+                  self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
+                  if( self.allowDecedent ) {
+                    var name = 'Decedent';
+                    self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                      script: script,
+                      identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                      onReady: function() {
+                        self.hasDecedent =
+                          null != this.token &&
+                          null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                      }
+                    } );
+                    try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                  }
+                } else if( null != script.name.match( /Proxy Initiation/ ) ) {
+                  var name = 'Proxy Initiation';
+                  self.allowProxyInitiation = true;
+                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                    script: script,
+                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    onReady: function() {
+                      self.hasProxyInitiation =
+                        null != this.token &&
+                        null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                    }
+                  } );
+                  try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                } else if( null != script.name.match( /Quality Control/ ) ) {
+                  var name = 'Quality Control';
+                  self.allowQualityControl = true;
+                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                    script: script,
+                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    onReady: function() {
+                      self.hasQualityControl =
+                        null != this.token &&
+                        null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                    }
+                  } );
+                  try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                } else if( null != script.name.match( /Withdraw/ ) ) {
+                  var name = 'Withdraw';
+                  self.allowWithdraw = true;
+                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                    script: script,
+                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    onReady: function() {
+                      self.hasWithdraw =
+                        null != this.token &&
+                        null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                    }
+                  } );
+                  try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                }
+              } );
+            }
+
+            // set a special heading
+            this.onViewPromise = await this.$$onView( force );
+
+            // put the participant's full name in the heading
+            var nameList = [ this.record.first_name, this.record.last_name ];
+            if( this.record.other_name ) nameList.splice( 1, 0, '(' + this.record.other_name + ')' );
+            if( this.record.honorific ) nameList.unshift( this.record.honorific );
+            this.heading = 'Participant Details for ' + nameList.join( ' ' );
+
+            if( null != this.record.date_of_death ) {
+              // only display the accurate parts of the date-of-death
+              if( 'day unknown' == this.record.date_of_death_accuracy ) {
+                this.formattedRecord.date_of_death =
+                  this.formattedRecord.date_of_death.replace( / [0-9]+,/, ',' );
+              } else if( 'month and day unknown' == this.record.date_of_death_accuracy ) {
+                this.formattedRecord.date_of_death =
+                  this.formattedRecord.date_of_death.replace( /[A-Za-z]+ [0-9]+,/, '' );
+              }
+
+              // if the date of death is defined then show age of death instead of current age
+              var age = moment( this.record.date_of_death ).diff( this.record.date_of_birth, 'years' );
+              this.formattedRecord.date_of_birth = this.formattedRecord.date_of_birth.replace( / \(.*\)/, '' );
+              this.formattedRecord.date_of_death += ' (' + age + ' year' + ( 1 == age ? '' : 's' ) + ' old)';
+            }
+
+            // don't allow excluded participants to be edited
+            this.parentModel.getEditEnabled = function() {
+              return self.parentModel.$$getEditEnabled() &&
+                     null != self.record.exclusion &&
+                     null == self.record.exclusion.match( /^No/ );
+            };
+          },
+
+          onPatch: async function( data ) {
+            // warn non all-sites users when changing the preferred site
+            if( angular.isDefined( data.preferred_site_id ) && !CnSession.role.allSites ) {
+              if( ( "" === data.preferred_site_id && this.record.default_site != CnSession.site.name ) ||
+                  ( "" !== data.preferred_site_id && data.preferred_site_id != CnSession.site.id ) ) {
+                var assignedParticipant = null != CnSession.user.assignment &&
+                                          this.record.id == CnSession.user.assignment.participant_id;
+                var message = 'Are you sure you wish to change this participant\'s preferred site?\n\n';
+                message += assignedParticipant
+                         ? 'By selecting yes you will continue to have access to this participant until your ' +
+                           'assignment is complete, after which you will no longer have access to this participant.'
+                         : 'By selecting yes you will no longer have access to this participant and will be ' +
+                           'sent back to your home screen.';
+                var response = await CnModalConfirmFactory.instance( { title: 'Change Preferred Site', message: message } ).show();
+                if( response ) {
+                  await this.$$onPatch( data );
+                  if( !assignedParticipant ) await $state.go( 'root.home' );
+                } else {
+                  this.record.preferred_site_id = this.backupRecord.preferred_site_id;
+                }
+              }
+            }
+
+            await this.$$onPatch( data );
+
+            // refresh the data if date-of-death information has changed
+            if( angular.isDefined( data.date_of_death ) || angular.isDefined( data.date_of_death_accuracy ) ) await this.onView();
+          },
+
+          // reverses the participant's withdraw status
+          reverseWithdrawDisabled: false,
+          reverseWithdraw: async function() {
+            this.reverseWithdrawDisabled = true;
+            var response = await CnModalConfirmFactory.instance( {
+              title: 'Reverse Withdraw',
+              message: 'Are you sure you wish to reverse this participant\'s withdraw status?\n\n' +
+                       'By selecting yes you are confirming that the participant has re-consented to ' +
+                       'participate in the study.'
+            } ).show();
+
+            try {
+              if( response ) {
+                await CnHttpFactory.instance( {
+                  path: this.parentModel.getServiceResourcePath(),
+                  data: { reverse_withdraw: true }
+                } ).patch();
+
+                await this.onView();
+                if( this.consentModel ) await this.consentModel.listModel.onList( true );
+              }
+            } finally {
+              this.reverseWithdrawDisabled = false;
+            }
+          },
+
+          // reverses the participant's proxy initiation status
+          reverseProxyInitiationDisabled: false,
+          reverseProxyInitiation: async function() {
+            this.reverseProxyInitiationDisabled = true;
+            var response = await CnModalConfirmFactory.instance( {
+              title: 'Reverse Proxy Initiation',
+              message: 'Are you sure you wish to reverse this participant\'s proxy status?\n\n' +
+                       'By selecting yes you are confirming that the participant has decided to re-consider ' +
+                       'their proxy status.'
+            } ).show();
+
+            try {
+              if( response ) {
+                await CnHttpFactory.instance( {
+                  path: this.parentModel.getServiceResourcePath(),
+                  data: { reverse_proxy_initiation: true }
+                } ).patch();
+
+                await this.onView();
+                if( this.consentModel ) await this.consentModel.listModel.onList( true );
+                if( this.proxyModel ) await this.proxyModel.listModel.onList( true );
+              }
+            } finally {
+              this.reverseProxyInitiationDisabled = false;
+            }
+          }
+        } );
 
         // only add script launching if the script module is activated
         if( CnSession.moduleList.includes( 'script' ) ) {
           this.launchSupportingScript = function( scriptName ) {
             var foundLauncher = null;
-            if( angular.isUndefined( self.scriptLaunchers[scriptName] ) )
+            if( angular.isUndefined( this.scriptLaunchers[scriptName] ) )
               throw new Error( 'Cannot launch supporting script "' + scriptName + '", script not found.' );
             
-            var language = self.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-              'value', self.record.language_id
+            var language = this.parentModel.metadata.columnList.language_id.enumList.findByProperty(
+              'value', this.record.language_id
             );
-            if( language ) self.scriptLaunchers[scriptName].lang = language.code;
-            self.scriptLaunchers[scriptName].launch();
+            if( language ) this.scriptLaunchers[scriptName].lang = language.code;
+            this.scriptLaunchers[scriptName].launch();
 
             // check for when the window gets focus back and update the participant details
-            var win = angular.element( $window ).on( 'focus', function() {
-              self.onView();
+            var self = this;
+            var win = angular.element( $window ).on( 'focus', async function() {
+              await self.onView();
               if( self.consentModel ) self.consentModel.listModel.onList( true );
               if( self.proxyModel ) self.proxyModel.listModel.onList( true );
               if( self.holdModel ) self.holdModel.listModel.onList( true );
@@ -1110,195 +1295,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           };
         }
 
-        // track the promise returned by the onView function
-        this.onView = function( force ) {
-          // always assume that the decedent script is not allowed (until more details are found below)
-          self.hasDecedent = null;
-          self.hasQualityControl = null;
-          self.hasWithdraw = null;
-          self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
-          self.allowQualityControl = false;
-          self.allowWithdraw = false;
+        var self = this;
+        async function init() {
+          if( root ) {
+            await self.deferred.promise;
 
-          // only create launchers for each supporting script if the script module is activated
-          if( CnSession.moduleList.includes( 'script' ) ) {
-            CnSession.supportingScriptList.forEach( function( script ) {
-              if( null != script.name.match( /Decedent/ ) ) {
-                // only check for the decedent token if we're allowed to launch the script
-                self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
-                if( self.allowDecedent ) {
-                  var name = 'Decedent';
-                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
-                    script: script,
-                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
-                    onReady: function() {
-                      self.hasDecedent =
-                        null != this.token &&
-                        null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
-                    }
-                  } );
-                }
-              } else if( null != script.name.match( /Proxy Initiation/ ) ) {
-                var name = 'Proxy Initiation';
-                self.allowProxyInitiation = true;
-                self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
-                  script: script,
-                  identifier: self.parentModel.getQueryParameter( 'identifier' ),
-                  onReady: function() {
-                    self.hasProxyInitiation =
-                      null != this.token &&
-                      null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
-                  }
-                } );
-              } else if( null != script.name.match( /Quality Control/ ) ) {
-                var name = 'Quality Control';
-                self.allowQualityControl = true;
-                self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
-                  script: script,
-                  identifier: self.parentModel.getQueryParameter( 'identifier' ),
-                  onReady: function() {
-                    self.hasQualityControl =
-                      null != this.token &&
-                      null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
-                  }
-                } );
-              } else if( null != script.name.match( /Withdraw/ ) ) {
-                var name = 'Withdraw';
-                self.allowWithdraw = true;
-                self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
-                  script: script,
-                  identifier: self.parentModel.getQueryParameter( 'identifier' ),
-                  onReady: function() {
-                    self.hasWithdraw =
-                      null != this.token &&
-                      null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
-                  }
-                } );
-              }
-            } );
-          }
-
-          // set a special heading
-          this.onViewPromise = this.$$onView( force ).then( function() {
-            // put the participant's full name in the heading
-            var nameList = [ self.record.first_name, self.record.last_name ];
-            if( self.record.other_name ) nameList.splice( 1, 0, '(' + self.record.other_name + ')' );
-            if( self.record.honorific ) nameList.unshift( self.record.honorific );
-            self.heading = 'Participant Details for ' + nameList.join( ' ' );
-
-            if( null != self.record.date_of_death ) {
-              // only display the accurate parts of the date-of-death
-              if( 'day unknown' == self.record.date_of_death_accuracy ) {
-                self.formattedRecord.date_of_death =
-                  self.formattedRecord.date_of_death.replace( / [0-9]+,/, ',' );
-              } else if( 'month and day unknown' == self.record.date_of_death_accuracy ) {
-                self.formattedRecord.date_of_death =
-                  self.formattedRecord.date_of_death.replace( /[A-Za-z]+ [0-9]+,/, '' );
-              }
-
-              // if the date of death is defined then show age of death instead of current age
-              var age = moment( self.record.date_of_death ).diff( self.record.date_of_birth, 'years' );
-              self.formattedRecord.date_of_birth = self.formattedRecord.date_of_birth.replace( / \(.*\)/, '' );
-              self.formattedRecord.date_of_death += ' (' + age + ' year' + ( 1 == age ? '' : 's' ) + ' old)';
-            }
-
-            // don't allow excluded participants to be edited
-            self.parentModel.getEditEnabled = function() {
-              return self.parentModel.$$getEditEnabled() &&
-                     null != self.record.exclusion &&
-                     null == self.record.exclusion.match( /^No/ );
-            };
-          } );
-          return this.onViewPromise;
-        };
-
-        this.onPatch = function( data ) {
-          // warn non all-sites users when changing the preferred site
-          if( angular.isDefined( data.preferred_site_id ) && !CnSession.role.allSites ) {
-            if( ( "" === data.preferred_site_id && this.record.default_site != CnSession.site.name ) ||
-                ( "" !== data.preferred_site_id && data.preferred_site_id != CnSession.site.id ) ) {
-              var assignedParticipant = null != CnSession.user.assignment &&
-                                        self.record.id == CnSession.user.assignment.participant_id;
-              var message = 'Are you sure you wish to change this participant\'s preferred site?\n\n';
-              message += assignedParticipant
-                       ? 'By selecting yes you will continue to have access to this participant until your ' +
-                         'assignment is complete, after which you will no longer have access to this participant.'
-                       : 'By selecting yes you will no longer have access to this participant and will be ' +
-                         'sent back to your home screen.';
-              return CnModalConfirmFactory.instance( {
-                title: 'Change Preferred Site',
-                message: message
-              } ).show().then( function( response ) {
-                if( response ) {
-                  return self.$$onPatch( data ).then( function() {
-                    if( !assignedParticipant ) $state.go( 'root.home' );
-                  } );
-                } else self.record.preferred_site_id = self.backupRecord.preferred_site_id;
-              } );
-            }
-          }
-
-          return this.$$onPatch( data ).then( function() {
-            // refresh the data if date-of-death information has changed
-            return angular.isDefined( data.date_of_death ) || angular.isDefined( data.date_of_death_accuracy ) ?
-              self.onView() : $q.all();
-          } );
-        };
-
-        // reverses the participant's withdraw status
-        this.reverseWithdrawDisabled = false;
-        this.reverseWithdraw = function() {
-          this.reverseWithdrawDisabled = true;
-          CnModalConfirmFactory.instance( {
-            title: 'Reverse Withdraw',
-            message: 'Are you sure you wish to reverse this participant\'s withdraw status?\n\n' +
-                     'By selecting yes you are confirming that the participant has re-consented to ' +
-                     'participate in the study.'
-          } ).show().then( function( response ) {
-            if( response ) {
-              CnHttpFactory.instance( {
-                path: self.parentModel.getServiceResourcePath(),
-                data: { reverse_withdraw: true }
-              } ).patch().then( function() {
-                self.onView();
-                if( self.consentModel ) self.consentModel.listModel.onList( true );
-              } ).finally( function() {
-                self.reverseWithdrawDisabled = false;
-              } );
-            } else self.reverseWithdrawDisabled = false;
-          } );
-        };
-
-        // reverses the participant's proxy initiation status
-        this.reverseProxyInitiationDisabled = false;
-        this.reverseProxyInitiation = function() {
-          this.reverseProxyInitiationDisabled = true;
-          CnModalConfirmFactory.instance( {
-            title: 'Reverse Proxy Initiation',
-            message: 'Are you sure you wish to reverse this participant\'s proxy status?\n\n' +
-                     'By selecting yes you are confirming that the participant has decided to re-consider ' +
-                     'their proxy status.'
-          } ).show().then( function( response ) {
-            if( response ) {
-              CnHttpFactory.instance( {
-                path: self.parentModel.getServiceResourcePath(),
-                data: { reverse_proxy_initiation: true }
-              } ).patch().then( function() {
-                self.onView();
-                if( self.consentModel ) self.consentModel.listModel.onList( true );
-                if( self.proxyModel ) self.proxyModel.listModel.onList( true );
-              } ).finally( function() {
-                self.reverseProxyInitiationDisabled = false;
-              } );
-            } else self.reverseProxyInitiationDisabled = false;
-          } );
-        };
-
-        if( root ) {
-          // override the collection model's getServiceData function (list active collections only)
-          this.deferred.promise.then( function() {
+            // override the collection model's getServiceData function (list active collections only)
             self.collectionModel.getServiceData = function( type, columnRestrictLists ) {
-              var data = this.$$getServiceData( type, columnRestrictLists );
+              var data = self.collectionModel.$$getServiceData( type, columnRestrictLists );
               if( angular.isUndefined( data.modifier ) ) data.modifier = { where: [] };
               else if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
               data.modifier.where.push( { column: 'collection.active', operator: '=', value: true } );
@@ -1329,8 +1333,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             self.proxyModel.getAddEnabled = function() {
               return self.proxyModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
             };
-          } );
+          }
         }
+
+        init();
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -1340,69 +1346,63 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantModelFactory', [
     'CnBaseModelFactory', 'CnParticipantListFactory', 'CnParticipantViewFactory',
-    'CnHttpFactory', 'CnSession', '$q',
+    'CnHttpFactory', 'CnSession',
     function( CnBaseModelFactory, CnParticipantListFactory, CnParticipantViewFactory,
-              CnHttpFactory, CnSession, $q ) {
+              CnHttpFactory, CnSession ) {
       var object = function( root ) {
-        var self = this;
-
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnParticipantListFactory.instance( this );
         if( root ) this.viewModel = CnParticipantViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'availability_type',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name', limit: 1000 }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.availability_type_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.availability_type_id.enumList.push( {
-                    value: item.id, name: item.name
-                  } );
-                } );
-              } ),
+        this.getMetadata = async function() {
+          var self = this;
+          await this.$$getMetadata();
 
-              CnHttpFactory.instance( {
-                path: 'language',
-                data: {
-                  select: { column: [ 'id', 'name', 'code' ] },
-                  modifier: {
-                    where: { column: 'active', operator: '=', value: true },
-                    order: 'name',
-                    limit: 1000
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.language_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.language_id.enumList.push( {
-                    value: item.id,
-                    name: item.name,
-                    code: item.code // code is needed by the withdraw action
-                  } );
-                } );
-              } ),
+          var response = await CnHttpFactory.instance( {
+            path: 'availability_type',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.availability_type_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.availability_type_id.enumList.push( {
+              value: item.id, name: item.name
+            } );
+          } );
 
-              CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name', limit: 1000 }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.preferred_site_id = { enumList: [] };
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
-            ] );
+          var response = await CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: [ 'id', 'name', 'code' ] },
+              modifier: {
+                where: { column: 'active', operator: '=', value: true },
+                order: 'name',
+                limit: 1000
+              }
+            }
+          } ).query();
+          this.metadata.columnList.language_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.language_id.enumList.push( {
+              value: item.id,
+              name: item.name,
+              code: item.code // code is needed by the withdraw action
+            } );
+          } );
+
+          var response = await CnHttpFactory.instance( {
+            path: 'site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.preferred_site_id = { enumList: [] };
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };
@@ -1416,8 +1416,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantHistoryFactory', [
-    'CnBaseHistoryFactory', 'CnParticipantModelFactory', 'CnSession', '$state',
-    function( CnBaseHistoryFactory, CnParticipantModelFactory, CnSession, $state ) {
+    'CnBaseHistoryFactory', 'CnParticipantModelFactory',
+    function( CnBaseHistoryFactory, CnParticipantModelFactory ) {
       var object = function() {
         CnBaseHistoryFactory.construct( this, module, CnParticipantModelFactory.root );
       };
@@ -1429,11 +1429,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnParticipantImportFactory', [
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory,
-    CnSession, CnHttpFactory, CnModalMessageFactory, $q ) {
+    CnSession, CnHttpFactory, CnModalMessageFactory ) {
       var object = function() {
-        var self = this;
         angular.extend( this, {
           parentModel: CnParticipantModelFactory.root,
           addressModel: CnAddressModelFactory.root,
@@ -1461,62 +1460,58 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
               var read = new FileReader();
               read.readAsText( fileDetails );
-              read.onloadend = function() {
-                var promiseList = [];
+              read.onloadend = async function() {
                 var validColumnCount = 0;
                 var csv = read.result.parseCSV();
 
-                if( 0 < csv.length ) {
-                  // assume the first line is a header
-                  var columnLookup = csv.shift().map( column => column.trim().toLowerCase().replace( ' ', '_' ) );
-                  columnLookup.forEach( function( column, index ) {
-                    // check for regular column names and multi (address and phone) column names
-                    if( !validColumnList.includes( column ) &&
-                        !validMultiColumnList.includes( column.replace( /_[0-9]+$/, '' ) ) ) {
-                      columnLookup[index] = null;
-                    } else {
-                      validColumnCount++;
-                    }
-                  } );
+                var message = 'There were no valid columns in the first line of the file. ' +
+                  'Please check that the first line of the CSV file contains the column names from the list above.';
 
-                  var participantList = [];
-                  if( validColumnCount ) {
-                    // go through all lines which aren't empty
-                    csv.filter( line => line.length ).forEach( function( line ) {
-                      var participant = {};
-                      line.forEach( function( value, index ) {
-                        if( null !== columnLookup[index] && null !== value ) participant[columnLookup[index]] = value;
-                      } );
-
-                      // don't add participants which only have empty values
-                      if( Object.keys( participant ).length ) participantList.push( participant );
+                try {
+                  if( 0 < csv.length ) {
+                    // assume the first line is a header
+                    var columnLookup = csv.shift().map( column => column.trim().toLowerCase().replace( ' ', '_' ) );
+                    columnLookup.forEach( function( column, index ) {
+                      // check for regular column names and multi (address and phone) column names
+                      if( !validColumnList.includes( column ) &&
+                          !validMultiColumnList.includes( column.replace( /_[0-9]+$/, '' ) ) ) {
+                        columnLookup[index] = null;
+                      } else {
+                        validColumnCount++;
+                      }
                     } );
 
-                    // now send the list of participants to the server
-                    promiseList.push(
-                      CnHttpFactory.instance( {
+                    var participantList = [];
+                    if( validColumnCount ) {
+                      // go through all lines which aren't empty
+                      csv.filter( line => line.length ).forEach( function( line ) {
+                        var participant = {};
+                        line.forEach( function( value, index ) {
+                          if( null !== columnLookup[index] && null !== value ) participant[columnLookup[index]] = value;
+                        } );
+
+                        // don't add participants which only have empty values
+                        if( Object.keys( participant ).length ) participantList.push( participant );
+                      } );
+
+                      // now send the list of participants to the server
+                      var response = await CnHttpFactory.instance( {
                         path: 'participant',
                         data: participantList
-                      } ).post().then( response => response.data )
-                    );
-                  }
-                }
-
-                $q.all( promiseList ).then( function( response ) {
-                  var message = 'There were no valid columns in the first line of the file. ' +
-                    'Please check that the first line of the CSV file contains the column names from the list above.';
-                  if( validColumnCount ) {
-                    response = response[0];
-                    message = 'A total of ' + ( participantList.length - response.length ) + ' out of ' + participantList.length +
-                      ' participants have been imported.' + ( 0 < response.length ? '\n\n' + response.join( '\n' ) : '' );
+                      } ).post();
+                      message = 'A total of ' + ( participantList.length - response.length ) + ' out of ' + participantList.length +
+                        ' participants have been imported.' + ( 0 < response.length ? '\n\n' + response.join( '\n' ) : '' );
+                    }
                   }
 
-                  CnModalMessageFactory.instance( {
+                  await CnModalMessageFactory.instance( {
                     title: validColumnCount ? 'Import Results' : 'Unable to Parse File',
                     message: message,
                     error: !validColumnCount
                   } ).show();
-                } ).finally( function() { obj.processing = false; } );
+                } finally {
+                  obj.processing = false;
+                }
               };
             }
           },
@@ -1554,63 +1549,62 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           'phone_note'
         ];
 
-        $q.all( [
-          this.parentModel.getMetadata().then( function() {
+        var self = this;
+        async function init() {
+          try {
+            await self.parentModel.getMetadata();
             self.sexList = self.parentModel.metadata.columnList.sex.enumList.map( row => row.name );
-          } ),
 
-          this.addressModel.getMetadata(),
-
-          this.phoneModel.getMetadata().then( function() {
+            await self.addressModel.getMetadata();
+            await elf.phoneModel.getMetadata();
             self.phoneTypeList = self.phoneModel.metadata.columnList.type.enumList.map( row => row.name );
-          } ),
 
-          // get the source list
-          CnHttpFactory.instance( {
-            path: 'source',
-            data: {
-              select: { column: 'name' },
-              modifier: { order: 'name' }
-            }
-          } ).query().then( function( response ) {
+            // get the source list
+            var response = await CnHttpFactory.instance( {
+              path: 'source',
+              data: {
+                select: { column: 'name' },
+                modifier: { order: 'name' }
+              }
+            } ).query();
             self.sourceList = response.data.map( row => row.name );
-          } ),
 
-          // get the cohort list
-          CnHttpFactory.instance( {
-            path: 'cohort',
-            data: {
-              select: { column: 'name' },
-              modifier: { order: 'name' }
-            }
-          } ).query().then( function( response ) {
+            // get the cohort list
+            var response = await CnHttpFactory.instance( {
+              path: 'cohort',
+              data: {
+                select: { column: 'name' },
+                modifier: { order: 'name' }
+              }
+            } ).query();
             self.cohortList = response.data.map( row => row.name );
-          } ),
 
-          // get the language list
-          CnHttpFactory.instance( {
-            path: 'language',
-            data: {
-              select: { column: 'code' },
-              modifier: { where: { column: 'active', operator: '=', value: true }, order: 'code' }
-            }
-          } ).query().then( function( response ) {
+            // get the language list
+            var response = await CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: 'code' },
+                modifier: { where: { column: 'active', operator: '=', value: true }, order: 'code' }
+              }
+            } ).query();
             self.languageList = response.data.map( row => row.code );
-          } ),
 
-          // get the availability_type list
-          CnHttpFactory.instance( {
-            path: 'availability_type',
-            data: {
-              select: { column: 'name' },
-              modifier: { order: 'name' }
-            }
-          } ).query().then( function( response ) {
+            // get the availability_type list
+            var response = await CnHttpFactory.instance( {
+              path: 'availability_type',
+              data: {
+                select: { column: 'name' },
+                modifier: { order: 'name' }
+              }
+            } ).query();
             self.availabilityTypeList = response.data.map( row => row.name );
-          } ),
-        ] ).then( function() {
-          self.loading = false;
-        } );
+          } finally {
+            self.loading = false;
+          }
+        }
+
+        // this is a contructor function so don't await the init() function
+        init();
       };
 
       return { instance: function() { return new object( false ); } };
@@ -1629,7 +1623,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               CnConsentModelFactory, CnEventModelFactory, CnHoldModelFactory, CnParticipantModelFactory,
               CnProxyModelFactory ) {
       var object = function() {
-        var self = this;
         angular.extend( this, {
           module: module,
           participantSelection: CnParticipantSelectionFactory.instance(),
@@ -1643,7 +1636,130 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           eventInputList: null,
           holdInputList: null,
           proxyInputList: null,
-          note: { sticky: 0, note: '' }
+          note: { sticky: 0, note: '' },
+
+          selectDatetime: async function( input ) {
+            var response = await CnModalDatetimeFactory.instance( {
+              title: input.title,
+              date: input.value,
+              minDate: angular.isDefined( input.min ) ? input.min : input.min,
+              maxDate: angular.isDefined( input.max ) ? input.max : input.max,
+              pickerType: input.type,
+              emptyAllowed: !input.required
+            } ).show();
+
+            if( false !== response ) {
+              input.value = response;
+              input.formattedValue = CnSession.formatValue( response, input.type, true );
+            }
+          },
+
+          activateInput: function( column ) {
+            if( column ) {
+              this.participantInputList.findByProperty( 'column', column ).active = true;
+              this.hasActiveInputs = true;
+              if( column == this.activeInput ) this.activeInput = '';
+            }
+          },
+
+          deactivateInput: function( column ) {
+            this.participantInputList.findByProperty( 'column', column ).active = false;
+            this.hasActiveInputs = 0 < this.participantInputList
+              .filter( function( input ) { return input.active; }).length;
+          },
+
+          applyMultiedit: async function( type ) {
+            // test the formats of all columns
+            var error = false;
+            var messageObj = { title: null, message: null };
+            var identifierList = this.participantSelection.getIdentifierList();
+            if( 'consent' == type ) {
+              var inputList = this.consentInputList;
+              var model = CnConsentModelFactory.root;
+              messageObj.title = 'Consent Records Added';
+              messageObj.message = 'The consent record has been successfully added to <TOTAL> participant(s).'
+            } else if( 'collection' == type ) {
+              // handle the collection id specially
+              var element = cenozo.getScopeByQuerySelector( '#collectionId' ).innerForm.name;
+              element.$error.format = false;
+              cenozo.updateFormElement( element, true );
+              error = error || element.$invalid;
+              messageObj.title = 'Collection Updated';
+              messageObj.message = 'The participant list has been ' +
+                ( 'add' == this.collectionOperation ? 'added to ' : 'removed from ' ) +
+                'the "' + this.collectionList.findByProperty( 'id', this.collectionId ).name + '" ' +
+                'collection'
+            } else if( 'event' == type ) {
+              var inputList = this.eventInputList;
+              var model = CnEventModelFactory.root;
+              messageObj.title = 'Event Records Added';
+              messageObj.message = 'The event record has been successfully added to <TOTAL> participant(s).'
+            } else if( 'hold' == type ) {
+              var inputList = this.holdInputList;
+              var model = CnHoldModelFactory.root;
+              messageObj.title = 'Hold Records Added';
+              messageObj.message = 'The hold record has been successfully added to <TOTAL> participant(s).'
+            } else if( 'note' == type ) {
+              var inputList = this.noteInputList;
+              var model = null;
+              messageObj.title = 'Note Records Added';
+              messageObj.message = 'The note record has been successfully added to <TOTAL> participant(s).'
+            } else if( 'participant' == type ) {
+              var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
+              var model = CnParticipantModelFactory.root;
+              messageObj.title = 'Participant Details Updated';
+              messageObj.message = 'The listed details have been successfully updated on ' + identifierList.length +
+                ' participant records.'
+            } else if( 'proxy' == type ) {
+              var inputList = this.proxyInputList;
+              var model = CnProxyModelFactory.root;
+              messageObj.title = 'Proxy Records Added';
+              messageObj.message = 'The proxy record has been successfully added to <TOTAL> participant(s).'
+            } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
+
+            if( inputList ) {
+              inputList.forEach( function( input ) {
+                var element = cenozo.getFormElement( input.column );
+                if( element ) {
+                  var valid = model.testFormat( input.column, input.value );
+                  element.$error.format = !valid;
+                  cenozo.updateFormElement( element, true );
+                  error = error || element.$invalid;
+                }
+              } );
+            }
+
+            if( !error ) {
+              var data = {
+                identifier_id: this.participantSelection.identifierId,
+                identifier_list: identifierList
+              };
+              if( 'collection' == type ) {
+                data.collection = { id: this.collectionId, operation: this.collectionOperation };
+              } else if( 'note' == type ) {
+                data.note = this.note;
+              } else if( 'participant' == type ) {
+                data.input_list = {};
+                inputList.forEach( function( input ) { data.input_list[input.column] = input.value; } );
+              } else {
+                data[type] = inputList.reduce( function( record, input ) {
+                  record[input.column] = input.value;
+                  return record;
+                }, {} );
+              }
+
+              var response = await CnHttpFactory.instance( {
+                path: 'participant',
+                data: data,
+                onError: CnModalMessageFactory.httpError
+              } ).post();
+
+              // some messages have a <TOTAL> in them, so fill it in (the number of records created)
+              messageObj.message = messageObj.message.replace( '<TOTAL>', response.data );
+              var messageModal = CnModalMessageFactory.instance( messageObj );
+              await messageModal.show();
+            }
+          }
         } );
 
         // given a module and metadata this function will build an input list
@@ -1699,8 +1815,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           return list;
         };
 
-        // populate the participant input list once the participant's metadata has been loaded
-        CnParticipantModelFactory.root.metadata.getPromise().then( function() {
+        var self = this;
+        async function init() {
+          // populate the participant input list once the participant's metadata has been loaded
+          await CnParticipantModelFactory.root.metadata.getPromise();
           self.participantInputList = processInputList( [
               'honorific', 'sex', 'current_sex', 'language_id', 'availability_type_id',
               'preferred_site_id', 'out_of_area', 'email', 'email2', 'mass_email', 'note'
@@ -1715,183 +1833,59 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             column: '',
             title: 'Select which column to edit'
           } );
-        } );
 
-        // populate the consent input list once the consent's metadata has been loaded
-        CnConsentModelFactory.root.metadata.getPromise().then( function() {
+          // populate the consent input list once the consent's metadata has been loaded
+          await CnConsentModelFactory.root.metadata.getPromise();
           self.consentInputList = processInputList(
             [ 'consent_type_id', 'accept', 'written', 'datetime', 'note' ],
             cenozoApp.module( 'consent' ),
             CnConsentModelFactory.root.metadata.columnList
           );
-        } );
 
-        // populate the collection input list right away
-        CnHttpFactory.instance( {
-          path: 'collection',
-          data: {
-            select: { column: [ 'id', 'name' ] },
-            modifier: {
-              where: [
-                { column: 'collection.active', operator: '=', value: true },
-                { column: 'collection.locked', operator: '=', value: false }
-              ]
+          // populate the collection input list right away
+          var response = await CnHttpFactory.instance( {
+            path: 'collection',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: [
+                  { column: 'collection.active', operator: '=', value: true },
+                  { column: 'collection.locked', operator: '=', value: false }
+                ]
+              }
             }
-          }
-        } ).query().then( function( response ) {
+          } ).query();
+
           self.collectionList = response.data;
           self.collectionList.unshift( { id: undefined, name: '(Select Collection)' } );
-        } );
 
-        // populate the event input list once the event's metadata has been loaded
-        CnEventModelFactory.root.metadata.getPromise().then( function() {
+          // populate the event input list once the event's metadata has been loaded
+          await CnEventModelFactory.root.metadata.getPromise();
           self.eventInputList = processInputList(
             [ 'event_type_id', 'datetime' ],
             cenozoApp.module( 'event' ),
             CnEventModelFactory.root.metadata.columnList
           );
-        } );
 
-        // populate the hold input list once the hold's metadata has been loaded
-        CnHoldModelFactory.root.metadata.getPromise().then( function() {
+          // populate the hold input list once the hold's metadata has been loaded
+          await CnHoldModelFactory.root.metadata.getPromise();
           self.holdInputList = processInputList(
             [ 'hold_type_id', 'datetime' ],
             cenozoApp.module( 'hold' ),
             CnHoldModelFactory.root.metadata.columnList
           );
-        } );
 
-        // populate the proxy input list once the proxy's metadata has been loaded
-        CnProxyModelFactory.root.metadata.getPromise().then( function() {
+          // populate the proxy input list once the proxy's metadata has been loaded
+          await CnProxyModelFactory.root.metadata.getPromise();
           self.proxyInputList = processInputList(
             [ 'proxy_type_id', 'datetime' ],
             cenozoApp.module( 'proxy' ),
             CnProxyModelFactory.root.metadata.columnList
           );
-        } );
+        }
 
-        this.selectDatetime = function( input ) {
-          CnModalDatetimeFactory.instance( {
-            title: input.title,
-            date: input.value,
-            minDate: angular.isDefined( input.min ) ? input.min : input.min,
-            maxDate: angular.isDefined( input.max ) ? input.max : input.max,
-            pickerType: input.type,
-            emptyAllowed: !input.required
-          } ).show().then( function( response ) {
-            if( false !== response ) {
-              input.value = response;
-              input.formattedValue = CnSession.formatValue( response, input.type, true );
-            }
-          } );
-        };
-
-        this.activateInput = function( column ) {
-          if( column ) {
-            this.participantInputList.findByProperty( 'column', column ).active = true;
-            this.hasActiveInputs = true;
-            if( column == this.activeInput ) this.activeInput = '';
-          }
-        };
-
-        this.deactivateInput = function( column ) {
-          this.participantInputList.findByProperty( 'column', column ).active = false;
-          this.hasActiveInputs = 0 < this.participantInputList
-            .filter( function( input ) { return input.active; }).length;
-        };
-
-        this.applyMultiedit = function( type ) {
-          // test the formats of all columns
-          var error = false;
-          var messageObj = { title: null, message: null };
-          var identifierList = self.participantSelection.getIdentifierList();
-          if( 'consent' == type ) {
-            var inputList = this.consentInputList;
-            var model = CnConsentModelFactory.root;
-            messageObj.title = 'Consent Records Added';
-            messageObj.message = 'The consent record has been successfully added to <TOTAL> participant(s).'
-          } else if( 'collection' == type ) {
-            // handle the collection id specially
-            var element = cenozo.getScopeByQuerySelector( '#collectionId' ).innerForm.name;
-            element.$error.format = false;
-            cenozo.updateFormElement( element, true );
-            error = error || element.$invalid;
-            messageObj.title = 'Collection Updated';
-            messageObj.message = 'The participant list has been ' +
-              ( 'add' == this.collectionOperation ? 'added to ' : 'removed from ' ) +
-              'the "' + this.collectionList.findByProperty( 'id', this.collectionId ).name + '" ' +
-              'collection'
-          } else if( 'event' == type ) {
-            var inputList = this.eventInputList;
-            var model = CnEventModelFactory.root;
-            messageObj.title = 'Event Records Added';
-            messageObj.message = 'The event record has been successfully added to <TOTAL> participant(s).'
-          } else if( 'hold' == type ) {
-            var inputList = this.holdInputList;
-            var model = CnHoldModelFactory.root;
-            messageObj.title = 'Hold Records Added';
-            messageObj.message = 'The hold record has been successfully added to <TOTAL> participant(s).'
-          } else if( 'note' == type ) {
-            var inputList = this.noteInputList;
-            var model = null;
-            messageObj.title = 'Note Records Added';
-            messageObj.message = 'The note record has been successfully added to <TOTAL> participant(s).'
-          } else if( 'participant' == type ) {
-            var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
-            var model = CnParticipantModelFactory.root;
-            messageObj.title = 'Participant Details Updated';
-            messageObj.message = 'The listed details have been successfully updated on ' + identifierList.length +
-              ' participant records.'
-          } else if( 'proxy' == type ) {
-            var inputList = this.proxyInputList;
-            var model = CnProxyModelFactory.root;
-            messageObj.title = 'Proxy Records Added';
-            messageObj.message = 'The proxy record has been successfully added to <TOTAL> participant(s).'
-          } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
-
-          if( inputList ) {
-            inputList.forEach( function( input ) {
-              var element = cenozo.getFormElement( input.column );
-              if( element ) {
-                var valid = model.testFormat( input.column, input.value );
-                element.$error.format = !valid;
-                cenozo.updateFormElement( element, true );
-                error = error || element.$invalid;
-              }
-            } );
-          }
-
-          if( !error ) {
-            var data = {
-              identifier_id: self.participantSelection.identifierId,
-              identifier_list: identifierList
-            };
-            if( 'collection' == type ) {
-              data.collection = { id: this.collectionId, operation: this.collectionOperation };
-            } else if( 'note' == type ) {
-              data.note = this.note;
-            } else if( 'participant' == type ) {
-              data.input_list = {};
-              inputList.forEach( function( input ) { data.input_list[input.column] = input.value; } );
-            } else {
-              data[type] = inputList.reduce( function( record, input ) {
-                record[input.column] = input.value;
-                return record;
-              }, {} );
-            }
-
-            CnHttpFactory.instance( {
-              path: 'participant',
-              data: data,
-              onError: CnModalMessageFactory.httpError
-            } ).post().then( function( response ) {
-              // some messages have a <TOTAL> in them, so fill it in (the number of records created)
-              messageObj.message = messageObj.message.replace( '<TOTAL>', response.data );
-              var messageModal = CnModalMessageFactory.instance( messageObj );
-              messageModal.show();
-            } );
-          }
-        };
+        // this is a contructor function so don't await the init() function
+        init();
       };
 
       return { instance: function() { return new object( false ); } };
@@ -1903,22 +1897,26 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     'CnBaseNoteFactory', 'CnSession', '$state',
     function( CnBaseNoteFactory, CnSession, $state ) {
       var object = function() {
-        var self = this;
         CnBaseNoteFactory.construct( this, module );
 
-        this.onView().then( function() {
+        var self = this;
+        async function init() {
+          await self.onView();
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Participants',
-              go: function() { $state.go( 'participant.list' ); }
+              go: async function() { await $state.go( 'participant.list' ); }
             }, {
               title: String( $state.params.identifier ).split( '=' ).pop(),
-              go: function() { $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
+              go: async function() { await $state.go( 'participant.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'Notes'
             } ]
           );
-        } );
+        }
+
+        // this is a contructor function so don't await the init() function
+        init();
       };
 
       return { instance: function() { return new object( false ); } };

@@ -118,7 +118,7 @@ define( function() {
   if( angular.isDefined( module.actions.edit ) ) {
     module.addExtraOperation( 'view', {
       title: 'Reset Password',
-      operation: function( $state, model ) { model.viewModel.resetPassword(); }
+      operation: async function( $state, model ) { await model.viewModel.resetPassword(); }
     } );
   }
 
@@ -127,14 +127,17 @@ define( function() {
     classes: 'btn-warning',
     isIncluded: function( $state, model ) { return model.viewModel.listenToCallIncluded; },
     isDisabled: function( $state, model ) { return model.viewModel.listenToCallDisabled; },
-    operation: function( $state, model ) {
-      var self = this;
-
+    operation: async function( $state, model ) {
       // if the title is "Listen" then start listening in
       if( 'Listen to Call' == this.title ) {
-        model.viewModel.listenToCall().then( function() { self.title = 'Stop Listening'; } );
+        await model.viewModel.listenToCall();
+        this.title = 'Stop Listening';
       } else { // 'Stop Listening' == this.title
-        model.viewModel.stopListenToCall().finally( function() { self.title = 'Listen to Call'; } );
+        try {
+          await model.viewModel.stopListenToCall();
+        } finally {
+          this.title = 'Listen to Call';
+        }
       }
     }
   } );
@@ -206,13 +209,12 @@ define( function() {
     'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$state',
     function( CnBaseAddFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, $state ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
         // immediately view the user record after it has been created
         this.transitionOnSave = function( record ) { 
-          CnSession.workingTransition( function() {
-            $state.go( 'user.view', { identifier: 'name=' + record.name } );
+          CnSession.workingTransition( async function() {
+            await $state.go( 'user.view', { identifier: 'name=' + record.name } );
           } );
         };
 
@@ -224,26 +226,26 @@ define( function() {
         };
 
         // catch user-already-exists errors and give the option to add access
-        this.onAddError = function( response ) {
+        this.onAddError = async function( response ) {
           if( 409 == response.status ) {
             var column = response.data[0];
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'user/' + column + '=' + newRecord[column],
               data: { select: { column: [ 'name', 'first_name', 'last_name' ] } }
-            } ).get().then( function( response ) {
-              var user = response.data;
-              var message = 'email' == column
-                          ? 'The email address, "' + newRecord[column] + '", is already registered to '
-                          : 'The username, "' + newRecord[column] + '", already exists and belongs to ';
-              CnModalConfirmFactory.instance( {
-                title: 'User Already Exists',
-                message: message + user.first_name + ' ' + user.last_name + '. ' +
-                  'Would you like to view the user\'s details so that you can grant them access ' +
-                  'to the requested site and role?'
-              } ).show().then( function( response ) {
-                if( response ) $state.go( 'user.view', { identifier: 'name=' + user.name } );
-              } );
-            } );
+            } ).get();
+            var user = response.data;
+            var message = 'email' == column
+                        ? 'The email address, "' + newRecord[column] + '", is already registered to '
+                        : 'The username, "' + newRecord[column] + '", already exists and belongs to ';
+
+            var response = await CnModalConfirmFactory.instance( {
+              title: 'User Already Exists',
+              message: message + user.first_name + ' ' + user.last_name + '. ' +
+                'Would you like to view the user\'s details so that you can grant them access ' +
+                'to the requested site and role?'
+            } ).show();
+
+            if( response ) await $state.go( 'user.view', { identifier: 'name=' + user.name } );
           } else { CnModalMessageFactory.httpError( response ); }
         };
       };
@@ -266,118 +268,117 @@ define( function() {
     'CnBaseViewFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnSession', 'CnHttpFactory',
     function( CnBaseViewFactory, CnModalConfirmFactory, CnModalMessageFactory, CnSession, CnHttpFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'access' );
-        this.listenToCallIncluded = false;
-        this.listenToCallDisabled = true;
 
-        // functions to handle listening to calls (voip spy)
-        this.listenToCall = function() {
-          return CnHttpFactory.instance( {
-            path: 'voip/' + self.record.id,
-            data: { operation: 'spy' }
-          } ).patch();
-        };
+        angular.extend( this, {
+          listenToCallIncluded: false,
+          listenToCallDisabled: true,
 
-        this.stopListenToCall = function() {
-          return CnHttpFactory.instance( {
-            path: 'voip/0',
-            onError: function( response ) {
-              if( 404 == response.status ) {
-                // ignore 404 errors, it just means there was no phone call found to hang up
-              } else { CnModalMessageFactory.httpError( response ); }
+          // functions to handle listening to calls (voip spy)
+          listenToCall: async function() {
+            await CnHttpFactory.instance( { path: 'voip/' + this.record.id, data: { operation: 'spy' } } ).patch();
+          },
+
+          stopListenToCall: function() {
+            return CnHttpFactory.instance( {
+              path: 'voip/0',
+              onError: function( error ) {
+                if( 404 == error.status ) {
+                  // ignore 404 errors, it just means there was no phone call found to hang up
+                } else { CnModalMessageFactory.httpError( error ); }
+              }
+            } ).delete();
+          },
+
+          // extend the onPatch function
+          onPatch: async function( data ) {
+            await this.$$onPatch( data );
+            // update the login failures when active is set to true
+            if( true === data.active ) {
+              var response = await CnHttpFactory.instance( {
+                path: this.parentModel.getServiceResourcePath(),
+                data: { select: { column: [ 'login_failures' ] } }
+              } ).get();
+              this.record.login_failures = response.data.login_failures;
             }
-          } ).delete();
-        };
+          },
 
-        this.afterView( function() {
-          CnSession.promise.then( function() {
-            self.listenToCallIncluded =
-              1 < CnSession.role.tier &&
-              CnSession.application.voipEnabled &&
-              self.record.in_call;
-            self.listenToCallDisabled =
-              !CnSession.voip.info ||
-              !CnSession.voip.info.status ||
-              'OK' != CnSession.voip.info.status.substr( 0, 2 ) ||
-              !self.record.in_call;
-          } );
+          // custom operation
+          resetPassword: async function() {
+            var response = await CnModalConfirmFactory.instance( {
+              title: 'Reset Password',
+              message: 'Are you sure you wish to reset the password for user "' + this.record.name + '"'
+            } ).show();
+
+            if( response ) {
+              await CnHttpFactory.instance( {
+                path: 'user/' + this.record.getIdentifier(),
+                data: { password: true },
+                onError: async function( error ) {
+                  if( 403 == error.status ) {
+                    await CnModalMessageFactory.instance( {
+                      title: 'Unable To Change Password',
+                      message: 'Sorry, you do not have access to resetting the password for user "' + this.record.name+ '".',
+                      error: true
+                    } ).show();
+                  } else { CnModalMessageFactory.httpError( error ); }
+                }
+              } ).patch();
+
+              await CnModalMessageFactory.instance( {
+                title: 'Password Reset',
+                message: 'The password for user "' + self.record.name + '" has been successfully reset.'
+              } ).show();
+            }
+          }
+        } );
+
+        var self = this;
+        this.afterView( async function() {
+          await CnSession.promise;
+
+          self.listenToCallIncluded =
+            1 < CnSession.role.tier &&
+            CnSession.application.voipEnabled &&
+            self.record.in_call;
+          self.listenToCallDisabled =
+            !CnSession.voip.info ||
+            !CnSession.voip.info.status ||
+            'OK' != CnSession.voip.info.status.substr( 0, 2 ) ||
+            !self.record.in_call;
 
           try {
             cenozoApp.module( 'assignment' ); // make sure the assignment module is available
 
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'user/' + self.record.id + '/assignment',
               data: {
                 modifier: { where: { column: 'assignment.end_datetime', operator: '=', value: null } },
                 select: { column: [ 'id' ] }
               }
-            } ).get().then( function( response ) {
-              if( 0 < response.data.length ) {
-                // add the view assignment button
-                module.addExtraOperation( 'view', {
-                  title: 'View Active Assignment',
-                  operation: function( $state, model ) {
-                    $state.go( 'assignment.view', { identifier: response.data[0].id } );
-                  }
-                } );
-              } else {
-                // remove the view assignment button, if found
-                module.removeExtraOperation( 'view', 'View Active Assignment' );
-              }
-            } );
+            } ).get();
+            if( 0 < response.data.length ) {
+              // add the view assignment button
+              module.addExtraOperation( 'view', {
+                title: 'View Active Assignment',
+                operation: async function( $state, model ) {
+                  await $state.go( 'assignment.view', { identifier: response.data[0].id } );
+                }
+              } );
+            } else {
+              // remove the view assignment button, if found
+              module.removeExtraOperation( 'view', 'View Active Assignment' );
+            }
           } catch( err ) {}
         } );
 
-        this.deferred.promise.then( function() {
+        async function init() {
+          await self.deferred.promise;
           if( angular.isDefined( self.languageModel ) )
             self.languageModel.listModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
-        } );
+        }
 
-        // extend the onPatch function
-        this.onPatch = function( data ) {
-          return this.$$onPatch( data ).then( function() {
-            // update the login failures when active is set to true
-            if( true === data.active ) {
-              CnHttpFactory.instance( {
-                path: self.parentModel.getServiceResourcePath(),
-                data: { select: { column: [ 'login_failures' ] } }
-              } ).get().then( function( response ) {
-                self.record.login_failures = response.data.login_failures;
-              } );
-            }
-          } );
-        };
-
-        // custom operation
-        this.resetPassword = function() {
-          CnModalConfirmFactory.instance( {
-            title: 'Reset Password',
-            message: 'Are you sure you wish to reset the password for user "' + self.record.name + '"'
-          } ).show().then( function( response ) {
-            if( response ) {
-              CnHttpFactory.instance( {
-                path: 'user/' + self.record.getIdentifier(),
-                data: { password: true },
-                onError: function( response ) {
-                  if( 403 == response.status ) {
-                    CnModalMessageFactory.instance( {
-                      title: 'Unable To Change Password',
-                      message: 'Sorry, you do not have access to resetting the password for user "' +
-                               self.record.name+ '".',
-                      error: true
-                    } ).show();
-                  } else { CnModalMessageFactory.httpError( response ); }
-                }
-              } ).patch().then( function() {
-                CnModalMessageFactory.instance( {
-                  title: 'Password Reset',
-                  message: 'The password for user "' + self.record.name + '" has been successfully reset.'
-                } ).show();
-              } );
-            }
-          } );
-        };
+        init();
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -386,11 +387,10 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserModelFactory', [
     'CnBaseModelFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseModelFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnUserAddFactory.instance( this );
         this.listModel = CnUserListFactory.instance( this );
@@ -404,63 +404,59 @@ define( function() {
           ' the user will automatically be deactivated.  Reactivating the user will reset the counter to 0.';
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return self.$$getMetadata().then( function() {
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'application_type/name=' + CnSession.application.type + '/role',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false }, limit: 1000 },
-                  granting: true // only return roles which we can grant access to
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.role_id = {
-                  required: true,
-                  enumList: []
-                };
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+        this.getMetadata = async function() {
+          var self = this;
+          await this.$$getMetadata();
 
-              CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false }, limit: 1000 },
-                  granting: true // only return sites which we can grant access to
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.site_id = {
-                  required: true,
-                  enumList: []
-                };
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+          var response = await CnHttpFactory.instance( {
+            path: 'application_type/name=' + CnSession.application.type + '/role',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: { name: false }, limit: 1000 },
+              granting: true // only return roles which we can grant access to
+            }
+          } ).query();
+          this.metadata.columnList.role_id = {
+            required: true,
+            enumList: []
+          };
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
+          } );
 
-              CnHttpFactory.instance( {
-                path: 'language',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: [ { column: 'active', operator: '=', value: true } ],
-                    order: { name: false },
-                    limit: 1000
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.language_id = {
-                  required: false,
-                  enumList: []
-                };
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
-            ] );
+          var response = await CnHttpFactory.instance( {
+            path: 'site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: { name: false }, limit: 1000 },
+              granting: true // only return sites which we can grant access to
+            }
+          } ).query();
+          this.metadata.columnList.site_id = {
+            required: true,
+            enumList: []
+          };
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+          } );
+
+          var response = await CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: [ { column: 'active', operator: '=', value: true } ],
+                order: { name: false },
+                limit: 1000
+              }
+            }
+          } ).query();
+          this.metadata.columnList.language_id = {
+            required: false,
+            enumList: []
+          };
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };
@@ -474,10 +470,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserOverviewFactory', [
-    'CnBaseModelFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
-    function( CnBaseModelFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+    'CnBaseModelFactory', 'CnUserListFactory', 'CnUserAddFactory', 'CnUserViewFactory', 'CnSession',
+    function( CnBaseModelFactory, CnUserListFactory, CnUserAddFactory, CnUserViewFactory, CnSession ) {
       var overviewModule = angular.copy( module );
       delete overviewModule.columnList.active;
       delete overviewModule.columnList.role_list;
@@ -515,18 +509,20 @@ define( function() {
 
       angular.extend( overviewModule.columnList, columnList );
 
-      // remove some columns based on the voip and role details
-      CnSession.promise.then( function() {
+      async function init() {
+        // remove some columns based on the voip and role details
+        await CnSession.promise;
+
         if( !CnSession.application.voipEnabled ) {
           delete overviewModule.columnList.webphone;
           delete overviewModule.columnList.in_call;
         }
         if( !CnSession.role.allSites ) delete overviewModule.columnList.site;
-      } );
+      }
+
+      init();
 
       var object = function() {
-        var self = this;
-
         CnBaseModelFactory.construct( this, overviewModule );
         angular.extend( this, {
           listModel: CnUserListFactory.instance( this ),

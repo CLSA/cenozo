@@ -96,9 +96,9 @@ define( function() {
     'CnBaseViewFactory', 'CnHttpFactory',
     function( CnBaseViewFactory, CnHttpFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
+        var self = this;
         this.afterView( function() {
           if( angular.isUndefined( self.downloadFile ) ) {
             self.downloadFile = function() {
@@ -113,10 +113,9 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnFormModelFactory', [
-    'CnBaseModelFactory', 'CnFormListFactory', 'CnFormViewFactory', 'CnHttpFactory', 'CnSession',
-    function( CnBaseModelFactory, CnFormListFactory, CnFormViewFactory, CnHttpFactory, CnSession ) {
+    'CnBaseModelFactory', 'CnFormListFactory', 'CnFormViewFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnFormListFactory, CnFormViewFactory, CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnFormListFactory.instance( this );
         this.viewModel = CnFormViewFactory.instance( this, root );
@@ -124,26 +123,27 @@ define( function() {
         // extend getBreadcrumbTitle
         // (metadata's promise will have already returned so we don't have to wait for it)
         this.getBreadcrumbTitle = function() {
-          var formType = self.metadata.columnList.form_type_id.enumList.findByProperty(
+          var formType = this.metadata.columnList.form_type_id.enumList.findByProperty(
             'value', this.viewModel.record.form_type_id );
           return formType ? formType.name : 'unknown';
         };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'form_type',
-              data: {
-                select: { column: [ 'id', 'title' ] },
-                modifier: { order: 'title', limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.form_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.form_type_id.enumList.push( { value: item.id, name: item.title } );
-              } );
-            } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'form_type',
+            data: {
+              select: { column: [ 'id', 'title' ] },
+              modifier: { order: 'title', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.form_type_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.form_type_id.enumList.push( { value: item.id, name: item.title } );
           } );
         };
       };

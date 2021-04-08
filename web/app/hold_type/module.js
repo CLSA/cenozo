@@ -109,14 +109,18 @@ define( function() {
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
-        // allow add/delete of roles and participants
-        this.deferred.promise.then( function() {
+        var self = this;
+        async function init() {
+          // allow add/delete of roles and participants
+          await self.deferred.promise;
+
           if( angular.isDefined( self.roleModel ) )
             self.roleModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
-        } );
+        }
+
+        init();
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

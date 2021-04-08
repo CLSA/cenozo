@@ -61,8 +61,8 @@ define( [ 'study' ].reduce( function( list, name ) {
 
   module.addExtraOperation( 'view', {
     title: 'Manage Participants',
-    operation: function( $state, model ) {
-      $state.go( 'stratum.mass_participant', { identifier: model.viewModel.record.getIdentifier() } );
+    operation: async function( $state, model ) {
+      await $state.go( 'stratum.mass_participant', { identifier: model.viewModel.record.getIdentifier() } );
     },
     isIncluded: function( $state, model ) { return model.getEditEnabled(); }
   } );
@@ -105,20 +105,20 @@ define( [ 'study' ].reduce( function( list, name ) {
         templateUrl: module.getFileUrl( 'mass_participant.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
-        controller: function( $scope ) {
+        controller: async function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnStratumMassParticipantFactory.instance();
 
-          $scope.model.onLoad().then( function() {
-            CnSession.setBreadcrumbTrail( [ {
-              title: 'Strata',
-              go: function() { return $state.go( 'stratum.list' ); }
-            }, {
-              title: $scope.model.stratumName,
-              go: function() { return $state.go( 'stratum.view', { identifier: $scope.model.stratumId } ); }
-            }, {
-              title: 'Manage Participants'
-            } ] );
-          } );
+          await $scope.model.onLoad();
+
+          CnSession.setBreadcrumbTrail( [ {
+            title: 'Strata',
+            go: async function() { await $state.go( 'stratum.list' ); }
+          }, {
+            title: $scope.model.stratumName,
+            go: async function() { await $state.go( 'stratum.view', { identifier: $scope.model.stratumId } ); }
+          }, {
+            title: 'Manage Participants'
+          } ] );
         }
       };
     }
@@ -162,7 +162,6 @@ define( [ 'study' ].reduce( function( list, name ) {
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnParticipantSelectionFactory', '$state',
     function( CnSession, CnHttpFactory, CnModalMessageFactory, CnParticipantSelectionFactory, $state ) {
       var object = function() {
-        var self = this;
         angular.extend( this, {
           operation: 'add',
           working: false,
@@ -173,15 +172,15 @@ define( [ 'study' ].reduce( function( list, name ) {
           stratumId: $state.params.identifier,
           stratumName: null,
 
-          onLoad: function() {
+          onLoad: async function() {
             // reset data
-            return CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'stratum/' + this.stratumId,
               data: { select: { column: 'name' } }
-            } ).get().then( function( response ) {
-              self.stratumName = response.data.name;
-              self.participantSelection.reset();
-            } );
+            } ).get()
+
+            this.stratumName = response.data.name;
+            this.participantSelection.reset();
           },
 
           inputsChanged: function() {
@@ -189,32 +188,34 @@ define( [ 'study' ].reduce( function( list, name ) {
             this.participantSelection.reset();
           },
 
-          proceed: function() {
+          proceed: async function() {
             this.working = true;
             if( !this.participantSelection.confirmInProgress && 0 < this.participantSelection.confirmedCount ) {
-              CnHttpFactory.instance( {
-                path: ['stratum', this.stratumId, 'participant'].join( '/' ),
-                data: {
-                  mode: 'update',
-                  identifier_id: this.participantSelection.identifierId,
-                  identifier_list: this.participantSelection.getIdentifierList(),
-                  operation: this.operation
-                },
-                onError: function( response ) {
-                  CnModalMessageFactory.httpError( response ).then( function() {
-                    $state.go( 'stratum.view', { identifier: self.stratumId } );
-                  } );
-                }
-              } ).post().then( function( response ) {
-                CnModalMessageFactory.instance( {
+              try {
+                var response = await CnHttpFactory.instance( {
+                  path: ['stratum', this.stratumId, 'participant'].join( '/' ),
+                  data: {
+                    mode: 'update',
+                    identifier_id: this.participantSelection.identifierId,
+                    identifier_list: this.participantSelection.getIdentifierList(),
+                    operation: this.operation
+                  },
+                  onError: async function( error ) {
+                    await CnModalMessageFactory.httpError( error );
+                    await $state.go( 'stratum.view', { identifier: this.stratumId } );
+                  }
+                } ).post();
+
+                await CnModalMessageFactory.instance( {
                   title: 'Participants Added',
-                  message: 'You have successfully ' + ( 'add' == self.operation ? 'added ' : 'removed ' ) +
-                           self.participantSelection.confirmedCount + ' participant ' +
-                           ( 'add' == self.operation ? 'to' : 'from' ) + ' the "' + self.stratumName + '" stratum.'
-                } ).show().then( function() {
-                  $state.go( 'stratum.view', { identifier: self.stratumId } );
-                } );
-              } ).finally( function() { self.working = false; } );
+                  message: 'You have successfully ' + ( 'add' == this.operation ? 'added ' : 'removed ' ) +
+                           this.participantSelection.confirmedCount + ' participant ' +
+                           ( 'add' == this.operation ? 'to' : 'from' ) + ' the "' + this.stratumName + '" stratum.'
+                } ).show();
+                await $state.go( 'stratum.view', { identifier: this.stratumId } );
+              } finally {
+                this.working = false;
+              }
             }
           }
 
@@ -229,14 +230,17 @@ define( [ 'study' ].reduce( function( list, name ) {
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
-        this.deferred.promise.then( function() {
+        var self = this;
+        async function init() {
+          await self.deferred.promise;
           if( angular.isDefined( self.participantModel ) ) {
             self.participantModel.getChooseEnabled = function() { return false; };
           }
-        } );
+        }
+
+        init();
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

@@ -66,7 +66,6 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
     'CnBaseCalendarFactory', 'CnSession', 'CnParticipantModelFactory',
     function( CnBaseCalendarFactory, CnSession, CnParticipantModelFactory ) {
       var object = function( parentModel, site ) {
-        var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
         // remove day click callbacks
@@ -78,14 +77,14 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
         };
 
         // extend onCalendar to transform templates into events
-        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+        this.onCalendar = async function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
-          var loadMinDate = self.getLoadMinDate( replace, minDate );
-          var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
-            self.cache.forEach( function( item, index, array ) {
-              array[index] = getEventFromParticipant( item, CnSession.user.timezone );
-            } );
+          var loadMinDate = this.getLoadMinDate( replace, minDate );
+          var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
+          await this.$$onCalendar( replace, minDate, maxDate, ignoreParent );
+
+          this.cache.forEach( function( item, index, array ) {
+            array[index] = getEventFromParticipant( item, CnSession.user.timezone );
           } );
         };
       };
@@ -102,7 +101,6 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnCallbackModel without specifying the site.' );
 
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.calendarModel = CnCallbackCalendarFactory.instance( this, site );
         this.site = site;

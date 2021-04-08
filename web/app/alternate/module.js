@@ -182,10 +182,9 @@ define( function() {
   if( angular.isDefined( module.actions.notes ) ) {
     module.addExtraOperation( 'view', {
       title: 'Notes',
-      operation: function( $state, model ) {
-        model.viewModel.onViewPromise.then( function() {
-          $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } )
-        } );
+      operation: async function( $state, model ) {
+        await model.viewModel.onViewPromise;
+        await $state.go( 'alternate.notes', { identifier: model.viewModel.record.getIdentifier() } );
       }
     } );
   }
@@ -193,10 +192,9 @@ define( function() {
   if( angular.isDefined( module.actions.history ) ) {
     module.addExtraOperation( 'view', {
       title: 'History',
-      operation: function( $state, model ) {
-        model.viewModel.onViewPromise.then( function() {
-          $state.go( 'alternate.history', { identifier: model.viewModel.record.getIdentifier() } );
-        } );
+      operation: async function( $state, model ) {
+        await model.viewModel.onViewPromise;
+        await $state.go( 'alternate.history', { identifier: model.viewModel.record.getIdentifier() } );
       }
     } );
   }
@@ -204,7 +202,7 @@ define( function() {
   if( angular.isDefined( module.actions.list ) ) {
     module.addExtraOperation( 'view', {
       title: 'Alternate List',
-      operation: function( $state ) { $state.go( 'alternate.list' ); }
+      operation: async function( $state ) { await $state.go( 'alternate.list' ); }
     } );
   }
 
@@ -212,7 +210,7 @@ define( function() {
    * The historyCategoryList object stores the following information
    *   category:
    *     active: whether or not to show the category in the history list by default
-   *     promise: a function which gets all history items for that category and which must return a promise
+   *     promise: an async function which gets all history items for that category
    * 
    * This can be extended by applications by adding new history categories or changing existing ones.
    * Note: make sure the category name (the object's property) matches the property set in the historyList
@@ -222,8 +220,8 @@ define( function() {
     Address: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'alternate/' + $state.params.identifier + '/address',
           data: {
             modifier: {
@@ -245,18 +243,18 @@ define( function() {
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            var description = item.address1;
-            if( item.address2 ) description += '\n' + item.address2;
-            description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
-            if( item.international ) description += "\n(international)";
-            historyList.push( {
-              datetime: item.create_timestamp,
-              category: 'Address',
-              title: 'added rank ' + item.rank,
-              description: description
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          var description = item.address1;
+          if( item.address2 ) description += '\n' + item.address2;
+          description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
+          if( item.international ) description += "\n(international)";
+          historyList.push( {
+            datetime: item.create_timestamp,
+            category: 'Address',
+            title: 'added rank ' + item.rank,
+            description: description
           } );
         } );
       }
@@ -265,8 +263,8 @@ define( function() {
     Note: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'alternate/' + $state.params.identifier + '/note',
           data: {
             modifier: {
@@ -289,14 +287,14 @@ define( function() {
               } ]
             }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.datetime,
-              category: 'Note',
-              title: 'added by ' + item.user_first + ' ' + item.user_last,
-              description: item.note
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.datetime,
+            category: 'Note',
+            title: 'added by ' + item.user_first + ' ' + item.user_last,
+            description: item.note
           } );
         } );
       }
@@ -305,20 +303,20 @@ define( function() {
     Phone: {
       active: true,
       framework: true,
-      promise: function( historyList, $state, CnHttpFactory ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'alternate/' + $state.params.identifier + '/phone',
           data: {
             select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] }
           }
-        } ).query().then( function( response ) {
-          response.data.forEach( function( item ) {
-            historyList.push( {
-              datetime: item.create_timestamp,
-              category: 'Phone',
-              title: 'added rank ' + item.rank,
-              description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
-            } );
+        } ).query();
+
+        response.data.forEach( function( item ) {
+          historyList.push( {
+            datetime: item.create_timestamp,
+            category: 'Phone',
+            title: 'added rank ' + item.rank,
+            description: item.type + ': ' + item.number + ( item.international ? ' (international)' : '' )
           } );
         } );
       }
@@ -333,17 +331,17 @@ define( function() {
       return {
         templateUrl: cenozo.getFileUrl( 'cenozo', 'history.tpl.html' ),
         restrict: 'E',
-        controller: function( $scope ) {
+        controller: async function( $scope ) {
           $scope.isLoading = false;
           $scope.model = CnAlternateHistoryFactory.instance();
 
-          CnHttpFactory.instance( {
+          var response = await CnHttpFactory.instance( {
             path: 'alternate/' + $state.params.identifier,
             data: { select: { column: [ 'id', 'first_name', 'last_name' ] } }
-          } ).get().then( function( response ) {
-            $scope.name = response.data.first_name + ' ' + response.data.last_name;
-            $scope.id = response.data.id;
-          } );
+          } ).get();
+
+          $scope.name = response.data.first_name + ' ' + response.data.last_name;
+          $scope.id = response.data.id;
 
           // create an array from the history categories object
           $scope.historyCategoryArray = [];
@@ -355,9 +353,13 @@ define( function() {
             $scope.historyCategoryArray.push( $scope.model.module.historyCategoryList[name] );
           }
 
-          $scope.refresh = function() {
+          $scope.refresh = async function() {
             $scope.isLoading = true;
-            $scope.model.onView().finally( function finished() { $scope.isLoading = false; } );
+            try {
+              await $scope.model.onView();
+            } finally {
+              $scope.isLoading = false;
+            }
           };
           $scope.refresh();
         }
@@ -440,8 +442,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory', '$q',
-    function( CnBaseAddFactory, CnHttpFactory, $q ) {
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -477,98 +479,91 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateModelFactory', [
     'CnBaseModelFactory', 'CnAlternateListFactory', 'CnAlternateAddFactory', 'CnAlternateViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseModelFactory, CnAlternateListFactory, CnAlternateAddFactory, CnAlternateViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAlternateAddFactory.instance( this );
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'phone'
-              } ).head().then( function( response ) {
-                var columnList = angular.fromJson( response.headers( 'Columns' ) );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
 
-                // international column
-                columnList.international.required = '1' == columnList.international.required;
-                if( angular.isUndefined( self.metadata.columnList.phone_international ) )
-                  self.metadata.columnList.phone_international = {};
-                angular.extend( self.metadata.columnList.phone_international, columnList.international );
+          var response = await CnHttpFactory.instance( { path: 'phone' } ).head();
 
-                // type column
-                columnList.type.required = '1' == columnList.type.required;
-                columnList.type.enumList = [];
-                cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
-                  columnList.type.enumList.push( { value: item, name: item } );
-                } );
-                if( angular.isUndefined( self.metadata.columnList.phone_type ) )
-                  self.metadata.columnList.phone_type = {};
-                angular.extend( self.metadata.columnList.phone_type, columnList.type );
+          var columnList = angular.fromJson( response.headers( 'Columns' ) );
 
-                // number column
-                columnList.number.required = '1' == columnList.number.required;
-                if( angular.isUndefined( self.metadata.columnList.phone_number ) )
-                  self.metadata.columnList.phone_number = {};
-                angular.extend( self.metadata.columnList.phone_number, columnList.number );
+          // international column
+          columnList.international.required = '1' == columnList.international.required;
+          if( angular.isUndefined( this.metadata.columnList.phone_international ) )
+            this.metadata.columnList.phone_international = {};
+          angular.extend( this.metadata.columnList.phone_international, columnList.international );
 
-                // note column
-                columnList.note.required = '1' == columnList.note.required;
-                if( angular.isUndefined( self.metadata.columnList.phone_note ) )
-                  self.metadata.columnList.phone_note = {};
-                angular.extend( self.metadata.columnList.phone_note, columnList.note );
-              } ),
-
-              CnHttpFactory.instance( {
-                path: 'address'
-              } ).head().then( function( response ) {
-                var columnList = angular.fromJson( response.headers( 'Columns' ) );
-
-                // international column
-                columnList.international.required = false;
-                columnList.international.default = null;
-                if( angular.isUndefined( self.metadata.columnList.address_international ) )
-                  self.metadata.columnList.address_international = {};
-                angular.extend( self.metadata.columnList.address_international, columnList.international );
-
-                // address1 column
-                columnList.address1.required = false;
-                if( angular.isUndefined( self.metadata.columnList.address_address1 ) )
-                  self.metadata.columnList.address_address1 = {};
-                angular.extend( self.metadata.columnList.address_address1, columnList.address1 );
-
-                // address2 column
-                columnList.address2.required = false;
-                if( angular.isUndefined( self.metadata.columnList.address_address2 ) )
-                  self.metadata.columnList.address_address2 = {};
-                angular.extend( self.metadata.columnList.address_address2, columnList.address2 );
-
-                // city column
-                columnList.city.required = false;
-                if( angular.isUndefined( self.metadata.columnList.address_city ) )
-                  self.metadata.columnList.address_city = {};
-                angular.extend( self.metadata.columnList.address_city, columnList.city );
-
-                // postcode column
-                columnList.postcode.required = false;
-                if( angular.isUndefined( self.metadata.columnList.address_postcode ) )
-                  self.metadata.columnList.address_postcode = {};
-                angular.extend( self.metadata.columnList.address_postcode, columnList.postcode );
-
-                // note column
-                columnList.note.required = false;
-                if( angular.isUndefined( self.metadata.columnList.address_note ) )
-                  self.metadata.columnList.address_note = {};
-                angular.extend( self.metadata.columnList.address_note, columnList.note );
-              } )
-            ] );
+          // type column
+          columnList.type.required = '1' == columnList.type.required;
+          columnList.type.enumList = [];
+          cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
+            columnList.type.enumList.push( { value: item, name: item } );
           } );
+          if( angular.isUndefined( this.metadata.columnList.phone_type ) )
+            this.metadata.columnList.phone_type = {};
+          angular.extend( this.metadata.columnList.phone_type, columnList.type );
+
+          // number column
+          columnList.number.required = '1' == columnList.number.required;
+          if( angular.isUndefined( this.metadata.columnList.phone_number ) )
+            this.metadata.columnList.phone_number = {};
+          angular.extend( this.metadata.columnList.phone_number, columnList.number );
+
+          // note column
+          columnList.note.required = '1' == columnList.note.required;
+          if( angular.isUndefined( this.metadata.columnList.phone_note ) )
+            this.metadata.columnList.phone_note = {};
+          angular.extend( this.metadata.columnList.phone_note, columnList.note );
+
+          var response = await CnHttpFactory.instance( { path: 'address' } ).head();
+
+          var columnList = angular.fromJson( response.headers( 'Columns' ) );
+
+          // international column
+          columnList.international.required = false;
+          columnList.international.default = null;
+          if( angular.isUndefined( this.metadata.columnList.address_international ) )
+            this.metadata.columnList.address_international = {};
+          angular.extend( this.metadata.columnList.address_international, columnList.international );
+
+          // address1 column
+          columnList.address1.required = false;
+          if( angular.isUndefined( this.metadata.columnList.address_address1 ) )
+            this.metadata.columnList.address_address1 = {};
+          angular.extend( this.metadata.columnList.address_address1, columnList.address1 );
+
+          // address2 column
+          columnList.address2.required = false;
+          if( angular.isUndefined( this.metadata.columnList.address_address2 ) )
+            this.metadata.columnList.address_address2 = {};
+          angular.extend( this.metadata.columnList.address_address2, columnList.address2 );
+
+          // city column
+          columnList.city.required = false;
+          if( angular.isUndefined( this.metadata.columnList.address_city ) )
+            this.metadata.columnList.address_city = {};
+          angular.extend( this.metadata.columnList.address_city, columnList.city );
+
+          // postcode column
+          columnList.postcode.required = false;
+          if( angular.isUndefined( this.metadata.columnList.address_postcode ) )
+            this.metadata.columnList.address_postcode = {};
+          angular.extend( this.metadata.columnList.address_postcode, columnList.postcode );
+
+          // note column
+          columnList.note.required = false;
+          if( angular.isUndefined( this.metadata.columnList.address_note ) )
+            this.metadata.columnList.address_note = {};
+          angular.extend( this.metadata.columnList.address_note, columnList.note );
         };
       };
 
@@ -584,17 +579,17 @@ define( function() {
     'CnBaseHistoryFactory', 'CnAlternateModelFactory', 'CnSession', '$state',
     function( CnBaseHistoryFactory, CnAlternateModelFactory, CnSession, $state ) {
       var object = function() {
-        var self = this;
         CnBaseHistoryFactory.construct( this, module, CnAlternateModelFactory.root );
 
+        // can't use await here since this is a constructor function
         this.onView().then( function() {
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Alternates',
-              go: function() { $state.go( 'alternate.list' ); }
+              go: async function() { await $state.go( 'alternate.list' ); }
             }, {
               title: String( $state.params.identifier ).split( '=' ).pop(),
-              go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
+              go: async function() { await $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'History'
             } ]
@@ -611,17 +606,17 @@ define( function() {
     'CnBaseNoteFactory', 'CnSession', 'CnHttpFactory', '$state',
     function( CnBaseNoteFactory, CnSession, CnHttpFactory, $state ) {
       var object = function() {
-        var self = this;
         CnBaseNoteFactory.construct( this, module );
 
+        // can't use await here since this is a constructor function
         this.onView().then( function() {
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Alternates',
-              go: function() { $state.go( 'alternate.list' ); }
+              go: async function() { await $state.go( 'alternate.list' ); }
             }, {
               title: String( $state.params.identifier ).split( '=' ).pop(),
-              go: function() { $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
+              go: async function() { await $state.go( 'alternate.view', { identifier: $state.params.identifier } ); }
             }, {
               title: 'Notes'
             } ]

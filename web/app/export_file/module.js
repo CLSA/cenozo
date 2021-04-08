@@ -127,15 +127,14 @@ define( function() {
             afterViewCompleted = false;
           } );
 
-          $scope.model.viewModel.afterView( function() {
+          $scope.model.viewModel.afterView( async function() {
             if( !afterViewCompleted ) {
               // change the heading to the form's title
-              CnHttpFactory.instance( {
+              var response = await CnHttpFactory.instance( {
                 path: 'export/' + $scope.model.getParentIdentifier().identifier,
                 data: { select: { column: [ 'title' ] } }
-              } ).get().then( function( response ) {
-                $scope.model.viewModel.heading = response.data.title + ' Export File';
-              } );
+              } ).get();
+              $scope.model.viewModel.heading = response.data.title + ' Export File';
             }
           } );
         }
@@ -148,20 +147,18 @@ define( function() {
     'CnBaseListFactory', 'CnHttpFactory',
     function( CnBaseListFactory, CnHttpFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseListFactory.construct( this, parentModel );
 
         // override transitionOnAdd since there are no parameters required when adding a new export file
-        this.transitionOnAdd = function() {
-          CnHttpFactory.instance( {
-            path: self.parentModel.getServiceCollectionPath(),
+        this.transitionOnAdd = async function() {
+          var response = await CnHttpFactory.instance( {
+            path: this.parentModel.getServiceCollectionPath(),
             data: {}
-          } ).post().then( function( response ) {
-            self.parentModel.transitionToViewState( {
-              getIdentifier: function() {
-                return self.parentModel.getIdentifierFromRecord( { id: response.data } );
-              }
-            } );
+          } ).post();
+
+          var self = this;
+          await this.parentModel.transitionToViewState( {
+            getIdentifier: function() { return self.parentModel.getIdentifierFromRecord( { id: response.data } ); }
           } );
         };
       };
@@ -171,16 +168,16 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnExportFileViewFactory', [
-    'CnBaseViewFactory', 'CnHttpFactory', '$q',
-    function( CnBaseViewFactory, CnHttpFactory, $q ) {
+    'CnBaseViewFactory', 'CnHttpFactory',
+    function( CnBaseViewFactory, CnHttpFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
+        var self = this;
         this.afterView( function() {
           if( angular.isUndefined( self.downloadFile ) ) {
-            self.downloadFile = function() {
-              return CnHttpFactory.instance( {
+            self.downloadFile = async function() {
+              await CnHttpFactory.instance( {
                 path: 'export_file/' + self.record.getIdentifier(),
                 format: 'csv'
               } ).file();
@@ -195,17 +192,11 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnExportFileModelFactory', [
     'CnBaseModelFactory', 'CnExportFileListFactory', 'CnExportFileViewFactory',
-    'CnHttpFactory', '$q',
-    function( CnBaseModelFactory, CnExportFileListFactory, CnExportFileViewFactory,
-              CnHttpFactory, $q ) {
+    function( CnBaseModelFactory, CnExportFileListFactory, CnExportFileViewFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnExportFileListFactory.instance( this );
         this.viewModel = CnExportFileViewFactory.instance( this, root );
-        var hasBaseMetadata = false;
-        var lastExportIdentifier = null;
-        var lastAction = null;
 
         // override getDeleteEnabled
         this.getDeleteEnabled = function() { return angular.isDefined( this.module.actions.delete ); };

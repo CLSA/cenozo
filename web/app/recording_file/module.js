@@ -122,31 +122,31 @@ define( function() {
               CnRecordingFileListFactory, CnRecordingFileAddFactory, CnRecordingFileViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnRecordingFileAddFactory.instance( this );
         this.listModel = CnRecordingFileListFactory.instance( this );
         this.viewModel = CnRecordingFileViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'language',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: { column: 'active', operator: '=', value: true },
-                  order: 'name',
-                  limit: 1000
-                }
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: { column: 'active', operator: '=', value: true },
+                order: 'name',
+                limit: 1000
               }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.language_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } );
+            }
+          } ).query();
+
+          this.metadata.columnList.language_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };

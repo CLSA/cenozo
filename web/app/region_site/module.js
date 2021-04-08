@@ -122,75 +122,70 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRegionSiteModelFactory', [
     'CnBaseModelFactory', 'CnRegionSiteListFactory', 'CnRegionSiteAddFactory', 'CnRegionSiteViewFactory',
-    'CnHttpFactory', 'CnSession', '$q',
+    'CnHttpFactory', 'CnSession',
     function( CnBaseModelFactory, CnRegionSiteListFactory, CnRegionSiteAddFactory, CnRegionSiteViewFactory,
-              CnHttpFactory, CnSession, $q ) {
+              CnHttpFactory, CnSession ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnRegionSiteAddFactory.instance( this );
         this.listModel = CnRegionSiteListFactory.instance( this );
         this.viewModel = CnRegionSiteViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'language',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: {
-                      column: 'active',
-                      operator: '=',
-                      value: true
-                    },
-                    order: 'name',
-                    limit: 1000
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.language_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+        this.getMetadata = async function() {
+          var self = this;
+          await this.$$getMetadata();
 
-              CnHttpFactory.instance( {
-                path: 'region',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: {
-                      column: 'country',
-                      operator: '=',
-                      value: CnSession.application.country
-                    },
-                    order: 'name',
-                    limit: 1000
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.region_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.region_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+          var response = await CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: {
+                  column: 'active',
+                  operator: '=',
+                  value: true
+                },
+                order: 'name',
+                limit: 1000
+              }
+            }
+          } ).query();
+          this.metadata.columnList.language_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+          } );
 
-              CnHttpFactory.instance( {
-                path: 'application/0/site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name', limit: 1000 }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.site_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
-            ] );
+          var response = await CnHttpFactory.instance( {
+            path: 'region',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: {
+                  column: 'country',
+                  operator: '=',
+                  value: CnSession.application.country
+                },
+                order: 'name',
+                limit: 1000
+              }
+            }
+          } ).query();
+          this.metadata.columnList.region_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.region_id.enumList.push( { value: item.id, name: item.name } );
+          } );
+
+          var response = await CnHttpFactory.instance( {
+            path: 'application/0/site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.site_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };

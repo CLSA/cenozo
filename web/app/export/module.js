@@ -69,8 +69,8 @@ define( [
 
   module.addExtraOperation( 'view', {
     title: 'Duplicate',
-    operation: function( $state, model ) {
-      model.viewModel.createDuplicateExport();
+    operation: async function( $state, model ) {
+      await model.viewModel.createDuplicateExport();
     },
     help: 'Create a copy of this export'
   } );
@@ -107,8 +107,8 @@ define( [
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnExportView', [
-    'CnExportModelFactory', 'CnSession', '$state',
-    function( CnExportModelFactory, CnSession, $state ) {
+    'CnExportModelFactory',
+    function( CnExportModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -124,13 +124,12 @@ define( [
     'CnBaseAddFactory', 'CnSession', '$state',
     function( CnBaseAddFactory, CnSession, $state ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
         // immediately view the export record after it has been created
-        this.transitionOnSave = function( record ) {
-          CnSession.workingTransition( function() {
-            $state.go( 'export.view', { identifier: 'title=' + record.title } );
+        this.transitionOnSave = async function( record ) {
+          await CnSession.workingTransition( async function() {
+            await $state.go( 'export.view', { identifier: 'title=' + record.title } );
           } );
         };
       };
@@ -160,7 +159,6 @@ define( [
               CnHoldModelFactory, CnProxyModelFactory, CnTraceModelFactory,
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'export_file' );
 
         angular.extend( this, {
@@ -186,97 +184,90 @@ define( [
             return this.$$getChildTitle( child );
           },
 
-          createDuplicateExport: function() {
-            return CnHttpFactory.instance( {
-              path: 'export?duplicate_export_id=' + self.record.id
-            } ).post().then( function( response ) {
-              var record = { getIdentifier: function() { return response.data; } };
-              return self.parentModel.transitionToViewState( record );
-            } );
+          createDuplicateExport: async function() {
+            var response = await CnHttpFactory.instance( { path: 'export?duplicate_export_id=' + this.record.id } ).post();
+            var record = { getIdentifier: function() { return response.data; } };
+            return this.parentModel.transitionToViewState( record );
           },
 
-          onView: function() {
-            return this.$$onView().then( function() {
-              return CnHttpFactory.instance( {
-                path: 'export/' + self.record.getIdentifier() + '/export_column',
-                data: {
-                  select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name', 'include' ] },
-                  modifier: { order: { rank: false } }
-                }
-              } ).query().then( function( response ) {
-                self.columnList = [];
-                var promiseList = [];
-                response.data.forEach( function( item ) {
-                  var columnObject = {
-                    id: item.id,
-                    table_name: item.table_name,
-                    subtype: null == item.subtype ? null : item.subtype.toString(),
-                    oldSubtype: null == item.subtype ? null : item.subtype.toString(),
-                    column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
-                    rank: item.rank,
-                    include: item.include,
-                    isUpdating: false
-                  };
-                  self.columnList.push( columnObject );
+          onView: async function() {
+            var self = this;
+            await this.$$onView();
+            await this.promise;
 
-                  // mark that the table/subtype is in use
-                  self.promise.then( function() {
-                    if( null != item.subtype ) {
-                      self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
-                    }
-                  } );
+            var response = await CnHttpFactory.instance( {
+              path: 'export/' + this.record.getIdentifier() + '/export_column',
+              data: {
+                select: { column: [ 'id', 'rank', 'table_name', 'subtype', 'column_name', 'include' ] },
+                modifier: { order: { rank: false } }
+              }
+            } ).query();
 
-                  // load the restriction list
-                  promiseList.push( self.loadRestrictionList( item.table_name ) );
-                } );
+            this.columnList = [];
+            response.data.forEach( async function( item ) {
+              var columnObject = {
+                id: item.id,
+                table_name: item.table_name,
+                subtype: null == item.subtype ? null : item.subtype.toString(),
+                oldSubtype: null == item.subtype ? null : item.subtype.toString(),
+                column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                rank: item.rank,
+                include: item.include,
+                isUpdating: false
+              };
+              self.columnList.push( columnObject );
 
-                self.columnListIsLoading = false;
-                return $q.all( promiseList ).then( function() {
-                  return CnHttpFactory.instance( {
-                    path: 'export/' + self.record.getIdentifier() + '/export_restriction',
-                    data: {
-                      select: {
-                        column: [ 'id', 'table_name', 'subtype', 'column_name', 'rank', 'logic', 'test', 'value' ],
-                      },
-                      modifier: { order: { rank: false } }
-                    }
-                  } ).query().then( function( response ) {
-                    self.restrictionList = [];
-                    response.data.forEach( function( item ) {
-                      var restriction = {
-                        id: item.id,
-                        table_name: item.table_name,
-                        subtype: item.subtype,
-                        column_name: item.column_name,
-                        rank: item.rank,
-                        restriction:
-                          self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
-                        logic: item.logic,
-                        value: item.value,
-                        test: item.test,
-                        isUpdating: false
-                      };
+              // mark that the table/subtype is in use
+              if( null != item.subtype ) {
+                self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
+              }
 
-                      if( 'boolean' == restriction.restriction.type && null != restriction.value ) {
-                        restriction.value = Boolean( restriction.value );
-                      } else if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
-                        restriction.formattedValue = CnSession.formatValue(
-                          restriction.value, restriction.restriction.type, true
-                        );
-                      } else {
-                        restriction.value = isNaN( parseInt( restriction.value ) )
-                                          ? restriction.value
-                                          : parseInt( restriction.value );
-                        if( null == restriction.value ) restriction.value = '';
-                      }
-                      self.restrictionList.push( restriction );
-                    } );
-                    self.restrictionListIsLoading = false;
-                    self.updateParticipantCount();
-                  } )
-                } );
-              } );
+              // load the restriction list
+              await self.loadRestrictionList( item.table_name );
             } );
+
+            this.columnListIsLoading = false;
+            var response = await CnHttpFactory.instance( {
+              path: 'export/' + this.record.getIdentifier() + '/export_restriction',
+              data: {
+                select: {
+                  column: [ 'id', 'table_name', 'subtype', 'column_name', 'rank', 'logic', 'test', 'value' ],
+                },
+                modifier: { order: { rank: false } }
+              }
+            } ).query();
+
+            this.restrictionList = [];
+            response.data.forEach( function( item ) {
+              var restriction = {
+                id: item.id,
+                table_name: item.table_name,
+                subtype: item.subtype,
+                column_name: item.column_name,
+                rank: item.rank,
+                restriction: self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                logic: item.logic,
+                value: item.value,
+                test: item.test,
+                isUpdating: false
+              };
+
+              if( 'boolean' == restriction.restriction.type && null != restriction.value ) {
+                restriction.value = Boolean( restriction.value );
+              } else if( cenozo.isDatetimeType( restriction.restriction.type ) ) {
+                restriction.formattedValue = CnSession.formatValue(
+                  restriction.value, restriction.restriction.type, true
+                );
+              } else {
+                restriction.value = isNaN( parseInt( restriction.value ) )
+                                  ? restriction.value
+                                  : parseInt( restriction.value );
+                if( null == restriction.value ) restriction.value = '';
+              }
+              self.restrictionList.push( restriction );
+            } );
+            this.restrictionListIsLoading = false;
+            await this.updateParticipantCount();
           },
           
           promise: null, // defined below
@@ -304,7 +295,7 @@ define( [
           tableRestrictionList: {
             auxiliary: {
               isLoading: false,
-              promise: $q.all(),
+              promise: Promise.all([]),
               list: [ {
                 key: undefined,
                 title: 'Selet a new auxiliary restriction...'
@@ -478,7 +469,7 @@ define( [
             return this.participantCount * this.columnList.filter( function( c ) { return c.include; } ).length;
           },
 
-          addRestriction: function( tableName, key ) {
+          addRestriction: async function( tableName, key ) {
             // get a list of all subtypes from columns for this table
             var subtypeList = this.columnList.reduce( function( subtypeList, column ) {
               if( column.table_name == tableName && !subtypeList.includes( column.subtype ) )
@@ -509,7 +500,7 @@ define( [
               item.value = '';
             }
 
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'export/' + this.record.getIdentifier() + '/export_restriction',
               data: {
                 table_name: item.table_name,
@@ -520,15 +511,15 @@ define( [
                 test: item.test,
                 value: item.value
               }
-            } ).post().then( function( response ) {
-              item.id = response.data;
-              self.restrictionList.push( item );
-              self.newRestriction = undefined;
-              self.updateParticipantCount();
-            } );
+            } ).post();
+
+            item.id = response.data;
+            this.restrictionList.push( item );
+            this.newRestriction = undefined;
+            await this.updateParticipantCount();
           },
 
-          updateRestriction: function( restrictionId, key ) {
+          updateRestriction: async function( restrictionId, key ) {
             var restriction = this.restrictionList.findByProperty( 'id', restrictionId );
             var data = {};
             if( angular.isArray( key ) ) {
@@ -538,119 +529,113 @@ define( [
             }
             for( var key in data ) if( 'export_column_id' == key ) data[key] = restriction.column.id;
 
-            restriction.isUpdating = true;
-            return CnHttpFactory.instance( {
-              path: 'export_restriction/' + restriction.id,
-              data: data
-            } ).patch().finally( function() {
+            try {
+              restriction.isUpdating = true;
+              await CnHttpFactory.instance( { path: 'export_restriction/' + restriction.id, data: data } ).patch();
+            } finally {
               restriction.isUpdating = false;
-              self.updateParticipantCount();
-            } );
+              await this.updateParticipantCount();
+            }
           },
 
-          removeRestriction: function( index ) {
-            CnHttpFactory.instance( {
-              path: 'export_restriction/' + this.restrictionList[index].id
-            } ).delete().then( function() {
-              self.restrictionList.splice( index, 1 );
-              self.updateParticipantCount();
-            } );
+          removeRestriction: async function( index ) {
+            await CnHttpFactory.instance( { path: 'export_restriction/' + this.restrictionList[index].id } ).delete();
+            this.restrictionList.splice( index, 1 );
+            await this.updateParticipantCount();
           },
 
-          selectRestrictionColumn: function( index ) {
+          selectRestrictionColumn: async function( index ) {
             var item = this.restrictionList[index];
-            return this.updateRestriction( item.id, 'subtype' );
+            await this.updateRestriction( item.id, 'subtype' );
           },
 
-          selectDatetime: function( index ) {
+          selectDatetime: async function( index ) {
             var item = this.restrictionList[index];
             if( !['dob','dod','datetime'].includes( item.restriction.type ) ) {
               console.error( 'Tried to select datetime for restriction type "' + item.restriction.type + '".' );
             } else {
-              CnModalDatetimeFactory.instance( {
+              var response = await CnModalDatetimeFactory.instance( {
                 title: item.restriction.title,
                 date: item.value,
                 pickerType: item.restriction.type,
                 emptyAllowed: true
-              } ).show().then( function( response ) {
-                if( false !== response ) {
-                  var key = 'value';
-                  item.value = null == response ? null : response.replace( /Z$/, '' ); // remove the Z at the end
-                  if( null == item.value && '<=>' != item.test && '<>' != item.test ) {
-                    item.test = '<=>';
-                    key = ['test','value'];
-                  }
-                  self.updateRestriction( item.id, key ).then( function() {
-                    item.formattedValue = CnSession.formatValue( response, item.restriction.type, true );
-                  } );
+              } ).show();
+              
+              if( false !== response ) {
+                var key = 'value';
+                item.value = null == response ? null : response.replace( /Z$/, '' ); // remove the Z at the end
+                if( null == item.value && '<=>' != item.test && '<>' != item.test ) {
+                  item.test = '<=>';
+                  key = ['test','value'];
                 }
-              } );
-              this.updateParticipantCount();
+                await this.updateRestriction( item.id, key );
+                item.formattedValue = CnSession.formatValue( response, item.restriction.type, true );
+              }
+              await this.updateParticipantCount();
             }
           },
 
-          updateParticipantCount: function() {
-            this.confirmInProgress = true;
-
+          updateParticipantCount: async function() {
             // get a count of participants to be included in the export
-            CnHttpFactory.instance( {
-              path: 'export/' + this.record.getIdentifier() + '/participant'
-            } ).count().then( function( response ) {
-              self.participantCount = parseInt( response.headers( 'Total' ) );
-            } ).finally( function() {
-              self.confirmInProgress = false;
-            } );
+            try {
+              this.confirmInProgress = true;
+              var response = await CnHttpFactory.instance( {
+                path: 'export/' + this.record.getIdentifier() + '/participant'
+              } ).count();
+              this.participantCount = parseInt( response.headers( 'Total' ) );
+            } finally {
+              this.confirmInProgress = false;
+            }
           },
 
-          addColumn: function( tableName, key ) {
+          addColumn: async function( tableName, key ) {
             var column = this.tableColumnList[tableName].list.findByProperty( 'key', key );
             if( column ) {
               var subtypeObject = angular.isDefined( this.subtypeList[tableName] )
                           ? this.subtypeList[tableName][0]
                           : null;
 
-              CnHttpFactory.instance( {
+              var response = await CnHttpFactory.instance( {
                 path: 'export/' + this.record.getIdentifier() + '/export_column',
                 data: {
                   table_name: tableName,
                   column_name: column.key,
                   subtype: null == subtypeObject ? null : subtypeObject.key,
-                  rank: self.columnList.length + 1
+                  rank: this.columnList.length + 1
                 }
-              } ).post().then( function( response ) {
-                if( null != subtypeObject ) subtypeObject.inUse = true;
-                self.columnList.push( {
-                  id: response.data,
-                  table_name: tableName,
-                  subtype: null == subtypeObject ? null : subtypeObject.key,
-                  oldSubtype: null == subtypeObject ? null : subtypeObject.key,
-                  column: column,
-                  isUpdating: false,
-                  include: true
-                } );
-                self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+              } ).post();
+
+              if( null != subtypeObject ) subtypeObject.inUse = true;
+              this.columnList.push( {
+                id: response.data,
+                table_name: tableName,
+                subtype: null == subtypeObject ? null : subtypeObject.key,
+                oldSubtype: null == subtypeObject ? null : subtypeObject.key,
+                column: column,
+                isUpdating: false,
+                include: true
               } );
+              this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
             }
             this.newColumn[tableName] = undefined;
 
             // now make sure the table's restriction list is loaded
-            this.loadRestrictionList( tableName );
-
-            this.updateParticipantCount();
+            await this.loadRestrictionList( tableName );
+            await this.updateParticipantCount();
           },
 
-          moveColumn: function( oldIndex, newIndex ) {
-            CnHttpFactory.instance( {
+          moveColumn: async function( oldIndex, newIndex ) {
+            await CnHttpFactory.instance( {
               path: 'export_column/' + this.columnList[oldIndex].id,
               data: { rank: newIndex + 1 }
-            } ).patch().then( function() {
-              var column = self.columnList.splice( oldIndex, 1 );
-              self.columnList.splice( newIndex, 0, column[0] );
-              self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
-            } );
+            } ).patch();
+
+            var column = this.columnList.splice( oldIndex, 1 );
+            this.columnList.splice( newIndex, 0, column[0] );
+            this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
           },
 
-          updateColumn: function( columnId, key ) {
+          updateColumn: async function( columnId, key ) {
             var workingColumn = this.columnList.findByProperty( 'id', columnId );
             var tableName = workingColumn.table_name;
             var subtype = workingColumn.oldSubtype;
@@ -685,26 +670,24 @@ define( [
               data[key] = workingColumn[key];
             }
             workingColumn.isUpdating = true;
-            return CnHttpFactory.instance( {
-              path: 'export_column/' + workingColumn.id,
-              data: data
-            } ).patch().then( function() {
+            await CnHttpFactory.instance( { path: 'export_column/' + workingColumn.id, data: data } ).patch();
+
+            try {
               // update all restrictions and return when all promises from those operations have completed
-              var promiseList = [];
-              updateRestrictionList.forEach( function( restriction ) {
+              var self = this;
+              updateRestrictionList.forEach( async function( restriction ) {
                 restriction.subtype = workingColumn.subtype;
-                promiseList.push( self.updateRestriction( restriction.id, 'subtype' ) );
+                await self.updateRestriction( restriction.id, 'subtype' );
               } );
-              return $q.all( promiseList ).finally( function() {
-                // we don't need the old subtype anymore, so let it match the new one in preperation
-                // for the next time that it gets changed
-                workingColumn.oldSubtype = workingColumn.subtype;
-                workingColumn.isUpdating = false;
-              } );
-            } );
+            } finally {
+              // we don't need the old subtype anymore, so let it match the new one in preperation
+              // for the next time that it gets changed
+              workingColumn.oldSubtype = workingColumn.subtype;
+              workingColumn.isUpdating = false;
+            }
           },
 
-          removeColumn: function( index ) {
+          removeColumn: async function( index ) {
             var removeColumn = this.columnList[index];
             var tableName = removeColumn.table_name;
             var subtype = removeColumn.subtype;
@@ -736,19 +719,16 @@ define( [
             }
 
             if( proceed ) {
-              return CnHttpFactory.instance( {
-                path: 'export_column/' + self.columnList[index].id
-              } ).delete().then( function() {
-                self.columnList.splice( index, 1 );
-                self.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
-                self.updateParticipantCount();
-              } );
+              await CnHttpFactory.instance( { path: 'export_column/' + this.columnList[index].id } ).delete();
+              this.columnList.splice( index, 1 );
+              this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+              await this.updateParticipantCount();
             }
           },
 
-          toggleInclude: function( index ) {
+          toggleInclude: async function( index ) {
             this.columnList[index].include = !this.columnList[index].include;
-            this.updateColumn( this.columnList[index].id, 'include' );
+            await this.updateColumn( this.columnList[index].id, 'include' );
           },
 
           getSubtypeList: function( tableName ) {
@@ -767,6 +747,7 @@ define( [
             if( angular.isUndefined( columnRank ) ) return [];
 
             var type = this.columnList.findByProperty( 'rank', columnRank ).type;
+            var self = this;
             var test = this.columnList.reduce( function( list, item ) {
               if( type === item.type && angular.isDefined( item.subtype ) ) {
                 list.push( self.subtypeList[type].findByProperty( 'key', item.subtype ) );
@@ -778,100 +759,92 @@ define( [
           },
 
           // define functions which populate the restriction lists
-          loadRestrictionList: function( tableName ) {
+          loadRestrictionList: async function( tableName ) {
             // application restrictions are handled specially
             if( [ 'application' ].includes( tableName ) ) return;
 
-            var ignoreColumnList = [
-              'check_withdraw',
-              'participant_id',
-              'preferred_site_id'
-            ];
+            async function load() {
+              await metadata.getPromise();
+
+              for( var column in metadata.columnList ) {
+                var item = metadata.columnList[column];
+                if( !ignoreColumnList.includes( column ) ) {
+                  var restrictionItem = {
+                    key: column,
+                    title: 'id' == column || 'uid' == column ?
+                           column.toUpperCase() :
+                           column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
+                    type: 'tinyint' == item.data_type ? 'boolean' :
+                          angular.isDefined( item.enumList ) ? 'enum' :
+                          'datetime' == item.type | 'timestamp' == item.type ? 'datetime' :
+                          'date_of_birth' == column ? 'dob' :
+                          'date_of_death' == column ? 'dod' :
+                          'varchar' ? 'string' : 'unknown',
+                    required: item.required
+                  };
+                  
+                  // add additional details to certain restriction types
+                  if( 'boolean' == restrictionItem.type || 'enum' == restrictionItem.type ) {
+                    restrictionItem.enumList = 'boolean' == restrictionItem.type
+                                             ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
+                                             : angular.copy( item.enumList );
+                    restrictionItem.enumList.unshift( { value: '', name: '(empty)' } );
+                  }
+
+                  restrictionType.list.push( restrictionItem );
+                }
+              }
+
+              if( 'participant' == tableName ) {
+                // participant.source_id is not filled in regularly, we must do it here
+                var response = await CnHttpFactory.instance( {
+                  path: 'source',
+                  data: {
+                    select: { column: [ 'id', 'name' ] },
+                    modifier: { order: ['name'] }
+                  }
+                } ).query();
+
+                var item = restrictionType.list.findByProperty( 'key', 'source_id' );
+                item.type = 'enum';
+                item.required = false;
+                item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
+                response.data.forEach( function( source ) {
+                  item.enumList.push( { value: source.id, name: source.name } );
+                } );
+
+                // participant.cohort_id is not filled in regularly, we must do it here
+                var response = await CnHttpFactory.instance( {
+                  path: 'cohort',
+                  data: {
+                    select: { column: [ 'id', 'name' ] },
+                    modifier: { order: ['name'] }
+                  }
+                } ).query();
+
+                var item = restrictionType.list.findByProperty( 'key', 'cohort_id' );
+                item.type = 'enum';
+                item.required = true;
+                item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
+                response.data.forEach( function( cohort ) {
+                  item.enumList.push( { value: cohort.id, name: cohort.name } );
+                } );
+              }
+
+              restrictionType.isLoading = false;
+              restrictionType.list.findByProperty( 'key', undefined ).title = 'Select a new ' + tableName + ' restriction...';
+            }
+
+            var ignoreColumnList = [ 'check_withdraw', 'participant_id', 'preferred_site_id' ];
             var restrictionType = this.tableRestrictionList[tableName];
 
             // only load the restriction list if we haven't already done so
             if( null == restrictionType.promise ) {
               var metadata = this.modelList[tableName].metadata;
-              restrictionType.promise = metadata.getPromise().then( function() {
-                for( var column in metadata.columnList ) {
-                  var item = metadata.columnList[column];
-                  if( !ignoreColumnList.includes( column ) ) {
-                    var restrictionItem = {
-                      key: column,
-                      title: 'id' == column || 'uid' == column ?
-                             column.toUpperCase() :
-                             column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords(),
-                      type: 'tinyint' == item.data_type ? 'boolean' :
-                            angular.isDefined( item.enumList ) ? 'enum' :
-                            'datetime' == item.type | 'timestamp' == item.type ? 'datetime' :
-                            'date_of_birth' == column ? 'dob' :
-                            'date_of_death' == column ? 'dod' :
-                            'varchar' ? 'string' : 'unknown',
-                      required: item.required
-                    };
-                    
-                    // add additional details to certain restriction types
-                    if( 'boolean' == restrictionItem.type || 'enum' == restrictionItem.type ) {
-                      restrictionItem.enumList = 'boolean' == restrictionItem.type
-                                               ? [ { value: true, name: 'Yes' }, { value: false, name: 'No' } ]
-                                               : angular.copy( item.enumList );
-                      restrictionItem.enumList.unshift( { value: '', name: '(empty)' } );
-                    }
-
-                    restrictionType.list.push( restrictionItem );
-                  }
-                }
-
-                var promiseList = [];
-                if( 'participant' == tableName ) {
-                  // participant.source_id is not filled in regularly, we must do it here
-                  promiseList.push(
-                    CnHttpFactory.instance( {
-                      path: 'source',
-                      data: {
-                        select: { column: [ 'id', 'name' ] },
-                        modifier: { order: ['name'] }
-                      }
-                    } ).query().then( function( response ) {
-                      var item = restrictionType.list.findByProperty( 'key', 'source_id' );
-                      item.type = 'enum';
-                      item.required = false;
-                      item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
-                      response.data.forEach( function( source ) {
-                        item.enumList.push( { value: source.id, name: source.name } );
-                      } );
-                    } )
-                  );
-
-                  // participant.cohort_id is not filled in regularly, we must do it here
-                  promiseList.push(
-                    CnHttpFactory.instance( {
-                      path: 'cohort',
-                      data: {
-                        select: { column: [ 'id', 'name' ] },
-                        modifier: { order: ['name'] }
-                      }
-                    } ).query().then( function( response ) {
-                      var item = restrictionType.list.findByProperty( 'key', 'cohort_id' );
-                      item.type = 'enum';
-                      item.required = true;
-                      item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
-                      response.data.forEach( function( cohort ) {
-                        item.enumList.push( { value: cohort.id, name: cohort.name } );
-                      } );
-                    } )
-                  );
-                }
-
-                return $q.all( promiseList ).then( function() {
-                  restrictionType.isLoading = false;
-                  restrictionType.list.findByProperty( 'key', undefined ).title =
-                    'Select a new ' + tableName + ' restriction...';
-                } );
-              } );
+              restrictionType.promise = load();
             }
 
-            return restrictionType.promise;
+            await restrictionType.promise;
           }
         } );
 
@@ -879,7 +852,7 @@ define( [
         if( this.extendedSiteSelection ) {
           this.tableRestrictionList.application = {
             isLoading: false,
-            promise: $q.all(),
+            promise: Promise.all([]),
             list: [
               { key: undefined, title: 'Select a new application restriction...' },
               { key: 'datetime', title: 'Release Datetime', type: 'datetime', required: true }
@@ -896,87 +869,84 @@ define( [
           this.subtypeList.application = [];
         }
 
-        function processMetadata( subject ) {
-          return self.modelList[subject].metadata.getPromise().then( function() {
-            var ignoreColumnList = [ 'address_id', 'alternate_id', 'participant_id', 'preferred_site_id' ];
-            var columnList = self.tableColumnList[subject];
-            for( var column in self.modelList[subject].metadata.columnList ) {
-              // ignore certain columns
-              if( !ignoreColumnList.includes( column ) ) {
-                columnList.list.push( {
-                  key: column,
-                  title: 'uid' == column ?
-                         column.toUpperCase() :
-                         'id' == column ?
-                         'Internal ID' :
-                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-                } );
-              }
-            }
-            columnList.list.findByProperty( 'key', undefined ).title =
-              'Add a new ' + subject + ' column...';
-            columnList.isLoading = false;
+        async function processMetadata( subject ) {
+          await this.modelList[subject].metadata.getPromise();
 
-            // add special meta columns
-            if( 'participant' == subject ) columnList.list.push( { key: 'status', title: 'Status' } );
-          } );
+          var ignoreColumnList = [ 'address_id', 'alternate_id', 'participant_id', 'preferred_site_id' ];
+          var columnList = this.tableColumnList[subject];
+          for( var column in this.modelList[subject].metadata.columnList ) {
+            // ignore certain columns
+            if( !ignoreColumnList.includes( column ) ) {
+              columnList.list.push( {
+                key: column,
+                title: 'uid' == column ?
+                       column.toUpperCase() :
+                       'id' == column ?
+                       'Internal ID' :
+                       column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
+              } );
+            }
+          }
+          columnList.list.findByProperty( 'key', undefined ).title =
+            'Add a new ' + subject + ' column...';
+          columnList.isLoading = false;
+
+          // add special meta columns
+          if( 'participant' == subject ) columnList.list.push( { key: 'status', title: 'Status' } );
         }
 
-        var promiseList = [
+        var self = this;
+        async function init() {
+          await processMetadata( 'participant' );
+          await processMetadata( 'site' );
+          await processMetadata( 'address' );
+          await processMetadata( 'phone' );
+          await processMetadata( 'collection' );
+          await processMetadata( 'consent' );
+          await processMetadata( 'event' );
+          await processMetadata( 'hin' );
+          await processMetadata( 'hold' );
+          await processMetadata( 'proxy' );
+          await processMetadata( 'trace' );
 
-          processMetadata( 'participant' ),
-          processMetadata( 'site' ),
-          processMetadata( 'address' ),
-          processMetadata( 'phone' ),
-          processMetadata( 'collection' ),
-          processMetadata( 'consent' ),
-          processMetadata( 'event' ),
-          processMetadata( 'hin' ),
-          processMetadata( 'hold' ),
-          processMetadata( 'proxy' ),
-          processMetadata( 'trace' ),
-
-          CnHttpFactory.instance( {
+          var response = await CnHttpFactory.instance( {
             path: 'collection',
             data: {
               select: { column: [ 'id', 'name' ] },
               modifier: { order: ['name'] }
             }
-          } ).query().then( function( response ) {
-            response.data.forEach( function( item ) {
-              self.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
-            } );
-          } ),
+          } ).query();
 
-          CnHttpFactory.instance( {
+          response.data.forEach( function( item ) {
+            self.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
+          } );
+
+          var response = await CnHttpFactory.instance( {
             path: 'consent_type',
             data: {
               select: { column: [ 'id', 'name' ] },
               modifier: { order: ['name'] }
             }
-          } ).query().then( function( response ) {
-            response.data.forEach( function( item ) {
-              self.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
-            } );
-          } ),
+          } ).query();
 
-          CnHttpFactory.instance( {
+          response.data.forEach( function( item ) {
+            self.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+          } );
+
+          var response = await CnHttpFactory.instance( {
             path: 'event_type',
             data: {
               select: { column: [ 'id', 'name' ] },
               modifier: { order: ['name'] }
             }
-          } ).query().then( function( response ) {
-            response.data.forEach( function( item ) {
-              self.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
-            } );
-          } )
+          } ).query();
 
-        ];
+          response.data.forEach( function( item ) {
+            self.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
+          } );
 
-        if( this.extendedSiteSelection ) {
-          promiseList.push(
-            CnHttpFactory.instance( {
+          if( self.extendedSiteSelection ) {
+            var response = await CnHttpFactory.instance( {
               path: 'application',
               data: {
                 select: {
@@ -1002,31 +972,30 @@ define( [
                   order: ['application.title']
                 }
               }
-            } ).query().then( function( response ) {
-              var siteSubtypeList = self.subtypeList.site;
-              self.subtypeList.site = [];
-              var sitePromiseList = [];
-              response.data.forEach( function( application ) {
-                // extend site subtype list when we have extended site selection
-                self.subtypeList.site = self.subtypeList.site.concat(
-                  siteSubtypeList.reduce( function( list, subtype ) {
-                    list.push( {
-                      key: subtype.key + '_' + application.id,
-                      name: application.title + ': ' + subtype.name,
-                      inUse: subtype.inUse
-                    } );
-                    return list;
-                  }, [] )
-                );
+            } ).query();
 
-                // add a subtype to the application subtype list
-                self.subtypeList.application.push( { key: application.id.toString(), name: application.title } );
-              } );
-            } )
-          );
+            var siteSubtypeList = self.subtypeList.site;
+            self.subtypeList.site = [];
+            response.data.forEach( function( application ) {
+              // extend site subtype list when we have extended site selection
+              self.subtypeList.site = self.subtypeList.site.concat(
+                siteSubtypeList.reduce( function( list, subtype ) {
+                  list.push( {
+                    key: subtype.key + '_' + application.id,
+                    name: application.title + ': ' + subtype.name,
+                    inUse: subtype.inUse
+                  } );
+                  return list;
+                }, [] )
+              );
+
+              // add a subtype to the application subtype list
+              self.subtypeList.application.push( { key: application.id.toString(), name: application.title } );
+            } );
+          }
         }
 
-        this.promise = $q.all( promiseList );
+        this.promise = init();
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -1036,11 +1005,8 @@ define( [
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnExportModelFactory', [
     'CnBaseModelFactory', 'CnExportAddFactory', 'CnExportListFactory', 'CnExportViewFactory',
-    'CnHttpFactory', 'CnSession', '$q',
-    function( CnBaseModelFactory, CnExportAddFactory, CnExportListFactory, CnExportViewFactory,
-              CnHttpFactory, CnSession, $q ) {
+    function( CnBaseModelFactory, CnExportAddFactory, CnExportListFactory, CnExportViewFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnExportAddFactory.instance( this );
         this.listModel = CnExportListFactory.instance( this );

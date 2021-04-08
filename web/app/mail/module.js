@@ -148,7 +148,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   module.addExtraOperation( 'view', {
     title: 'Preview',
-    operation: function( $state, model ) { model.viewModel.preview(); }
+    operation: async function( $state, model ) { await model.viewModel.preview(); }
   } );
 
   /* ######################################################################################################## */
@@ -198,35 +198,32 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnMailAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory', '$q',
-    function( CnBaseAddFactory, CnHttpFactory, $q ) {
+    'CnBaseAddFactory', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnHttpFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
-        this.onNew = function( record ) {
-          return self.$$onNew( record ).then( function() {
-            var parent = self.parentModel.getParentIdentifier();
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'application/0',
-                data: { select: { column: [ 'mail_name', 'mail_address' ] } }
-              } ).get().then( function( response ) {
-                record.from_name = response.data.mail_name;
-                record.from_address = response.data.mail_address;
-              } ),
+        this.onNew = async function( record ) {
+          await this.$$onNew( record );
 
-              CnHttpFactory.instance( {
-                path: parent.subject + '/' + parent.identifier,
-                data: { select: { column: [ 'honorific', 'first_name', 'other_name', 'last_name', 'email' ] } }
-              } ).get().then( function( response ) {
-                record.to_name = response.data.honorific + ' ' + response.data.first_name;
-                if( response.data.other_name ) record.to_name += ' (' + response.data.other_name + ')';
-                record.to_name += ' ' + response.data.last_name;
-                record.to_address = response.data.email;
-              } )
-            ] );
-          } );
+          var parent = this.parentModel.getParentIdentifier();
+          var response = await CnHttpFactory.instance( {
+            path: 'application/0',
+            data: { select: { column: [ 'mail_name', 'mail_address' ] } }
+          } ).get();
+
+          record.from_name = response.data.mail_name;
+          record.from_address = response.data.mail_address;
+
+          var response = await CnHttpFactory.instance( {
+            path: parent.subject + '/' + parent.identifier,
+            data: { select: { column: [ 'honorific', 'first_name', 'other_name', 'last_name', 'email' ] } }
+          } ).get();
+
+          record.to_name = response.data.honorific + ' ' + response.data.first_name;
+          if( response.data.other_name ) record.to_name += ' (' + response.data.other_name + ')';
+          record.to_name += ' ' + response.data.last_name;
+          record.to_address = response.data.email;
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -247,28 +244,28 @@ define( [ 'trace' ].reduce( function( list, name ) {
     'CnBaseViewFactory', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        this.preview = function() {
-          return CnHttpFactory.instance( {
+        this.preview = async function() {
+          var response = await CnHttpFactory.instance( {
             path: 'application/0',
             data: { select: { column: [ 'mail_header', 'mail_footer' ] } }
-          } ).get().then( function( response ) {
-            var body = self.record.body;
-            if( null != response.data.mail_header ) {
-              // if the header has html but the body doesn't then convert line breaks to <br>s
-              if( response.data.mail_header.match( /<html>/ ) && !body.match( /<[^>]+>/ ) )
-                body = body.replace( /\r?\n/g, '<br/>$&' );
-              body = response.data.mail_header + "\n" + body;
-            }
-            if( null != response.data.mail_footer ) body = body + "\n" + response.data.mail_footer;
-            return CnModalMessageFactory.instance( {
-              title: 'Mail Preview',
-              message: body,
-              html: null != body.match( /<html>/ )
-            } ).show();
-          } );
+          } ).get();
+
+          var body = this.record.body;
+          if( null != response.data.mail_header ) {
+            // if the header has html but the body doesn't then convert line breaks to <br>s
+            if( response.data.mail_header.match( /<html>/ ) && !body.match( /<[^>]+>/ ) )
+              body = body.replace( /\r?\n/g, '<br/>$&' );
+            body = response.data.mail_header + "\n" + body;
+          }
+
+          if( null != response.data.mail_footer ) body = body + "\n" + response.data.mail_footer;
+          await CnModalMessageFactory.instance( {
+            title: 'Mail Preview',
+            message: body,
+            html: null != body.match( /<html>/ )
+          } ).show();
         };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

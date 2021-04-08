@@ -146,7 +146,6 @@ define( function() {
     function( CnBaseModelFactory, CnConsentListFactory, CnConsentAddFactory, CnConsentViewFactory,
               CnHttpFactory, CnSession ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnConsentAddFactory.instance( this );
         this.listModel = CnConsentListFactory.instance( this );
@@ -155,27 +154,28 @@ define( function() {
         // extend getBreadcrumbTitle
         // (metadata's promise will have already returned so we don't have to wait for it)
         this.getBreadcrumbTitle = function() {
-          var consentType = self.metadata.columnList.consent_type_id.enumList.findByProperty(
+          var consentType = this.metadata.columnList.consent_type_id.enumList.findByProperty(
             'value', this.viewModel.record.consent_type_id );
           return consentType ? consentType.name : 'unknown';
         };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'consent_type',
-              data: {
-                select: { column: [ 'id', 'name', 'access' ] },
-                modifier: { order: 'name', limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.consent_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.consent_type_id.enumList.push( {
-                  value: item.id, name: item.name, disabled: !item.access
-                } );
-              } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'consent_type',
+            data: {
+              select: { column: [ 'id', 'name', 'access' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.consent_type_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.consent_type_id.enumList.push( {
+              value: item.id, name: item.name, disabled: !item.access
             } );
           } );
         };

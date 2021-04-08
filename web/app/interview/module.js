@@ -78,8 +78,8 @@ define( function() {
   if( angular.isDefined( cenozoApp.module( 'participant' ).actions.notes ) ) {
     module.addExtraOperation( 'view', {
       title: 'Notes',
-      operation: function( $state, model ) {
-        $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
+      operation: async function( $state, model ) {
+        await $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
       }
     } );
   }
@@ -139,50 +139,49 @@ define( function() {
     function( CnBaseModelFactory, CnInterviewListFactory, CnInterviewViewFactory,
              CnSession,  CnHttpFactory, CnModalMessageFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this, root );
 
         // Adding an interview is special, instead of transitioning to an add dialog a command can be
         // sent to the server to directly add a new interview
-        this.transitionToAddState = function() {
-          return CnHttpFactory.instance( {
-            path: self.getServiceCollectionPath(),
+        this.transitionToAddState = async function() {
+          var self = this;
+          await CnHttpFactory.instance( {
+            path: this.getServiceCollectionPath(),
             data: {}, // no record required, the server will fill in all necessary values
-            onError: function( response ) {
-              if( 409 == response.status ) {
+            onError: async function( error ) {
+              if( 409 == error.status ) {
                 // 409 when we can't add a new interview (explanation will be provided
-                CnModalMessageFactory.instance( {
+                await CnModalMessageFactory.instance( {
                   title: 'Unable To Add Interview',
-                  message: response.data +
+                  message: error.data +
                            ' This is likely caused by the list being out of date so it will now be refreshed.',
                   error: true
-                } ).show().then( function() {
-                  self.listModel.onList( true );
-                } );
-              } else CnModalMessageFactory.httpError( response );
+                } ).show()
+                self.listModel.onList( true );
+              } else CnModalMessageFactory.httpError( error );
             }
-          } ).post().then( function() {
-            self.listModel.onList( true );
-          } );
+          } ).post();
+
+          await this.listModel.onList( true );
         };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name', limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.site_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.site_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };

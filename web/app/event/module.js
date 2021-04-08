@@ -176,17 +176,15 @@ define( function() {
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
         // extend onView
-        this.onView = function( force ) {
-          return this.$$onView( force ).then( function() {
-            // Since the international column is read-only and belongs to a different table we can fake
-            // the expected Yes/No value by changing it here
-            if( null != self.record.international )
-              self.record.international = self.record.international ? 'Yes' : 'No';
-          } );
+        this.onView = async function( force ) {
+          await this.$$onView( force );
+
+          // Since the international column is read-only and belongs to a different table we can fake
+          // the expected Yes/No value by changing it here
+          if( null != this.record.international ) this.record.international = this.record.international ? 'Yes' : 'No';
         };
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -200,37 +198,39 @@ define( function() {
     function( CnBaseModelFactory, CnEventListFactory, CnEventAddFactory, CnEventViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnEventAddFactory.instance( this );
         this.listModel = CnEventListFactory.instance( this );
         this.viewModel = CnEventViewFactory.instance( this, root );
 
-        // extend getBreadcrumbTitle
-        // (metadata's promise will have already returned so we don't have to wait for it)
-        this.getBreadcrumbTitle = function() {
-          var eventType = self.metadata.columnList.event_type_id.enumList.findByProperty(
-            'value', this.viewModel.record.event_type_id );
-          return eventType ? eventType.name : 'unknown';
-        };
+        angular.extend( this, {
+          // extend getBreadcrumbTitle
+          // (metadata's promise will have already returned so we don't have to wait for it)
+          getBreadcrumbTitle: function() {
+            var eventType = this.metadata.columnList.event_type_id.enumList.findByProperty(
+              'value', this.viewModel.record.event_type_id );
+            return eventType ? eventType.name : 'unknown';
+          },
 
-        // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
+          // extend getMetadata
+          getMetadata: async function() {
+            await this.$$getMetadata();
+
+            var response = await CnHttpFactory.instance( {
               path: 'event_type',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: { order: 'name', limit: 1000 }
               }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.event_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.event_type_id.enumList.push( { value: item.id, name: item.name } );
-              } );
+            } ).query();
+
+            this.metadata.columnList.event_type_id.enumList = [];
+            var self = this;
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.event_type_id.enumList.push( { value: item.id, name: item.name } );
             } );
-          } );
-        };
+          }
+        } );
       };
 
       return {

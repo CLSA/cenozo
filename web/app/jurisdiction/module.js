@@ -133,27 +133,27 @@ define( function() {
     function( CnBaseModelFactory, CnJurisdictionListFactory, CnJurisdictionAddFactory, CnJurisdictionViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnJurisdictionAddFactory.instance( this );
         this.listModel = CnJurisdictionListFactory.instance( this );
         this.viewModel = CnJurisdictionViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'application/0/site',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name', limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.site_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'application/0/site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.site_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };

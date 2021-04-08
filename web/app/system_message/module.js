@@ -129,16 +129,12 @@ define( function() {
       var object = function( parentModel ) {
         CnBaseAddFactory.construct( this, parentModel );
 
-        ////////////////////////////////////
-        // factory customizations start here
-        this.onNew = function view( record ) {
-          return this.$$onNew( record ).then( function() {
-            // force the default application to be this application
-            record.application_id = CnSession.application.id;
-          } );
+        this.onNew = async function view( record ) {
+          await this.$$onNew( record );
+
+          // force the default application to be this application
+          record.application_id = CnSession.application.id;
         };
-        // factory customizations ends here
-        ////////////////////////////////////
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -166,12 +162,11 @@ define( function() {
   cenozo.providers.factory( 'CnSystemMessageModelFactory', [
     'CnBaseModelFactory',
     'CnSystemMessageListFactory', 'CnSystemMessageAddFactory', 'CnSystemMessageViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseModelFactory,
               CnSystemMessageListFactory, CnSystemMessageAddFactory, CnSystemMessageViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnSystemMessageAddFactory.instance( this );
         this.listModel = CnSystemMessageListFactory.instance( this );
@@ -180,48 +175,43 @@ define( function() {
         this.hasAllSites = function() { return CnSession.role.allSites; };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return $q.all( [
+        this.getMetadata = async function() {
+          var self = this;
+          await this.$$getMetadata();
 
-              CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name', limit: 1000 }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.site_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
-
-              CnHttpFactory.instance( {
-                path: 'role',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: [ { column: 'tier', operator: '<=', value: CnSession.role.tier } ],
-                    order: 'name',
-                    limit: 1000
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.role_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
-
-            ] ).then( function() {
-              // create metadata for application_id (this application only)
-              self.metadata.columnList.application_id.enumList = [ {
-                value: CnSession.application.id,
-                name: CnSession.application.title
-              } ];
-            } );
+          var response = await CnHttpFactory.instance( {
+            path: 'site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.site_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
+
+          var response = await CnHttpFactory.instance( {
+            path: 'role',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: [ { column: 'tier', operator: '<=', value: CnSession.role.tier } ],
+                order: 'name',
+                limit: 1000
+              }
+            }
+          } ).query();
+          this.metadata.columnList.role_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
+          } );
+
+          // create metadata for application_id (this application only)
+          this.metadata.columnList.application_id.enumList = [ {
+            value: CnSession.application.id,
+            name: CnSession.application.title
+          } ];
         };
       };
 

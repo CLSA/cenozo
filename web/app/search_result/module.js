@@ -50,11 +50,10 @@ define( function() {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnSearchResultModelFactory.root;
           $scope.q = $state.params.q;
 
-          $scope.search = function() {
+          $scope.search = async function() {
             $state.params.q = $scope.q;
-            $state.go( 'search_result.list', $state.params ).then( function() {
-              $scope.model.listModel.onList( true );
-            } );
+            await $state.go( 'search_result.list', $state.params );
+            $scope.model.listModel.onList( true );
           };
         }
       };
@@ -75,13 +74,12 @@ define( function() {
     'CnBaseModelFactory', 'CnSearchResultListFactory', 'CnHttpFactory', '$state',
     function( CnBaseModelFactory, CnSearchResultListFactory, CnHttpFactory, $state ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnSearchResultListFactory.instance( this );
         this.getViewEnabled = function() { return true; };
 
-        this.transitionToViewState = function( record ) {
-          $state.go( 'participant.view', { identifier: "uid="+record.uid } );
+        this.transitionToViewState = async function( record ) {
+          await $state.go( 'participant.view', { identifier: "uid="+record.uid } );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {

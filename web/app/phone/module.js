@@ -125,32 +125,27 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneAddFactory', [
-    'CnBaseAddFactory', 'CnTraceModelFactory', '$q',
-    function( CnBaseAddFactory, CnTraceModelFactory, $q ) {
+    'CnBaseAddFactory', 'CnTraceModelFactory',
+    function( CnBaseAddFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
         var traceModel = CnTraceModelFactory.root;
 
         // extend onNew
-        this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
-            return self.parentModel.updateAssociatedAddressList();
-          } );
+        this.onNew = async function( record ) {
+          await this.$$onNew( record );
+          await this.parentModel.updateAssociatedAddressList();
         };
 
-        this.onAdd = function( record ) {
+        this.onAdd = async function( record ) {
           var identifier = this.parentModel.getParentIdentifier();
-          return traceModel.checkForTraceResolvedAfterPhoneAdded( identifier ).then( function( response ) {
-            if( response ) {
-              return self.$$onAdd( record ).then( function() {
-                // end tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-              } );
-            } else {
-              return $q.reject();
-            }
-          } );
+          var traceResponse = await traceModel.checkForTraceResolvedAfterPhoneAdded( identifier );
+          if( traceResponse ) {
+            await this.$$onAdd( record )
+            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            throw 'Cancelled by user';
+          }
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -159,25 +154,24 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneListFactory', [
-    'CnBaseListFactory', 'CnTraceModelFactory', '$q',
-    function( CnBaseListFactory, CnTraceModelFactory, $q ) {
+    'CnBaseListFactory', 'CnTraceModelFactory',
+    function( CnBaseListFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseListFactory.construct( this, parentModel );
         var traceModel = CnTraceModelFactory.root;
 
-        this.onDelete = function( record ) {
-          var identifier = this.parentModel.getParentIdentifier();
-          return traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier ).then( function( response ) {
-            if( response ) {
-              return self.$$onDelete( record ).then( function() {
-                // start tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-              } );
-            } else {
-              return $q.reject();
-            }
-          } );
+        this.onDelete = async function( record ) {
+          var identifier = {
+            subject: this.parentModel.getSubjectFromState(),
+            identifier: this.parentModel.getQueryParameter( 'identifier', true )
+          };
+          var traceResponse = await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
+          if( traceResponse ) {
+            await this.$$onDelete( record );
+            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            throw 'Cancelled by user';
+          }
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -186,63 +180,43 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneViewFactory', [
-    'CnBaseViewFactory', 'CnTraceModelFactory', '$q',
-    function( CnBaseViewFactory, CnTraceModelFactory, $q ) {
+    'CnBaseViewFactory', 'CnTraceModelFactory',
+    function( CnBaseViewFactory, CnTraceModelFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         var traceModel = CnTraceModelFactory.root;
 
         // extend onView
-        this.onView = function( force ) {
-          return this.$$onView( force ).then( function() {
-            return self.parentModel.updateAssociatedAddressList();
-          } );
+        this.onView = async function( force ) {
+          await this.$$onView( force );
+          await this.parentModel.updateAssociatedAddressList();
         };
 
-        this.onPatch = function( data ) {
+        this.onPatch = async function( data ) {
           var identifier = this.parentModel.getParentIdentifier();
-          if( angular.isDefined( data.active ) ) {
-            if( data.active ) {
-              return traceModel.checkForTraceResolvedAfterPhoneAdded( identifier ).then( function( response ) {
-                if( response ) {
-                  return self.$$onPatch( data ).then( function() {
-                    // end tracing with reason "response"
-                    if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-                  } );
-                } else {
-                  return $q.reject();
-                }
-              } );
-            } else {
-              return traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier ).then( function( response ) {
-                if( response ) {
-                  return self.$$onPatch( data ).then( function() {
-                    // start tracing with reason "response"
-                    if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-                  } );
-                } else {
-                  return $q.reject();
-                }
-              } );
-            }
+          var traceResponse = !angular.isDefined( data.active )
+                            ? true
+                            : data.active
+                            ? await traceModel.checkForTraceResolvedAfterPhoneAdded( identifier )
+                            : await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
+
+          if( traceResponse ) {
+            await this.$$onPatch( data );
+            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            this.record.active = this.backupRecord.active;
           }
-
-          return this.$$onPatch( data );
         };
 
-        this.onDelete = function() {
+        this.onDelete = async function() {
           var identifier = this.parentModel.getParentIdentifier();
-          return traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier ).then( function( response ) {
-            if( response ) {
-              return self.$$onDelete().then( function() {
-                // start tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-              } );
-            } else {
-              return $q.reject();
-            }
-          } );
+          var traceResponse = await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
+          if( traceResponse ) {
+            await this.$$onDelete();
+            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            throw 'Cancelled by user';
+          }
         };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -260,24 +234,22 @@ define( [ 'trace' ].reduce( function( list, name ) {
         this.viewModel = CnPhoneViewFactory.instance( this, root );
 
         // special function to update the associated address list
-        var self = this;
-        this.updateAssociatedAddressList = function() {
-          var parent = self.getParentIdentifier();
-          return CnHttpFactory.instance( {
+        this.updateAssociatedAddressList = async function() {
+          var parent = this.getParentIdentifier();
+          var response = await CnHttpFactory.instance( {
             path: angular.isDefined( parent.subject )
                 ? [ parent.subject, parent.identifier, 'address' ].join( '/' )
-                : self.getServiceCollectionPath().replace( 'phone', 'address' ),
+                : this.getServiceCollectionPath().replace( 'phone', 'address' ),
             data: {
               select: { column: [ 'id', 'summary' ] },
               modifier: { order: 'rank' }
             }
-          } ).query().then( function success( response ) {
-            self.metadata.columnList.address_id.enumList = [];
-            response.data.forEach( function( item ) {
-              self.metadata.columnList.address_id.enumList.push( {
-                value: item.id, name: item.summary
-              } );
-            } );
+          } ).query();
+
+          this.metadata.columnList.address_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.address_id.enumList.push( { value: item.id, name: item.summary } );
           } );
         };
       };

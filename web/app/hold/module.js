@@ -126,22 +126,21 @@ define( function() {
     'CnBaseAddFactory', 'CnSession', 'CnModalMessageFactory',
     function( CnBaseAddFactory, CnSession, CnModalMessageFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
-        this.onAdd = function( record ) {
-          return this.$$onAdd( record ).then( function() {
-            if( CnSession.finalHoldTypeList.findByProperty( 'name', 'Deceased' ).id == record.hold_type_id ) {
-              return CnModalMessageFactory.instance( {
-                title: 'Date of Death',
-                message:
-                  'You have choosen to put the participant in a "Deceased" hold and you will now be returned ' +
-                  'to the participant\'s file.  If you have any information about the participant\'s date of ' +
-                  'death please enter it in the participant\'s defining details including whether only the ' +
-                  'year, year and month, or full date is known.'
-              } ).show();
-            }
-          } );
+        this.onAdd = async function( record ) {
+          await this.$$onAdd( record );
+
+          if( CnSession.finalHoldTypeList.findByProperty( 'name', 'Deceased' ).id == record.hold_type_id ) {
+            await CnModalMessageFactory.instance( {
+              title: 'Date of Death',
+              message:
+                'You have choosen to put the participant in a "Deceased" hold and you will now be returned ' +
+                'to the participant\'s file.  If you have any information about the participant\'s date of ' +
+                'death please enter it in the participant\'s defining details including whether only the ' +
+                'year, year and month, or full date is known.'
+            } ).show();
+          }
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -161,20 +160,7 @@ define( function() {
   cenozo.providers.factory( 'CnHoldViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) {
-        var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
-
-        // extend onView
-        this.onView = function( force ) {
-          return this.$$onView( force ).then( function() {
-            // Since the international column is read-only and belongs to a different table we can fake
-            // the expected Yes/No value by changing it here
-            if( null != self.record.international )
-              self.record.international = self.record.international ? 'Yes' : 'No';
-          } );
-        };
-      }
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -186,7 +172,6 @@ define( function() {
     function( CnBaseModelFactory, CnHoldListFactory, CnHoldAddFactory, CnHoldViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnHoldAddFactory.instance( this );
         this.listModel = CnHoldListFactory.instance( this );
@@ -195,27 +180,28 @@ define( function() {
         // extend getBreadcrumbTitle
         // (metadata's promise will have already returned so we don't have to wait for it)
         this.getBreadcrumbTitle = function() {
-          var holdType = self.metadata.columnList.hold_type_id.enumList.findByProperty(
+          var holdType = this.metadata.columnList.hold_type_id.enumList.findByProperty(
             'value', this.viewModel.record.hold_type_id );
           return holdType ? holdType.name : 'removed';
         };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'hold_type',
-              data: {
-                select: { column: [ 'id', 'type', 'name', 'access', 'system' ] },
-                modifier: { order: [ 'type', 'name' ], limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.hold_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.hold_type_id.enumList.push( {
-                  value: item.id, name: item.type + ': ' + item.name, disabled: !item.access || item.system
-                } );
-              } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'hold_type',
+            data: {
+              select: { column: [ 'id', 'type', 'name', 'access', 'system' ] },
+              modifier: { order: [ 'type', 'name' ], limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.hold_type_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.hold_type_id.enumList.push( {
+              value: item.id, name: item.type + ': ' + item.name, disabled: !item.access || item.system
             } );
           } );
         };

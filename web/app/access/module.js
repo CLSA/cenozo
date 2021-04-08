@@ -120,47 +120,43 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAccessModelFactory', [
     'CnBaseModelFactory', 'CnAccessListFactory', 'CnAccessAddFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory',
     function( CnBaseModelFactory, CnAccessListFactory, CnAccessAddFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAccessAddFactory.instance( this );
         this.listModel = CnAccessListFactory.instance( this );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: 'role',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false }, limit: 1000 },
-                  granting: true // only return roles which we can grant access to
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.role_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+        this.getMetadata = async function() {
+          var self = this;
+          await this.$$getMetadata();
 
-              CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false }, limit: 1000 },
-                  granting: true // only return sites which we can grant access to
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.site_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
-            ] );
+          var response = await CnHttpFactory.instance( {
+            path: 'role',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: { name: false }, limit: 1000 },
+              granting: true // only return roles which we can grant access to
+            }
+          } ).query();
+          this.metadata.columnList.role_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
+          } );
+
+          var response = await CnHttpFactory.instance( {
+            path: 'site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: { name: false }, limit: 1000 },
+              granting: true // only return sites which we can grant access to
+            }
+          } ).query();
+          this.metadata.columnList.site_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
 

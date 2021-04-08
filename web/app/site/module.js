@@ -87,8 +87,8 @@ define( function() {
     if( angular.isDefined( settingModule.actions.view ) ) {
       module.addExtraOperation( 'view', {
         title: 'Settings',
-        operation: function( $state, model ) {
-          $state.go( 'setting.view', { identifier: 'site_id=' + model.viewModel.record.id } );
+        operation: async function( $state, model ) {
+          await $state.go( 'setting.view', { identifier: 'site_id=' + model.viewModel.record.id } );
         }
       } );
     }
@@ -162,15 +162,14 @@ define( function() {
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'access' );
 
         // extend the onPatch function
-        this.onPatch = function( data ) {
-          return self.$$onPatch( data ).then( function() {
-            // update the region
-            if( angular.isDefined( data.postcode ) ) self.onView();
-          } );
+        this.onPatch = async function( data ) {
+          await this.$$onPatch( data );
+
+          // when patching the postcode the region may change so update the view to reflect this
+          if( angular.isDefined( data.postcode ) ) await this.onView();
         };
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -184,36 +183,34 @@ define( function() {
     function( CnBaseModelFactory, CnSiteListFactory, CnSiteAddFactory, CnSiteViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnSiteAddFactory.instance( this );
         this.listModel = CnSiteListFactory.instance( this );
         this.viewModel = CnSiteViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'region',
-              data: {
-                select: {
-                  column: [
-                    'id',
-                    'country',
-                    { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
-                  ]
-                },
-                modifier: { order: ['country','name'], limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.region_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.region_id.enumList.push( {
-                  value: item.id,
-                  country: item.country,
-                  name: item.name
-                } );
-              } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+          var response = await CnHttpFactory.instance( {
+            path: 'region',
+            data: {
+              select: {
+                column: [
+                  'id',
+                  'country',
+                  { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
+                ]
+              },
+              modifier: { order: ['country','name'], limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.region_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.region_id.enumList.push( {
+              value: item.id,
+              country: item.country,
+              name: item.name
             } );
           } );
         };

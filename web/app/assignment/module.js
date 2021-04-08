@@ -170,11 +170,25 @@ define( [], function() {
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         this.forceCloseAllowed = 1 < CnSession.role.tier;
-        this.forceClose = function() {
-          CnModalConfirmFactory.instance( {
+        this.forceClose = async function() {
+          var self = this;
+          async function refreshView() {
+            // the assignment may no longer exist, so go back to the interview if it's gone
+            await CnHttpFactory.instance( {
+              path: 'assignment/' + self.record.id,
+              data: { select: { column: [ 'id' ] } },
+              onError: function( error ) {
+                if( 404 == error.status ) self.transitionOnDelete();
+                else CnModalMessageFactory.httpError( error );
+              }
+            } ).get();
+
+            await self.onView();
+          }
+
+          var response = await CnModalConfirmFactory.instance( {
             title: 'Force Close Assignment?',
             message: 'Are you sure you wish to force-close the assignment?' + (
               CnSession.application.voipEnabled ?
@@ -182,36 +196,21 @@ define( [], function() {
                 'continuing to answer questionnaires.' :
                 ''
             )
-          } ).show().then( function( response ) {
-            function refreshView() {
-              // the assignment may no longer exist, so go back to the interview if it's gone
-              CnHttpFactory.instance( {
-                path: 'assignment/' + self.record.id,
-                data: { select: { column: [ 'id' ] } },
-                onError: function( response ) {
-                  if( 404 == response.status ) {
-                    self.transitionOnDelete();
-                  } else { CnModalMessageFactory.httpError( response ); }
-                }
-              } ).get().then( function() { self.onView(); } );
-            }
-
-            if( response ) {
-              CnHttpFactory.instance( {
-                path: 'assignment/' + self.record.id + '?operation=force_close',
-                data: {},
-                onError: function( response ) {
-                  if( 404 == response.status ) {
-                    // 404 means the assignment no longer exists
-                    self.transitionOnDelete();
-                  } else if( 409 == response.status ) {
-                    // 409 means the assignment is already closed
-                    refreshView();
-                  } else { CnModalMessageFactory.httpError( response ); }
-                }
-              } ).patch().then( refreshView );
-            }
           } );
+
+          if( response ) {
+            await CnHttpFactory.instance( {
+              path: 'assignment/' + this.record.id + '?operation=force_close',
+              data: {},
+              onError: function( error ) {
+                if( 404 == error.status ) self.transitionOnDelete(); // 404 means the assignment no longer exists
+                else if( 409 == error.status ) refreshView(); // 409 means the assignment is already closed
+                else CnModalMessageFactory.httpError( error );
+              }
+            } ).patch();
+
+            await refreshView();
+          }
         };
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

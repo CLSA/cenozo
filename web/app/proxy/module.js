@@ -139,20 +139,7 @@ define( function() {
   cenozo.providers.factory( 'CnProxyViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) {
-        var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
-
-        // extend onView
-        this.onView = function( force ) {
-          return this.$$onView( force ).then( function() {
-            // Since the international column is read-only and belongs to a different table we can fake
-            // the expected Yes/No value by changing it here
-            if( null != self.record.international )
-              self.record.international = self.record.international ? 'Yes' : 'No';
-          } );
-        };
-      }
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -164,7 +151,6 @@ define( function() {
     function( CnBaseModelFactory, CnProxyListFactory, CnProxyAddFactory, CnProxyViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnProxyAddFactory.instance( this );
         this.listModel = CnProxyListFactory.instance( this );
@@ -173,27 +159,28 @@ define( function() {
         // extend getBreadcrumbTitle
         // (metadata's promise will have already returned so we don't have to wait for it)
         this.getBreadcrumbTitle = function() {
-          var proxyType = self.metadata.columnList.proxy_type_id.enumList.findByProperty(
+          var proxyType = this.metadata.columnList.proxy_type_id.enumList.findByProperty(
             'value', this.viewModel.record.proxy_type_id );
           return proxyType ? proxyType.name : 'removed';
         };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'proxy_type',
-              data: {
-                select: { column: [ 'id', 'name', 'access' ] },
-                modifier: { order: 'name', limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.proxy_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.proxy_type_id.enumList.push( {
-                  value: item.id, name: item.name, disabled: !item.access
-                } );
-              } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'proxy_type',
+            data: {
+              select: { column: [ 'id', 'name', 'access' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.proxy_type_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.proxy_type_id.enumList.push( {
+              value: item.id, name: item.name, disabled: !item.access
             } );
           } );
         };

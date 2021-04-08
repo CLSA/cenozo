@@ -198,11 +198,10 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationModelFactory', [
     'CnBaseModelFactory', 'CnApplicationListFactory', 'CnApplicationViewFactory',
-    'CnSession', 'CnHttpFactory', '$state', '$q',
+    'CnSession', 'CnHttpFactory', '$state',
     function( CnBaseModelFactory, CnApplicationListFactory, CnApplicationViewFactory,
-              CnSession, CnHttpFactory, $state, $q ) {
+              CnSession, CnHttpFactory, $state ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnApplicationListFactory.instance( this );
         this.viewModel = CnApplicationViewFactory.instance( this, root );
@@ -210,40 +209,36 @@ define( function() {
         this.showStudyPhase = function() {
           // NOTE: we need to declare a temp variable, otherwise this function returns an undefined value
           var show = // only show when viewing the right type of application
-                 'application' == self.getSubjectFromState() &&
-                 'view' == self.getActionFromState() &&
-                 [ 'beartooth', 'cedar', 'mastodon', 'sabretooth' ].includes( self.viewModel.record.application_type ) &&
+                 'application' == this.getSubjectFromState() &&
+                 'view' == this.getActionFromState() &&
+                 [ 'beartooth', 'cedar', 'mastodon', 'sabretooth' ].includes( this.viewModel.record.application_type ) &&
                  // and only show when we're USING the right type of application
                  [ 'beartooth', 'cedar', 'mastodon', 'sabretooth' ].includes( CnSession.application.type );
           return show;
         };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            var promiseList = [];
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
 
-            if( self.showStudyPhase() ) {
-              promiseList.push( CnHttpFactory.instance( {
-                  path: 'study_phase',
-                  data: {
-                    select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
-                    modifier: { order: { 'study.name': false, 'study_phase.rank': false }, limit: 1000 }
-                  }
-                } ).query().then( function success( response ) {
-                  self.metadata.columnList.study_phase_id.enumList = [];
-                  response.data.forEach( function( item ) {
-                    self.metadata.columnList.study_phase_id.enumList.push( {
-                      value: item.id,
-                      name: [ item.study, item.name ].join( ' ' )
-                    } );
-                  } );
-                } )
-              );
-            }
+          if( this.showStudyPhase() ) {
+            var response = await CnHttpFactory.instance( {
+                path: 'study_phase',
+                data: {
+                  select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
+                  modifier: { order: { 'study.name': false, 'study_phase.rank': false }, limit: 1000 }
+                }
+              } ).query();
 
-            return $q.all( promiseList );
-          } );
+            this.metadata.columnList.study_phase_id.enumList = [];
+            var self = this;
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.study_phase_id.enumList.push( {
+                value: item.id,
+                name: [ item.study, item.name ].join( ' ' )
+              } );
+            } );
+          }
         };
       };
 

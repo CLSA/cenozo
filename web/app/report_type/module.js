@@ -43,10 +43,9 @@ define( function() {
       if( angular.isDefined( child.actions.add ) ) {
         module.addExtraOperation( 'view', {
           title: 'Run Report',
-          operation: function( $state, model ) {
-            model.viewModel.onViewPromise.then( function() {
-              $state.go( 'report_type.add_report', { parentIdentifier: model.viewModel.record.getIdentifier() } );
-            } );
+          operation: async function( $state, model ) {
+            await model.viewModel.onViewPromise;
+            await $state.go( 'report_type.add_report', { parentIdentifier: model.viewModel.record.getIdentifier() } );
           }
         } );
       }
@@ -123,17 +122,16 @@ define( function() {
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'report' );
         this.onViewPromise = null;
 
         // track the promise returned by the onView function
-        this.onView = function( force ) {
-          this.onViewPromise = this.$$onView( force );
-          return this.onViewPromise;
-        };
+        this.onView = async function( force ) { this.onViewPromise = await this.$$onView( force ); };
 
-        this.deferred.promise.then( function() {
+        var self = this;
+        async function() {
+          await self.deferred.promise;
+
           if( angular.isDefined( self.reportModel ) )
             self.reportModel.listModel.heading = 'Generated Report List';
           if( angular.isDefined( self.reportScheduleModel ) )
@@ -144,7 +142,7 @@ define( function() {
             self.applicationTypeModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier; };
           if( angular.isDefined( self.roleModel ) )
             self.roleModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier };
-        } );
+        }
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

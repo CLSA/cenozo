@@ -39,8 +39,9 @@ angular.extend( Array.prototype, {
     var filtered = this.filter( function( item ) { return value == item[property]; } );
     if( 1 < filtered.length ) {
       console.warn(
-        'More than one item found while searching array for object with property "%s", only returning the first.',
-        property
+        'More than one item found while searching array for object with key => value "%s => %s", only returning the first.',
+        property,
+        value
       );
     }
     return 0 == filtered.length ? null : filtered[0];
@@ -176,7 +177,6 @@ angular.extend( cenozoApp, {
 
   // Defines all modules belonging to the Application
   setModuleList: function( list ) {
-    var self = this;
     this.moduleList = list;
     for( var name in this.moduleList ) {
       if( 'note' == name ) {
@@ -460,6 +460,7 @@ angular.extend( cenozoApp, {
     }
 
     // replace dependent names with references to the module objects themselves
+    var self = this;
     for( var name in this.moduleList ) {
       this.moduleList[name].children = this.moduleList[name].children.reduce( function( array, item ) {
         try {
@@ -747,8 +748,8 @@ angular.extend( cenozo, {
               // We can then detect whether this change was caused by the browser's forward/backward buttons by checking
               // whether the transition's source is "url".  When it is we must reload the page, otherwise the change to
               // state parameters will not be applied.
-              this.uiOnParamsChanged = function( changedParams, transition ) {
-                if( 'url' == transition.options().source ) $state.reload();
+              this.uiOnParamsChanged = async function( changedParams, transition ) {
+                if( 'url' == transition.options().source ) await $state.reload();
               };
             } ],
             template: '<' + directive + '></' + directive + '>',
@@ -756,7 +757,7 @@ angular.extend( cenozo, {
             resolve: {
               childFiles: [ '$q', function( $q ) {
                 // require that all child modules have loaded
-                return $q.all( module.children.map( action => requireModule( $q, cenozoApp.module( action.subject.snake ) ) ) );
+                return Promise.all( module.children.map( action => requireModule( $q, cenozoApp.module( action.subject.snake ) ) ) );
               } ]
             }
           } );
@@ -841,10 +842,9 @@ angular.extend( cenozo, {
   },
 
   // returns an input object from a restriction (used by report* modules)
-  getInputFromRestriction: function( restriction, CnHttpFactory ) {
+  getInputFromRestriction: async function( restriction, CnHttpFactory ) {
     var key = 'restrict_' + restriction.name;
     var type = restriction.restriction_type;
-    var promiseList = [];
     var input = {
       key: key,
       title: restriction.title,
@@ -861,42 +861,27 @@ angular.extend( cenozo, {
         name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
       } ];
 
-      promiseList.push(
-        CnHttpFactory.instance( {
-          path: restriction.subject
-        } ).head().then( function( response ) {
-          var data = {
-            modifier: {
-              where: [],
-              order: undefined
-            },
-            select: { column: [ 'id' ] }
-          };
-          var columnList = angular.fromJson( response.headers( 'Columns' ) );
-          for( var column in columnList ) {
-            if( 'active' == column )
-              data.modifier.where.push( { column: 'active', operator: '=', value: true } );
-            else if( 'name' == column ) {
-              data.modifier.order = { name: false };
-              data.select.column.push( 'name' );
-            }
-          };
+      var response = await CnHttpFactory.instance( { path: restriction.subject } ).head();
+      var data = { modifier: { where: [], order: undefined }, select: { column: [ 'id' ] } };
+      var columnList = angular.fromJson( response.headers( 'Columns' ) );
 
-          // query the table for the enum list
-          return CnHttpFactory.instance( {
-            path: restriction.subject,
-            data: data
-          } ).get().then( function( response ) {
-            response.data.forEach( function( item ) {
-              input.enumList.push( { value: item.id, name: item.name } );
-            } );
-            if( restriction.null_allowed ) input.enumList.push( {
-              value: '_NULL_',
-              name: 'identifier' == restriction.subject ? 'UID' : '(empty)'
-            } );
-          } );
-        } )
-      );
+      for( var column in columnList ) {
+        if( 'active' == column )
+          data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+        else if( 'name' == column ) {
+          data.modifier.order = { name: false };
+          data.select.column.push( 'name' );
+        }
+      };
+
+      // query the table for the enum list
+      var response = await CnHttpFactory.instance( { path: restriction.subject, data: data } ).get();
+
+      response.data.forEach( function( item ) { input.enumList.push( { value: item.id, name: item.name } ); } );
+      if( restriction.null_allowed ) input.enumList.push( {
+        value: '_NULL_',
+        name: 'identifier' == restriction.subject ? 'UID' : '(empty)'
+      } );
     } else if( 'boolean' == type ) {
       input.enumList = [ {
         value: undefined,
@@ -913,20 +898,15 @@ angular.extend( cenozo, {
         name: restriction.mandatory ? '(Select ' + restriction.title + ')' : '(all)'
       } ];
       if( null == restriction.enum_list ) {
-        promiseList.push(
-          CnHttpFactory.instance( {
-            path: restriction.base_table
-          } ).head().then( function( response ) {
-            var columnList = angular.fromJson( response.headers( 'Columns' ) );
-            if( angular.isDefined( columnList[restriction.subject] ) &&
-                'enum' == columnList[restriction.subject].data_type ) {
-              // parse out the enum values
-              cenozo.parseEnumList( columnList[restriction.subject] ).forEach( function( item ) {
-                input.enumList.push( { value: item, name: item } );
-              } );
-            }
-          } )
-        );
+        var response = await CnHttpFactory.instance( { path: restriction.base_table } ).head();
+        var columnList = angular.fromJson( response.headers( 'Columns' ) );
+        if( angular.isDefined( columnList[restriction.subject] ) &&
+            'enum' == columnList[restriction.subject].data_type ) {
+          // parse out the enum values
+          cenozo.parseEnumList( columnList[restriction.subject] ).forEach( function( item ) {
+            input.enumList.push( { value: item, name: item } );
+          } );
+        }
       } else {
         input.enumList = input.enumList.concat( angular.fromJson( '[' + restriction.enum_list + ']' ).reduce(
           function( list, name ) {
@@ -939,7 +919,7 @@ angular.extend( cenozo, {
       if( restriction.null_allowed ) input.enumList.push( { value: '_NULL_', name: '(empty)' } );
     }
 
-    return { input: input, promiseList: promiseList };
+    return input;
   }
 
 } );
@@ -974,55 +954,54 @@ cenozo.service( 'CnBaseHeader', [
   function( $state, $interval, $window,
             CnSession, CnModalAccountFactory, CnModalPasswordFactory, CnModalTimezoneFactory ) {
     return {
-      construct: function( scope ) {
-        // update the time once the session has finished loading
-        CnSession.promise.finally( function() {
-          CnSession.updateTime();
-          $interval( CnSession.updateTime, 1000 );
-          scope.isLoading = false;
-        } );
-
+      construct: async function( scope ) {
         scope.isCollapsed = false;
         scope.isLoading = true;
         scope.session = CnSession;
+
+        // update the time once the session has finished loading
+        try {
+          await CnSession.promise
+        } finally {
+          CnSession.updateTime();
+          $interval( function() { CnSession.updateTime() }, 1000 );
+          scope.isLoading = false;
+        }
 
         // a list of all possible operations that the menu controller has to choose from
         scope.operationList = [ {
           title: 'Account',
           help: 'Edit your account details',
-          execute: function() {
-            CnModalAccountFactory.instance( { user: CnSession.user } ).show().then( function( response ) {
-              if( response ) CnSession.setUserDetails();
-            } );
+          execute: async function() {
+            if( await CnModalAccountFactory.instance( { user: CnSession.user } ).show() ) CnSession.setUserDetails();
           }
         }, {
           title: 'Timezone',
           help: 'Change which timezone to display',
-          execute: function() {
-            CnModalTimezoneFactory.instance( {
+          execute: async function() {
+            var response = await CnModalTimezoneFactory.instance( {
               timezone: CnSession.user.timezone,
               use12hourClock: CnSession.user.use12hourClock
-            } ).show().then( function( response ) {
-              if( response && (
-                    response.timezone != CnSession.user.timezone ||
-                    response.use12hourClock != CnSession.user.use12hourClock ) ) {
-                CnSession.user.timezone = response.timezone;
-                CnSession.user.use12hourClock = response.use12hourClock;
-                CnSession.setTimezone( response.timezone, response.use12hourClock ).then( function() {
-                  $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
-                } );
-              }
-            } );
+            } ).show();
+
+            if( response && (
+                  response.timezone != CnSession.user.timezone ||
+                  response.use12hourClock != CnSession.user.use12hourClock
+                )
+            ) {
+              CnSession.user.timezone = response.timezone;
+              CnSession.user.use12hourClock = response.use12hourClock;
+              await CnSession.setTimezone( response.timezone, response.use12hourClock );
+              await $state.go( 'self.wait' )
+              $window.location.reload();
+            }
           }
         }, {
           title: 'Password',
           help: 'Change your password',
-          execute: function() {
-            CnModalPasswordFactory.instance().show().then( function( response ) {
-              if( angular.isObject( response ) ) {
-                CnSession.setPassword( response.currentPass, response.requestedPass );
-              }
-            } );
+          execute: async function() {
+            var response = await CnModalPasswordFactory.instance().show();
+            if( angular.isObject( response ) ) await CnSession.setPassword( response.currentPass, response.requestedPass );
           }
         }, {
           title: 'Logout',
@@ -1095,7 +1074,6 @@ cenozo.directive( 'cnAutofocus', [
  * Like ngChange but will only trigger after loosing focus of the element (instead of any change)
  * if the parent element is an INPUT of type other than checkbox or radio, otherwise it is identical
  * to the standard ngChange directive.
- * @attr self
  */
 cenozo.directive( 'cnChange', [
   '$timeout',
@@ -1134,8 +1112,7 @@ cenozo.directive( 'cnChange', [
  * A directive wrapper for chart.js
  */
 cenozo.directive( 'cnChart', [
-  'CnHttpFactory',
-  function( CnHttpFactory ) {
+  function() {
     return {
       template: '<div ng-include="templateUrl"></div>', // set below in the link function
       restrict: 'E',
@@ -1312,8 +1289,8 @@ cenozo.directive( 'cnOptionsDisabled', [
  * @attr model: an instance of CnParticipantSelectionFactory
  */
 cenozo.directive( 'cnParticipantSelection', [
-  'CnHttpFactory', '$timeout',
-  function( CnHttpFactory, $timeout ) {
+  '$timeout',
+  function( $timeout ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'participant-selection.tpl.html' ),
       restrict: 'E',
@@ -1343,18 +1320,17 @@ cenozo.directive( 'cnReallyClick', [
       restrict: 'A',
       controller: [ '$scope', function( $scope ) { $scope.directive = 'cnReallyClick'; } ],
       link: function( scope, element, attrs ) {
-        element.bind( 'click', function() {
+        element.bind( 'click', async function() {
           var message = attrs.cnReallyMessage;
-          CnModalConfirmFactory.instance( {
+          var response = await CnModalConfirmFactory.instance( {
             title: angular.isDefined( attrs.cnReallyTitle ) ? attrs.cnReallyTitle : 'Please Confirm',
             message: message
-          } ).show().then( function( response ) {
-            if( response ) {
-              if( attrs.cnReallyClick ) scope.$evalAsync( attrs.cnReallyClick );
-            } else {
-              if( attrs.cnDoNotClick ) scope.$evalAsync( attrs.cnDoNotClick );
-            }
-          } );
+          } ).show();
+          if( response ) {
+            if( attrs.cnReallyClick ) scope.$evalAsync( attrs.cnReallyClick );
+          } else {
+            if( attrs.cnDoNotClick ) scope.$evalAsync( attrs.cnDoNotClick );
+          }
         } );
       }
     }
@@ -1379,14 +1355,14 @@ cenozo.directive( 'cnRecordAdd', [
         footerAtTop: '@',
         removeInputs: '@'
       },
-      controller: [ '$scope', function( $scope ) {
+      controller: [ '$scope', async function( $scope ) {
         angular.extend( $scope, {
           directive: 'cnRecordAdd',
           record: {},
           isComplete: false,
           getCancelText: function() { return 'Cancel'; },
           getSaveText: function() { return 'Save'; },
-          cancel: function() { $scope.model.addModel.transitionOnCancel(); },
+          cancel: async function() { await $scope.model.addModel.transitionOnCancel(); },
 
           check: function( property ) {
             // convert size types and write record property from formatted record
@@ -1403,18 +1379,22 @@ cenozo.directive( 'cnRecordAdd', [
             }
           },
 
-          save: function() {
+          save: async function() {
             if( !$scope.form.$valid ) {
               // dirty all inputs so we can find the problem
               cenozo.forEachFormElement( 'form', function( element ) { element.$dirty = true; } );
             } else {
               $scope.isAdding = true;
-              $scope.model.addModel.onAdd( $scope.record ).then( function( response ) {
+              try {
+                await $scope.model.addModel.onAdd( $scope.record );
+
                 // create a new record to be created (in case another record is added)
                 $scope.form.$setPristine();
-                $scope.model.addModel.transitionOnSave( $scope.record );
-                $scope.model.addModel.onNew( $scope.record );
-              } ).finally( function() { $scope.isAdding = false; } );
+                await $scope.model.addModel.transitionOnSave( $scope.record );
+                await $scope.model.addModel.onNew( $scope.record );
+              } finally {
+                $scope.isAdding = false;
+              }
             }
           },
 
@@ -1426,86 +1406,87 @@ cenozo.directive( 'cnRecordAdd', [
           }
         } );
 
-        $scope.model.addModel.onNew( $scope.record ).then( function() {
-          $scope.model.metadata.getPromise().then( function() {
-            if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) )
-              $scope.model.setupBreadcrumbTrail();
+        try {
+          await $scope.model.addModel.onNew( $scope.record );
+          await $scope.model.metadata.getPromise();
 
-            $scope.dataArray.forEach( function( group ) {
-              group.inputArray.forEach( function( input ) {
-                var meta = $scope.model.metadata.columnList[input.key];
+          if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) )
+            $scope.model.setupBreadcrumbTrail();
 
-                // make the default typeahead min-length 2
-                if( angular.isDefined( input.typeahead ) ) {
-                  if( angular.isUndefined( input.typeahead.minLength ) ) input.typeahead.minLength = 2;
+          $scope.dataArray.forEach( function( group ) {
+            group.inputArray.forEach( async function( input ) {
+              var meta = $scope.model.metadata.columnList[input.key];
+
+              // make the default typeahead min-length 2
+              if( angular.isDefined( input.typeahead ) ) {
+                if( angular.isUndefined( input.typeahead.minLength ) ) input.typeahead.minLength = 2;
+              }
+
+              if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
+                // process the input's enum-list
+                var enumList = angular.copy( meta.enumList );
+
+                // add additional rank
+                var newRank = enumList.length + 1;
+                if( 'rank' == input.key ) enumList.push( {
+                  value: newRank,
+                  name: $filter( 'cnOrdinal' )( newRank )
+                } );
+
+                if( !meta.required || 1 < enumList.length ) {
+                  var name = meta.required ? '(Select ' + input.title + ')' : '(empty)';
+                  if( null == enumList.findByProperty( 'name', name ) )
+                    enumList.unshift( { value: undefined, name: name } );
                 }
 
-                if( angular.isDefined( meta ) && angular.isDefined( meta.enumList ) ) {
-                  // process the input's enum-list
-                  var enumList = angular.copy( meta.enumList );
-
-                  // add additional rank
-                  var newRank = enumList.length + 1;
-                  if( 'rank' == input.key ) enumList.push( {
-                    value: newRank,
-                    name: $filter( 'cnOrdinal' )( newRank )
-                  } );
-
-                  if( !meta.required || 1 < enumList.length ) {
-                    var name = meta.required ? '(Select ' + input.title + ')' : '(empty)';
-                    if( null == enumList.findByProperty( 'name', name ) )
-                      enumList.unshift( { value: undefined, name: name } );
-                  }
-
-                  if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
-                  input.enumList = enumList;
-                } else if( 'lookup-typeahead' == input.type ) {
-                  // use the default value if one is provided
-                  if( angular.isDefined( input.typeahead ) &&
-                      angular.isDefined( input.typeahead.forceEmptyOnNew ) &&
-                      input.typeahead.forceEmptyOnNew ) {
-                    // do nothing (the typeahead has requested to start empty)
+                if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
+                input.enumList = enumList;
+              } else if( 'lookup-typeahead' == input.type ) {
+                // use the default value if one is provided
+                if( angular.isDefined( input.typeahead ) &&
+                    angular.isDefined( input.typeahead.forceEmptyOnNew ) &&
+                    input.typeahead.forceEmptyOnNew ) {
+                  // do nothing (the typeahead has requested to start empty)
+                } else {
+                  var defaultValue = $scope.model.module.getInput( input.key ).default;
+                  if( angular.isObject( defaultValue ) &&
+                      angular.isDefined( defaultValue.id ) &&
+                      angular.isDefined( defaultValue.formatted ) ) {
+                    $scope.record[input.key] = defaultValue.id;
+                    $scope.formattedRecord[input.key] = defaultValue.formatted;
                   } else {
-                    var defaultValue = $scope.model.module.getInput( input.key ).default;
-                    if( angular.isObject( defaultValue ) &&
-                        angular.isDefined( defaultValue.id ) &&
-                        angular.isDefined( defaultValue.formatted ) ) {
-                      $scope.record[input.key] = defaultValue.id;
-                      $scope.formattedRecord[input.key] = defaultValue.formatted;
-                    } else {
-                      // apply parent values to lookup-typeaheads
-                      var parent = $scope.model.getParentIdentifier();
-                      if( angular.isDefined( parent.subject ) &&
-                          angular.isDefined( parent.identifier ) &&
-                          angular.isDefined( input.typeahead ) &&
-                          parent.subject == input.typeahead.table ) {
-                        CnHttpFactory.instance( {
-                          path: input.typeahead.table + '/' + parent.identifier,
-                          data: {
-                            select: {
-                              column: [ 'id', {
-                                column: input.typeahead.select,
-                                alias: 'value',
-                                table_prefix: false
-                              } ]
-                            }
+                    // apply parent values to lookup-typeaheads
+                    var parent = $scope.model.getParentIdentifier();
+                    if( angular.isDefined( parent.subject ) &&
+                        angular.isDefined( parent.identifier ) &&
+                        angular.isDefined( input.typeahead ) &&
+                        parent.subject == input.typeahead.table ) {
+                      var response = await CnHttpFactory.instance( {
+                        path: input.typeahead.table + '/' + parent.identifier,
+                        data: {
+                          select: {
+                            column: [ 'id', {
+                              column: input.typeahead.select,
+                              alias: 'value',
+                              table_prefix: false
+                            } ]
                           }
-                        } ).get().then( function( response ) {
-                          $scope.record[input.key] = response.data.id;
-                          $scope.formattedRecord[input.key] = response.data.value;
-                        } );
-                      }
+                        }
+                      } ).get();
+
+                      $scope.record[input.key] = response.data.id;
+                      $scope.formattedRecord[input.key] = response.data.value;
                     }
                   }
-                } else if( 'size' == input.type ) {
-                  $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
                 }
-              } );
+              } else if( 'size' == input.type ) {
+                $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
+              }
             } );
           } );
-        } ).finally( function() {
+        } finally {
           $scope.isComplete = true;
-        } );
+        }
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
@@ -1588,28 +1569,27 @@ cenozo.directive( 'cnAddInput', [
           }
         };
 
-        $scope.selectDatetime = function() {
-          $scope.model.metadata.getPromise().then( function() {
-            CnModalDatetimeFactory.instance( {
-              title: $scope.input.title,
-              date: $scope.record[$scope.input.key],
-              minDate: angular.isDefined( $scope.record[$scope.input.min] ) ?
-                $scope.record[$scope.input.min] : $scope.input.min,
-              maxDate: angular.isDefined( $scope.record[$scope.input.max] ) ?
-                $scope.record[$scope.input.max] : $scope.input.max,
-              pickerType: $scope.input.type,
-              emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
-              hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
-              minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
-              secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
-            } ).show().then( function( response ) {
-              if( false !== response ) {
-                $scope.record[$scope.input.key] = response;
-                $scope.formattedRecord[$scope.input.key] =
-                  CnSession.formatValue( response, $scope.input.type, true );
-              }
-            } );
-          } );
+        $scope.selectDatetime = async function() {
+          await $scope.model.metadata.getPromise();
+          var response = await CnModalDatetimeFactory.instance( {
+            title: $scope.input.title,
+            date: $scope.record[$scope.input.key],
+            minDate: angular.isDefined( $scope.record[$scope.input.min] ) ?
+              $scope.record[$scope.input.min] : $scope.input.min,
+            maxDate: angular.isDefined( $scope.record[$scope.input.max] ) ?
+              $scope.record[$scope.input.max] : $scope.input.max,
+            pickerType: $scope.input.type,
+            emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+            hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
+            minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
+            secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
+          } ).show();
+
+          if( false !== response ) {
+            $scope.record[$scope.input.key] = response;
+            $scope.formattedRecord[$scope.input.key] =
+              CnSession.formatValue( response, $scope.input.type, true );
+          }
         };
 
         // emit that the directive is ready
@@ -1642,32 +1622,30 @@ cenozo.directive( 'cnRecordCalendar', [
       controller: [ '$scope', '$element', function( $scope, $element ) {
         $scope.directive = 'cnRecordCalendar';
         $scope.reportTypeListOpen = false;
-        $scope.refresh = function() {
+        $scope.refresh = async function() {
           if( !$scope.model.calendarModel.isLoading ) {
-            $scope.model.calendarModel.onCalendar( true ).then( function() {
-              $element.find( 'div.calendar' ).fullCalendar( 'refetchEvents' );
-            } );
+            await $scope.model.calendarModel.onCalendar( true );
+            $element.find( 'div.calendar' ).fullCalendar( 'refetchEvents' );
           }
         };
 
-        $scope.clickHeading = function() {
-          CnModalSiteFactory.instance( { id: $scope.model.site.id } ).show().then( function( siteId ) {
-            if( siteId ) {
-              $state.go( $state.current.name, {
-                identifier: CnSession.siteList.findByProperty( 'id', siteId ).getIdentifier()
-              } );
-            }
-          } );
+        $scope.clickHeading = async function() {
+          var siteId = await CnModalSiteFactory.instance( { id: $scope.model.site.id } ).show();
+          if( siteId ) {
+            await $state.go(
+              $state.current.name,
+              { identifier: CnSession.siteList.findByProperty( 'id', siteId ).getIdentifier() }
+            );
+          }
         };
 
         $scope.toggleReportTypeDropdown = function() {
           $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
         };
 
-        $scope.getReport = function( format ) {
-          $scope.model.calendarModel.onReport( format ).then( function() {
-            saveAs( $scope.model.calendarModel.reportBlob, $scope.model.calendarModel.reportFilename );
-          } );
+        $scope.getReport = async function( format ) {
+          await $scope.model.calendarModel.onReport( format );
+          saveAs( $scope.model.calendarModel.reportBlob, $scope.model.calendarModel.reportFilename );
           $scope.toggleReportTypeDropdown();
         };
 
@@ -1752,7 +1730,7 @@ cenozo.directive( 'cnRecordList', [
         noReports: '@',
         disableEmptyToEnd: '='
       },
-      controller: [ '$scope', '$element', function( $scope, $element ) {
+      controller: [ '$scope', '$element', async function( $scope, $element ) {
         angular.extend( $scope, {
           directive: 'cnRecordList',
           reportTypeListOpen: false,
@@ -1769,24 +1747,25 @@ cenozo.directive( 'cnRecordList', [
             $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
           },
 
-          getReport: function( format ) {
-            $scope.model.listModel.onReport( format ).then( function() {
-              saveAs( $scope.model.listModel.reportBlob, $scope.model.listModel.reportFilename );
-            } );
+          getReport: async function( format ) {
+            await $scope.model.listModel.onReport( format );
+            saveAs( $scope.model.listModel.reportBlob, $scope.model.listModel.reportFilename );
             $scope.toggleReportTypeDropdown();
           },
 
-          addRecord: function() {
-            if( $scope.model.getAddEnabled() ) $scope.model.listModel.transitionOnAdd();
+          addRecord: async function() {
+            if( $scope.model.getAddEnabled() ) await $scope.model.listModel.transitionOnAdd();
           },
 
-          deleteRecord: function( record ) {
+          deleteRecord: async function( record ) {
             if( $scope.model.getDeleteEnabled() ) {
               if( !$scope.isDeleting.includes( record.id ) ) $scope.isDeleting.push( record.id );
               var index = $scope.isDeleting.indexOf( record.id );
-              $scope.model.listModel.onDelete( record ).finally(
-                function() { if( 0 <= index ) $scope.isDeleting.splice( index, 1 ); }
-              );
+              try {
+                await $scope.model.listModel.onDelete( record );
+              } finally {
+                if( 0 <= index ) $scope.isDeleting.splice( index, 1 );
+              }
             }
           },
 
@@ -1807,19 +1786,22 @@ cenozo.directive( 'cnRecordList', [
             }
           },
 
-          applyChosenRecords: function() {
+          applyChosenRecords: async function() {
             if( $scope.model.getChooseEnabled() ) {
               if( $scope.model.listModel.chooseMode ) {
                 $scope.applyingChoose = true;
-                $scope.model.listModel.onApplyChosen().finally( function() { $scope.applyingChoose = false; } );
+                try {
+                  await $scope.model.listModel.onApplyChosen();
+                } finally {
+                  $scope.applyingChoose = false;
+                }
               }
             }
           }
         } );
 
-        $scope.model.listModel.onList( true ).then( function() {
-          if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
-        } );
+        await $scope.model.listModel.onList( true )
+        if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
@@ -1842,16 +1824,15 @@ cenozo.directive( 'cnRecordList', [
           if( !CnSession.role.allSites && !removeColumns.includes( 'site' ) ) removeColumns.push( 'site' );
           scope.dataArray = scope.model.getDataArray( removeColumns, 'list' );
 
-          scope.setRestrictList = function( key ) {
+          scope.setRestrictList = async function( key ) {
             var column = scope.dataArray.findByProperty( 'key', key );
-            CnModalRestrictFactory.instance( {
+            var restrictList = await CnModalRestrictFactory.instance( {
               name: scope.model.module.name,
               column: column.title,
               type: column.type,
               restrictList: angular.copy( scope.model.listModel.columnRestrictLists[key] )
-            } ).show().then( function( restrictList ) {
-              scope.model.listModel.setRestrictList( key, restrictList );
-            } );
+            } ).show();
+            scope.model.listModel.setRestrictList( key, restrictList );
           };
 
           scope.removeRestrictList = function( key ) {
@@ -1878,8 +1859,8 @@ cenozo.directive( 'cnRecordList', [
  * @attr removeInputs: An array of inputs (by key) to remove from the form
  */
 cenozo.directive( 'cnRecordView', [
-  'CnSession', '$state', '$transitions', '$q',
-  function( CnSession, $state, $transitions, $q ) {
+  'CnSession', '$state', '$transitions',
+  function( CnSession, $state, $transitions ) {
     return {
       templateUrl: cenozo.getFileUrl( 'cenozo', 'record-view.tpl.html' ),
       restrict: 'E',
@@ -1890,9 +1871,7 @@ cenozo.directive( 'cnRecordView', [
         initCollapsed: '=',
         noRefresh: '@'
       },
-      controller: [ '$scope', function( $scope ) {
-        var patchPromise = $q.all();
-
+      controller: [ '$scope', async function( $scope ) {
         angular.extend( $scope, {
           directive: 'cnRecordView',
           isComplete: false,
@@ -1900,26 +1879,26 @@ cenozo.directive( 'cnRecordView', [
           getDeleteText: function() { return 'Delete'; },
           getViewText: function( subject ) { return 'View ' + $scope.parentName( subject ); },
 
-          refresh: function() {
+          refresh: async function() {
             if( $scope.isComplete ) {
               $scope.isComplete = false;
-              patchPromise.then( function() {
-                $scope.model.viewModel.onView().then( function() {
-                  // trigger a keyup to get cn-elastic to fire
-                  angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' );
-                } ).finally( function() {
-                  // reset the error status
-                  cenozo.forEachFormElement( 'form', function( element ) {
-                    element.$error = {};
-                    cenozo.updateFormElement( element, true );
-                  } );
-                  $scope.isComplete = true;
+
+              try {
+                await $scope.model.viewModel.onView();
+                // trigger a keyup to get cn-elastic to fire
+                angular.element( 'textarea[cn-elastic]' ).trigger( 'elastic' );
+              } finally {
+                // reset the error status
+                cenozo.forEachFormElement( 'form', function( element ) {
+                  element.$error = {};
+                  cenozo.updateFormElement( element, true );
                 } );
-              } );
+                $scope.isComplete = true;
+              }
             }
           },
 
-          patch: function( property ) {
+          patch: async function( property ) {
             if( $scope.model.getEditEnabled() ) {
               // This function is sometimes called when it shouldn't with the record having all null or undefined values.
               // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
@@ -1958,34 +1937,34 @@ cenozo.directive( 'cnRecordView', [
 
                 // get the identifier now (in case it is changed before it is used below)
                 var identifier = $scope.model.viewModel.record.getIdentifier();
-                patchPromise = $scope.model.viewModel.onPatch( data ).then( function() {
-                  // if the data in the identifier was patched then reload with the new url
-                  if( identifier.split( /[;=]/ ).includes( property ) ) {
-                    $scope.model.setQueryParameter( 'identifier', identifier );
-                    $scope.model.reloadState();
-                  } else {
-                    var currentElement = cenozo.getFormElement( property );
-                    if( currentElement ) {
-                      if( currentElement.$error.conflict ) {
-                        cenozo.forEachFormElement( 'form', function( element ) {
-                          element.$error.conflict = false;
-                          cenozo.updateFormElement( element, true );
-                        } );
-                      }
-                    }
 
-                    // update the formatted value
-                    $scope.model.viewModel.updateFormattedRecord( property );
+                await $scope.model.viewModel.onPatch( data );
+
+                // if the data in the identifier was patched then reload with the new url
+                if( identifier.split( /[;=]/ ).includes( property ) ) {
+                  $scope.model.setQueryParameter( 'identifier', identifier );
+                  $scope.model.reloadState();
+                } else {
+                  var currentElement = cenozo.getFormElement( property );
+                  if( currentElement ) {
+                    if( currentElement.$error.conflict ) {
+                      cenozo.forEachFormElement( 'form', function( element ) {
+                        element.$error.conflict = false;
+                        cenozo.updateFormElement( element, true );
+                      } );
+                    }
                   }
-                } );
+
+                  // update the formatted value
+                  $scope.model.viewModel.updateFormattedRecord( property );
+                }
               }
             }
           },
 
-          getReport: function( format ) {
-            $scope.model.viewModel.onReport( format ).then( function() {
-              saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
-            } );
+          getReport: async function( format ) {
+            await $scope.model.viewModel.onReport( format );
+            saveAs( $scope.model.viewModel.reportBlob, $scope.model.viewModel.reportFilename );
           },
 
           hasParent: function() { return angular.isDefined( $scope.model.module.identifier.parent ); },
@@ -2002,16 +1981,19 @@ cenozo.directive( 'cnRecordView', [
             return cenozoApp.module( subject ).name.singular.ucWords();
           },
 
-          viewParent: function( subject ) {
-            $scope.model.viewModel.transitionOnViewParent( subject );
+          viewParent: async function( subject ) {
+            await $scope.model.viewModel.transitionOnViewParent( subject );
           },
 
-          delete: function() {
+          delete: async function() {
             $scope.isDeleting = true;
             if( $scope.model.getDeleteEnabled() ) {
-              $scope.model.viewModel.onDelete().then( function() {
-                $scope.model.viewModel.transitionOnDelete();
-              } ).finally( function() { $scope.isDeleting = false; } );
+              try {
+                await $scope.model.viewModel.onDelete();
+                await $scope.model.viewModel.transitionOnDelete();
+              } finally {
+                $scope.isDeleting = false;
+              }
             }
           },
 
@@ -2030,7 +2012,8 @@ cenozo.directive( 'cnRecordView', [
           }
         } );
 
-        $scope.model.viewModel.onView().then( function() {
+        try {
+          await $scope.model.viewModel.onView();
           if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
 
           // trigger a keyup to get cn-elastic to fire
@@ -2060,9 +2043,9 @@ cenozo.directive( 'cnRecordView', [
               } );
             } );
           }
-        } ).finally( function() {
+        } finally {
           $scope.isComplete = true;
-        } );
+        }
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
@@ -2092,7 +2075,7 @@ cenozo.directive( 'cnRecordView', [
           } );
 
           // when leaving turn off any activated toggle modes
-          $transitions.onExit( {}, function( transition ) {
+          $transitions.onExit( {}, function() {
             if( angular.isDefined( scope.model.viewModel ) ) {
               scope.model.module.choosing.forEach( function( item ) {
                 var choosingModel = scope.model.viewModel[item.subject.camel+'Model'];
@@ -2130,7 +2113,7 @@ cenozo.directive( 'cnUpload', [
         element.bind( 'change', function( changeEvent ) {
           var reader = new FileReader();
           reader.onload = function( event ) {
-            scope.$apply( function () {
+            scope.$apply( function() {
               modelSetter( scope, element[0].files[0] );
               scope.$eval( attrs.cnUpload );
 
@@ -2221,15 +2204,15 @@ cenozo.directive( 'cnViewInput', [
           console.error( 'Couldn\'t find the patch() function in any of the scope\'s ancestors.' );
         }
 
-        $scope.onEmptyTypeahead = function() {
+        $scope.onEmptyTypeahead = async function() {
           var property = $scope.input.key;
-          $scope.model.metadata.getPromise().then( function() {
-            // if the input isn't required then set the value to null
-            if( !$scope.model.metadata.columnList[property].required ) {
-              $scope.model.viewModel.record[property] = null;
-              $scope.patch( property );
-            }
-          } );
+          await $scope.model.metadata.getPromise();
+
+          // if the input isn't required then set the value to null
+          if( !$scope.model.metadata.columnList[property].required ) {
+            $scope.model.viewModel.record[property] = null;
+            $scope.patch( property );
+          }
         };
 
         $scope.getTypeaheadValues = function( viewValue ) {
@@ -2248,28 +2231,28 @@ cenozo.directive( 'cnViewInput', [
           }
         };
 
-        $scope.selectDatetime = function() {
+        $scope.selectDatetime = async function() {
           if( $scope.model.getEditEnabled() ) {
-            $scope.model.metadata.getPromise().then( function() {
-              CnModalDatetimeFactory.instance( {
-                title: $scope.input.title,
-                date: $scope.model.viewModel.record[$scope.input.key],
-                minDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.min] ) ?
-                         $scope.model.viewModel.record[$scope.input.min] : $scope.input.min,
-                maxDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.max] ) ?
-                         $scope.model.viewModel.record[$scope.input.max] : $scope.input.max,
-                pickerType: $scope.input.type,
-                emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
-                hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
-                minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
-                secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
-              } ).show().then( function( response ) {
-                if( false !== response ) {
-                  $scope.model.viewModel.record[$scope.input.key] = response;
-                  $scope.patch( $scope.input.key );
-                }
-              } );
-            } );
+            await $scope.model.metadata.getPromise();
+
+            var response = await CnModalDatetimeFactory.instance( {
+              title: $scope.input.title,
+              date: $scope.model.viewModel.record[$scope.input.key],
+              minDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.min] ) ?
+                       $scope.model.viewModel.record[$scope.input.min] : $scope.input.min,
+              maxDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.max] ) ?
+                       $scope.model.viewModel.record[$scope.input.max] : $scope.input.max,
+              pickerType: $scope.input.type,
+              emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+              hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
+              minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
+              secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
+            } ).show();
+
+            if( false !== response ) {
+              $scope.model.viewModel.record[$scope.input.key] = response;
+              $scope.patch( $scope.input.key );
+            }
           }
         };
 
@@ -3067,37 +3050,27 @@ cenozo.factory( 'CnSession', [
   function( $state, $timeout, $filter, $window, $interval, CnHttpFactory,
             CnModalMessageFactory, CnModalPasswordFactory, CnModalAccountFactory, CnModalSiteRoleFactory ) {
     return new ( function() {
-      var self = this;
-      this.promise = null;
-      this.working = false;
-      this.workingGUIDList = {};
-      this.transitionWhileWorking = false;
-      this.application = {};
-      this.user = {};
-      this.site = {};
-      this.role = {};
-      this.setting = {};
-      this.siteList = [];
-      this.finalHoldTypeList = [];
-      this.moduleList = [];
-      this.sessionList = [];
-      this.messageList = [];
-      this.unreadMessageCount = 0;
-      this.breadcrumbTrail = [];
-      this.alertHeader = undefined;
-      this.onAlertHeader = function() {};
-      this.scriptWindowHandler = null;
-
-      // handle watching of http requests that take a long time to return
-      var workingPromise = null;
-      function watchWorkingCount() {
-        workingPromise = null;
-        if( 0 < Object.keys( self.workingGUIDList ).length ) {
-          self.working = true;
-        }
-      }
-
       angular.extend( this, {
+        promise: null,
+        working: false,
+        workingGUIDList: {},
+        transitionWhileWorking: false,
+        application: {},
+        user: {},
+        site: {},
+        role: {},
+        setting: {},
+        siteList: [],
+        finalHoldTypeList: [],
+        moduleList: [],
+        sessionList: [],
+        messageList: [],
+        unreadMessageCount: 0,
+        breadcrumbTrail: [],
+        alertHeader: undefined,
+        onAlertHeader: function() {},
+        scriptWindowHandler: null,
+
         updateWorkingGUID: function( guid, start ) {
           if( start ) {
             if( !angular.isDefined( this.workingGUIDList[guid] ) ) this.workingGUIDList[guid] = 0;
@@ -3113,6 +3086,7 @@ cenozo.factory( 'CnSession', [
             this.working = false;
             // reset the transitionWhileWorking property after a short wait so that any pending
             // transitions can be ignored before the property is reset
+            var self = this;
             $timeout( function() { self.transitionWhileWorking = false; }, 250 );
             if( null !== workingPromise ) {
               $timeout.cancel( workingPromise );
@@ -3122,179 +3096,168 @@ cenozo.factory( 'CnSession', [
         },
 
         // wrapping all state transitions with option to cancel
-        workingTransition: function( transitionFn ) {
+        workingTransition: async function( transitionFn ) {
           var transition = !this.transitionWhileWorking;
           this.transitionWhileWorking = false;
-          return transition ? transitionFn() : null;
+          if( transition ) await transitionFn();
         },
 
         // defines the breadcrumbtrail based on an array of crumbs
         setBreadcrumbTrail: function( crumbs ) {
           this.breadcrumbTrail.length = 0;
-          this.breadcrumbTrail.push( { title: 'Home', go: function() { return $state.go( 'root.home' ); } } );
+          this.breadcrumbTrail.push( { title: 'Home', go: async function() { await $state.go( 'root.home' ); } } );
           if( angular.isArray( crumbs ) )
             crumbs.forEach( function( item ) { this.breadcrumbTrail.push( item ); }, this );
         },
 
         countUnreadMessages: function() {
-          self.unreadMessageCount = this.messageList.filter( function( message ) {
+          this.unreadMessageCount = this.messageList.filter( function( message ) {
             return message.unread;
           } ).length;
         },
 
-        getSystemMessages: function() {
-          CnHttpFactory.instance( {
+        getSystemMessages: async function() {
+          var response = await CnHttpFactory.instance( {
             path: 'self/0/system_message?no_activity=1',
             data: { select: { column: [ 'id', 'title', 'note', 'unread' ] } }
-          } ).get().then( function( response ) {
-            // get message list and count how many unread messages there are
-            self.messageList = angular.copy( response.data );
-            self.countUnreadMessages();
-          } );
+          } ).get();
+
+          // get message list and count how many unread messages there are
+          this.messageList = angular.copy( response.data );
+          this.countUnreadMessages();
         },
 
         // get the application, user, site and role details
-        updateData: function() {
-          self.getSystemMessages();
-          this.promise = CnHttpFactory.instance( {
-            path: 'self/0',
-            redirectOnError: true
-          } ).get().then( function( response ) {
-            for( var property in response.data.application )
-              self.application[property.snakeToCamel()] = response.data.application[property];
-            for( var property in response.data.user )
-              self.user[property.snakeToCamel()] = response.data.user[property];
-            for( var property in response.data.site )
-              self.site[property.snakeToCamel()] = response.data.site[property];
-            for( var property in response.data.setting )
-              self.setting[property.snakeToCamel()] = response.data.setting[property];
-            for( var property in response.data.role )
-              self.role[property.snakeToCamel()] = response.data.role[property];
+        updateData: async function() {
+          this.getSystemMessages();
+          var response = await CnHttpFactory.instance( { path: 'self/0', redirectOnError: true } ).get();
 
-            // initialize the http factory so that all future requests match the same credentials
-            CnHttpFactory.initialize( self.site.name, self.user.name, self.role.name );
+          for( var property in response.data.application )
+            this.application[property.snakeToCamel()] = response.data.application[property];
+          for( var property in response.data.user )
+            this.user[property.snakeToCamel()] = response.data.user[property];
+          for( var property in response.data.site )
+            this.site[property.snakeToCamel()] = response.data.site[property];
+          for( var property in response.data.setting )
+            this.setting[property.snakeToCamel()] = response.data.setting[property];
+          for( var property in response.data.role )
+            this.role[property.snakeToCamel()] = response.data.role[property];
 
-            // sanitize the timezone
-            if( !moment.tz.zone( self.user.timezone ) ) self.user.timezone = 'UTC';
+          // initialize the http factory so that all future requests match the same credentials
+          CnHttpFactory.initialize( this.site.name, this.user.name, this.role.name );
 
-            // process site records
-            self.siteList = response.data.site_list;
-            self.siteList.forEach( function( site ) {
-              site.getIdentifier = function() { return 'name=' + this.name; };
-            } );
+          // sanitize the timezone
+          if( !moment.tz.zone( this.user.timezone ) ) this.user.timezone = 'UTC';
 
-            // process hold-type records
-            self.finalHoldTypeList = response.data.final_hold_type_list;
-
-            // process module list
-            self.moduleList = response.data.module_list;
-
-            if( self.moduleList.includes( 'script' ) ) {
-              // add the supporting script list
-              self.supportingScriptList = response.data.supporting_script_list;
-            }
-
-            // process session records
-            self.sessionList = response.data.session_list;
-
-            // if the user's password isn't set then open the password dialog
-            if( response.data.no_password && !CnModalPasswordFactory.isOpen() ) {
-              CnModalPasswordFactory.instance( { confirm: false } ).show().then( function( response ) {
-                self.setPassword( null, response.requestedPass );
-              } );
-            }
-
-            // if the user's email isn't set then open the password dialog
-            if( !self.user.email && !CnModalAccountFactory.isOpen() ) {
-              CnModalAccountFactory.instance( {
-                allowCancel: false,
-                user: self.user
-              } ).show().then( function( response ) {
-                if( response ) self.setUserDetails();
-              } );
-            }
-
-            // if voip is enabled the load the voip data
-            self.voip = { enabled: false, info: false };
-            if( self.application.voipEnabled ) self.updateVoip();
+          // process site records
+          this.siteList = response.data.site_list;
+          this.siteList.forEach( function( site ) {
+            site.getIdentifier = function() { return 'name=' + this.name; };
           } );
 
-          return this.promise;
+          // process hold-type records
+          this.finalHoldTypeList = response.data.final_hold_type_list;
+
+          // process module list
+          this.moduleList = response.data.module_list;
+
+          if( this.moduleList.includes( 'script' ) ) {
+            // add the supporting script list
+            this.supportingScriptList = response.data.supporting_script_list;
+          }
+
+          // process session records
+          this.sessionList = response.data.session_list;
+
+          // if the user's password isn't set then open the password dialog
+          if( response.data.no_password && !CnModalPasswordFactory.isOpen() ) {
+            var subResponse = await CnModalPasswordFactory.instance( { confirm: false } ).show();
+            await this.setPassword( null, subResponse.requestedPass );
+          }
+
+          // if the user's email isn't set then open the password dialog
+          if( !this.user.email && !CnModalAccountFactory.isOpen() ) {
+            var subResponse = await CnModalAccountFactory.instance( {
+              allowCancel: false,
+              user: this.user
+            } ).show();
+            if( subResponse ) this.setUserDetails();
+          }
+
+          // if voip is enabled the load the voip data
+          this.voip = { enabled: false, info: false };
+          if( this.application.voipEnabled ) this.updateVoip();
         },
 
         // get the application, user, site and role details
-        updateVoip: function() {
-          return CnHttpFactory.instance( {
+        updateVoip: async function() {
+          var response = await CnHttpFactory.instance( {
             path: 'voip/0',
-            onError: function( response ) { self.voip = { enabled: true, info: null, call: null }; }
-          } ).get().then( function( response ) {
-            self.voip = response.data;
-          } );
+            onError: function() { this.voip = { enabled: true, info: null, call: null }; }
+          } ).get();
+          this.voip = response.data;
         },
 
-        logout: function() {
+        logout: async function() {
           // blank content
           document.getElementById( 'view' ).innerHTML = '';
-          CnHttpFactory.instance( {
-            path: 'self/0'
-          } ).delete().then( function() {
-            // blank content
-            document.getElementById( 'view' ).innerHTML = '';
-            $window.location.assign( cenozoApp.baseUrl );
-          } );
+          await CnHttpFactory.instance( { path: 'self/0' } ).delete();
+
+          // blank content
+          document.getElementById( 'view' ).innerHTML = '';
+          $window.location.assign( cenozoApp.baseUrl );
         },
 
-        setPassword: function( currentPass, requestedPass ) {
-          return CnHttpFactory.instance( {
+        setPassword: async function( currentPass, requestedPass ) {
+          await CnHttpFactory.instance( {
             path: 'self/0',
             data: { user: { password: { current: currentPass, requested: requestedPass } } },
-            onError: function( response ) {
-              if( 400 == response.status && 'invalid password' == response.data ) {
+            onError: function( error ) {
+              if( 400 == error.status && 'invalid password' == JSON.parse( error.data ) ) {
                 CnModalMessageFactory.instance( {
                   title: 'Unable To Change Password',
                   message: 'Sorry, the current password you provided is incorrect, please try again. ' +
                            'If you have forgotten your current password an administrator can reset it.',
                   error: true
                 } ).show();
-              } else { CnModalMessageFactory.httpError( response ); }
+              } else { CnModalMessageFactory.httpError( error ); }
             }
-          } ).patch().then( function() {
-            CnModalMessageFactory.instance( {
-              title: 'Password Changed',
-              message: 'Your password has been successfully changed.'
-            } ).show();
-          } );
+          } ).patch();
+
+          await CnModalMessageFactory.instance( {
+            title: 'Password Changed',
+            message: 'Your password has been successfully changed.'
+          } ).show();
         },
 
-        showSiteRoleModal: function() {
-          CnModalSiteRoleFactory.instance( {
+        showSiteRoleModal: async function() {
+          var response = await CnModalSiteRoleFactory.instance( {
             siteId: this.site.id,
             roleId: this.role.id
-          } ).show().then( function( response ) {
-            if( angular.isObject( response ) &&
-                ( response.siteId != self.site.id || response.roleId != self.role.id ) ) {
-              // show a waiting screen while we're changing the site/role
-              $state.go( 'self.wait' ).then( function() {
-                CnHttpFactory.instance( {
-                  path: 'self/0',
-                  data: { site: { id: response.siteId }, role: { id: response.roleId } }
-                } ).patch().then( function() {
-                  // blank content
-                  $window.location.assign( cenozoApp.baseUrl );
-                } );
-              } );
-            }
-          } );
+          } ).show();
+
+          if( angular.isObject( response ) && ( response.siteId != this.site.id || response.roleId != this.role.id ) ) {
+            // show a waiting screen while we're changing the site/role
+            await $state.go( 'self.wait' );
+
+            await CnHttpFactory.instance( {
+              path: 'self/0',
+              data: { site: { id: response.siteId }, role: { id: response.roleId } }
+            } ).patch();
+
+            // blank content
+            $window.location.assign( cenozoApp.baseUrl );
+          }
         },
 
-        setUserDetails: function() {
-          return CnHttpFactory.instance( {
+        setUserDetails: async function() {
+          await CnHttpFactory.instance( {
             path: 'self/0',
             data: {
               user: {
-                first_name: self.user.firstName,
-                last_name: self.user.lastName,
-                email: self.user.email
+                first_name: this.user.firstName,
+                last_name: this.user.lastName,
+                email: this.user.email
               }
             }
           } ).patch();
@@ -3303,10 +3266,10 @@ cenozo.factory( 'CnSession', [
         getTimeFormat: function( seconds, timezone ) {
           if( angular.isUndefined( seconds ) ) seconds = false;
           if( angular.isUndefined( timezone ) ) timezone = false;
-          return ( self.user.use12hourClock ? 'h' : 'H' ) +
+          return ( this.user.use12hourClock ? 'h' : 'H' ) +
                  ':mm' +
                  ( seconds ? ':ss' : '' ) +
-                 ( self.user.use12hourClock ? 'a' : '' ) +
+                 ( this.user.use12hourClock ? 'a' : '' ) +
                  ( timezone ? ' z' : '' );
         },
 
@@ -3327,24 +3290,24 @@ cenozo.factory( 'CnSession', [
 
         updateTime: function() {
           var now = moment();
-          now.tz( self.user.timezone );
-          self.time = now.format( self.getTimeFormat( false, true ) );
+          now.tz( this.user.timezone );
+          this.time = now.format( this.getTimeFormat( false, true ) );
         },
 
-        setTimezone: function( timezone, use12hourClock ) {
-          if( angular.isUndefined( timezone ) ) timezone = self.user.timezone;
-          if( angular.isUndefined( use12hourClock ) ) use12hourClock = self.user.use12hourClock;
-          return CnHttpFactory.instance( {
+        setTimezone: async function( timezone, use12hourClock ) {
+          if( angular.isUndefined( timezone ) ) timezone = this.user.timezone;
+          if( angular.isUndefined( use12hourClock ) ) use12hourClock = this.user.use12hourClock;
+          await CnHttpFactory.instance( {
             path: 'self/0',
             data: { user: { timezone: timezone, use_12hour_clock: use12hourClock  } },
-            onError: function( response ) {
-              if( 409 == response.status ) {
+            onError: function( error ) {
+              if( 409 == error.status ) {
                 CnModalMessageFactory.instance( {
                   title: 'No Timezone Available',
                   message: 'The participant does not currently have an active address. ' +
                     'Without an active address there is no way to determine which timezone they are in.'
                 } ).show();
-              } else { CnModalMessageFactory.httpError( response ); }
+              } else { CnModalMessageFactory.httpError( error ); }
             }
           } ).patch();
         },
@@ -3394,13 +3357,22 @@ cenozo.factory( 'CnSession', [
         },
 
         closeScript: function() { if( null != this.scriptWindowHandler ) this.scriptWindowHandler.close(); }
-
       } );
 
-      this.updateData();
+      // handle watching of http requests that take a long time to return
+      var workingPromise = null;
+      var self = this;
+      function watchWorkingCount() {
+        workingPromise = null;
+        if( 0 < Object.keys( self.workingGUIDList ).length ) {
+          self.working = true;
+        }
+      }
+
+      this.promise = this.updateData();
 
       // regularly check for new messages
-      $interval( self.getSystemMessages, 300000 );
+      $interval( function() { self.getSystemMessages(); }, 300000 );
     } );
   }
 ] );
@@ -3411,8 +3383,8 @@ cenozo.factory( 'CnSession', [
  * The base factory for all module Add factories
  */
 cenozo.factory( 'CnBaseAddFactory', [
-  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$filter', '$q',
-  function( CnSession, CnHttpFactory, CnModalMessageFactory, $filter, $q ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$filter',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory, $filter ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -3446,29 +3418,28 @@ cenozo.factory( 'CnBaseAddFactory', [
          * Sends a new record to the server.
          * 
          * @param object record: The record to add
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onAdd', function( record ) {
+        cenozo.addExtendableFunction( object, 'onAdd', async function( record ) {
           var self = this;
           if( !this.parentModel.getAddEnabled() ) throw new Error( 'Calling onAdd() but add is not enabled.' );
 
           // add uploaded filename details to the record
-          self.fileList.forEach( function( file ) { record[file.key] = file.getFilename(); } );
+          this.fileList.forEach( function( file ) { record[file.key] = file.getFilename(); } );
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: record };
-          httpObj.onError = function( response ) { self.onAddError( response ); };
+          httpObj.onError = function( error ) { self.onAddError( error ); };
 
-          return CnHttpFactory.instance( httpObj ).post().then( function( response ) {
-            angular.extend( record, {
-              id: response.data,
-              getIdentifier: function() { return self.parentModel.getIdentifierFromRecord( record ); }
-            } );
+          var response = await CnHttpFactory.instance( httpObj ).post();
 
-            self.fileList.forEach( function( file ) {
-              if( null != file.file ) file.upload( self.parentModel.getServiceResourcePath( record.getIdentifier() ) );
-            } );
-
-            self.afterAddFunctions.forEach( function( fn ) { fn( record ); } );
+          angular.extend( record, {
+            id: response.data,
+            getIdentifier: function() { return self.parentModel.getIdentifierFromRecord( record ); }
           } );
+
+          this.fileList.forEach( function( file ) {
+            if( null != file.file ) file.upload( this.parentModel.getServiceResourcePath( record.getIdentifier() ) );
+          } );
+
+          this.afterAddFunctions.forEach( function( fn ) { fn( record ); } );
         } );
 
         /**
@@ -3486,7 +3457,9 @@ cenozo.factory( 'CnBaseAddFactory', [
                 cenozo.updateFormElement( element, true );
               }
             } );
-          } else { CnModalMessageFactory.httpError( response ); }
+          } else {
+            CnModalMessageFactory.httpError( response );
+          }
         } );
 
         /**
@@ -3506,64 +3479,58 @@ cenozo.factory( 'CnBaseAddFactory', [
          * Creates a new local record.
          * 
          * @param object record: The object to initialize as a new record
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onNew', function( record ) {
-          var self = this;
-
+        cenozo.addExtendableFunction( object, 'onNew', async function( record ) {
           // first clear the record
           for( var column in record )
             if( record.hasOwnProperty( column ) )
               record[column] = null;
 
           // reset all files from previous uploads
-          self.fileList.forEach( function( file ) { file.file = null; } );
+          this.fileList.forEach( function( file ) { file.file = null; } );
 
           // load the metadata and use it to apply default values to the record
-          return this.parentModel.metadata.getPromise().then( function() {
-            var promiseList = [];
-            if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
-              // add the parent subject and identifier to the service path if we are in the view state
-              var path = self.parentModel.getServiceCollectionPath();
+          await this.parentModel.metadata.getPromise();
 
-              promiseList.push( CnHttpFactory.instance( {
-                path: path,
-                data: { select: { column: {
-                  column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
-                  alias: 'max',
-                  table_prefix: false
-                } } },
-                redirectOnError: true
-              } ).query().then( function( response ) {
-                if( 0 < response.data.length ) {
-                  self.parentModel.metadata.columnList.rank.enumList = [];
-                  if( null !== response.data[0].max ) {
-                    for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
-                      self.parentModel.metadata.columnList.rank.enumList.push( {
-                        value: rank,
-                        name: $filter( 'cnOrdinal' )( rank )
-                      } );
-                    }
-                  }
+          if( angular.isDefined( this.parentModel.metadata.columnList.rank ) ) { // create enum for rank columns
+            // add the parent subject and identifier to the service path if we are in the view state
+            var path = this.parentModel.getServiceCollectionPath();
+
+            var response = await CnHttpFactory.instance( {
+              path: path,
+              data: { select: { column: {
+                column: 'MAX(' + this.parentModel.module.subject.snake + '.rank)',
+                alias: 'max',
+                table_prefix: false
+              } } },
+              redirectOnError: true
+            } ).query();
+
+            if( 0 < response.data.length ) {
+              this.parentModel.metadata.columnList.rank.enumList = [];
+              if( null !== response.data[0].max ) {
+                for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
+                  this.parentModel.metadata.columnList.rank.enumList.push( {
+                    value: rank,
+                    name: $filter( 'cnOrdinal' )( rank )
+                  } );
                 }
-              } ) );
-            }
-
-            // apply default values from the metadata
-            for( var column in self.parentModel.metadata.columnList ) {
-              if( null !== self.parentModel.metadata.columnList[column].default &&
-                  'create_timestamp' != column &&
-                  'update_timestamp' != column ) {
-                record[column] = 'tinyint' == self.parentModel.metadata.columnList[column].data_type
-                               ? 1 == self.parentModel.metadata.columnList[column].default
-                               : self.parentModel.metadata.columnList[column].default;
               }
             }
+          }
 
-            return $q.all( promiseList ).then( function() {
-              self.afterNewFunctions.forEach( function( fn ) { fn(); } );
-            } );
-          } );
+          // apply default values from the metadata
+          for( var column in this.parentModel.metadata.columnList ) {
+            if( null !== this.parentModel.metadata.columnList[column].default &&
+                'create_timestamp' != column &&
+                'update_timestamp' != column ) {
+              record[column] = 'tinyint' == this.parentModel.metadata.columnList[column].data_type
+                             ? 1 == this.parentModel.metadata.columnList[column].default
+                             : this.parentModel.metadata.columnList[column].default;
+            }
+          }
+
+          this.afterNewFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -3571,16 +3538,16 @@ cenozo.factory( 'CnBaseAddFactory', [
          * 
          * @param object record: The record that was just saved
          */
-        cenozo.addExtendableFunction( object, 'transitionOnSave', function( record ) {
+        cenozo.addExtendableFunction( object, 'transitionOnSave', async function( record ) {
           var self = this;
-          CnSession.workingTransition( function() { self.parentModel.transitionToLastState(); } );
+          await CnSession.workingTransition( async function() { await self.parentModel.transitionToLastState(); } );
         } );
 
         /**
          * The state transition to execute after cancelling adding a new record
          */
-        cenozo.addExtendableFunction( object, 'transitionOnCancel', function() {
-          this.parentModel.transitionToLastState();
+        cenozo.addExtendableFunction( object, 'transitionOnCancel', async function() {
+          await this.parentModel.transitionToLastState();
         } );
 
         /**
@@ -3588,7 +3555,6 @@ cenozo.factory( 'CnBaseAddFactory', [
          */
         cenozo.addExtendableFunction( object, 'configureFileInput', function( key, format ) {
           if( angular.isUndefined( format ) ) format = 'unknown';
-          var self = this;
 
           // replace any existing file details
           var index = this.fileList.findIndexByProperty( 'key', key );
@@ -3605,16 +3571,17 @@ cenozo.factory( 'CnBaseAddFactory', [
               var fileDetails = data.get( 'file' );
               return fileDetails.name;
             },
-            upload: function( path ) {
+            upload: async function( path ) {
               var obj = this;
               obj.uploading = true;
 
               // upload the file
-              return CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: path + '?file=' + obj.key,
                 data: obj.file,
                 format: format
-              } ).patch().finally( function() { obj.uploading = false; } );
+              } ).patch();
+              obj.uploading = false;
             }
           } );
         } );
@@ -3630,8 +3597,8 @@ cenozo.factory( 'CnBaseAddFactory', [
  * The base factory for all module Calendar factories
  */
 cenozo.factory( 'CnBaseCalendarFactory', [
-  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
-  function( CnSession, CnHttpFactory, CnModalMessageFactory, $q ) {
+  'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( CnSession, CnHttpFactory, CnModalMessageFactory ) {
     return {
       construct: function( object, parentModel ) {
         object.parentModel = parentModel;
@@ -3696,18 +3663,16 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          * Deletes an event from the server.
          * 
          * @param object event: The event to delete
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onDelete', async function( record ) {
           if( !this.parentModel.getDeleteEnabled() )
             throw new Error( 'Calling onDelete() but delete is not enabled.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
-          httpObj.onError = function( response ) { self.onDeleteError( response ); }
-          return CnHttpFactory.instance( httpObj ).delete().then( function() {
-            self.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
-          } );
+          var self = this;
+          httpObj.onError = function( error ) { self.onDeleteError( error ); }
+          await CnHttpFactory.instance( httpObj ).delete();
+          this.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -3728,11 +3693,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
 
         /**
          * Loads a report from the server.
-         * 
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onReport', function( format ) {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onReport', async function( format ) {
           this.isReportLoading = true;
           if( angular.isUndefined( format ) ) format = 'csv';
 
@@ -3752,15 +3714,20 @@ cenozo.factory( 'CnBaseCalendarFactory', [
           }
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
-          httpObj.onError = function( response ) { self.onReportError( response ); }
+          var self = this;
+          httpObj.onError = function( error ) { self.onReportError( error ); }
           httpObj.format = format;
-          return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
-            self.reportBlob = new Blob(
+          try {
+            var response = await CnHttpFactory.instance( httpObj ).query();
+
+            this.reportBlob = new Blob(
               [response.data],
               { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
             );
-            self.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
-          } ).finally( function() { self.isReportLoading = false; } );
+            this.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
+          } finally {
+            this.isReportLoading = false;
+          }
         } );
 
         /**
@@ -3796,11 +3763,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
          * @param moment minDate: The lower date span to get events for
          * @param moment maxDate: The upper date span to get events for
          * @param boolean ignoreParent: Whether to ignore the parent state and show all events
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onCalendar', function( replace, minDate, maxDate, ignoreParent ) {
-          var self = this;
-
+        cenozo.addExtendableFunction( object, 'onCalendar', async function( replace, minDate, maxDate, ignoreParent ) {
           // change the parent model's listing state
           this.parentModel.listingState = 'calendar';
 
@@ -3842,8 +3806,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             }
           }
 
-          var promiseList = [];
           if( query ) {
+            var self = this;
             var data = this.parentModel.getServiceData( 'calendar' );
             if( angular.isUndefined( data.modifier ) ) data.modifier = {};
             data.min_date = loadMinDate.format( 'YYYY-MM-DD' );
@@ -3855,22 +3819,24 @@ cenozo.factory( 'CnBaseCalendarFactory', [
               path: this.parentModel.getServiceCollectionPath( ignoreParent ),
               data: data
             };
-            httpObj.onError = function( response ) { self.onCalendarError( response ); }
-            promiseList.push( CnHttpFactory.instance( httpObj ).query().then( function( response ) {
+            httpObj.onError = function( error ) { self.onCalendarError( error ); }
+            try {
+              var response = await CnHttpFactory.instance( httpObj ).query();
+
               // add the getIdentifier() method to each row before adding it to the cache
               response.data.forEach( function( item ) {
                 item.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( item ); };
               } );
-              self.cache = self.cache.concat( response.data );
+              this.cache = this.cache.concat( response.data );
               var total = parseInt( response.headers( 'Total' ) );
-              self.isReportAllowed = CnSession.application.maxBigReport >= total;
-              self.isReportBig = CnSession.application.maxSmallReport < total;
-            } ).finally( function() { self.isLoading = false; } ) );
+              this.isReportAllowed = CnSession.application.maxBigReport >= total;
+              this.isReportBig = CnSession.application.maxSmallReport < total;
+            } finally {
+              this.isLoading = false;
+            }
           }
 
-          return $q.all( promiseList ).then( function() {
-            self.afterCalendarFunctions.forEach( function( fn ) { fn(); } );
-          } );
+          this.afterCalendarFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -3896,24 +3862,23 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             center: 'today prevYear,prev,next,nextYear',
             right: 'agendaDay,agendaWeek,month'
           },
-          events: function( start, end, timezone, callback ) {
+          events: async function( start, end, timezone, callback ) {
             // track the current date
             object.currentDate = this.getDate();
 
             // call onCalendar to make sure we have the events in the requested date span
             var minDate = moment( start.format( 'YYYY-MM-DD' ) );
             var maxDate = moment( end.format( 'YYYY-MM-DD' ) ).subtract( 1, 'days' );
-            object.onCalendar( false, minDate, maxDate ).then( function() {
-              if( 'calendar' == object.parentModel.getActionFromState() )
-                object.parentModel.setupBreadcrumbTrail();
-              callback(
-                object.cache.reduce( function( eventList, e ) {
-                  if( moment( e.start ).isBefore( end, 'day' ) &&
-                      !moment( e.end ).isBefore( start, 'day' ) ) eventList.push( e );
-                  return eventList;
-                }, [] )
-              );
-            } );
+            await object.onCalendar( false, minDate, maxDate );
+
+            if( 'calendar' == object.parentModel.getActionFromState() ) object.parentModel.setupBreadcrumbTrail();
+            callback(
+              object.cache.reduce( function( eventList, e ) {
+                if( moment( e.start ).isBefore( end, 'day' ) &&
+                    !moment( e.end ).isBefore( start, 'day' ) ) eventList.push( e );
+                return eventList;
+              }, [] )
+            );
           },
           eventAfterRender: function( event, element, view ) {
             // add help as a popover
@@ -3931,24 +3896,23 @@ cenozo.factory( 'CnBaseCalendarFactory', [
             object.currentDate = this.calendar.getDate();
             object.currentView = view.name;
           },
-          dayClick: function( date, event, view ) {
+          dayClick: async function( date, event, view ) {
             // mark which date has been chosen in the add model
             // Note: it is up to the add model's module to implement what to do with this variable
             object.parentModel.addModel.calendarDate = date.format( 'YYYY-MM-DD' );
-            return object.parentModel.transitionToAddState();
+            await object.parentModel.transitionToAddState();
           },
-          eventClick: function( record ) {
+          eventClick: async function( record ) {
             angular.element( this ).popover( 'hide' );
-            if( object.parentModel.getViewEnabled() )
-              return object.parentModel.transitionToViewState( record );
+            if( object.parentModel.getViewEnabled() ) await object.parentModel.transitionToViewState( record );
           }
         };
 
         /**
          * The state transition to execute after cancelling adding a new record
          */
-        cenozo.addExtendableFunction( object, 'transitionOnList', function() {
-          this.parentModel.transitionToParentListState();
+        cenozo.addExtendableFunction( object, 'transitionOnList', async function() {
+          await this.parentModel.transitionToParentListState();
         } );
       }
     };
@@ -3961,8 +3925,8 @@ cenozo.factory( 'CnBaseCalendarFactory', [
  * The base factory for all module List factories
  */
 cenozo.factory( 'CnBaseListFactory', [
-  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory', '$q',
-  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory, $q ) {
+  'CnSession', 'CnPaginationFactory', 'CnHttpFactory', 'CnModalMessageFactory',
+  function( CnSession, CnPaginationFactory, CnHttpFactory, CnModalMessageFactory ) {
     return {
       construct: function( object, parentModel ) {
         if( angular.isUndefined( parentModel.module.defaultOrder ) )
@@ -3987,9 +3951,7 @@ cenozo.factory( 'CnBaseListFactory', [
         // initialize the restrict lists
         object.columnRestrictLists = {};
 
-        cenozo.addExtendableFunction( object, 'orderBy', function( column, reverse ) {
-          var self = this;
-
+        cenozo.addExtendableFunction( object, 'orderBy', async function( column, reverse ) {
           if( this.order.column != column || this.order.reverse != reverse ) {
             // We need to determine whether to do state or model based ordering.
             // State-based ordering is used when the state has an {order} parameter and the state's current
@@ -4006,17 +3968,14 @@ cenozo.factory( 'CnBaseListFactory', [
               this.parentModel.reloadState( true );
             } else {
               // do model-based sorting
-              var promiseList = [];
               this.order = { column: column, reverse: reverse };
-              if( this.cache.length < this.total ) { promiseList.push( this.onList( true ) ); }
-              $q.all( promiseList ).then( function() { self.paginationModel.currentPage = 1; } );
+              if( this.cache.length < this.total ) { await this.onList( true ); }
+              this.paginationModel.currentPage = 1;
             }
           }
         } );
 
-        cenozo.addExtendableFunction( object, 'setRestrictList', function( column, newList ) {
-          var self = this;
-
+        cenozo.addExtendableFunction( object, 'setRestrictList', async function( column, newList ) {
           // sanity check
           if( !angular.isArray( newList ) )
             throw new Error( 'Tried to set restrict list for column "' + column + '" to a non-array.' );
@@ -4057,7 +4016,8 @@ cenozo.factory( 'CnBaseListFactory', [
             } else {
               // do model-based restricting
               this.columnRestrictLists[column] = angular.copy( newList );
-              this.onList( true ).then( function() { self.paginationModel.currentPage = 1; } );
+              await this.onList( true );
+              this.paginationModel.currentPage = 1;
             }
           }
         } );
@@ -4093,10 +4053,8 @@ cenozo.factory( 'CnBaseListFactory', [
          * Adds a record on the server in a many-to-many relationship.
          * 
          * @param object record: The record to choose
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onApplyChosen', function() {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onApplyChosen', async function() {
           if( !this.parentModel.getChooseEnabled() )
             throw new Error( 'Calling onApplyChosen() but choose is not enabled.' );
 
@@ -4112,17 +4070,17 @@ cenozo.factory( 'CnBaseListFactory', [
           }, [] );
           if( 0 < removeArray.length ) data.remove = removeArray;
 
-          var promise = 0 == addArray.length && 0 == removeArray.length
-                      ? $q.all()
-                      : CnHttpFactory.instance( {
-                          path: this.parentModel.getServiceCollectionPath(),
-                          data: data,
-                          onError: function( response ) { self.onApplyChosenError( response ); }
-                        } ).post();
-          return promise.then( function() {
-            self.toggleChooseMode();
-            self.afterChooseFunctions.forEach( function( fn ) { fn(); } );
-          } );
+          if( 0 < addArray.length || 0 < removeArray.length ) {
+            var self = this;
+            await CnHttpFactory.instance( {
+              path: this.parentModel.getServiceCollectionPath(),
+              data: data,
+              onError: function( error ) { self.onApplyChosenError( error ); }
+            } ).post()
+          }
+
+          this.toggleChooseMode();
+          this.afterChooseFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -4151,25 +4109,24 @@ cenozo.factory( 'CnBaseListFactory', [
          * Deletes a record from the server.
          * 
          * @param object record: The record to delete
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onDelete', function( record ) {
+        cenozo.addExtendableFunction( object, 'onDelete', async function( record ) {
           var self = this;
           if( !this.parentModel.getDeleteEnabled() )
             throw new Error( 'Calling onDelete() but delete is not enabled.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath( record.getIdentifier() ) };
-          httpObj.onError = function( response ) { self.onDeleteError( response ); }
-          return CnHttpFactory.instance( httpObj ).delete().then( function() {
-            self.cache.some( function( item, index, array ) {
-              if( item.getIdentifier() == record.getIdentifier() ) {
-                self.total--;
-                array.splice( index, 1 );
-                return true; // stop processing
-              }
-            } );
-            self.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
+          httpObj.onError = function( error ) { self.onDeleteError( error ); }
+          await CnHttpFactory.instance( httpObj ).delete();
+
+          this.cache.some( function( item, index, array ) {
+            if( item.getIdentifier() == record.getIdentifier() ) {
+              self.total--;
+              array.splice( index, 1 );
+              return true; // stop processing
+            }
           } );
+          this.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -4205,9 +4162,8 @@ cenozo.factory( 'CnBaseListFactory', [
          * Loads records from the server.
          * 
          * @param boolean replace: Whether to replace the cached list or append to it
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onList', function( replace ) {
+        cenozo.addExtendableFunction( object, 'onList', async function( replace ) {
           var self = this;
 
           // change the parent model's listing state
@@ -4258,9 +4214,9 @@ cenozo.factory( 'CnBaseListFactory', [
           // if not, and we'll also mark the paginationModel to ignore (so that the state's page param
           // isn't set to 1)
           var currentPage = replace ? 1 : this.paginationModel.currentPage;
-          var queryCurrentPage = self.parentModel.getQueryParameter( 'page' );
+          var queryCurrentPage = this.parentModel.getQueryParameter( 'page' );
           if( angular.isDefined( queryCurrentPage ) ) currentPage = queryCurrentPage;
-          self.paginationModel.ignore = true;
+          this.paginationModel.ignore = true;
 
           // start by getting the data from the parent model using the column restrict lists
           var data = this.parentModel.getServiceData( 'list', this.columnRestrictLists );
@@ -4277,16 +4233,18 @@ cenozo.factory( 'CnBaseListFactory', [
           this.isLoading = true;
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
-          httpObj.onError = function( response ) { self.onListError( response ); }
+          httpObj.onError = function( error ) { self.onListError( error ); }
 
-          return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
+          try {
+            var response = await CnHttpFactory.instance( httpObj ).query();
+
             // Now that the query is done we can restore the pagination model's currentPage and remove
             // the "ignore" parameter
-            delete self.paginationModel.ignore;
+            delete this.paginationModel.ignore;
 
-            self.paginationModel.currentPage = currentPage;
+            this.paginationModel.currentPage = currentPage;
             var offset = parseInt( response.headers( 'Offset' ) );
-            if( null == self.minOffset || offset < self.minOffset ) self.minOffset = offset;
+            if( null == this.minOffset || offset < this.minOffset ) this.minOffset = offset;
 
             // add the getIdentifier() method to each row before adding it to the cache
             response.data.forEach( function( item ) {
@@ -4299,12 +4257,14 @@ cenozo.factory( 'CnBaseListFactory', [
                 if( !item.$highlight ) break; // don't highlight if any condition doesn't match
               }
             } );
-            self.cache = self.cache.concat( response.data );
-            self.total = parseInt( response.headers( 'Total' ) );
-            self.isReportAllowed = CnSession.application.maxBigReport >= self.total;
-            self.isReportBig = CnSession.application.maxSmallReport < self.total;
-            self.afterListFunctions.forEach( function( fn ) { fn(); } );
-          } ).finally( function() { self.isLoading = false; } );
+            this.cache = this.cache.concat( response.data );
+            this.total = parseInt( response.headers( 'Total' ) );
+            this.isReportAllowed = CnSession.application.maxBigReport >= this.total;
+            this.isReportBig = CnSession.application.maxSmallReport < this.total;
+            this.afterListFunctions.forEach( function( fn ) { fn(); } );
+          } finally {
+            this.isLoading = false;
+          }
         } );
 
         /**
@@ -4318,11 +4278,8 @@ cenozo.factory( 'CnBaseListFactory', [
 
         /**
          * Loads a report from the server.
-         * 
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onReport', function( format ) {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onReport', async function( format ) {
           this.isReportLoading = true;
           if( angular.isUndefined( format ) ) format = 'csv';
 
@@ -4344,15 +4301,20 @@ cenozo.factory( 'CnBaseListFactory', [
           data.modifier.order[column] = this.order.reverse;
 
           var httpObj = { path: this.parentModel.getServiceCollectionPath(), data: data };
-          httpObj.onError = function( response ) { self.onReportError( response ); }
+          var self = this;
+          httpObj.onError = function( error ) { self.onReportError( error ); }
           httpObj.format = format;
-          return CnHttpFactory.instance( httpObj ).query().then( function( response ) {
-            self.reportBlob = new Blob(
+          try {
+            var response = await CnHttpFactory.instance( httpObj ).query();
+
+            this.reportBlob = new Blob(
               [response.data],
               { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
             );
-            self.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
-          } ).finally( function() { self.isReportLoading = false; } );
+            this.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
+          } finally {
+            this.isReportLoading = false;
+          }
         } );
 
         /**
@@ -4381,25 +4343,24 @@ cenozo.factory( 'CnBaseListFactory', [
          * Adds a record on the server in a many-to-many relationship.
          * 
          * @param object record: The record to select
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onSelect', function( record ) {
+        cenozo.addExtendableFunction( object, 'onSelect', async function( record ) {
           if( !this.parentModel.getViewEnabled() )
             throw new Error( 'Calling onSelect() but view is not enabled.' );
           this.afterSelectFunctions.forEach( function( fn ) { fn(); } );
-          return this.parentModel.transitionToViewState( record );
+          await this.parentModel.transitionToViewState( record );
         } );
 
-        cenozo.addExtendableFunction( object, 'toggleChooseMode', function() {
+        cenozo.addExtendableFunction( object, 'toggleChooseMode', async function() {
           this.chooseMode = !this.chooseMode;
-          return this.onList( true );
+          await this.onList( true );
         } );
 
         /**
          * The state transition to execute after clicking the add button
          */
-        cenozo.addExtendableFunction( object, 'transitionOnAdd', function() {
-          this.parentModel.transitionToAddState();
+        cenozo.addExtendableFunction( object, 'transitionOnAdd', async function() {
+          await this.parentModel.transitionToAddState();
         } );
       }
     };
@@ -4461,7 +4422,7 @@ cenozo.factory( 'CnBaseViewFactory', [
           }, []
         );
 
-        $q.all( promiseList ).then( function() { object.deferred.resolve(); } );
+        Promise.all( promiseList ).then( function() { object.deferred.resolve(); } );
 
         // when ready set up dependent models
         if( addDependencies ) {
@@ -4563,19 +4524,16 @@ cenozo.factory( 'CnBaseViewFactory', [
 
         /**
          * Deletes the viewed record from the server.
-         * 
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onDelete', function() {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onDelete', async function() {
           if( !this.parentModel.getDeleteEnabled() )
             throw new Error( 'Calling onDelete() but delete is not enabled.' );
 
           var httpObj = { path: this.parentModel.getServiceResourcePath() };
-          httpObj.onError = function( response ) { self.onDeleteError( response ); }
-          return CnHttpFactory.instance( httpObj ).delete().then( function() {
-            self.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
-          } );
+          var self = this;
+          httpObj.onError = function( error ) { self.onDeleteError( error ); }
+          await CnHttpFactory.instance( httpObj ).delete();
+          this.afterDeleteFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -4611,10 +4569,8 @@ cenozo.factory( 'CnBaseViewFactory', [
          * Makes changes to a record on the server.
          * 
          * @param object data: An object of column -> value pairs to change
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onPatch', function( data ) {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onPatch', async function( data ) {
           if( !this.parentModel.getEditEnabled() )
             throw new Error( 'Calling onPatch() but edit is not enabled.' );
 
@@ -4622,10 +4578,11 @@ cenozo.factory( 'CnBaseViewFactory', [
             path: this.parentModel.getServiceResourcePath(),
             data: data
           };
-          httpObj.onError = function( response ) { self.onPatchError( response ); }
-          return CnHttpFactory.instance( httpObj ).patch().then( function() {
-            self.afterPatchFunctions.forEach( function( fn ) { fn(); } );
-          } );
+          var self = this;
+          httpObj.onError = function( error ) { self.onPatchError( error ); }
+
+          await CnHttpFactory.instance( httpObj ).patch();
+          this.afterPatchFunctions.forEach( function( fn ) { fn(); } );
         } );
 
         /**
@@ -4653,11 +4610,8 @@ cenozo.factory( 'CnBaseViewFactory', [
 
         /**
          * Loads a report from the server.
-         * 
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onReport', function( format ) {
-          var self = this;
+        cenozo.addExtendableFunction( object, 'onReport', async function( format ) {
           this.isReportLoading = true;
 
           if( angular.isUndefined( format ) ) format = 'csv';
@@ -4666,15 +4620,20 @@ cenozo.factory( 'CnBaseViewFactory', [
           if( angular.isUndefined( data.modifier ) ) data.modifier = {};
 
           var httpObj = { path: this.parentModel.getServiceResourcePath(), data: data };
-          httpObj.onError = function( response ) { self.onReportError( response ); }
+          var self = this;
+          httpObj.onError = function( error ) { self.onReportError( error ); }
           httpObj.format = format;
-          return CnHttpFactory.instance( httpObj ).get().then( function( response ) {
-            self.reportBlob = new Blob(
+
+          try {
+           var response = await CnHttpFactory.instance( httpObj ).get();
+            this.reportBlob = new Blob(
               [response.data],
               { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
             );
-            self.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
-          } ).finally( function() { self.isReportLoading = false; } );
+            this.reportFilename = response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1];
+          } finally {
+            this.isReportLoading = false;
+          }
         } );
 
         /**
@@ -4705,11 +4664,9 @@ cenozo.factory( 'CnBaseViewFactory', [
          * Note: this function will override the usual error mechanism to change the state to one of
          * the error states.  This is because not having a view record is considered to be too severe an
          * error to show the usual user interface.
-         * @return promise
          */
-        cenozo.addExtendableFunction( object, 'onView', function( force ) {
+        cenozo.addExtendableFunction( object, 'onView', async function( force ) {
           if( angular.isUndefined( force ) ) force = false;
-          var self = this;
           if( !this.parentModel.getViewEnabled() ) throw new Error( 'Calling onView() but view is not enabled.' );
 
           if( angular.isUndefined( object.parentModel.getQueryParameter( 'tab' ) ) )
@@ -4726,66 +4683,70 @@ cenozo.factory( 'CnBaseViewFactory', [
               this.record[column] = null;
 
           // update all file sizes
-          $q.all( this.fileList.map( file => file.updateFileSize() ) ).finally( function() { self.isFileListLoading = false; } );
+          try {
+            this.fileList.map( async file => await file.updateFileSize() );
+          } finally {
+            this.isFileListLoading = false;
+          };
 
-          // get the record's data and metadata
-          return !force && this.parentModel.module.subject.snake != this.parentModel.getSubjectFromState() ?
-            $q.all() : // don't view when the state's subject doesn't match the model's subject
-            CnHttpFactory.instance( {
-              path: this.parentModel.getServiceResourcePath(),
-              data: this.parentModel.getServiceData( 'view' ),
-              redirectOnError: true,
-              noActivity: false
-            } ).get().then( function( response ) {
+          try {
+            // get the record's data and metadata
+            if( force || this.parentModel.module.subject.snake == this.parentModel.getSubjectFromState() ) {
+              var self = this;
+
+              var response = await CnHttpFactory.instance( {
+                path: this.parentModel.getServiceResourcePath(),
+                data: this.parentModel.getServiceData( 'view' ),
+                redirectOnError: true,
+                noActivity: false
+              } ).get();
+
               if( '' === response.data )
-                throw new Error( 'Request for record "' + self.parentModel.getServiceResourcePath() +
+                throw new Error( 'Request for record "' + this.parentModel.getServiceResourcePath() +
                                  '" responded with an empty string (should be 403 or 404).' );
 
               // create the record
-              self.record = angular.copy( response.data );
-              self.record.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
+              this.record = angular.copy( response.data );
+              this.record.getIdentifier = function() { return self.parentModel.getIdentifierFromRecord( this ); };
 
               // create the backup record
-              self.backupRecord = angular.copy( self.record );
+              this.backupRecord = angular.copy( this.record );
 
-              return self.parentModel.metadata.getPromise();
-            } ).then( function() {
-              var promiseList = [];
+              await this.parentModel.metadata.getPromise();
 
-              if( angular.isDefined( self.parentModel.metadata.columnList.rank ) ) {
-                // create enum for rank columns
-
+              // create enum for rank columns
+              if( angular.isDefined( this.parentModel.metadata.columnList.rank ) ) {
                 // add the parent subject and identifier to the service
-                var path = self.parentModel.getServiceCollectionPath();
-                var parent = self.parentModel.getParentIdentifier();
+                var path = this.parentModel.getServiceCollectionPath();
+                var parent = this.parentModel.getParentIdentifier();
                 if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) )
                   path = [ parent.subject, parent.identifier, path ].join( '/' );
 
-                promiseList.push( CnHttpFactory.instance( {
+                var subResponse = await CnHttpFactory.instance( {
                   path: path,
                   data: { select: { column: {
-                    column: 'MAX(' + self.parentModel.module.subject.snake + '.rank)',
+                    column: 'MAX(' + this.parentModel.module.subject.snake + '.rank)',
                     alias: 'max',
                     table_prefix: false
                   } } },
                   redirectOnError: true
-                } ).query().then( function( response ) {
-                  if( 0 < response.data.length ) {
-                    self.parentModel.metadata.columnList.rank.enumList = [];
-                    if( null !== response.data[0].max ) {
-                      for( var rank = 1; rank <= parseInt( response.data[0].max ); rank++ ) {
-                        self.parentModel.metadata.columnList.rank.enumList.push( {
-                          value: rank,
-                          name: $filter( 'cnOrdinal' )( rank )
-                        } );
-                      }
+                } ).query();
+
+                if( 0 < subResponse.data.length ) {
+                  this.parentModel.metadata.columnList.rank.enumList = [];
+                  if( null !== subResponse.data[0].max ) {
+                    for( var rank = 1; rank <= parseInt( subResponse.data[0].max ); rank++ ) {
+                      this.parentModel.metadata.columnList.rank.enumList.push( {
+                        value: rank,
+                        name: $filter( 'cnOrdinal' )( rank )
+                      } );
                     }
                   }
-                } ) );
+                }
               }
 
               // convert blank enums into empty strings (for ng-options)
-              self.parentModel.module.inputGroupList.forEach( function( group ) {
+              this.parentModel.module.inputGroupList.forEach( function( group ) {
                 for( var column in group.inputList ) {
                   var input = group.inputList[column];
                   var exclude = angular.isDefined( input.isExcluded ) && input.isExcluded( $state, self.parentModel );
@@ -4802,12 +4763,13 @@ cenozo.factory( 'CnBaseViewFactory', [
               } );
 
               // update all properties in the formatted record
-              self.updateFormattedRecord();
+              this.updateFormattedRecord();
 
-              return $q.all( promiseList ).then( function() {
-                self.afterViewFunctions.forEach( function( fn ) { fn(); } );
-              } ).finally( function() { self.isLoading = false; } );
-            } );
+              this.afterViewFunctions.forEach( function( fn ) { fn(); } );
+            }
+          } finally {
+            this.isLoading = false;
+          }
         } );
 
         /**
@@ -4815,42 +4777,42 @@ cenozo.factory( 'CnBaseViewFactory', [
          */
         cenozo.addExtendableFunction( object, 'configureFileInput', function( key, format ) {
           if( angular.isUndefined( format ) ) format = 'unknown';
-          var self = this;
 
           // replace any existing file details
           var index = this.fileList.findIndexByProperty( 'key', key );
           if( null != index ) this.fileList.splice( index, 1 );
 
+          var self = this;
           this.fileList.push( {
             key: key,
             size: null,
             file: null,
             uploading: false,
-            updateFileSize: function() {
+            updateFileSize: async function() {
               var obj = this;
               obj.size = null;
-              return CnHttpFactory.instance( {
+              var response = await CnHttpFactory.instance( {
                 path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key
-              } ).get().then( function( response ) {
-                obj.size = response.data;
-              } );
+              } ).get();
+              obj.size = response.data;
             },
-            download: function() {
+            download: async function() {
               var obj = this;
-              return CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key,
                 format: format
               } ).file();
             },
-            remove: function() {
+            remove: async function() {
               var obj = this;
 
               // remove the file
               var patchObj = {};
               patchObj[obj.key] = null;
-              return self.onPatch( patchObj ).then( function() { return obj.updateFileSize(); } );
+              await self.onPatch( patchObj );
+              await obj.updateFileSize();
             },
-            upload: function() {
+            upload: async function() {
               var obj = this;
               obj.uploading = true;
               var data = new FormData();
@@ -4860,27 +4822,32 @@ cenozo.factory( 'CnBaseViewFactory', [
               // update the filename
               var patchObj = {};
               patchObj[obj.key] = fileDetails.name;
-              return CnHttpFactory.instance( {
-                path: self.parentModel.getServiceResourcePath(),
-                data: patchObj
-              } ).patch().then( function() {
+
+              try {
+                await CnHttpFactory.instance( {
+                  path: self.parentModel.getServiceResourcePath(),
+                  data: patchObj
+                } ).patch();
+
                 self.record[obj.key] = fileDetails.name;
 
                 // upload the file
-                return CnHttpFactory.instance( {
+                await CnHttpFactory.instance( {
                   path: self.parentModel.getServiceResourcePath() + '?file=' + obj.key,
                   data: obj.file,
                   format: format
                 } ).patch()
-              } ).then( function() {
-                return obj.updateFileSize().then( function() {
-                  var element = cenozo.getFormElement( key );
-                  if( element ) {
-                    element.$error.required = false;
-                    cenozo.updateFormElement( element, true );
-                  }
-                } );
-              } ).finally( function() { obj.uploading = false; } );
+
+                await obj.updateFileSize();
+
+                var element = cenozo.getFormElement( key );
+                if( element ) {
+                  element.$error.required = false;
+                  cenozo.updateFormElement( element, true );
+                }
+              } finally {
+                obj.uploading = false;
+              }
             }
           } );
         } );
@@ -4890,30 +4857,30 @@ cenozo.factory( 'CnBaseViewFactory', [
          * 
          * @param string subject: The subject of the parent to transition to
          */
-        cenozo.addExtendableFunction( object, 'transitionOnViewParent', function( subject ) {
+        cenozo.addExtendableFunction( object, 'transitionOnViewParent', async function( subject ) {
           if( !subject ) {
-            this.parentModel.transitionToParentListState( this.parentModel.module.subject.snake );
+            await this.parentModel.transitionToParentListState( this.parentModel.module.subject.snake );
           } else {
             var parent = this.parentModel.module.identifier.parent.findByProperty( 'subject', subject );
             if( null === parent ) {
               throw new Error( 'Tried to transition to parent ' + subject + ' from view state but "' +
                 this.parentModel.module.subject.camel + '" record has no "' + subject + '" parent.' );
             }
-            this.parentModel.transitionToParentViewState( parent.subject, parent.getIdentifier( this.record ) );
+            await this.parentModel.transitionToParentViewState( parent.subject, parent.getIdentifier( this.record ) );
           }
         } );
 
         /**
          * The state transition to execute after clicking the delete button
          */
-        cenozo.addExtendableFunction( object, 'transitionOnDelete', function() {
+        cenozo.addExtendableFunction( object, 'transitionOnDelete', async function() {
           var self = this;
-          CnSession.workingTransition( function() {
+          await CnSession.workingTransition( async function() {
             if( angular.isDefined( self.parentModel.module.identifier.parent ) ) {
               var parent = self.parentModel.getParentIdentifier();
-              self.parentModel.transitionToParentViewState( parent.subject, parent.identifier );
+              await self.parentModel.transitionToParentViewState( parent.subject, parent.identifier );
             } else {
-              self.parentModel.transitionToListState();
+              await self.parentModel.transitionToListState();
             }
           } );
         } );
@@ -4932,24 +4899,21 @@ cenozo.factory( 'CnBaseModelFactory', [
   function( $state, $filter, CnSession, CnHttpFactory ) {
     return {
       construct: function( object, module ) {
-        // Note: methods are added to Object here, members below
-        var self = object;
-
         /**
          * A convenience method that determines whether the current role is included in the provided list.
          * For example: isRole( 'administrator', 'supervisor' ) will return true if the current user is logged
          * in as an administrator or supervisor.
          */
-        cenozo.addExtendableFunction( self, 'isRole', function( ...args ) {
+        cenozo.addExtendableFunction( object, 'isRole', function( ...args ) {
           return args.some( role => role == CnSession.role.name );
         } );
 
         /**
          * get the identifier based on what is in the model's module
          */
-        cenozo.addExtendableFunction( self, 'getIdentifierFromRecord', function( record, valueOnly ) {
+        cenozo.addExtendableFunction( object, 'getIdentifierFromRecord', function( record, valueOnly ) {
           var valueOnly = angular.isUndefined( valueOnly ) ? false : valueOnly;
-          var column = angular.isDefined( self.module.identifier.column ) ? self.module.identifier.column : 'id';
+          var column = angular.isDefined( object.module.identifier.column ) ? object.module.identifier.column : 'id';
 
           var identifier = null;
           if( 'id' == column ) {
@@ -4970,19 +4934,19 @@ cenozo.factory( 'CnBaseModelFactory', [
          * 
          * This method is sometimes extended by a module's event factory
          */
-        cenozo.addExtendableFunction( self, 'getBreadcrumbTitle', function() {
-          var type = self.getActionFromState();
+        cenozo.addExtendableFunction( object, 'getBreadcrumbTitle', function() {
+          var type = object.getActionFromState();
           var index = type.indexOf( '_' );
           if( 0 <= index ) type = type.substring( 0, index );
 
           // first try for a friendly name
-          var friendlyColumn = self.module.name.friendlyColumn;
-          if( angular.isDefined( friendlyColumn ) && angular.isDefined( self.viewModel.record[friendlyColumn] ) )
-            return self.viewModel.record[friendlyColumn] ? self.viewModel.record[friendlyColumn] : type;
+          var friendlyColumn = object.module.name.friendlyColumn;
+          if( angular.isDefined( friendlyColumn ) && angular.isDefined( object.viewModel.record[friendlyColumn] ) )
+            return object.viewModel.record[friendlyColumn] ? object.viewModel.record[friendlyColumn] : type;
 
           // no friendly name, try for an identifier column
-          return angular.isDefined( self.module.identifier.column )
-               ? self.getIdentifierFromRecord( self.viewModel.record, true )
+          return angular.isDefined( object.module.identifier.column )
+               ? object.getIdentifierFromRecord( object.viewModel.record, true )
                : type; // database IDs aren't friendly so just return the type (view, calendar, etc)
         } );
 
@@ -4991,17 +4955,17 @@ cenozo.factory( 'CnBaseModelFactory', [
          * 
          * This method is sometimes extended by a module's event factory
          */
-        cenozo.addExtendableFunction( self, 'getBreadcrumbParentTitle', function() {
-          var parent = self.getParentIdentifier();
+        cenozo.addExtendableFunction( object, 'getBreadcrumbParentTitle', function() {
+          var parent = object.getParentIdentifier();
           return ( angular.isDefined( parent.friendly ) ?
-            self.viewModel.record[parent.friendly] : String( parent.identifier ).split( '=' ).pop()
+            object.viewModel.record[parent.friendly] : String( parent.identifier ).split( '=' ).pop()
           ).replace( '_', ' ' ).ucWords();
         } );
 
         /**
          * get the state's subject
          */
-        cenozo.addExtendableFunction( self, 'getSubjectFromState', function() {
+        cenozo.addExtendableFunction( object, 'getSubjectFromState', function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
             throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts.' );
@@ -5011,7 +4975,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * get the state's action
          */
-        cenozo.addExtendableFunction( self, 'getActionFromState', function() {
+        cenozo.addExtendableFunction( object, 'getActionFromState', function() {
           var stateNameParts = $state.current.name.split( '.' );
           if( 2 != stateNameParts.length )
             throw new Error( 'State "' + $state.current.name + '" is expected to have exactly 2 parts.' );
@@ -5021,19 +4985,19 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * determine whether a query parameter belongs to the model
          */
-        cenozo.addExtendableFunction( self, 'hasQueryParameter', function( name, global ) {
+        cenozo.addExtendableFunction( object, 'hasQueryParameter', function( name, global ) {
           if( angular.isUndefined( global ) ) global = false;
           return angular.isDefined( $state.current.url ) &&
                  $state.current.url.includes( '{' + name + '}' ) &&
-                 ( global || self.getSubjectFromState() == self.queryParameterSubject );
+                 ( global || object.getSubjectFromState() == object.queryParameterSubject );
         } );
 
         /**
          * return a query parameter (will be undefined if it doesn't belong to the model)
          */
-        cenozo.addExtendableFunction( self, 'getQueryParameter', function( name, global ) {
+        cenozo.addExtendableFunction( object, 'getQueryParameter', function( name, global ) {
           var parameter = undefined;
-          if( self.hasQueryParameter( name, global ) ) {
+          if( object.hasQueryParameter( name, global ) ) {
             var parameter = $state.params[name];
             // convert string booleans to true booleans
             if( 'false' === parameter ) parameter = false;
@@ -5045,8 +5009,8 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * sets a query parameter (does nothing if it doesn't belong to the model)
          */
-        cenozo.addExtendableFunction( self, 'setQueryParameter', function( name, value, global ) {
-          if( self.hasQueryParameter( name, global ) ) {
+        cenozo.addExtendableFunction( object, 'setQueryParameter', function( name, value, global ) {
+          if( object.hasQueryParameter( name, global ) ) {
             if( angular.isUndefined( value ) ) {
               if( angular.isDefined( $state.params[name] ) ) delete $state.params[name];
             } else {
@@ -5060,22 +5024,22 @@ cenozo.factory( 'CnBaseModelFactory', [
          * NOTE: when viewing the function will return the first parent that is set in the view record
          *       (there may be multiple)
          */
-        cenozo.addExtendableFunction( self, 'getParentIdentifier', function() {
+        cenozo.addExtendableFunction( object, 'getParentIdentifier', function() {
           var response = {
-            subject: self.getSubjectFromState(),
+            subject: object.getSubjectFromState(),
             identifier: $state.params.parentIdentifier
           };
 
           if( angular.isUndefined( response.identifier ) ) {
-            var action = self.getActionFromState();
-            if( 'view' == action && angular.isDefined( self.module.identifier.parent ) &&
-                angular.isDefined( self.viewModel ) ) {
+            var action = object.getActionFromState();
+            if( 'view' == action && angular.isDefined( object.module.identifier.parent ) &&
+                angular.isDefined( object.viewModel ) ) {
               // return the FIRST "set" parent
-              self.module.identifier.parent.some( function( item ) {
-                if( self.viewModel.record[item.alias] ) {
+              object.module.identifier.parent.some( function( item ) {
+                if( object.viewModel.record[item.alias] ) {
                   response.subject = item.subject;
                   if( angular.isDefined( item.friendly ) ) response.friendly = item.friendly;
-                  response.identifier = item.getIdentifier( self.viewModel.record );
+                  response.identifier = item.getIdentifier( object.viewModel.record );
                   return true; // stop processing
                 }
               } );
@@ -5093,16 +5057,16 @@ cenozo.factory( 'CnBaseModelFactory', [
          * 
          * @param boolean ignoreParent Whether to not include parent's part of the path
          */
-        cenozo.addExtendableFunction( self, 'getServiceCollectionPath', function( ignoreParent ) {
+        cenozo.addExtendableFunction( object, 'getServiceCollectionPath', function( ignoreParent ) {
           if( angular.isUndefined( ignoreParent ) ) ignoreParent = false;
           var path = '';
-          if( !ignoreParent && self.getSubjectFromState() != self.module.subject.snake ) {
+          if( !ignoreParent && object.getSubjectFromState() != object.module.subject.snake ) {
             var identifier = $state.params.parentIdentifier
                            ? $state.params.parentIdentifier
                            : $state.params.identifier;
-            path += self.getSubjectFromState() + '/' + identifier + '/';
+            path += object.getSubjectFromState() + '/' + identifier + '/';
           }
-          return path + self.module.subject.snake;
+          return path + object.module.subject.snake;
         } );
 
         /**
@@ -5111,8 +5075,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @param string|integer The resource may be specified, or if left blank the state's parameters
          *                       will be used instead
          */
-        cenozo.addExtendableFunction( self, 'getServiceResourcePath', function( resource ) {
-          return self.getServiceCollectionPath() + '/' + ( angular.isUndefined( resource ) ? $state.params.identifier : resource );
+        cenozo.addExtendableFunction( object, 'getServiceResourcePath', function( resource ) {
+          return object.getServiceCollectionPath() + '/' + ( angular.isUndefined( resource ) ? $state.params.identifier : resource );
         } );
 
         /**
@@ -5121,7 +5085,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @param string type One of calendar, list, report or view
          * @param array columnRestrictLists Column restrictions
          */
-        cenozo.addExtendableFunction( self, 'getServiceData', function( type, columnRestrictLists ) {
+        cenozo.addExtendableFunction( object, 'getServiceData', function( type, columnRestrictLists ) {
           if( angular.isUndefined( type ) || !['calendar','list','report','view'].includes( type ) )
             throw new Error(
               'getServiceData expects an argument which is either "calendar", "list", "report" or "view".'
@@ -5138,10 +5102,10 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( 'calendar' == type ) {
             // the calendar doesn't need anything added to list
           } else if( 'list' == type || 'report' == type ) {
-            list = self.columnList;
+            list = object.columnList;
           } else {
             // we need to get a list of all inputs from the module's input groups
-            self.module.inputGroupList.forEach( function( group ) {
+            object.module.inputGroupList.forEach( function( group ) {
               for( var column in group.inputList ) {
                 var input = group.inputList[column];
                 list[column] = input;
@@ -5155,8 +5119,8 @@ cenozo.factory( 'CnBaseModelFactory', [
           // reading calendar events, so adding an identifer column to an empty list will disrupt the expected
           // results
           if( !cenozo.isObjectEmpty( list ) ) {
-            var column = angular.isDefined( self.module.identifier.column )
-                       ? self.module.identifier.column
+            var column = angular.isDefined( object.module.identifier.column )
+                       ? object.module.identifier.column
                        : 'id';
             var columns = angular.isArray( column ) ? column : [column];
             columns.forEach( function( col ) {
@@ -5164,8 +5128,8 @@ cenozo.factory( 'CnBaseModelFactory', [
             } );
           }
 
-          if( 'view' == type && angular.isDefined( self.module.identifier.parent ) ) {
-            self.module.identifier.parent.forEach( function( item ) {
+          if( 'view' == type && angular.isDefined( object.module.identifier.parent ) ) {
+            object.module.identifier.parent.forEach( function( item ) {
               list[item.alias] = { type: 'hidden', column: item.column };
             } );
           }
@@ -5173,7 +5137,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           for( var key in list ) {
             if( 'separator' == list[key].type ) continue;
 
-            var parentTable = self.module.subject.snake;
+            var parentTable = object.module.subject.snake;
 
             // determine the table and column names
             var tableName = null;
@@ -5196,7 +5160,7 @@ cenozo.factory( 'CnBaseModelFactory', [
 
             // if a table is specified then build a join to that table
             if( null != tableName ) {
-              // don't join a table to itself
+              // don't join a table to itobject
               if( tableName !== parentTable ) {
                 var onleft = parentTable + '.' + tableName + '_id';
                 var onright = tableName + '.id';
@@ -5289,11 +5253,11 @@ cenozo.factory( 'CnBaseModelFactory', [
          * @param boolean reload Whether to force reload the state
          * @param boolean notify Whether to send notification of a state change
          */
-        cenozo.addExtendableFunction( self, 'reloadState', function( reload, notify, location ) {
+        cenozo.addExtendableFunction( object, 'reloadState', async function( reload, notify, location ) {
           if( angular.isUndefined( reload ) ) reload = false;
           if( angular.isUndefined( notify ) ) notify = true;
           if( angular.isUndefined( location ) ) location = true;
-          return $state.transitionTo(
+          await $state.transitionTo(
             $state.current, $state.params,
             { reload: reload, notify: notify, location: location }
           );
@@ -5302,76 +5266,80 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Transitions back to the previous state
          */
-        cenozo.addExtendableFunction( self, 'transitionToLastState', function() {
-          var parent = self.getParentIdentifier();
+        cenozo.addExtendableFunction( object, 'transitionToLastState', async function() {
+          var parent = object.getParentIdentifier();
           var stateName = angular.isDefined( parent.subject )
                         ? parent.subject + '.view'
-                        : angular.isDefined( self.listingState )
-                        ? '^.' + self.listingState
+                        : angular.isDefined( object.listingState )
+                        ? '^.' + object.listingState
                         : null;
           var params = angular.isDefined( parent.subject ) ? { identifier: parent.identifier } : undefined;
 
-          return null != stateName ?
-            $state.go( stateName, params ) :
-            angular.isDefined( self.module.identifier.parent ) ?
-            self.transitionToParentViewState( parent.subject, parent.identifier ) :
-            self.transitionToListState();
+          if( null != stateName ) {
+            await $state.go( stateName, params );
+          } else if( angular.isDefined( object.module.identifier.parent ) ) {
+            await object.transitionToParentViewState( parent.subject, parent.identifier );
+          } else {
+            await object.transitionToListState();
+          }
         } );
 
         /**
          * Transitions to this module's add state
          */
-        cenozo.addExtendableFunction( self, 'transitionToAddState', function() {
+        cenozo.addExtendableFunction( object, 'transitionToAddState', async function() {
           var stateName = $state.current.name;
-          return 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ?
-            $state.go( '^.add_' + self.module.subject.snake, { parentIdentifier: $state.params.identifier } ) :
-            $state.go( '^.add' );
+          if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) ) {
+            await $state.go( '^.add_' + object.module.subject.snake, { parentIdentifier: $state.params.identifier } );
+          } else {
+            await $state.go( '^.add' );
+          }
         } );
 
         /**
          * Transitions to the module's list state
          */
-        cenozo.addExtendableFunction( self, 'transitionToListState', function() {
-          return $state.go( self.module.subject.snake + '.list' );
+        cenozo.addExtendableFunction( object, 'transitionToListState', async function() {
+          await $state.go( object.module.subject.snake + '.list' );
         } );
 
         /**
          * Transitions to the module's view state
          */
-        cenozo.addExtendableFunction( self, 'transitionToViewState', function( record ) {
+        cenozo.addExtendableFunction( object, 'transitionToViewState', async function( record ) {
           var stateName = $state.current.name;
           var stateParams = { identifier: record.getIdentifier() };
           if( 'view' == stateName.substring( stateName.lastIndexOf( '.' ) + 1 ) )
             stateParams.parentIdentifier = $state.params.identifier;
-          return $state.go( self.module.subject.snake + '.view', stateParams );
+          await $state.go( object.module.subject.snake + '.view', stateParams );
         } );
 
         /**
          * Transitions to the module's parent's view state
          */
-        cenozo.addExtendableFunction( self, 'transitionToParentViewState', function( subject, identifier ) {
-          return $state.go( subject + '.view', { identifier: identifier } );
+        cenozo.addExtendableFunction( object, 'transitionToParentViewState', async function( subject, identifier ) {
+          await $state.go( subject + '.view', { identifier: identifier } );
         } );
 
         /**
          * Transitions to the module's parent's list state
          */
-        cenozo.addExtendableFunction( self, 'transitionToParentListState', function( subject ) {
+        cenozo.addExtendableFunction( object, 'transitionToParentListState', async function( subject ) {
           if( angular.isUndefined( subject ) ) subject = '^';
-          return $state.go( subject + '.list' );
+          await $state.go( subject + '.list' );
         } );
 
         /**
          * Creates the breadcrumb trail using module and a specific type (add, list or view)
          */
-        cenozo.addExtendableFunction( self, 'setupBreadcrumbTrail', function() {
-          var stateSubject = self.getSubjectFromState();
-          var parent = self.getParentIdentifier();
+        cenozo.addExtendableFunction( object, 'setupBreadcrumbTrail', function() {
+          var stateSubject = object.getSubjectFromState();
+          var parent = object.getParentIdentifier();
 
           // only set breadcrumbs when the module's or parent's subject matches the state's subject
-          if( stateSubject != self.module.subject.snake && stateSubject != parent.subject ) return;
+          if( stateSubject != object.module.subject.snake && stateSubject != parent.subject ) return;
 
-          var type = self.getActionFromState();
+          var type = object.getActionFromState();
           var index = type.indexOf( '_' );
           if( 0 <= index ) type = type.substring( 0, index );
 
@@ -5381,39 +5349,39 @@ cenozo.factory( 'CnBaseModelFactory', [
           if( angular.isDefined( parent.subject ) ) {
             trail = trail.concat( [ {
               title: cenozoApp.module( parent.subject ).name.singular.ucWords(),
-              go: function() { return self.transitionToParentListState( parent.subject ); }
+              go: async function() { await object.transitionToParentListState( parent.subject ); }
             }, {
-              title: self.getBreadcrumbParentTitle(),
-              go: function() { return $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
+              title: object.getBreadcrumbParentTitle(),
+              go: async function() { await $state.go( parent.subject + '.view', { identifier: parent.identifier } ); }
             } ] );
           }
 
           if( 'add' == type ) {
             trail = trail.concat( [ {
-              title: self.module.name.singular.ucWords(),
-              go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToListState(); }
+              title: object.module.name.singular.ucWords(),
+              go: angular.isDefined( parent.subject ) ? undefined : async function() { await object.transitionToListState(); }
             }, {
               title: 'New'
             } ] );
           } else if( 'calendar' == type ) {
             trail = trail.concat( [ {
-              title: self.module.name.singular.ucWords(),
-              go: angular.isDefined( self.module.actions.list )
-                ? function() { return self.transitionToParentListState( self.module.subject.snake ); }
+              title: object.module.name.singular.ucWords(),
+              go: angular.isDefined( object.module.actions.list )
+                ? async function() { await object.transitionToParentListState( object.module.subject.snake ); }
                 : undefined
             }, {
-              title: self.getBreadcrumbTitle()
+              title: object.getBreadcrumbTitle()
             } ] );
           } else if( 'list' == type ) {
             trail = trail.concat( [ {
-              title: self.module.name.plural.ucWords()
+              title: object.module.name.plural.ucWords()
             } ] );
           } else if( 'view' == type ) {
             trail = trail.concat( [ {
-              title: self.module.name.plural.ucWords(),
-              go: angular.isDefined( parent.subject ) ? undefined : function() { self.transitionToListState(); }
+              title: object.module.name.plural.ucWords(),
+              go: angular.isDefined( parent.subject ) ? undefined : async function() { await object.transitionToListState(); }
             }, {
-              title: self.getBreadcrumbTitle()
+              title: object.getBreadcrumbTitle()
             } ] );
           } else console.warn( 'Tried to setup breadcrumb trail for invalid type "%s".', type );
 
@@ -5434,28 +5402,28 @@ cenozo.factory( 'CnBaseModelFactory', [
          * "view" array contains an array of groups, each of which contains the items belonging to them.
          * NOTE: The returned arrays are COPIES of the module's items, not references.
          */
-        cenozo.addExtendableFunction( self, 'getDataArray', function( removeList, type ) {
+        cenozo.addExtendableFunction( object, 'getDataArray', function( removeList, type ) {
           if( angular.isUndefined( removeList ) ) removeList = [];
 
           // make a copy of the input list and remove any parent column(s)
-          var stateSubject = self.getSubjectFromState();
+          var stateSubject = object.getSubjectFromState();
 
           // create an array out of the input list
           var data = [];
           if( 'list' == type ) {
-            for( var key in self.columnList ) {
+            for( var key in object.columnList ) {
               if( !removeList.includes( key ) &&
                   // don't include hidden columns
-                  'hidden' != self.columnList[key].type &&
+                  'hidden' != object.columnList[key].type &&
                   // for child lists, don't include parent columns
-                  !( stateSubject != self.module.subject.snake &&
-                     angular.isDefined( self.columnList[key].column ) &&
-                     stateSubject == self.columnList[key].column.split( '.' )[0] ) ) {
-                data.push( self.columnList[key] );
+                  !( stateSubject != object.module.subject.snake &&
+                     angular.isDefined( object.columnList[key].column ) &&
+                     stateSubject == object.columnList[key].column.split( '.' )[0] ) ) {
+                data.push( object.columnList[key] );
               }
             }
           } else { // add or view
-            data = self.module.inputGroupList.reduce( function( data, group ) {
+            data = object.module.inputGroupList.reduce( function( data, group ) {
               var inputArray = Object.keys( group.inputList ).map( function( key ) {
                 return group.inputList[key];
               } );
@@ -5477,7 +5445,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Returns an array of possible values for typeahead inputs
          */
-        cenozo.addExtendableFunction( self, 'getTypeaheadData', function( input, viewValue ) {
+        cenozo.addExtendableFunction( object, 'getTypeaheadData', function( input, viewValue ) {
           // create the modifier
           var modifier = angular.isDefined( input.typeahead.modifier ) ? angular.copy( input.typeahead.modifier ) : {};
           if( angular.isUndefined( modifier.where ) ) modifier.where = [];
@@ -5522,7 +5490,7 @@ cenozo.factory( 'CnBaseModelFactory', [
         /**
          * Returns an array of possible values for typeahead inputs
          */
-        cenozo.addExtendableFunction( self, 'getTypeaheadValues', function( input, viewValue ) {
+        cenozo.addExtendableFunction( object, 'getTypeaheadValues', async function( input, viewValue ) {
           // sanity checking
           if( angular.isUndefined( input ) )
             throw new Error( 'Typeahead used without a valid input key (' + key + ').' );
@@ -5546,59 +5514,62 @@ cenozo.factory( 'CnBaseModelFactory', [
             // make note that we are loading the typeahead values
             input.typeahead.isLoading = true;
 
-            return CnHttpFactory.instance( {
-              path: input.typeahead.table,
-              data: this.getTypeaheadData( input, viewValue )
-            } ).get().then( function( response ) { return angular.copy( response.data ); } )
-                     .finally( function() { input.typeahead.isLoading = false; } );
+            var retVal = undefined;
+            try {
+              var response = await CnHttpFactory.instance( {
+                path: input.typeahead.table,
+                data: this.getTypeaheadData( input, viewValue )
+              } ).get();
+              retVal = angular.copy( response.data );
+            } finally {
+              input.typeahead.isLoading = false;
+            }
+
+            return retVal;
           }
         } );
 
         // enable/disable module functionality
-        cenozo.addExtendableFunction( self, 'getAddEnabled', function() {
-          return angular.isDefined( self.module.actions.add );
+        cenozo.addExtendableFunction( object, 'getAddEnabled', function() {
+          return angular.isDefined( object.module.actions.add );
         } );
-        cenozo.addExtendableFunction( self, 'getChooseEnabled', function() { return false; } );
-        cenozo.addExtendableFunction( self, 'getDeleteEnabled', function() {
-          return angular.isDefined( self.module.actions.delete );
+        cenozo.addExtendableFunction( object, 'getChooseEnabled', function() { return false; } );
+        cenozo.addExtendableFunction( object, 'getDeleteEnabled', function() {
+          return angular.isDefined( object.module.actions.delete );
         } );
-        cenozo.addExtendableFunction( self, 'getEditEnabled', function() {
-          return angular.isDefined( self.module.actions.edit );
+        cenozo.addExtendableFunction( object, 'getEditEnabled', function() {
+          return angular.isDefined( object.module.actions.edit );
         } );
-        cenozo.addExtendableFunction( self, 'getListEnabled', function() {
-          return angular.isDefined( self.module.actions.list );
+        cenozo.addExtendableFunction( object, 'getListEnabled', function() {
+          return angular.isDefined( object.module.actions.list );
         } );
-        cenozo.addExtendableFunction( self, 'getViewEnabled', function() {
-          return angular.isDefined( self.module.actions.view );
+        cenozo.addExtendableFunction( object, 'getViewEnabled', function() {
+          return angular.isDefined( object.module.actions.view );
         } );
 
         /**
          * Loads the model's base metadata
-         * 
-         * Note: when extending this function with functions that update the metadata object after a
-         * promise has been resolved it should be called in parallel to those promises using $q.all()
-         * @return promise
          */
-        cenozo.addExtendableFunction( self, 'getMetadata', function() {
-          self.metadata.columnList = {};
+        cenozo.addExtendableFunction( object, 'getMetadata', async function() {
+          object.metadata.columnList = {};
 
-          return CnHttpFactory.instance( {
-            path: self.module.subject.snake
-          } ).head().then( function( response ) {
-            var columnList = angular.fromJson( response.headers( 'Columns' ) );
-            for( var column in columnList ) {
-              columnList[column].required = '1' == columnList[column].required;
-              if( 'enum' == columnList[column].data_type ) { // parse out the enum values
-                columnList[column].enumList = [];
-                cenozo.parseEnumList( columnList[column] ).forEach( function( item ) {
-                  columnList[column].enumList.push( { value: item, name: item } );
-                } );
-              }
-              if( angular.isUndefined( self.metadata.columnList[column] ) )
-                self.metadata.columnList[column] = {};
-              angular.extend( self.metadata.columnList[column], columnList[column] );
+          var response = await CnHttpFactory.instance( {
+            path: object.module.subject.snake
+          } ).head();
+
+          var columnList = angular.fromJson( response.headers( 'Columns' ) );
+          for( var column in columnList ) {
+            columnList[column].required = '1' == columnList[column].required;
+            if( 'enum' == columnList[column].data_type ) { // parse out the enum values
+              columnList[column].enumList = [];
+              cenozo.parseEnumList( columnList[column] ).forEach( function( item ) {
+                columnList[column].enumList.push( { value: item, name: item } );
+              } );
             }
-          } );
+            if( angular.isUndefined( object.metadata.columnList[column] ) )
+              object.metadata.columnList[column] = {};
+            angular.extend( object.metadata.columnList[column], columnList[column] );
+          }
         } );
 
         /**
@@ -5609,8 +5580,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          * Failing a test due to a missing value is determined by the required parameter, not
          * format checking.
          */
-        cenozo.addExtendableFunction( self, 'testFormat', function( property, value ) {
-          var input = self.module.getInput( property );
+        cenozo.addExtendableFunction( object, 'testFormat', function( property, value ) {
+          var input = object.module.getInput( property );
           if( null === input || !value ) return true;
 
           // check format
@@ -5665,7 +5636,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          *   help: help text that pops up when mousing over an input
          * }
          */
-        cenozo.addExtendableFunction( self, 'addColumn', function( key, column, index ) {
+        cenozo.addExtendableFunction( object, 'addColumn', function( key, column, index ) {
           column.key = key;
           if( angular.isUndefined( column.type ) ) column.type = 'string';
           var type = column.type;
@@ -5679,30 +5650,30 @@ cenozo.factory( 'CnBaseModelFactory', [
 
           if( angular.isUndefined( index ) ) {
             // no index: add to existing Object
-            self.columnList[key] = column;
+            object.columnList[key] = column;
           } else {
             // index: make new Object and add the column at the desired index
             var newColumnList = {};
             var currentIndex = 0;
-            for( var k in self.columnList ) {
+            for( var k in object.columnList ) {
               if( currentIndex == index ) newColumnList[key] = column;
-              newColumnList[k] = self.columnList[k];
+              newColumnList[k] = object.columnList[k];
               currentIndex++;
             }
-            self.columnList = newColumnList;
+            object.columnList = newColumnList;
           }
         } );
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // DEFINE ALL OBJECT PROPERTIES HERE
         ////////////////////////////////////////////////////////////////////////////////////////////
-        self.module = module;
+        object.module = module;
 
         // restructure and add helper functions to the identifier parent(s)
-        if( angular.isDefined( self.module.identifier.parent ) ) {
-          if( !angular.isArray( self.module.identifier.parent ) )
-            self.module.identifier.parent = [ self.module.identifier.parent ];
-          self.module.identifier.parent.forEach( function( item ) {
+        if( angular.isDefined( object.module.identifier.parent ) ) {
+          if( !angular.isArray( object.module.identifier.parent ) )
+            object.module.identifier.parent = [ object.module.identifier.parent ];
+          object.module.identifier.parent.forEach( function( item ) {
             item.alias = item.column.replace( '.', '_' );
             item.getIdentifier = function( record ) {
               var columnParts = this.column.split( '.' );
@@ -5713,19 +5684,19 @@ cenozo.factory( 'CnBaseModelFactory', [
           } );
         }
 
-        self.metadata = {
+        object.metadata = {
           getPromise: function() {
-            if( angular.isUndefined( this.promise ) ) this.promise = self.getMetadata();
+            if( angular.isUndefined( this.promise ) ) this.promise = object.getMetadata();
             return this.promise;
           }
         };
-        self.enableListingState = 'list';
+        object.enableListingState = 'list';
         // see the base list factory's orderBy function for how to use this variable
-        self.queryParameterSubject = self.module.subject.snake;
+        object.queryParameterSubject = object.module.subject.snake;
 
         // process input and column lists one at a time
-        self.columnList = {};
-        for( var key in self.module.columnList ) self.addColumn( key, self.module.columnList[key] );
+        object.columnList = {};
+        for( var key in object.module.columnList ) object.addColumn( key, object.module.columnList[key] );
       }
     };
   }
@@ -5744,70 +5715,65 @@ cenozo.factory( 'CnBaseHistoryFactory', [
         angular.extend( object, {
           module: module,
           model: model,
+          historyList: [],
 
-          viewNotes: function() {
-            $state.go( module.subject.snake + '.notes', { identifier: $state.params.identifier } );
+          viewNotes: async function() {
+            await $state.go( module.subject.snake + '.notes', { identifier: $state.params.identifier } );
           },
 
-          viewRecord: function() {
-            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
+          viewRecord: async function() {
+            await $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
           },
 
           selectAllCategories: function() {
-            for( var name in this.module.historyCategoryList ) {
-              this.module.historyCategoryList[name].active = true;
+            for( var name in object.module.historyCategoryList ) {
+              object.module.historyCategoryList[name].active = true;
             }
-            this.model.reloadState( false, false );
+            object.model.reloadState( false, false );
           },
 
           unselectAllCategories: function() {
-            for( var name in this.module.historyCategoryList ) {
-              this.module.historyCategoryList[name].active = false;
+            for( var name in object.module.historyCategoryList ) {
+              object.module.historyCategoryList[name].active = false;
             }
-            this.model.reloadState( false, false );
+            object.model.reloadState( false, false );
           },
 
           toggleCategory: function( name ) {
             // update the query parameters with whatever the category's active state is
-            this.model.setQueryParameter(
-              name.toLowerCase(), this.module.historyCategoryList[name].active
+            object.model.setQueryParameter(
+              name.toLowerCase(), object.module.historyCategoryList[name].active
             );
-            this.model.reloadState( false, false );
+            object.model.reloadState( false, false );
           },
 
           getVisibleHistoryList: function() {
-            var self = this;
-            return this.historyList.filter( function( item ) {
-              return self.module.historyCategoryList[item.category].active;
+            return object.historyList.filter( function( item ) {
+              return object.module.historyCategoryList[item.category].active;
             } );
           },
 
-          onView: function() {
-            var self = this;
-            this.historyList = [];
+          onView: async function() {
+            object.historyList = [];
 
             // get all history category promises, run them and then sort the resulting history list
-            var promiseList = [];
-            for( var name in this.module.historyCategoryList ) {
+            for( var name in object.module.historyCategoryList ) {
               // sync the active parameter to the state while we're at it
-              var active = this.model.getQueryParameter( name.toLowerCase() );
-              this.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
-              if( 'function' == cenozo.getType( this.module.historyCategoryList[name].promise ) ) {
-                promiseList.push(
-                  this.module.historyCategoryList[name].promise( this.historyList, $state, CnHttpFactory, $q )
-                );
+              var active = object.model.getQueryParameter( name.toLowerCase() );
+              object.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
+              if( 'asyncfunction' == cenozo.getType( object.module.historyCategoryList[name].promise ) ) {
+                await object.module.historyCategoryList[name].promise( object.historyList, $state, CnHttpFactory, $q )
               }
             };
 
-            return $q.all( promiseList ).then( function() {
-              // convert invalid dates to null
-              self.historyList.forEach( function( item ) {
-                if( '0000-00-00' == item.datetime.substring( 0, 10 ) ) item.datetime = null;
-              } );
-              // sort the history list by datetime
-              self.historyList = self.historyList.sort( function( a, b ) {
-                return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
-              } );
+            // convert invalid dates to null
+            object.historyList.forEach( function( item ) {
+              if( '0000-00-00' == item.datetime.substring( 0, 10 ) ) item.datetime = null;
+            } );
+
+            // sort the history list by datetime
+            object.historyList = object.historyList.sort( function( a, b ) {
+              return moment( new Date( a.datetime ) ).isBefore( new Date( b.datetime ) ) ? 1 : -1;
             } );
           }
         } );
@@ -5837,10 +5803,10 @@ cenozo.factory( 'CnBaseNoteFactory', [
           allowDelete: module.allowNoteDelete,
           allowEdit: module.allowNoteEdit,
 
-          updateSearch: function() {
+          updateSearch: async function() {
             var self = this;
             $state.params.search = this.search;
-            $state.transitionTo(
+            await $state.transitionTo(
               $state.current, $state.params,
               { reload: false, notify: false, location: 'replace' }
             );
@@ -5856,111 +5822,110 @@ cenozo.factory( 'CnBaseNoteFactory', [
             } );
           },
 
-          addNote: function() {
-            var self = this;
+          addNote: async function() {
             var note = {
               user_id: CnSession.user.id,
               datetime: moment().format(),
               note: this.newNote
             };
 
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: [ module.subject.snake, $state.params.identifier, this.noteSubject ].join( '/' ),
               data: note
-            } ).post().then( function( response ) {
-              note.id = response.data;
-              note.sticky = false;
-              note.noteBackup = note.note;
-              note.userFirst = CnSession.user.firstName;
-              note.userLast = CnSession.user.lastName;
-              return note;
-            } ).then( function( note ) {
-              self.noteListCache.push( note );
-              self.updateSearch( self.search );
-            } );
+            } ).post();
+
+            note.id = response.data;
+            note.sticky = false;
+            note.noteBackup = note.note;
+            note.userFirst = CnSession.user.firstName;
+            note.userLast = CnSession.user.lastName;
+
+            this.noteListCache.push( note );
+            this.updateSearch( this.search );
 
             this.newNote = '';
           },
 
-          deleteNote: function( id ) {
-            var self = this;
+          deleteNote: async function( id ) {
             var index = this.noteListCache.findIndexByProperty( 'id', id );
             if( null !== index ) {
-              CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: [
                   module.subject.snake,
                   $state.params.identifier,
                   this.noteSubject,
                   this.noteListCache[index].id
                 ].join( '/' )
-              } ).delete().then( function() {
-                self.noteListCache.splice( index, 1 );
-                self.updateSearch( self.search );
-              } );
+              } ).delete();
+
+              this.noteListCache.splice( index, 1 );
+              this.updateSearch( this.search );
             }
           },
 
-          noteChanged: function( id ) {
+          noteChanged: async function( id ) {
             var note = this.noteList.findByProperty( 'id', id );
             if( note ) {
-              CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: [ module.subject.snake, $state.params.identifier, this.noteSubject, note.id ].join( '/' ),
                 data: { note: note.note }
               } ).patch();
             }
           },
 
-          stickyChanged: function( id ) {
+          stickyChanged: async function( id ) {
             var note = this.noteList.findByProperty( 'id', id );
             if( note ) {
               note.sticky = !note.sticky;
-              CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: [ module.subject.snake, $state.params.identifier, this.noteSubject, note.id ].join( '/' ),
                 data: { sticky: note.sticky }
               } ).patch();
             }
           },
 
-          undo: function( id ) {
+          undo: async function( id ) {
             var note = this.noteList.findByProperty( 'id', id );
             if( note && note.note != note.noteBackup ) {
               note.note = note.noteBackup;
-              CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: [ module.subject.snake, $state.params.identifier, this.noteSubject, note.id ].join( '/' ),
                 data: { note: note.note }
               } ).patch();
             }
           },
 
-          onView: function() {
-            var self = this;
+          onView: async function() {
             this.isLoading = true;
-            return CnHttpFactory.instance( {
-              path: [ module.subject.snake, $state.params.identifier, this.noteSubject ].join( '/' ),
-              data: {
-                modifier: {
-                  join: {
-                    table: 'user',
-                    onleft: this.noteSubject + '.user_id',
-                    onright: 'user.id'
+            try {
+              var response = await CnHttpFactory.instance( {
+                path: [ module.subject.snake, $state.params.identifier, this.noteSubject ].join( '/' ),
+                data: {
+                  modifier: {
+                    join: {
+                      table: 'user',
+                      onleft: this.noteSubject + '.user_id',
+                      onright: 'user.id'
+                    },
+                    order: { 'datetime': true }
                   },
-                  order: { 'datetime': true }
+                  select: {
+                    column: [ 'sticky', 'datetime', 'note', {
+                      table: 'user',
+                      column: 'first_name',
+                      alias: 'user_first'
+                    } , {
+                      table: 'user',
+                      column: 'last_name',
+                      alias: 'user_last'
+                    } ]
+                  }
                 },
-                select: {
-                  column: [ 'sticky', 'datetime', 'note', {
-                    table: 'user',
-                    column: 'first_name',
-                    alias: 'user_first'
-                  } , {
-                    table: 'user',
-                    column: 'last_name',
-                    alias: 'user_last'
-                  } ]
-                }
-              },
-              redirectOnError: true
-            } ).query().then( function( response ) {
-              self.noteListCache = [];
+                redirectOnError: true
+              } ).query();
+
+              this.noteListCache = [];
+              var self = this;
               response.data.forEach( function( item ) {
                 self.noteListCache.push( {
                   id: item.id,
@@ -5972,20 +5937,22 @@ cenozo.factory( 'CnBaseNoteFactory', [
                   noteBackup: item.note
                 } );
               } );
-              self.updateSearch( self.search );
-            } ).finally( function() { self.isLoading = false; } );
+              this.updateSearch( this.search );
+            } finally {
+              this.isLoading = false;
+            }
           }
         } );
 
         if( angular.isDefined( module.actions.history ) ) {
-          object.viewHistory = function() {
-            $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } );
+          object.viewHistory = async function() {
+            await $state.go( module.subject.snake + '.history', { identifier: $state.params.identifier } );
           };
         }
 
         if( angular.isDefined( module.actions.view ) ) {
-          object.viewRecord = function() {
-            $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
+          object.viewRecord = async function() {
+            await $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
           };
         }
       }
@@ -6035,7 +6002,7 @@ cenozo.factory( 'CnHttpFactory', [
       angular.extend( this, params );
 
       var self = this;
-      function http( method, url, cancelOnTransition ) {
+      async function http( method, url, cancelOnTransition ) {
         if( angular.isUndefined( cancelOnTransition ) ) cancelOnTransition = false;
         var object = {
           url: cenozoApp.baseUrl + '/' + url,
@@ -6131,86 +6098,87 @@ cenozo.factory( 'CnHttpFactory', [
 
         if( 'GET' == method || 'HEAD' == method ) object.headers['No-Activity'] = self.noActivity;
 
-        var promise = $http( object )
-        promise.catch( function( response ) {
-          if( response instanceof Error ) {
+        try {
+          return await $http( object );
+        } catch( error ) {
+          if( error instanceof Error ) {
             // blank content
             document.getElementById( 'view' ).innerHTML = '';
 
-            if( 'Login Mismatch' == response.name ) {
+            if( 'Login Mismatch' == error.name ) {
               if( hasLoginMismatch ) return; // do nothing if we've already been here
               hasLoginMismatch = true;
             }
-            CnModalMessageFactory.instance( {
-              title: response.name,
-              message: response.message,
+
+            await CnModalMessageFactory.instance( {
+              title: error.name,
+              message: error.message,
               error: true
-            } ).show().then( function() {
-              if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
-            } );
+            } ).show();
+
+            if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
           } else {
             // do not send cancelled requests to the error handler
-            if( -1 != response.status ) {
+            if( -1 != error.status ) {
               if( self.redirectOnError ) {
                 // only redirect once, afterwords ignore any additional error redirect requests
                 if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
                   hasRedirectedOnError = true;
-                  $state.go(
-                    'error.' + ( angular.isDefined( response ) ? response.status : 500 ),
-                    response
-                  ).then( function() {
-                    $timeout( function() { hasRedirectedOnError = false; }, 500 );
-                  } );
+                  await $state.go(
+                    'error.' + ( angular.isDefined( error ) ? error.status : 500 ),
+                    error
+                  );
+                  $timeout( function() { hasRedirectedOnError = false; }, 500 );
                 }
               } else {
                 // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
                 // don't want to bother showing a non-redirecting error message
-                $timeout( function() {
-                  if( !hasRedirectedOnError ) self.onError( response );
-                }, 400 );
+                await $timeout( function() { if( !hasRedirectedOnError ) self.onError( error ); }, 400 );
               }
             }
           }
-        } );
 
-        return promise;
+          throw method + ' failed';
+        }
       };
 
-      this.delete = function() { return http( 'DELETE', 'api/' + this.path, false ); };
-      this.get = function() { return http( 'GET', 'api/' + this.path, true ); };
-      this.head = function() { return http( 'HEAD', 'api/' + this.path, true ); };
-      this.patch = function() { return http( 'PATCH', 'api/' + this.path, false ); };
-      this.post = function() { return http( 'POST', 'api/' + this.path, false ); };
-      this.query = function() { return http( 'GET', 'api/' + this.path, true ); };
-      this.count = function() {
+      this.delete = async function() { return await http( 'DELETE', 'api/' + this.path, false ); };
+      this.get = async function() { return await http( 'GET', 'api/' + this.path, true ); };
+      this.head = async function() { return await http( 'HEAD', 'api/' + this.path, true ); };
+      this.patch = async function() { return await http( 'PATCH', 'api/' + this.path, false ); };
+      this.post = async function() { return await http( 'POST', 'api/' + this.path, false ); };
+      this.query = async function() { return await http( 'GET', 'api/' + this.path, true ); };
+      this.count = async function() {
         this.path += ( this.path.includes( '?' ) ? '&' : '?' ) + 'count=true';
-        return this.query();
+        return await this.query();
       }
-      this.file = function() {
+      this.file = async function() {
         // change the default error
         if( this.onError === CnModalMessageFactory.httpError ) {
-          this.onError = function( response ) {
-            if( 404 == response.status ) {
+          this.onError = function( error ) {
+            if( 404 == error.status ) {
               CnModalMessageFactory.instance( {
                 title: 'File Not Found',
                 message: 'Sorry, the file you are trying to download doesn\'t exist on the server.',
                 error: true
               } ).show();
-            } else CnModalMessageFactory.httpError( response );
+            } else CnModalMessageFactory.httpError( error );
           };
         }
         if( 'json' === this.format ) this.format = 'pdf';
         if( angular.isUndefined( this.data.download ) || !this.data.download ) this.data.download = true;
-        return this.get().then( function( response ) {
-          saveAs(
-            new Blob(
-              [response.data],
-              { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
-            ),
-            response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
-          );
-        } );
-      };
+
+        var response = await this.get();
+        saveAs(
+          new Blob(
+            [response.data],
+            { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+          ),
+          response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
+        );
+
+        return response;
+      }
     };
 
     return {
@@ -6306,7 +6274,7 @@ cenozo.service( 'CnModalConfirmFactory', [
       this.show = function() {
         return $uibModal.open( {
           backdrop: 'static',
-          keyboard: true,
+          keyboard: false,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -6331,8 +6299,6 @@ cenozo.service( 'CnModalDatetimeFactory', [
   '$uibModal', '$window', 'CnSession',
   function( $uibModal, $window, CnSession ) {
     var object = function( params ) {
-      var self = this;
-
       var viewMoveGaps = {
         day: { unit: 'months', amount: 1 },
         month: { unit: 'years', amount: 1 },
@@ -6577,9 +6543,10 @@ cenozo.service( 'CnModalDatetimeFactory', [
           $window.dispatchEvent( new Event( 'resize' ) );
         },
         show: function() {
+          var self = this;
           return $uibModal.open( {
             backdrop: 'static',
-            keyboard: true,
+            keyboard: false,
             modalFade: true,
             templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-datetime.tpl.html' ),
             controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -6696,7 +6663,6 @@ cenozo.service( 'CnModalMessageFactory', [
   '$uibModal', '$state', '$window', '$filter',
   function( $uibModal, $state, $window, $filter ) {
     var object = function( params ) {
-      var self = this;
       angular.extend( this, {
         title: 'Title',
         message: 'Message',
@@ -6709,10 +6675,11 @@ cenozo.service( 'CnModalMessageFactory', [
       } );
       angular.extend( this, params );
 
+      var self = this;
       this.show = function() {
-        self.modal = $uibModal.open( {
+        this.modal = $uibModal.open( {
           backdrop: 'static',
-          keyboard: !self.block,
+          keyboard: !this.block,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -6736,7 +6703,7 @@ cenozo.service( 'CnModalMessageFactory', [
           } ]
         } );
 
-        return self.modal.result;
+        return this.modal.result;
       };
 
       this.close = function() { if( angular.isDefined( this.modal ) ) this.modal.close( false ); };
@@ -6816,7 +6783,6 @@ cenozo.service( 'CnModalInputFactory', [
   '$uibModal',
   function( $uibModal ) {
     var object = function( params ) {
-      var self = this;
       this.title = 'Provide Input';
       this.message = 'Please provide input:';
       this.value = '';
@@ -6827,9 +6793,10 @@ cenozo.service( 'CnModalInputFactory', [
       angular.extend( this, params );
 
       this.show = function() {
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
-          keyboard: true,
+          keyboard: false,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-input.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -6880,10 +6847,9 @@ cenozo.service( 'CnModalInputFactory', [
  * The factory used to select multiple participants
  */
 cenozo.factory( 'CnParticipantSelectionFactory', [
-  'CnSession', 'CnHttpFactory', '$q',
-  function( CnSession, CnHttpFactory, $q ) {
+  'CnSession', 'CnHttpFactory',
+  function( CnSession, CnHttpFactory ) {
     var object = function( params ) {
-      var self = this;
       var uidIdentifier = { id: null, name: 'UID', regex: CnSession.application.uidRegex };
       this.path = 'participant';
       this.data = {};
@@ -6897,35 +6863,35 @@ cenozo.factory( 'CnParticipantSelectionFactory', [
         confirmInProgress: false,
         confirmedCount: null,
         identifierListString: '',
-        identifierListStringChanged: function() { self.confirmedCount = null; },
+        identifierListStringChanged: function() { this.confirmedCount = null; },
         identifierId: null,
         identifierList: [],
-        reset: function() {
-          self.confirmInProgress = false;
-          self.confirmedCount = null;
-          self.identifierListString = '';
+        reset: async function() {
+          this.confirmInProgress = false;
+          this.confirmedCount = null;
+          this.identifierListString = '';
 
           // load the identifier list
-          self.identifierList = [];
-          CnHttpFactory.instance( {
+          this.identifierList = [];
+          var response = await CnHttpFactory.instance( {
             path: 'identifier'
-          } ).query().then( function( response ) {
-            self.identifierList = [ uidIdentifier ];
-            self.identifierList = self.identifierList.concat( response.data );
-          } );
-        },
-        selectIdentifier: function() { self.confirmedCount = null; },
-        getIdentifierList: function() { return self.identifierListString.split( ' ' ); },
-        confirm: function() {
-          self.confirmInProgress = true;
-          self.confirmedCount = null;
+          } ).query();
 
-          var identifier = self.identifierList.findByProperty( 'id', self.identifierId );
+          this.identifierList = [ uidIdentifier ];
+          this.identifierList = this.identifierList.concat( response.data );
+        },
+        selectIdentifier: function() { this.confirmedCount = null; },
+        getIdentifierList: function() { return this.identifierListString.split( ' ' ); },
+        confirm: async function() {
+          this.confirmInProgress = true;
+          this.confirmedCount = null;
+
+          var identifier = this.identifierList.findByProperty( 'id', this.identifierId );
           var regex = identifier.regex ? new RegExp( identifier.regex ) : null;
 
           // clean up the identifier list
           var fixedList =
-            self.identifierListString.toUpperCase()
+            this.identifierListString.toUpperCase()
                         // replace whitespace and separation chars with a space
                         .replace( /[\s,;|\/]/g, ' ' )
                         // remove anything that isn't a letter, number, underscore or space
@@ -6939,30 +6905,24 @@ cenozo.factory( 'CnParticipantSelectionFactory', [
                         .sort();
 
           // now confirm UID list with server
-          var data = angular.copy( self.data );
-          if( angular.isUndefined( data.identifier_id ) ) data.identifier_id = self.identifierId;
+          var data = angular.copy( this.data );
+          if( angular.isUndefined( data.identifier_id ) ) data.identifier_id = this.identifierId;
           if( angular.isUndefined( data.identifier_list ) ) data.identifier_list = fixedList;
 
-          var promiseList = [];
           if( 0 == fixedList.length ) {
-            self.identifierListString = '';
-            self.confirmInProgress = false;
+            this.identifierListString = '';
+            this.confirmInProgress = false;
           } else {
-            promiseList.push(
-              CnHttpFactory.instance( {
-                path: self.path,
-                data: data
-              } ).post().then( function( response ) {
-                self.responseFn( self, response );
-              } )
-            );
+            var response = await CnHttpFactory.instance( {
+              path: this.path,
+              data: data
+            } ).post();
+            this.responseFn( this, response );
           }
-
-          return $q.all( promiseList );
         }
       } );
 
-      self.reset();
+      this.reset();
     };
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
@@ -6981,7 +6941,6 @@ cenozo.service( 'CnModalPasswordFactory', [
     var isOpen = false;
 
     var object = function( params ) {
-      var self = this;
       this.confirm = true;
       this.showCancel = false;
       this.showPasswords = false;
@@ -6990,6 +6949,7 @@ cenozo.service( 'CnModalPasswordFactory', [
 
       this.show = function() {
         isOpen = true;
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: this.confirm,
@@ -7053,7 +7013,6 @@ cenozo.service( 'CnModalRestrictFactory', [
   '$uibModal', 'CnModalDatetimeFactory', 'CnSession',
   function( $uibModal, CnModalDatetimeFactory, CnSession ) {
     var object = function( params ) {
-      var self = this;
       if( angular.isUndefined( params.column ) )
         throw new Error( 'Tried to create CnModalRestrictFactory instance without a column.' );
 
@@ -7132,6 +7091,7 @@ cenozo.service( 'CnModalRestrictFactory', [
       }, this );
 
       this.show = function() {
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
@@ -7153,31 +7113,30 @@ cenozo.service( 'CnModalRestrictFactory', [
             $scope.cancel = function() { $uibModalInstance.dismiss( 'cancel' ); };
 
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
-              $scope.selectDatetime = function( index ) {
-                CnModalDatetimeFactory.instance( {
+              $scope.selectDatetime = async function( index ) {
+                var response = await CnModalDatetimeFactory.instance( {
                   title: self.column,
                   date: self.restrictList[index].value,
                   pickerType: self.type,
                   emptyAllowed: true
-                } ).show().then( function( response ) {
-                  if( false !== response ) {
-                    self.restrictList[index].value = response;
-                    self.formattedValueList[index] =
-                      CnSession.formatValue( self.restrictList[index].value, self.type, true );
+                } ).show();
+                if( false !== response ) {
+                  self.restrictList[index].value = response;
+                  self.formattedValueList[index] =
+                    CnSession.formatValue( self.restrictList[index].value, self.type, true );
 
-                    // set non-nullable options disabled/enabled status
-                    var optionList = document.querySelector( 'select[name="test' + index + '"]' ).
-                                     getElementsByClassName( 'not-nullable' );
-                    if( angular.isArray( optionList ) )
-                      optionList.map( function( item ) { item.disabled = null === response } );
+                  // set non-nullable options disabled/enabled status
+                  var optionList = document.querySelector( 'select[name="test' + index + '"]' ).
+                                   getElementsByClassName( 'not-nullable' );
+                  if( angular.isArray( optionList ) )
+                    optionList.map( function( item ) { item.disabled = null === response } );
 
-                    // update the empty list
-                    self.updateEmpty( index );
+                  // update the empty list
+                  self.updateEmpty( index );
 
-                    // describe the restriction
-                    self.describeRestriction( index );
-                  }
-                } );
+                  // describe the restriction
+                  self.describeRestriction( index );
+                }
               };
             }
           } ]
@@ -7198,9 +7157,10 @@ cenozo.service( 'CnModalSiteFactory', [
   '$uibModal', 'CnSession',
   function( $uibModal, CnSession ) {
     var object = function( params ) {
-      var self = this;
       angular.extend( this, params );
+
       this.show = function() {
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
@@ -7231,16 +7191,16 @@ cenozo.service( 'CnModalSiteRoleFactory', [
   '$uibModal', 'CnHttpFactory',
   function( $uibModal, CnHttpFactory ) {
     var object = function( params ) {
-      var self = this;
       angular.extend( this, params );
 
       this.show = function() {
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site-role.tpl.html' ),
-          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
+          controller: [ '$scope', '$uibModalInstance', async function( $scope, $uibModalInstance ) {
             $scope.refreshRoleList = function() {
               this.siteList.forEach( function( item, index ) {
                 if( this.siteId == item.id ) this.roleList = item.roleList;
@@ -7260,30 +7220,28 @@ cenozo.service( 'CnModalSiteRoleFactory', [
             $scope.loading = true;
 
             // get access records
-            CnHttpFactory.instance( {
-              path: 'self/0/access'
-            } ).get().then( function( response ) {
-              response.data.forEach( function( access ) {
-                // get the site, or add it if it's missing, then add the role to the site's role list
-                var site = $scope.siteList.findByProperty( 'id', access.site_id );
-                if( null == site ) {
-                  site = {
-                    id: access.site_id,
-                    name: access.site_name,
-                    timezone: access.timezone,
-                    roleList: []
-                  };
-                  $scope.siteList.push( site );
-                }
-                site.roleList.push( { id: access.role_id, name: access.role_name } );
-              } );
+            var response = await CnHttpFactory.instance( { path: 'self/0/access' } ).get();
 
-              // set the site, refresh the role list then set the role (must be in this order)
-              $scope.siteId = self.siteId ? self.siteId : $scope.siteList[0].id;
-              $scope.refreshRoleList();
-              if( self.roleId ) $scope.roleId = self.roleId;
-              $scope.loading = false;
+            response.data.forEach( function( access ) {
+              // get the site, or add it if it's missing, then add the role to the site's role list
+              var site = $scope.siteList.findByProperty( 'id', access.site_id );
+              if( null == site ) {
+                site = {
+                  id: access.site_id,
+                  name: access.site_name,
+                  timezone: access.timezone,
+                  roleList: []
+                };
+                $scope.siteList.push( site );
+              }
+              site.roleList.push( { id: access.role_id, name: access.role_name } );
             } );
+
+            // set the site, refresh the role list then set the role (must be in this order)
+            $scope.siteId = self.siteId ? self.siteId : $scope.siteList[0].id;
+            $scope.refreshRoleList();
+            if( self.roleId ) $scope.roleId = self.roleId;
+            $scope.loading = false;
           } ]
         } ).result;
       };
@@ -7302,7 +7260,6 @@ cenozo.service( 'CnModalTextFactory', [
   '$uibModal',
   function( $uibModal ) {
     var object = function( params ) {
-      var self = this;
       this.title = 'Provide Text';
       this.message = 'Please provide details:';
       this.text = '';
@@ -7310,6 +7267,7 @@ cenozo.service( 'CnModalTextFactory', [
       angular.extend( this, params );
 
       this.show = function() {
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
@@ -7342,13 +7300,13 @@ cenozo.service( 'CnModalTimezoneFactory', [
   '$uibModal', 'CnSession',
   function( $uibModal, CnSession ) {
     var object = function( params ) {
-      var self = this;
 
       this.timezone = null;
       this.use12hourClock = false;
       angular.extend( this, params );
 
       this.show = function() {
+        var self = this;
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
@@ -7417,6 +7375,7 @@ cenozo.factory( 'CnPaginationFactory',
 /**
  * Launches scripts in a separate tab
  * 
+ * Note: always call the initialize() method after creating an instance of this factory
  * Note: use CnSession.closeScript() to close the tab opened by this factory's launch() function
  */
 cenozo.factory( 'CnScriptLauncherFactory', [
@@ -7426,8 +7385,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
       if( !CnSession.moduleList.includes( 'script' ) )
         throw new Error( 'Tried to create script launcher but script module is not enabled' );
 
-      var self = this;
-
+      this.initialized = false;
       this.lang = 'en';
       if( angular.isUndefined( params.script ) )
         throw new Error( 'Tried to create CnScriptLauncherFactory instance without a script' );
@@ -7436,66 +7394,57 @@ cenozo.factory( 'CnScriptLauncherFactory', [
       if( angular.isUndefined( params.identifier ) )
         throw new Error( 'Tried to create CnScriptLauncherFactory instance without a identifier' );
       angular.extend( this, params );
-      this.token = undefined;
-      this.deferred = $q.defer();
 
-      // Pine scripts are managed differently than Limesurvey scripts
-      if( 'Pine' == this.script.application ) {
-        CnHttpFactory.instance( {
-          path: 'script/' + self.script.id + '/pine_response/' + self.identifier
-        } ).get().then( function( response ) {
-          self.token = response.data;
-          if( angular.isDefined( self.onReady ) ) self.onReady();
-          self.deferred.resolve();
-        } );
+      angular.extend( this, {
+        token: undefined,
 
-        this.launch = function() {
-          return this.deferred.promise.then( function() {
-            // launch the script
-            CnSession.scriptWindowHandler = $window.open( self.script.url + self.token.token + '?show_hidden=1', 'cenozoScript' );
-          } );
-        };
-      } else {
-        // if the script is repeated determine the token
-        if( this.script.repeated ) {
-          if( angular.isDefined( this.onReady ) ) this.onReady();
-          this.deferred.resolve();
-        } else {
-          CnHttpFactory.instance( {
-            path: 'script/' + self.script.id + '/token/' + self.identifier,
-            data: { select: { column: [ 'token', 'completed' ] } },
-            onError: function( response ) {
-              // ignore 404
-              if( 404 == response.status ) {
-                self.token = null;
-                if( angular.isDefined( self.onReady ) ) self.onReady();
-                self.deferred.resolve();
+        initialize: async function() {
+          if( 'Pine' == this.script.application ) {
+            if( !this.initialized ) {
+              this.initialized = true;
+              var response = await CnHttpFactory.instance( {
+                path: 'script/' + this.script.id + '/pine_response/' + this.identifier
+              } ).get();
+
+              this.token = response.data;
+              if( angular.isDefined( this.onReady ) ) this.onReady();
+            }
+          } else {
+            if( !this.initialized ) {
+              this.initialized = true;
+
+              // if the script is repeated determine the token
+              if( this.script.repeated ) {
+                if( angular.isDefined( this.onReady ) ) this.onReady();
               } else {
-                CnModalMessageFactory.httpError( response );
+                var self = this;
+                var response = await CnHttpFactory.instance( {
+                  path: 'script/' + this.script.id + '/token/' + this.identifier,
+                  data: { select: { column: [ 'token', 'completed' ] } },
+                  onError: function( error ) {
+                    // ignore 404
+                    if( 404 == error.status ) {
+                      self.token = null;
+                      if( angular.isDefined( self.onReady ) ) self.onReady();
+                    } else {
+                      CnModalMessageFactory.httpError( error );
+                    }
+                  }
+                } ).get();
+
+                this.token = response.data;
+                if( angular.isDefined( this.onReady ) ) this.onReady();
               }
             }
-          } ).get().then( function( response ) {
-            self.token = response.data;
-            if( angular.isDefined( self.onReady ) ) self.onReady();
-            self.deferred.resolve();
-          } );
-        }
+          }
+        },
 
-        // used by the launch function to open the script and add an update-check if necessary
-        function launchScript() {
-          // add a check to supporting scripts
-          if( self.script.supporting && !self.script.repeated ) CnHttpFactory.instance ( {
-            path: 'script/' + self.script.id + '/token/' + self.identifier + '?update_check=1'
-          } ).get();
-          // launch the script
-          var url = self.script.url + '?lang=' + self.lang + '&newtest=Y';
-          CnSession.scriptWindowHandler =
-            $window.open( url + '&token=' + self.token.token, 'cenozoScript' );
-        }
-
-        this.launch = function() {
-          return this.deferred.promise.then( function() {
-            if( null == self.token ) {
+        launch: async function() {
+          if( 'Pine' == this.script.application ) {
+            // launch the script
+            CnSession.scriptWindowHandler = $window.open( this.script.url + this.token.token + '?show_hidden=1', 'cenozoScript' );
+          } else {
+            if( null == this.token ) {
               // the token doesn't exist so create it
               var modal = CnModalMessageFactory.instance( {
                 title: 'Please Wait',
@@ -7504,31 +7453,40 @@ cenozo.factory( 'CnScriptLauncherFactory', [
               } );
               modal.show();
 
-              return CnHttpFactory.instance( {
-                path: 'script/' + self.script.id + '/token',
-                data: { identifier: self.identifier },
-                onError: function( response ) {
+              var response = await CnHttpFactory.instance( {
+                path: 'script/' + this.script.id + '/token',
+                data: { identifier: this.identifier },
+                onError: function( error ) {
                   modal.close();
-                  CnModalMessageFactory.httpError( response );
+                  CnModalMessageFactory.httpError( error );
                 }
-              } ).post().then( function( response ) {
-                // close the wait message
-                modal.close();
+              } ).post();
 
-                // now get the new token string we just created and use it to open the script window
-                return CnHttpFactory.instance( {
-                  path: 'script/' + self.script.id + '/token/' + response.data
-                } ).get().then( function( response ) {
-                  self.token = { token: response.data.token, completed: 'N' };
-                  launchScript();
-                } );
-              } );
-            } else {
-              launchScript();
+              // close the wait message
+              modal.close();
+
+              // now get the new token string we just created and use it to open the script window
+              var subResponse = await CnHttpFactory.instance( {
+                path: ['script', this.script.id, 'token', response.data].join( '/' )
+              } ).get();
+
+              this.token = { token: subResponse.data.token, completed: 'N' };
             }
-          } );
+
+            // add a check to supporting scripts
+            if( this.script.supporting && !this.script.repeated ) {
+              await CnHttpFactory.instance ( {
+                path: ['script', this.script.id, 'token', this.identifier+'?update_check=1'].join( '/' )
+              } ).get();
+            }
+
+            // launch the script
+            CnSession.scriptWindowHandler = $window.open(
+              this.script.url + '?lang=' + this.lang + '&newtest=Y' + '&token=' + this.token.token, 'cenozoScript'
+            );
+          }
         }
-      }
+      } );
     };
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
@@ -7542,9 +7500,9 @@ cenozo.factory( 'CnScriptLauncherFactory', [
  */
 cenozo.config( [
   '$controllerProvider', '$compileProvider', '$filterProvider', '$locationProvider',
-  '$provide', '$uibTooltipProvider', '$urlRouterProvider', '$httpProvider', '$qProvider',
+  '$provide', '$uibTooltipProvider', '$urlRouterProvider', '$httpProvider',
   function( $controllerProvider, $compileProvider, $filterProvider, $locationProvider,
-            $provide, $uibTooltipProvider, $urlRouterProvider, $httpProvider, $qProvider ) {
+            $provide, $uibTooltipProvider, $urlRouterProvider, $httpProvider ) {
     // create an object containing all providers
     cenozo.providers.controller = $controllerProvider.register;
     cenozo.providers.directive = $compileProvider.directive;
@@ -7557,8 +7515,8 @@ cenozo.config( [
     cenozo.providers.decorator = $provide.decorator;
 
     // load the 404 state when a state is not found for the provided path
-    $urlRouterProvider.otherwise( function( $injector, $location ) {
-      $injector.get( '$state' ).go( 'error.404' );
+    $urlRouterProvider.otherwise( async function( $injector, $location ) {
+      await $injector.get( '$state' ).go( 'error.404' );
       return $location.path();
     } );
 
@@ -7591,11 +7549,11 @@ cenozo.run( [
     $transitions.onSuccess( {}, function( transition ) {
       if( stateErrorTransition ) stateErrorTransition = false;
     } );
-    $transitions.onError( {}, function( transition ) {
+    $transitions.onError( {}, async function( transition ) {
       if( 5 != transition.error().type ) { // ignore "transition was ignored" errors
         if( !stateErrorTransition ) {
           stateErrorTransition = true;
-          CnSession.workingTransition( function() { $state.go( 'error.404' ) } );
+          await CnSession.workingTransition( async function() { await $state.go( 'error.404' ) } );
         }
       }
     } );

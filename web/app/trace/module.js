@@ -92,14 +92,12 @@ define( function() {
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
         // extend onNew
-        this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
-            return self.parentModel.updateTraceTypeList();
-          } );
+        this.onNew = async function( record ) {
+          await this.$$onNew( record );
+          await this.parentModel.updateTraceTypeList();
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -108,8 +106,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnTraceListFactory', [
-    'CnBaseListFactory', '$q',
-    function( CnBaseListFactory, $q ) {
+    'CnBaseListFactory',
+    function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -118,39 +116,39 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnTraceModelFactory', [
     'CnBaseModelFactory', 'CnTraceAddFactory', 'CnTraceListFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalInputFactory', '$state', '$q',
+    'CnSession', 'CnHttpFactory', 'CnModalInputFactory', '$state',
     function( CnBaseModelFactory, CnTraceAddFactory, CnTraceListFactory,
-              CnSession, CnHttpFactory, CnModalInputFactory, $state, $q ) {
+              CnSession, CnHttpFactory, CnModalInputFactory, $state ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnTraceAddFactory.instance( this );
         this.listModel = CnTraceListFactory.instance( this );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            // make the trace type and note mandatory (since users cannot manually set trace type to empty)
-            self.metadata.columnList.trace_type_id.required = true;
-            self.metadata.columnList.note.required = true;
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
 
-            return CnHttpFactory.instance( {
-              path: 'trace_type',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name', limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.trace_type_id.enumList = [];
-              response.data.forEach( function( item ) {
-                // only allow all-site roles to use the "unreachable" trace type
-                if( 'unreachable' != item.name || CnSession.role.allSites ) {
-                  self.metadata.columnList.trace_type_id.enumList.push( {
-                    value: item.id, name: item.name, disabled: false
-                  } );
-                }
+          // make the trace type and note mandatory (since users cannot manually set trace type to empty)
+          this.metadata.columnList.trace_type_id.required = true;
+          this.metadata.columnList.note.required = true;
+
+          var response = await CnHttpFactory.instance( {
+            path: 'trace_type',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.trace_type_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            // only allow all-site roles to use the "unreachable" trace type
+            if( 'unreachable' != item.name || CnSession.role.allSites ) {
+              self.metadata.columnList.trace_type_id.enumList.push( {
+                value: item.id, name: item.name, disabled: false
               } );
-            } );
+            }
           } );
         };
 
@@ -204,95 +202,89 @@ define( function() {
         };
 
         // When in the trace.list state transition to the participant when clicking the trace record
-        this.transitionToViewState = function( record ) {
-          $state.go( 'participant.view', { identifier: 'uid=' + record.uid } );
+        this.transitionToViewState = async function( record ) {
+          await $state.go( 'participant.view', { identifier: 'uid=' + record.uid } );
         };
 
         // special function to update the trace-type list based on the participant's current trace
-        this.updateTraceTypeList = function() {
-          var parent = self.getParentIdentifier();
-          return CnHttpFactory.instance( {
+        this.updateTraceTypeList = async function() {
+          var parent = this.getParentIdentifier();
+          var response = await CnHttpFactory.instance( {
             path: [ parent.subject, parent.identifier, 'trace' ].join( '/' ),
             data: {
               select: { column: [ 'trace_type_id' ] },
               modifier: { order: { 'trace.datetime': true } }
             }
-          } ).query().then( function success( response ) {
-            if( 0 < response.data.length ) {
-              // disable the last trace's type
-              self.metadata.columnList.trace_type_id.enumList.forEach( function( traceType ) {
-                traceType.disabled = traceType.value == response.data[0].trace_type_id;
-              } );
-            }
-          } );
+          } ).query();
+
+          if( 0 < response.data.length ) {
+            // disable the last trace's type
+            this.metadata.columnList.trace_type_id.enumList.forEach( function( traceType ) {
+              traceType.disabled = traceType.value == response.data[0].trace_type_id;
+            } );
+          }
         };
 
         // Pops up an input dialog to get the reason why a participant will be added to or removed from tracing
         // as a result of adding/activating or removing/deactivating either an address or phone number.
-        // Note that this function should be called before making the change to the address or phone.  It will
-        // return a promise once the reason has been entered by the user (or immediately of no change in trace
-        // will occur as a result of the change in address/phone)
+        // Note that this function should be called before making the change to the address or phone.
         // 
         // @var identifier is an object with identifer (id) and subject (participant or alternate) properties
-        this.checkForTrace = function( identifier, required, type ) {
-          if( angular.isUndefined( required ) ) required = false;
+        this.checkForTrace = async function( identifier, removed, type ) {
+          if( angular.isUndefined( removed ) ) removed = false;
           if( 'address' != type && 'phone' != type ) {
             throw new Error(
               'Tried to check for last contact type "' + type + '".  Must be either "address" or "phone".'
             );
           }
 
+          var traceResponse = true;
+
           // activate tracing if the contact belongs to a participant who only has one valid contact of the
           // requested type (address or phone) and the last trace is null
           if( null != identifier.identifier && 'participant' == identifier.subject ) {
             var changing_count_column = 'active_' + type + '_count';
             var other_count_column = 'active_' + ( 'address' == type ? 'phone' : 'address' ) + '_count';
-            return CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: identifier.subject + '/' + identifier.identifier,
               data: { select: { column: [
                 'active_address_count',
                 'active_phone_count',
                 { table: 'trace_type', column: 'name', alias: 'trace_type' }
               ] } }
-            } ).count().then( function( response ) {
-              if( required ) {
-                // check to see if tracing will be required after removing/deactivating the contact type
-                if( 1 == response.data[changing_count_column] && null == response.data.trace_type ) {
-                  return CnModalInputFactory.instance( {
-                    title: 'Tracing Required',
-                    message:
-                      'If you proceed the participant will no longer have an active ' + type + '. ' +
-                      'In order to help with re-tracing contact with this participant please provide the reason ' +
-                      'that you are making this change:',
-                    required: true,
-                    format: 'string'
-                  } ).show().then( function( response ) {
-                    return response;
-                  } );
-                }
-              } else {
-                // check to see if tracing will be resolved after adding/activating the contact type
-                if( 0 == response.data[changing_count_column] &&
-                    0 < response.data[other_count_column] &&
-                    null != response.data.trace_type ) {
-                  return CnModalInputFactory.instance( {
-                    title: 'Tracing Completed',
-                    message:
-                      'Previously to your change the participant did not have an active ' + type + '. ' +
-                      'Please provide how the new ' + type + ' information was determined:',
-                    required: true,
-                    format: 'string'
-                  } ).show().then( function( response ) {
-                    return response;
-                  } );
-                }
-              }
+            } ).count();
 
-              return $q.all().then( function() { return true; } );
-            } );
+            if( removed ) {
+              // check to see if tracing will be required after removing/deactivating the contact type
+              if( 1 == response.data[changing_count_column] && null == response.data.trace_type ) {
+                traceResponse = await CnModalInputFactory.instance( {
+                  title: 'Tracing Required',
+                  message:
+                    'If you proceed the participant will no longer have an active ' + type + '. ' +
+                    'In order to help with re-tracing contact with this participant please provide the reason ' +
+                    'that you are making this change:',
+                  required: true,
+                  format: 'string'
+                } ).show();
+              }
+            } else {
+              // check to see if tracing will be resolved after adding/activating the contact type
+              if( 0 == response.data[changing_count_column] &&
+                  0 < response.data[other_count_column] &&
+                  null != response.data.trace_type ) {
+                traceResponse = await CnModalInputFactory.instance( {
+                  title: 'Tracing Completed',
+                  message:
+                    'Previously to your change the participant did not have an active ' + type + '. ' +
+                    'Please provide how the new ' + type + ' information was determined:',
+                  required: true,
+                  format: 'string'
+                } ).show();
+              }
+            }
           }
 
-          return $q.all().then( function() { return true; } );
+          return traceResponse;
         };
 
         // convenience functions
@@ -303,9 +295,9 @@ define( function() {
 
         // used to update the last trace record with the provided reason (for participants only)
         // @var identifier is an object with identifer (id) and subject (participant or alternate) properties
-        this.setTraceReason = function( identifier, reason ) {
+        this.setTraceReason = async function( identifier, reason ) {
           if( null != identifier.identifier && 'participant' == identifier.subject ) {
-            CnHttpFactory.instance( {
+            await CnHttpFactory.instance( {
               path: identifier.subject + '/' + identifier.identifier,
               data: {
                 explain_last_trace: {

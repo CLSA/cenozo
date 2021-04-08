@@ -129,8 +129,9 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   module.addExtraOperation( 'view', {
     title: 'Use Timezone',
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() { model.viewModel.useTimezone(); } );
+    operation: async function( $state, model ) {
+      await model.viewModel.onViewPromise;
+      model.viewModel.useTimezone();
     }
   } );
 
@@ -199,25 +200,21 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressAddFactory', [
-    'CnBaseAddFactory', 'CnTraceModelFactory', '$q',
-    function( CnBaseAddFactory, CnTraceModelFactory, $q ) {
+    'CnBaseAddFactory', 'CnTraceModelFactory',
+    function( CnBaseAddFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
         var traceModel = CnTraceModelFactory.root;
 
-        this.onAdd = function( record ) {
+        this.onAdd = async function( record ) {
           var identifier = this.parentModel.getParentIdentifier();
-          return traceModel.checkForTraceResolvedAfterAddressAdded( identifier ).then( function( response ) {
-            if( response ) {
-              return self.$$onAdd( record ).then( function() {
-                // end tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-              } );
-            } else {
-              return $q.reject();
-            }
-          } );
+          var traceResponse = await traceModel.checkForTraceResolvedAfterAddressAdded( identifier );
+          if( traceResponse ) {
+            await this.$$onAdd( record )
+            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            throw 'Cancelled by user';
+          }
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -226,25 +223,24 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressListFactory', [
-    'CnBaseListFactory', 'CnTraceModelFactory', '$q',
-    function( CnBaseListFactory, CnTraceModelFactory, $q ) {
+    'CnBaseListFactory', 'CnTraceModelFactory',
+    function( CnBaseListFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseListFactory.construct( this, parentModel );
         var traceModel = CnTraceModelFactory.root;
 
-        this.onDelete = function( record ) {
-          var identifier = this.parentModel.getParentIdentifier();
-          return traceModel.checkForTraceRequiredAfterAddressRemoved( identifier ).then( function( response ) {
-            if( response ) {
-              return self.$$onDelete( record ).then( function() {
-                // start tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-              } );
-            } else {
-              return $q.reject();
-            }
-          } );
+        this.onDelete = async function( record ) {
+          var identifier = {
+            subject: this.parentModel.getSubjectFromState(),
+            identifier: this.parentModel.getQueryParameter( 'identifier', true )
+          };
+          var traceResponse = await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
+          if( traceResponse ) {
+            await this.$$onDelete( record );
+            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            throw 'Cancelled by user';
+          }
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -253,18 +249,17 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory', 'CnTraceModelFactory', 'CnSession', '$state', '$window', '$q',
-    function( CnBaseViewFactory, CnTraceModelFactory, CnSession, $state, $window, $q ) {
+    'CnBaseViewFactory', 'CnTraceModelFactory', 'CnSession', '$state', '$window',
+    function( CnBaseViewFactory, CnTraceModelFactory, CnSession, $state, $window ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         var traceModel = CnTraceModelFactory.root;
         this.onViewPromise = null;
 
-        this.useTimezone = function() {
-          CnSession.setTimezone( { 'address_id': this.record.id } ).then( function() {
-            $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
-          } );
+        this.useTimezone = async function() {
+          await CnSession.setTimezone( { 'address_id': this.record.id } );
+          await $state.go( 'self.wait' );
+          $window.location.reload();
         };
 
         this.onView = function( force ) {
@@ -272,51 +267,32 @@ define( [ 'trace' ].reduce( function( list, name ) {
           return this.onViewPromise;
         };
 
-        this.onPatch = function( data ) {
+        this.onPatch = async function( data ) {
           var identifier = this.parentModel.getParentIdentifier();
-          if( angular.isDefined( data.active ) ) {
-            if( data.active ) {
-              return traceModel.checkForTraceResolvedAfterAddressAdded( identifier ).then( function( response ) {
-                if( response ) {
-                  return self.$$onPatch( data ).then( function() {
-                    // end tracing with reason "response"
-                    if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-                  } );
-                } else {
-                  return $q.reject();
-                }
-              } );
-            } else {
-              return traceModel.checkForTraceRequiredAfterAddressRemoved( identifier ).then( function( response ) {
-                if( response ) {
-                  return self.$$onPatch( data ).then( function() {
-                    // start tracing with reason "response"
-                    if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-                  } );
-                } else {
-                  return $q.reject();
-                }
-              } );
-            }
-          }
+          var traceResponse = !angular.isDefined( data.active )
+                            ? true
+                            : data.active
+                            ? await traceModel.checkForTraceResolvedAfterAddressAdded( identifier )
+                            : await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
 
-          return this.$$onPatch( data ).then( function() {
-            if( angular.isDefined( data.postcode ) ) return self.onView();
-          } );
+          if( traceResponse ) {
+            await this.$$onPatch( data );
+            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+            if( angular.isDefined( data.postcode ) ) await this.onView();
+          } else {
+            this.record.active = this.backupRecord.active;
+          }
         };
 
-        this.onDelete = function() {
+        this.onDelete = async function() {
           var identifier = this.parentModel.getParentIdentifier();
-          return traceModel.checkForTraceRequiredAfterAddressRemoved( identifier ).then( function( response ) {
-            if( response ) {
-              return self.$$onDelete().then( function() {
-                // start tracing with reason "response"
-                if( angular.isString( response ) ) return traceModel.setTraceReason( identifier, response );
-              } );
-            } else {
-              return $q.reject();
-            }
-          } );
+          var traceResponse = await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
+          if( traceResponse ) {
+            await this.$$onDelete();
+            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+          } else {
+            throw 'Cancelled by user';
+          }
         };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -330,37 +306,33 @@ define( [ 'trace' ].reduce( function( list, name ) {
     function( CnBaseModelFactory, CnAddressListFactory, CnAddressAddFactory, CnAddressViewFactory,
               CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAddressAddFactory.instance( this );
         this.listModel = CnAddressListFactory.instance( this );
         this.viewModel = CnAddressViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'region',
-              data: {
-                select: {
-                  column: [
-                    'id',
-                    'country',
-                    { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
-                  ]
-                },
-                modifier: { order: ['country','name'], limit: 1000 }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.region_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.region_id.enumList.push( {
-                  value: item.id,
-                  country: item.country,
-                  name: item.name
-                } );
-              } );
-            } );
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'region',
+            data: {
+              select: {
+                column: [
+                  'id',
+                  'country',
+                  { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
+                ]
+              },
+              modifier: { order: ['country','name'], limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.region_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.region_id.enumList.push( { value: item.id, country: item.country, name: item.name } );
           } );
         };
       };

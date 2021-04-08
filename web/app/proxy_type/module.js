@@ -77,14 +77,17 @@ define( function() {
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
-        // allow administrators add/delete of roles and participants
-        this.deferred.promise.then( function() {
-        if( angular.isDefined( self.roleModel ) )
-          self.roleModel.getChooseEnabled = function() { return 2 < CnSession.role.tier; };
-        } );
+        var self = this;
+        async function init() {
+          // allow administrators add/delete of roles and participants
+          await self.deferred.promise;
+          if( angular.isDefined( self.roleModel ) )
+            self.roleModel.getChooseEnabled = function() { return 2 < CnSession.role.tier; };
+        }
+
+        init();
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

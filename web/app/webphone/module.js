@@ -34,86 +34,87 @@ define( function() {
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http', '$interval', '$timeout',
     function( CnSession, CnHttpFactory, CnModalMessageFactory, $http, $interval, $timeout ) {
       var object = function( root ) {
-        var self = this;
-        this.updating = false;
-        this.lastUpdate = null;
-        this.webphone = '(disabled)';
-        this.voip = CnSession.voip;
-        this.webphoneUrl = CnSession.application.webphoneUrl;
-        this.useRecording = CnSession.moduleList.includes( 'recording' );
-        if( this.useRecording ) {
-          this.recordingList = [];
-          this.activeRecording = null;
-          this.activeRecordingFile = null;
-        }
-        this.lastLanguageId = null;
-        this.playbackVolume = '0';
-        this.voipOperation = null;
-        this.timerValue = null;
-        this.timerPromise = null;
+        angular.extend( this, {
+          updating: false,
+          lastUpdate: null,
+          webphone: '(disabled)',
+          voip: CnSession.voip,
+          webphoneUrl: CnSession.application.webphoneUrl,
+          useRecording: CnSession.moduleList.includes( 'recording' ),
+          lastLanguageId: null,
+          playbackVolume: '0',
+          voipOperation: null,
+          timerValue: null,
+          timerPromise: null,
 
-        this.updateInformation = function() {
-          if( !self.updating ) {
-            self.updating = true;
-            CnSession.updateVoip().then( function() {
-              self.voip = CnSession.voip;
-              if( self.voip.enabled && null != self.voip.info && '(disabled)' == self.webphone ) {
-                // loading webphone from server which isn't part of the API, so use $http
-                $http.get( CnSession.application.webphoneUrl ).then( function( response ) {
-                  self.webphone = response.data;
-                } );
+          updateInformation: async function() {
+            if( !this.updating ) {
+              this.updating = true;
+              try {
+                await CnSession.updateVoip();
+
+                this.voip = CnSession.voip;
+                if( this.voip.enabled && null != this.voip.info && '(disabled)' == this.webphone ) {
+                  // loading webphone from server which isn't part of the API, so use $http
+                  var response = await $http.get( CnSession.application.webphoneUrl );
+                  this.webphone = response.data;
+                }
+                this.lastUpdate = moment().tz( CnSession.user.timezone );
+              } finally {
+                this.updating = false;
               }
-              self.lastUpdate = moment().tz( CnSession.user.timezone );
-              self.updating = false;
-            } );
-          }
-        };
-
-        // update the information now and again in 10 seconds (to give the webphone applet time to load)
-        this.updateInformation();
-        $timeout( self.updateInformation, 10000 );
-
-        if( this.useRecording ) {
-          this.startRecording = function() {
-            this.voipOperation = null == this.activeRecordingFile ? 'monitoring' : 'playing';
-            var data = {
-              operation: null == this.activeRecordingFile ? 'start_monitoring' : 'play_sound',
-              recording_id: this.activeRecording.id,
-              volume: parseInt( this.playbackVolume )
-            };
-            if( this.activeRecording.record ) {
-              data.recording_id = this.activeRecording.id;
-            } else {
-              data.recording_file_id = this.activeRecordingFile.id;
             }
+          }
+        } );
 
-            CnHttpFactory.instance( {
-              path: 'voip/0',
-              data: data,
-              onError: function( response ) {
-                self.voipOperation = null;
-                if( 404 == response.status ) {
-                  // 404 means there is no active call
-                  CnModalMessageFactory.instance( {
-                    title: 'No Active Call',
-                    message: 'The system was unable to start the recording since you do not appear to be ' +
-                             'in a phone call.',
-                    error: true
-                  } ).show();
-                } else CnModalMessageFactory.httpError( response );
+        if( this.useRecording ) {
+          angular.extend( this, {
+            recordingList: [],
+            activeRecording: null,
+            activeRecordingFile: null,
+
+            startRecording: async function() {
+              var self = this;
+              this.voipOperation = null == this.activeRecordingFile ? 'monitoring' : 'playing';
+              var data = {
+                operation: null == this.activeRecordingFile ? 'start_monitoring' : 'play_sound',
+                recording_id: this.activeRecording.id,
+                volume: parseInt( this.playbackVolume )
+              };
+              if( this.activeRecording.record ) {
+                data.recording_id = this.activeRecording.id;
+              } else {
+                data.recording_file_id = this.activeRecordingFile.id;
               }
-            } ).patch().then( function() {
+
+              await CnHttpFactory.instance( {
+                path: 'voip/0',
+                data: data,
+                onError: function( error ) {
+                  self.voipOperation = null;
+                  if( 404 == error.status ) {
+                    // 404 means there is no active call
+                    CnModalMessageFactory.instance( {
+                      title: 'No Active Call',
+                      message: 'The system was unable to start the recording since you do not appear to be ' +
+                               'in a phone call.',
+                      error: true
+                    } ).show();
+                  } else CnModalMessageFactory.httpError( error );
+                }
+              } ).patch();
+
               // start the timer
-              if( null != self.timerValue && null == self.timerPromise ) {
-                self.timerPromise = $interval( function() {
+              if( null != this.timerValue && null == this.timerPromise ) {
+                this.timerPromise = $interval( async function() {
                   self.timerValue++;
 
                   if( null == self.activeRecording.timer ) {
                     self.timerValue = null;
-                    self.stopRecording();
+                    await self.stopRecording();
                   } else if( self.activeRecording.timer <= self.timerValue ) {
                     self.timerValue = self.activeRecording.timer;
-                    CnHttpFactory.instance( {
+                    await CnHttpFactory.instance( {
                       path: 'voip/0',
                       data: {
                         operation: 'play_sound',
@@ -121,64 +122,60 @@ define( function() {
                         volume: parseInt( self.playbackVolume )
                       },
                       onError: function() {} // ignore all errors
-                    } ).patch().then( function() {
-                      self.stopRecording();
-                    } );
+                    } ).patch()
+                    await self.stopRecording();
                   }
-
                 }, 1000 );
               }
-            } );
-          };
+            },
 
-          this.selectRecording = function() {
-            if( 0 == this.activeRecording.fileList.length ) {
-              this.activeRecordingFile = null;
-            } else {
-              // try and find the matching language
-              var newRecording = this.activeRecording.fileList.findByProperty(
-                'language_id', this.lastLanguageId );
-              if( null == newRecording ) newRecording = this.activeRecording.fileList[0];
+            selectRecording: function() {
+              if( 0 == this.activeRecording.fileList.length ) {
+                this.activeRecordingFile = null;
+              } else {
+                // try and find the matching language
+                var newRecording = this.activeRecording.fileList.findByProperty(
+                  'language_id', this.lastLanguageId );
+                if( null == newRecording ) newRecording = this.activeRecording.fileList[0];
 
-              this.activeRecordingFile = newRecording;
-            }
-
-            // stop the timer
-            this.timerValue = 0;
-            if( null != this.timerPromise ) {
-              $interval.cancel( this.timerPromise );
-              this.timerPromise = null;
-            }
-          };
-
-          this.selectRecordingFile = function() {
-            if( this.activeRecordingFile )
-              this.lastLanguageId = this.activeRecordingFile.language_id;
-          };
-
-          this.stopRecording = function() {
-            CnHttpFactory.instance( {
-              path: 'voip/0',
-              data: { operation: 'stop_monitoring' },
-              onError: function( response ) {
-                // ignore all errors
-                self.voipOperation = null;
+                this.activeRecordingFile = newRecording;
               }
-            } ).patch().then( function() {
-              self.voipOperation = null;
-            } );
 
-            // stop the timer
-            if( null != this.timerPromise ) {
-              $interval.cancel( this.timerPromise );
-              this.timerPromise = null;
+              // stop the timer
+              this.timerValue = 0;
+              if( null != this.timerPromise ) {
+                $interval.cancel( this.timerPromise );
+                this.timerPromise = null;
+              }
+            },
+
+            selectRecordingFile: function() {
+              if( this.activeRecordingFile )
+                this.lastLanguageId = this.activeRecordingFile.language_id;
+            },
+
+            stopRecording: async function() {
+              // stop the timer
+              if( null != this.timerPromise ) {
+                $interval.cancel( this.timerPromise );
+                this.timerPromise = null;
+              }
+
+              await CnHttpFactory.instance( {
+                path: 'voip/0',
+                data: { operation: 'stop_monitoring' },
+                onError: function() { this.voipOperation = null; }
+              } ).patch();
+              this.voipOperation = null;
             }
-          };
+          } );
 
-          // get the recording and recording-file lists
-          CnHttpFactory.instance( {
-            path: 'recording'
-          } ).get().then( function( response ) {
+          async function init() {
+            // get the recording and recording-file lists
+            var response = await CnHttpFactory.instance( {
+              path: 'recording'
+            } ).get()
+
             self.recordingList = response.data.map( function( recording ) {
               return {
                 id: recording.id,
@@ -189,7 +186,7 @@ define( function() {
               };
             } );
 
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'recording_file',
               data: {
                 select: {
@@ -200,26 +197,33 @@ define( function() {
                   } ]
                 }
               }
-            } ).get().then( function( response ) {
-              response.data.forEach( function( file ) {
-                self.recordingList.findByProperty( 'id', file.recording_id ).fileList.push( {
-                  id: file.id,
-                  language_id: file.language_id,
-                  name: file.language
-                } );
-              } );
+            } ).get();
 
-              // now select a default recording and language
-              if( 0 < self.recordingList.length ) {
-                self.activeRecording = self.recordingList[0];
-                if( 0 < self.activeRecording.fileList.length ) {
-                  self.activeRecordingFile = self.activeRecording.fileList[0];
-                  self.lastLanguageId = self.activeRecordingFile.language_id;
-                }
-              }
+            response.data.forEach( function( file ) {
+              self.recordingList.findByProperty( 'id', file.recording_id ).fileList.push( {
+                id: file.id,
+                language_id: file.language_id,
+                name: file.language
+              } );
             } );
-          } );
+
+            // now select a default recording and language
+            if( 0 < self.recordingList.length ) {
+              self.activeRecording = self.recordingList[0];
+              if( 0 < self.activeRecording.fileList.length ) {
+                self.activeRecordingFile = self.activeRecording.fileList[0];
+                self.lastLanguageId = self.activeRecordingFile.language_id;
+              }
+            }
+          }
+
+          init();
         }
+
+        // update the information now and again in 10 seconds (to give the webphone applet time to load)
+        this.updateInformation();
+        var self = this;
+        $timeout( function() { self.updateInformation(); }, 10000 );
       };
 
       return { instance: function() { return new object( false ); } };

@@ -41,8 +41,8 @@ define( function() {
 
   module.addExtraOperation( 'view', {
     title: 'Import Participant Identifiers',
-    operation: function( $state, model ) {
-      $state.go( 'identifier.import', { identifier: model.viewModel.record.getIdentifier() } );
+    operation: async function( $state, model ) {
+      await $state.go( 'identifier.import', { identifier: model.viewModel.record.getIdentifier() } );
     }
   } );
 
@@ -99,20 +99,22 @@ define( function() {
         templateUrl: module.getFileUrl( 'import.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
-        controller: function( $scope ) {
+        controller: async function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnIdentifierModelFactory.root;
 
-          $scope.model.viewModel.onView().then( function() {
-            CnSession.setBreadcrumbTrail( [ {
-              title: 'Identifiers',
-              go: function() { return $state.go( 'identifier.list' ); }
-            }, {
-              title: $scope.model.viewModel.record.name,
-              go: function() { return $state.go( 'identifier.view', { identifier: $scope.model.viewModel.record.getIdentifier() } ); }
-            }, {
-              title: 'Import Participant Identifiers'
-            } ] );
-          } );
+          await $scope.model.viewModel.onView();
+
+          CnSession.setBreadcrumbTrail( [ {
+            title: 'Identifiers',
+            go: async function() { return await $state.go( 'identifier.list' ); }
+          }, {
+            title: $scope.model.viewModel.record.name,
+            go: async function() {
+              return await $state.go( 'identifier.view', { identifier: $scope.model.viewModel.record.getIdentifier() } );
+            }
+          }, {
+            title: 'Import Participant Identifiers'
+          } ] );
         }
       };
     }
@@ -141,26 +143,26 @@ define( function() {
     'CnBaseViewFactory', 'CnHttpFactory', '$rootScope', '$state',
     function( CnBaseViewFactory, CnHttpFactory, $rootScope, $state ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        angular.extend( self, {
+        angular.extend( this, {
           reset: function() {
-            self.uploadReadReady = false;
-            self.working = false;
-            self.file = null;
-            self.fileCheckResults = null;
+            this.uploadReadReady = false;
+            this.working = false;
+            this.file = null;
+            this.fileCheckResults = null;
           },
 
-          cancel: function() {
-            self.reset();
-            $state.go( 'identifier.view', { identifier: this.record.getIdentifier() } );
+          cancel: async function() {
+            this.reset();
+            await $state.go( 'identifier.view', { identifier: this.record.getIdentifier() } );
           },
 
           checkImport: function() {
-            if( !self.uploadReadReady ) {
+            if( !this.uploadReadReady ) {
               // need to wait for cnUpload to do its thing
-              $rootScope.$on( 'cnUpload read', function() {
+              var self = this;
+              $rootScope.$on( 'cnUpload read', async function() {
                 self.working = true;
                 self.uploadReadReady = true;
 
@@ -168,27 +170,34 @@ define( function() {
                 data.append( 'file', self.file );
 
                 // check the imported file
-                return CnHttpFactory.instance( {
-                  path: self.parentModel.getServiceResourcePath() + '?import=check',
-                  data: self.file
-                } ).patch().then( function( response ) {
+                try {
+                  var response = await CnHttpFactory.instance( {
+                    path: self.parentModel.getServiceResourcePath() + '?import=check',
+                    data: self.file
+                  } ).patch();
+
                   self.fileCheckResults = angular.fromJson( response.data );
-                } ).finally( function() { self.working = false; } );
+                } finally {
+                  self.working = false;
+                }
               } );
             }
           },
 
-          applyImport: function() {
-            self.working = true;
-
+          applyImport: async function() {
             // apply the patch file
-            return CnHttpFactory.instance( {
-              path: self.parentModel.getServiceResourcePath() + '?import=apply',
-              data: self.file
-            } ).patch().then( function() {
-              self.reset();
-              $state.go( 'identifier.view', { identifier: self.record.getIdentifier() } );
-            } ).finally( function() { self.working = false; } );
+            try {
+              this.working = true;
+              await CnHttpFactory.instance( {
+                path: this.parentModel.getServiceResourcePath() + '?import=apply',
+                data: this.file
+              } ).patch();
+
+              this.reset();
+              $state.go( 'identifier.view', { identifier: this.record.getIdentifier() } );
+            } finally {
+              this.working = false;
+            }
           }
         } );
 
