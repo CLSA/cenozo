@@ -152,12 +152,12 @@ define( [
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
     'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory', 'CnHinModelFactory',
     'CnHoldModelFactory', 'CnProxyModelFactory', 'CnTraceModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$q',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory',
     function( CnBaseViewFactory,
               CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
               CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory, CnHinModelFactory,
               CnHoldModelFactory, CnProxyModelFactory, CnTraceModelFactory,
-              CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $q ) {
+              CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory ) {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'export_file' );
 

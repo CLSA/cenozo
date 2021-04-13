@@ -581,8 +581,10 @@ define( function() {
       var object = function() {
         CnBaseHistoryFactory.construct( this, module, CnAlternateModelFactory.root );
 
-        // can't use await here since this is a constructor function
-        this.onView().then( function() {
+        var self = this;
+        async function init() {
+          await this.onView();
+
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Alternates',
@@ -594,7 +596,9 @@ define( function() {
               title: 'History'
             } ]
           );
-        } );
+        }
+
+        init();
       };
 
       return { instance: function() { return new object( false ); } };
@@ -608,8 +612,10 @@ define( function() {
       var object = function() {
         CnBaseNoteFactory.construct( this, module );
 
-        // can't use await here since this is a constructor function
-        this.onView().then( function() {
+        var self = this;
+        async function init() {
+          await this.onView();
+
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Alternates',
@@ -621,7 +627,9 @@ define( function() {
               title: 'Notes'
             } ]
           );
-        } );
+        }
+
+        init();
       };
 
       return { instance: function() { return new object( false ); } };
