@@ -656,7 +656,7 @@ class util
    * @static
    * @access public
    */
-  public static function get_data_as_csv( $data, $db_user = NULL )
+  public static function get_data_as_csv( $data, $db_user = NULL, $transpose = false )
   {
     $session = lib::create( 'business\session' );
     if( is_null( $db_user ) ) $db_user = $session->get_user();
@@ -729,6 +729,12 @@ class util
           }
         }
       }
+    }
+
+    if( $transpose )
+    {
+      function transpose( $array ) { return array_map( null, ...$array ); }
+      $csv_array = transpose( $csv_array );
     }
 
     $encoded_data = '';
