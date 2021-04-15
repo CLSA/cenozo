@@ -1556,8 +1556,8 @@ cenozo.directive( 'cnAddInput', [
 
         $scope.check = function() { $scope.$parent.check( $scope.input.key ); }
 
-        $scope.getTypeaheadValues = function( viewValue ) {
-          return $scope.model.getTypeaheadValues( $scope.input, viewValue );
+        $scope.getTypeaheadValues = async function( viewValue ) {
+          return await $scope.model.getTypeaheadValues( $scope.input, viewValue );
         };
 
         $scope.onSelectTypeahead = function( $item, $model, $label ) {
@@ -2179,7 +2179,7 @@ cenozo.directive( 'cnViewInput', [
           return 12 > width ? 'col-slim-left col-sm-' + width : '';
         };
 
-        $scope.undo = function() {
+        $scope.undo = async function() {
           if( $scope.model.getEditEnabled() ) {
             var property = $scope.input.key;
             if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
@@ -2188,20 +2188,26 @@ cenozo.directive( 'cnViewInput', [
                 $scope.model.viewModel.formattedRecord[property] =
                   $scope.model.viewModel.backupRecord['formatted_'+property];
               }
-              $scope.patch( property );
+              await $scope.patch( property );
             }
           }
         };
 
-        $scope.patch = function( property ) {
+        $scope.patch = async function( property ) {
           if( angular.isUndefined( property ) ) property = $scope.input.key;
+
+          var found = false;
           var parentScope = $scope.$parent;
           while( parentScope ) {
-            if( angular.isDefined( parentScope.patch ) ) return parentScope.patch( property );
+            if( angular.isDefined( parentScope.patch ) ) {
+              await parentScope.patch( property );
+              found = true;
+              break;
+            }
             parentScope = parentScope.$parent;
           }
 
-          console.error( 'Couldn\'t find the patch() function in any of the scope\'s ancestors.' );
+          if( !found ) console.error( 'Couldn\'t find the patch() function in any of the scope\'s ancestors.' );
         }
 
         $scope.onEmptyTypeahead = async function() {
@@ -2211,15 +2217,15 @@ cenozo.directive( 'cnViewInput', [
           // if the input isn't required then set the value to null
           if( !$scope.model.metadata.columnList[property].required ) {
             $scope.model.viewModel.record[property] = null;
-            $scope.patch( property );
+            await $scope.patch( property );
           }
         };
 
-        $scope.getTypeaheadValues = function( viewValue ) {
-          return $scope.model.getEditEnabled() ? $scope.model.getTypeaheadValues( $scope.input, viewValue ) : []
+        $scope.getTypeaheadValues = async function( viewValue ) {
+          return $scope.model.getEditEnabled() ? await $scope.model.getTypeaheadValues( $scope.input, viewValue ) : []
         };
 
-        $scope.onSelectTypeahead = function( $item, $model, $label ) {
+        $scope.onSelectTypeahead = async function( $item, $model, $label ) {
           if( $scope.model.getEditEnabled() ) {
             if( 'lookup-typeahead' == $scope.input.type ) {
               $scope.model.viewModel.formattedRecord[$scope.input.key] = $label;
@@ -2227,7 +2233,7 @@ cenozo.directive( 'cnViewInput', [
             } else {
               $scope.model.viewModel.record[$scope.input.key] = $item;
             }
-            $scope.patch( $scope.input.key );
+            await $scope.patch( $scope.input.key );
           }
         };
 
@@ -2251,7 +2257,7 @@ cenozo.directive( 'cnViewInput', [
 
             if( false !== response ) {
               $scope.model.viewModel.record[$scope.input.key] = response;
-              $scope.patch( $scope.input.key );
+              await $scope.patch( $scope.input.key );
             }
           }
         };
@@ -5708,8 +5714,8 @@ cenozo.factory( 'CnBaseModelFactory', [
  * The base factory for History factories
  */
 cenozo.factory( 'CnBaseHistoryFactory', [
-  'CnHttpFactory', '$state', '$q',
-  function( CnHttpFactory, $state, $q ) {
+  'CnHttpFactory', '$state',
+  function( CnHttpFactory, $state ) {
     return {
       construct: function( object, module, model ) {
         angular.extend( object, {
@@ -5762,7 +5768,7 @@ cenozo.factory( 'CnBaseHistoryFactory', [
               var active = object.model.getQueryParameter( name.toLowerCase() );
               object.module.historyCategoryList[name].active = angular.isDefined( active ) ? active : true;
               if( 'asyncfunction' == cenozo.getType( object.module.historyCategoryList[name].promise ) ) {
-                await object.module.historyCategoryList[name].promise( object.historyList, $state, CnHttpFactory, $q )
+                await object.module.historyCategoryList[name].promise( object.historyList, $state, CnHttpFactory )
               }
             };
 
