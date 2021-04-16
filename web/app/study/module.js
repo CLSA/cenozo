@@ -14,7 +14,7 @@ define( function() {
       name: { title: 'Name' },
       consent_type: { column: 'consent_type.name', title: 'Consent Type' },
       completed_event_type: { column: 'event_type.name', title: 'Completed Event Type' },
-      description: { title: 'Description', align: 'left' }
+      description: { column: 'study.description', title: 'Description', align: 'left' }
     },
     defaultOrder: {
       column: 'name',
