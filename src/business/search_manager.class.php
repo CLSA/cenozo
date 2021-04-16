@@ -53,7 +53,7 @@ class search_manager extends \cenozo\singleton
       array_unique( array_merge( $word_list, explode( ' ', $query ) ) ),
       function( $w ) { return 1 < strlen( $w ); }
     );
-    array_walk( $word_list, create_function( '&$w', '$w = trim( $w );' ) );
+    array_walk( $word_list, function( &$w ) { trim( $w ); } );
     sort( $word_list );
 
     return $word_list;
