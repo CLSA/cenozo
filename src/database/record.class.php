@@ -118,7 +118,7 @@ abstract class record extends \cenozo\base_object
 
       $row = static::db()->get_row( $sql );
 
-      if( 0 == count( $row ) )
+      if( is_null( $row ) || 0 == count( $row ) )
       {
         throw lib::create( 'exception\runtime',
           sprintf( 'Load failed to find record for %s with %s = %d.',
