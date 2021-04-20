@@ -399,27 +399,32 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateNotes', [
-    'CnAlternateNotesFactory', '$timeout',
-    function( CnAlternateNotesFactory, $timeout) {
+    'CnAlternateNotesFactory',
+    function( CnAlternateNotesFactory ) {
       return {
         templateUrl: cenozo.getFileUrl( 'cenozo', 'notes.tpl.html' ),
         restrict: 'E',
-        controller: function( $scope ) {
-          $scope.model = CnAlternateNotesFactory.instance();
+        controller: async function( $scope ) {
+          angular.extend( $scope, {
+            model: CnAlternateNotesFactory.instance(),
 
-          // trigger the elastic directive when adding a note or undoing
-          $scope.addNote = async function() {
-            $scope.model.addNote();
-            await $timeout( function() { angular.element( '#newNote' ).trigger( 'elastic' ) }, 100 );
-          };
+            // trigger the elastic directive when adding a note or undoing
+            addNote: async function() {
+              await $scope.model.addNote();
+              angular.element( '#newNote' ).trigger( 'elastic' );
+            },
 
-          $scope.undo = async function( id ) {
-            await $scope.model.undo( id );
-            await $timeout( function() { angular.element( '#note' + id ).trigger( 'elastic' ) }, 100 );
-          };
+            undo: async function( id ) {
+              await $scope.model.undo( id );
+              angular.element( '#note' + id ).trigger( 'elastic' );
+            },
 
-          $scope.refresh = function() { $scope.model.onView(); };
-          $scope.model.onView();
+            refresh: async function() {
+              await $scope.model.onView();
+            }
+          } );
+
+          await $scope.model.onView();
         }
       };
     }
