@@ -976,8 +976,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantMultiedit', [
-    'CnParticipantMultieditFactory', 'CnSession', '$state', '$timeout',
-    function( CnParticipantMultieditFactory, CnSession, $state, $timeout ) {
+    'CnParticipantMultieditFactory', 'CnSession', '$state',
+    function( CnParticipantMultieditFactory, CnSession, $state ) {
       return {
         templateUrl: module.getFileUrl( 'multiedit.tpl.html' ),
         restrict: 'E',
@@ -999,27 +999,32 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantNotes', [
-    'CnParticipantNotesFactory', '$timeout',
-    function( CnParticipantNotesFactory, $timeout) {
+    'CnParticipantNotesFactory',
+    function( CnParticipantNotesFactory ) {
       return {
         templateUrl: cenozo.getFileUrl( 'cenozo', 'notes.tpl.html' ),
         restrict: 'E',
-        controller: function( $scope ) {
-          $scope.model = CnParticipantNotesFactory.instance();
+        controller: async function( $scope ) {
+          angular.extend( $scope, {
+            model: CnParticipantNotesFactory.instance(),
 
-          // trigger the elastic directive when adding a note or undoing
-          $scope.addNote = function() {
-            $scope.model.addNote();
-            $timeout( function() { angular.element( '#newNote' ).trigger( 'elastic' ) }, 100 );
-          };
+            // trigger the elastic directive when adding a note or undoing
+            addNote: async function() {
+              await $scope.model.addNote();
+              angular.element( '#newNote' ).trigger( 'elastic' );
+            },
 
-          $scope.undo = function( id ) {
-            $scope.model.undo( id );
-            $timeout( function() { angular.element( '#note' + id ).trigger( 'elastic' ) }, 100 );
-          };
+            undo: async function( id ) {
+              await $scope.model.undo( id );
+              angular.element( '#note' + id ).trigger( 'elastic' );
+            },
 
-          $scope.refresh = function() { $scope.model.onView(); };
-          $scope.model.onView();
+            refresh: async function() {
+              await $scope.model.onView();
+            }
+          } );
+
+          await $scope.model.onView();
         }
       };
     }
