@@ -335,15 +335,16 @@ define( function() {
           } );
         };
 
+        var self = this;
         this.afterView( function() {
-          if( angular.isUndefined( this.downloadFile ) ) {
-            this.downloadFile = function() {
+          if( angular.isUndefined( self.downloadFile ) ) {
+            self.downloadFile = function() {
               var format = 'csv';
-              if( 'Excel' == this.record.format ) format = 'xlsx';
-              else if( 'LibreOffice' == this.record.format ) format = 'ods';
+              if( 'Excel' == self.record.format ) format = 'xlsx';
+              else if( 'LibreOffice' == self.record.format ) format = 'ods';
 
               return CnHttpFactory.instance( {
-                path: 'report/' + this.record.getIdentifier(),
+                path: 'report/' + self.record.getIdentifier(),
                 format: format
               } ).file();
             };
