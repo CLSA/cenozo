@@ -1943,7 +1943,7 @@ cenozo.directive( 'cnRecordView', [
                 // if the data in the identifier was patched then reload with the new url
                 if( identifier.split( /[;=]/ ).includes( property ) ) {
                   $scope.model.setQueryParameter( 'identifier', identifier );
-                  $scope.model.reloadState();
+                  await $scope.model.reloadState();
                 } else {
                   var currentElement = cenozo.getFormElement( property );
                   if( currentElement ) {
@@ -3971,7 +3971,7 @@ cenozo.factory( 'CnBaseListFactory', [
               this.parentModel.setQueryParameter( 'order', column );
               this.parentModel.setQueryParameter( 'reverse', reverse );
               this.parentModel.setQueryParameter( 'page', 1 );
-              this.parentModel.reloadState( true );
+              await this.parentModel.reloadState( true );
             } else {
               // do model-based sorting
               this.order = { column: column, reverse: reverse };
@@ -4018,7 +4018,7 @@ cenozo.factory( 'CnBaseListFactory', [
                 angular.equals( restrict, {} ) ? undefined : angular.toJson( restrict )
               );
               this.parentModel.setQueryParameter( 'page', 1 );
-              this.parentModel.reloadState( true );
+              await this.parentModel.reloadState( true );
             } else {
               // do model-based restricting
               this.columnRestrictLists[column] = angular.copy( newList );
@@ -4029,11 +4029,11 @@ cenozo.factory( 'CnBaseListFactory', [
         } );
 
         // called when the pagination widget is used
-        cenozo.addExtendableFunction( object, 'onPagination', function() {
+        cenozo.addExtendableFunction( object, 'onPagination', async function() {
           if( angular.isUndefined( this.paginationModel.ignore ) ) {
             // set the page as a query parameter
             this.parentModel.setQueryParameter( 'page', this.paginationModel.currentPage );
-            this.parentModel.reloadState( false );
+            await this.parentModel.reloadState( false );
 
             // get more records if the max index is past the last record or the min index is before the first one
             if( this.cache.length < this.total &&
@@ -4408,10 +4408,10 @@ cenozo.factory( 'CnBaseViewFactory', [
         object.deferred = $q.defer();
         object.defaultTab = angular.isUndefined( defaultTab ) ? null : defaultTab;
         if( angular.isDefined( object.defaultTab ) ) {
-          object.setTab = function( tab ) {
+          object.setTab = async function( tab ) {
             object.tab = tab;
             object.parentModel.setQueryParameter( 'tab', object.tab );
-            object.parentModel.reloadState( false, false, 'replace' );
+            await object.parentModel.reloadState( false, false, 'replace' );
           };
         } else {
           object.tab = null;
@@ -5731,26 +5731,26 @@ cenozo.factory( 'CnBaseHistoryFactory', [
             await $state.go( module.subject.snake + '.view', { identifier: $state.params.identifier } );
           },
 
-          selectAllCategories: function() {
+          selectAllCategories: async function() {
             for( var name in object.module.historyCategoryList ) {
               object.module.historyCategoryList[name].active = true;
             }
-            object.model.reloadState( false, false );
+            await object.model.reloadState( false, false );
           },
 
-          unselectAllCategories: function() {
+          unselectAllCategories: async function() {
             for( var name in object.module.historyCategoryList ) {
               object.module.historyCategoryList[name].active = false;
             }
-            object.model.reloadState( false, false );
+            await object.model.reloadState( false, false );
           },
 
-          toggleCategory: function( name ) {
+          toggleCategory: async function( name ) {
             // update the query parameters with whatever the category's active state is
             object.model.setQueryParameter(
               name.toLowerCase(), object.module.historyCategoryList[name].active
             );
-            object.model.reloadState( false, false );
+            await object.model.reloadState( false, false );
           },
 
           getVisibleHistoryList: function() {
