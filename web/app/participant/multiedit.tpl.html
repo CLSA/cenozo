@@ -18,7 +18,7 @@
       </p>
       <hr />
       <cn-participant-selection model="model.participantSelection"></cn-participant-selection>
-      <div ng-if="model.participantSelection.confirmedCount">
+      <div ng-show="model.participantSelection.confirmedCount">
         <ul class="nav nav-tabs">
           <li ng-class="{'active':'participant'==tab}"><a ng-click="tab='participant'">Participant</a></li>
           <li ng-class="{'active':'consent'==tab}"><a ng-click="tab='consent'">Consent</a></li>
