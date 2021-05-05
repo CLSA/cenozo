@@ -1186,6 +1186,27 @@ cenozo.directive( 'cnExtraOperationButtonGroup', [
 /* ######################################################################################################## */
 
 /**
+ * Prevents the mouse wheel from changing an input's value
+ */
+cenozo.directive('cnIgnoreMouseWheel', [
+  '$document',
+  function( $document ) {
+    return {
+      restrict: 'A',
+      link: function( scope, element ) {
+        element.bind( 'wheel', function( event ) {
+          var scrollAmount = event.originalEvent.wheelDelta * -1 + $document.scrollTop();
+          event.preventDefault();
+          $document.scrollTop( scrollAmount );
+        } );
+      }
+    }
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
  * Passes keyboard events to the given function
  */
 cenozo.directive( 'cnKeyboardShortcut',
