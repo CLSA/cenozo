@@ -516,10 +516,22 @@ class data_manager extends \cenozo\singleton
       $column = $parts[1];
       if( 'age()' == $column )
       {
-        // participant.participant.age() or participant.age()
+        // participant.age() or participant.age()
         $value = is_null( $db_participant->date_of_birth )
                ? ''
                : $util_class_name::get_interval( $db_participant->date_of_birth )->y;
+      }
+      else if( 1 == preg_match( '/date_of_birth\((.+)\)/', $column, $matches ) )
+      {
+        // participant.date_of_birth(format)
+        $format = trim( $matches[1], ' \'"' );
+        $value = is_null( $db_participant->date_of_birth ) ? '' : $db_participant->date_of_birth->format( $format );
+      }
+      else if( 1 == preg_match( '/date_of_death\((.+)\)/', $column, $matches ) )
+      {
+        // participant.date_of_death(format)
+        $format = trim( $matches[1], ' \'"' );
+        $value = is_null( $db_participant->date_of_death ) ? '' : $db_participant->date_of_death->format( $format );
       }
       else
       {
