@@ -35,6 +35,9 @@ class export_file extends record
       return;
     }
 
+    // exports can use up a lot of memory, so raise the limit
+    ini_set( 'memory_limit', '1G' );
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $util_class_name = lib::get_class_name( 'util' );
 

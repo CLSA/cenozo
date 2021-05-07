@@ -23,6 +23,9 @@ abstract class base_report extends \cenozo\base_object
    */
   public function __construct( $db_report )
   {
+    // reports can use up a lot of memory, so raise the limit
+    ini_set( 'memory_limit', '1G' );
+
     $class_name = is_null( $db_report )
                 ? NULL
                 : is_a( $db_report, lib::get_class_name( 'database\record' ) )
