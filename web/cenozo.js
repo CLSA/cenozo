@@ -1853,12 +1853,12 @@ cenozo.directive( 'cnRecordList', [
               type: column.type,
               restrictList: angular.copy( scope.model.listModel.columnRestrictLists[key] )
             } ).show();
-            scope.model.listModel.setRestrictList( key, restrictList );
+            await scope.model.listModel.setRestrictList( key, restrictList );
           };
 
-          scope.removeRestrictList = function( key ) {
+          scope.removeRestrictList = async function( key ) {
             var column = scope.dataArray.findByProperty( 'key', key );
-            scope.model.listModel.setRestrictList( key, [] );
+            await scope.model.listModel.setRestrictList( key, [] );
           };
 
           // get the total number of columns in the table
