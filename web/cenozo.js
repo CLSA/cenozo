@@ -1218,9 +1218,8 @@ cenozo.directive('cnIgnoreMouseWheel', [
       restrict: 'A',
       link: function( scope, element ) {
         element.bind( 'wheel', function( event ) {
-          var scrollAmount = event.originalEvent.wheelDelta * -1 + $document.scrollTop();
           event.preventDefault();
-          $document.scrollTop( scrollAmount );
+          $document.scrollTop( event.originalEvent.deltaY + $document.scrollTop() );
         } );
       }
     }
