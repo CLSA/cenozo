@@ -117,7 +117,7 @@ define( function() {
         var self = this;
         async function init() {
           // allow add/delete of roles and participants (can't use await since this is a contructor function)
-          await deferred.promise;
+          await self.deferred.promise;
 
           if( angular.isDefined( self.roleModel ) )
             self.roleModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
