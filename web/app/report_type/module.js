@@ -129,7 +129,7 @@ define( function() {
         this.onView = async function( force ) { this.onViewPromise = await this.$$onView( force ); };
 
         var self = this;
-        async function() {
+        async function init() {
           await self.deferred.promise;
 
           if( angular.isDefined( self.reportModel ) )
@@ -143,6 +143,8 @@ define( function() {
           if( angular.isDefined( self.roleModel ) )
             self.roleModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier };
         }
+
+        init();
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
