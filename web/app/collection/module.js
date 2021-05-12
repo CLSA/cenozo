@@ -153,15 +153,19 @@ define( function() {
             // only allow users belonging to this collection to edit it when it is locked
             setAccess( !this.record.locked );
             if( this.record.locked ) {
-              await CnHttpFactory.instance( {
-                path: 'collection/' + this.record.getIdentifier() + '/user/' + CnSession.user.id,
-                onError: function error( error ) {
-                  if( 404 == error.status ) {
-                    // 404 when searching for current user in collection means we should turn off editing
-                  } else CnModalMessageFactory.httpError( error );
-                }
-              } ).get();
-              setAccess( true );
+              try {
+                await CnHttpFactory.instance( {
+                  path: 'collection/' + this.record.getIdentifier() + '/user/' + CnSession.user.id,
+                  onError: function error( error ) {
+                    if( 404 == error.status ) {
+                      // 404 when searching for current user in collection means we should turn off editing (do nothing)
+                    } else CnModalMessageFactory.httpError( error );
+                  }
+                } ).get();
+                setAccess( true );
+              } catch( error ) {
+                // handled by onError above
+              }
             }
           },
 
