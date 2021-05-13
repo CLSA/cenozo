@@ -845,6 +845,32 @@ define( [
             }
 
             await restrictionType.promise;
+          },
+
+          processMetadata: async function( subject ) {
+            await this.modelList[subject].metadata.getPromise();
+
+            var ignoreColumnList = [ 'address_id', 'alternate_id', 'participant_id', 'preferred_site_id' ];
+            var columnList = this.tableColumnList[subject];
+            for( var column in this.modelList[subject].metadata.columnList ) {
+              // ignore certain columns
+              if( !ignoreColumnList.includes( column ) ) {
+                columnList.list.push( {
+                  key: column,
+                  title: 'uid' == column ?
+                         column.toUpperCase() :
+                         'id' == column ?
+                         'Internal ID' :
+                         column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
+                } );
+              }
+            }
+            columnList.list.findByProperty( 'key', undefined ).title =
+              'Add a new ' + subject + ' column...';
+            columnList.isLoading = false;
+
+            // add special meta columns
+            if( 'participant' == subject ) columnList.list.push( { key: 'status', title: 'Status' } );
           }
         } );
 
@@ -869,45 +895,19 @@ define( [
           this.subtypeList.application = [];
         }
 
-        async function processMetadata( subject ) {
-          await this.modelList[subject].metadata.getPromise();
-
-          var ignoreColumnList = [ 'address_id', 'alternate_id', 'participant_id', 'preferred_site_id' ];
-          var columnList = this.tableColumnList[subject];
-          for( var column in this.modelList[subject].metadata.columnList ) {
-            // ignore certain columns
-            if( !ignoreColumnList.includes( column ) ) {
-              columnList.list.push( {
-                key: column,
-                title: 'uid' == column ?
-                       column.toUpperCase() :
-                       'id' == column ?
-                       'Internal ID' :
-                       column.replace( /_/g, ' ' ).replace( / id/g, '' ).ucWords()
-              } );
-            }
-          }
-          columnList.list.findByProperty( 'key', undefined ).title =
-            'Add a new ' + subject + ' column...';
-          columnList.isLoading = false;
-
-          // add special meta columns
-          if( 'participant' == subject ) columnList.list.push( { key: 'status', title: 'Status' } );
-        }
-
         var self = this;
         async function init() {
-          await processMetadata( 'participant' );
-          await processMetadata( 'site' );
-          await processMetadata( 'address' );
-          await processMetadata( 'phone' );
-          await processMetadata( 'collection' );
-          await processMetadata( 'consent' );
-          await processMetadata( 'event' );
-          await processMetadata( 'hin' );
-          await processMetadata( 'hold' );
-          await processMetadata( 'proxy' );
-          await processMetadata( 'trace' );
+          await self.processMetadata( 'participant' );
+          await self.processMetadata( 'site' );
+          await self.processMetadata( 'address' );
+          await self.processMetadata( 'phone' );
+          await self.processMetadata( 'collection' );
+          await self.processMetadata( 'consent' );
+          await self.processMetadata( 'event' );
+          await self.processMetadata( 'hin' );
+          await self.processMetadata( 'hold' );
+          await self.processMetadata( 'proxy' );
+          await self.processMetadata( 'trace' );
 
           var response = await CnHttpFactory.instance( {
             path: 'collection',
