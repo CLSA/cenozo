@@ -35,6 +35,7 @@ class identifier extends record
    */
   public function import( $csv_data, $apply = false )
   {
+    ini_set( 'memory_limit', '1G' );
     set_time_limit( 900 ); // 15 minutes max
 
     $util_class_name = lib::get_class_name( 'util' );
