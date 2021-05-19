@@ -35,13 +35,13 @@ class export_file extends record
       return;
     }
 
+    $setting_manager = lib::create( 'business\setting_manager' );
     ini_set( 'memory_limit', '1G' );
     set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $util_class_name = lib::get_class_name( 'util' );
 
-    $setting_manager = lib::create( 'business\setting_manager' );
     $db_export = $this->get_export();
     $db_application = lib::create( 'business\session' )->get_application();
 
