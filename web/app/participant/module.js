@@ -831,7 +831,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( async function( participant ) {
+        await Promise.all( response.data.map( async function( participant ) {
           var subResponse = await CnHttpFactory.instance( {
             path: 'interview/' + participant.id + '/assignment',
             data: {
@@ -878,7 +878,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } );
             }
           } );
-        } );
+        } ) );
       }
     };
   } catch( err ) {}
@@ -1099,6 +1099,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
             // only create launchers for each supporting script if the script module is activated
             if( CnSession.moduleList.includes( 'script' ) ) {
+              // note: there's no need to wait for these calls so there's no "Promise.all" here
               CnSession.supportingScriptList.forEach( async function( script ) {
                 if( null != script.name.match( /Decedent/ ) ) {
                   // only check for the decedent token if we're allowed to launch the script

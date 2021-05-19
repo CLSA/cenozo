@@ -338,7 +338,7 @@ define( function() {
           } ).get();
 
           // replace all restrictions from the module and metadata
-          response.data.forEach( async function( restriction ) {
+          await Promise.all( response.data.map( async function( restriction ) {
             var key = 'restrict_' + restriction.name;
 
             var dateType = 'date' == restriction.restriction_type;
@@ -377,7 +377,7 @@ define( function() {
               restriction_type: restriction.restriction_type
             };
             if( angular.isDefined( input.enumList ) ) self.metadata.columnList[key].enumList = input.enumList;
-          } );
+          } ) );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {

@@ -338,12 +338,12 @@ define( function() {
         var self = this;
         this.afterView( function() {
           if( angular.isUndefined( self.downloadFile ) ) {
-            self.downloadFile = function() {
+            self.downloadFile = async function() {
               var format = 'csv';
               if( 'Excel' == self.record.format ) format = 'xlsx';
               else if( 'LibreOffice' == self.record.format ) format = 'ods';
 
-              return CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: 'report/' + self.record.getIdentifier(),
                 format: format
               } ).file();
@@ -364,65 +364,67 @@ define( function() {
         this.addModel = CnReportAddFactory.instance( this );
         this.listModel = CnReportListFactory.instance( this );
         this.viewModel = CnReportViewFactory.instance( this, root );
-        var hasBaseMetadata = false;
-        var lastReportTypeIdentifier = null;
-        var lastAction = null;
 
-        // override getDeleteEnabled
-        this.getDeleteEnabled = function() { return angular.isDefined( this.module.actions.delete ); };
+        angular.extend( this, {
+          reportTypeIdentifier: null,
 
-        // extend getMetadata
-        this.getMetadata = async function() {
-          // don't use the parent identifier when in the view state, it doesn't work
-          var reportTypeIdentifier = this.getParentIdentifier().identifier;
+          // override getDeleteEnabled
+          getDeleteEnabled: function() { return angular.isDefined( this.module.actions.delete ); },
 
-          if( 'view' == this.getActionFromState() ) {
-            var response = await CnHttpFactory.instance( {
-              path: this.getServiceResourcePath(),
-              data: { select: { column: [ 'report_type_id' ] } }
-            } ).get();
-            reportTypeIdentifier = response.data.report_type_id;
+          // extend getMetadata
+          getMetadata: async function() {
+            var r = Math.floor( Math.random() * 100 );
+
+            await this.$$getMetadata();
+
+            // don't use the parent identifier when in the view state, it doesn't work
+            if( this.reportTypeIdentifier != this.getParentIdentifier().identifier ) {
+              this.reportTypeIdentifier = this.getParentIdentifier().identifier;
+
+              if( 'view' == this.getActionFromState() ) {
+                var response = await CnHttpFactory.instance( {
+                  path: this.getServiceResourcePath(),
+                  data: { select: { column: [ 'report_type_id' ] } }
+                } ).get();
+                this.reportTypeIdentifier = response.data.report_type_id;
+              }
+
+              // remove the parameter group's input list and metadata
+              var parameterData = this.module.inputGroupList.findByProperty( 'title', 'Parameters' );
+              parameterData.inputList = {};
+              for( var column in this.metadata.columnList )
+                if( 'restrict_' == column.substring( 0, 9 ) )
+                  delete this.metadata.columnList[column];
+
+              var response = await CnHttpFactory.instance( {
+                path: 'report_type/' + this.reportTypeIdentifier + '/report_restriction',
+                data: { modifier: { order: { rank: false } } }
+              } ).get();
+
+              // replace all restrictions from the module and metadata
+              var self = this;
+              for( var restriction of response.data ) {
+                var key = 'restrict_' + restriction.name;
+                var input = await cenozo.getInputFromRestriction( restriction, CnHttpFactory );
+                parameterData.inputList[key] = input;
+                self.metadata.columnList[key] = {
+                  required: restriction.mandatory,
+                  restriction_type: restriction.restriction_type
+                };
+                if( angular.isDefined( input.enumList ) ) self.metadata.columnList[key].enumList = input.enumList;
+              }
+            }
+          },
+
+          getServiceData: function( type, columnRestrictLists ) {
+            // remove restrict_* columns from service data's select.column array
+            var data = this.$$getServiceData( type, columnRestrictLists );
+            data.select.column = data.select.column.filter( function( column ) {
+              return 'restrict_' != column.column.substring( 0, 9 );
+            } );
+            return data;
           }
-
-          // remove the parameter group's input list and metadata
-          var parameterData = this.module.inputGroupList.findByProperty( 'title', 'Parameters' );
-          parameterData.inputList = {};
-          for( var column in this.metadata.columnList )
-            if( 'restrict_' == column.substring( 0, 9 ) )
-              delete this.metadata.columnList[column];
-
-          lastAction = this.getActionFromState();
-          var response = await CnHttpFactory.instance( {
-            path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
-            data: { modifier: { order: { rank: false } } }
-          } ).get();
-
-          // replace all restrictions from the module and metadata
-          var self = this;
-          response.data.forEach( async function( restriction ) {
-            var key = 'restrict_' + restriction.name;
-            var input = await cenozo.getInputFromRestriction( restriction, CnHttpFactory );
-            parameterData.inputList[key] = input;
-            self.metadata.columnList[key] = {
-              required: restriction.mandatory,
-              restriction_type: restriction.restriction_type
-            };
-            if( angular.isDefined( input.enumList ) )
-              self.metadata.columnList[key].enumList = input.enumList;
-          } );
-
-          if( !hasBaseMetadata ) await this.$$getMetadata();
-          lastReportTypeIdentifier = reportTypeIdentifier;
-        };
-
-        this.getServiceData = function( type, columnRestrictLists ) {
-          // remove restrict_* columns from service data's select.column array
-          var data = this.$$getServiceData( type, columnRestrictLists );
-          data.select.column = data.select.column.filter( function( column ) {
-            return 'restrict_' != column.column.substring( 0, 9 );
-          } );
-          return data;
-        };
+        } );
       };
 
       return {

@@ -204,7 +204,7 @@ define( [
             } ).query();
 
             this.columnList = [];
-            response.data.forEach( async function( item ) {
+            await Promise.all( response.data.map( async function( item ) {
               var columnObject = {
                 id: item.id,
                 table_name: item.table_name,
@@ -224,7 +224,7 @@ define( [
 
               // load the restriction list
               await self.loadRestrictionList( item.table_name );
-            } );
+            } ) );
 
             this.columnListIsLoading = false;
             var response = await CnHttpFactory.instance( {
@@ -675,10 +675,10 @@ define( [
             try {
               // update all restrictions and return when all promises from those operations have completed
               var self = this;
-              updateRestrictionList.forEach( async function( restriction ) {
+              await Promise.all( updateRestrictionList.map( async function( restriction ) {
                 restriction.subtype = workingColumn.subtype;
                 await self.updateRestriction( restriction.id, 'subtype' );
-              } );
+              } ) );
             } finally {
               // we don't need the old subtype anymore, so let it match the new one in preperation
               // for the next time that it gets changed

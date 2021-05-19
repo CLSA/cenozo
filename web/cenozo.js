@@ -1433,8 +1433,8 @@ cenozo.directive( 'cnRecordAdd', [
           if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) )
             $scope.model.setupBreadcrumbTrail();
 
-          $scope.dataArray.forEach( function( group ) {
-            group.inputArray.forEach( async function( input ) {
+          await Promise.all( $scope.dataArray.map( async function( group ) {
+            await Promise.all( group.inputArray.map( async function( input ) {
               var meta = $scope.model.metadata.columnList[input.key];
 
               // make the default typeahead min-length 2
@@ -1502,8 +1502,8 @@ cenozo.directive( 'cnRecordAdd', [
               } else if( 'size' == input.type ) {
                 $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
               }
-            } );
-          } );
+            } ) );
+          } ) );
         } finally {
           $scope.isComplete = true;
         }
