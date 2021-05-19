@@ -23,9 +23,6 @@ abstract class base_report extends \cenozo\base_object
    */
   public function __construct( $db_report )
   {
-    // reports can use up a lot of memory, so raise the limit
-    ini_set( 'memory_limit', '1G' );
-
     $class_name = is_null( $db_report )
                 ? NULL
                 : is_a( $db_report, lib::get_class_name( 'database\record' ) )
@@ -96,12 +93,12 @@ abstract class base_report extends \cenozo\base_object
       return;
     }
 
+    ini_set( 'memory_limit', '1G' );
+    set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
+
     $setting_manager = lib::create( 'business\setting_manager' );
     $util_class_name = lib::get_class_name( 'util' );
     $db_report_type = $this->db_report->get_report_type();
-
-    // set report time limit
-    set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
 
     try
     {
