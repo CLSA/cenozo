@@ -20,10 +20,6 @@ define( function() {
         column: 'participant.uid',
         title: 'Participant'
       },
-      site: {
-        column: 'site.name',
-        title: 'Site'
-      },
       first_name: {
         column: 'alternate.first_name',
         title: 'First Name'
@@ -78,6 +74,10 @@ define( function() {
       help: 'How the alternate knows the participant (son, neighbour, wife, etc). ' +
             'DO NOT include phone numbers.',
       regex: '^[^0-9]*[0-9]?[^0-9]*$'
+    },
+    language_id: {
+      title: 'Preferred Language',
+      type: 'enum'
     },
     email: {
       title: 'Email',
@@ -496,6 +496,27 @@ define( function() {
         // extend getMetadata
         this.getMetadata = async function() {
           await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: { column: 'active', operator: '=', value: true },
+                order: 'name',
+                limit: 1000
+              }
+            }
+          } ).query();
+
+          this.metadata.columnList.language_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.language_id.enumList.push( {
+              value: item.id,
+              name: item.name
+            } );
+          } );
 
           var response = await CnHttpFactory.instance( { path: 'phone' } ).head();
 
