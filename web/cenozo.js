@@ -1426,15 +1426,16 @@ cenozo.directive( 'cnRecordAdd', [
           }
         } );
 
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
+
         try {
           await $scope.model.addModel.onNew( $scope.record );
-          await $scope.model.metadata.getPromise();
+          $scope.model.metadata.getPromise();
+          if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) ) $scope.model.setupBreadcrumbTrail();
 
-          if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) )
-            $scope.model.setupBreadcrumbTrail();
-
-          await Promise.all( $scope.dataArray.map( async function( group ) {
-            await Promise.all( group.inputArray.map( async function( input ) {
+          $scope.dataArray.forEach( function( group ) {
+            group.inputArray.forEach( async function( input ) {
               var meta = $scope.model.metadata.columnList[input.key];
 
               // make the default typeahead min-length 2
@@ -1502,14 +1503,11 @@ cenozo.directive( 'cnRecordAdd', [
               } else if( 'size' == input.type ) {
                 $scope.formattedRecord[input.key] = [ '', 'Bytes' ];
               }
-            } ) );
-          } ) );
+            } );
+          } );
         } finally {
           $scope.isComplete = true;
         }
-
-        // emit that the directive is ready
-        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -1567,50 +1565,52 @@ cenozo.directive( 'cnAddInput', [
         first: '='
       },
       controller: [ '$scope', function( $scope ) {
-        $scope.directive = 'cnAddInput';
-        $scope.state = $state;
+        angular.extend( $scope, {
+          directive: 'cnAddInput',
+          state: $state,
 
-        $scope.getTitle = function() {
-           return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
-        };
+          getTitle: function() {
+             return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
+          },
 
-        $scope.check = function() { $scope.$parent.check( $scope.input.key ); }
+          check: function() { $scope.$parent.check( $scope.input.key ); },
 
-        $scope.getTypeaheadValues = async function( viewValue ) {
-          return await $scope.model.getTypeaheadValues( $scope.input, viewValue );
-        };
+          getTypeaheadValues: async function( viewValue ) {
+            return await $scope.model.getTypeaheadValues( $scope.input, viewValue );
+          },
 
-        $scope.onSelectTypeahead = function( $item, $model, $label ) {
-          if( 'lookup-typeahead' == $scope.input.type ) {
-            $scope.formattedRecord[$scope.input.key] = $label;
-            $scope.record[$scope.input.key] = $model;
-          } else {
-            $scope.record[$scope.input.key] = $item;
+          onSelectTypeahead: function( $item, $model, $label ) {
+            if( 'lookup-typeahead' == $scope.input.type ) {
+              $scope.formattedRecord[$scope.input.key] = $label;
+              $scope.record[$scope.input.key] = $model;
+            } else {
+              $scope.record[$scope.input.key] = $item;
+            }
+          },
+
+          selectDatetime: async function() {
+            await $scope.model.metadata.getPromise();
+            var response = await CnModalDatetimeFactory.instance( {
+              title: $scope.input.title,
+              date: $scope.record[$scope.input.key],
+              minDate: angular.isDefined( $scope.record[$scope.input.min] ) ?
+                $scope.record[$scope.input.min] : $scope.input.min,
+              maxDate: angular.isDefined( $scope.record[$scope.input.max] ) ?
+                $scope.record[$scope.input.max] : $scope.input.max,
+              pickerType: $scope.input.type,
+              emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+              hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
+              minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
+              secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
+            } ).show();
+
+            if( false !== response ) {
+              $scope.record[$scope.input.key] = response;
+              $scope.formattedRecord[$scope.input.key] =
+                CnSession.formatValue( response, $scope.input.type, true );
+            }
           }
-        };
-
-        $scope.selectDatetime = async function() {
-          await $scope.model.metadata.getPromise();
-          var response = await CnModalDatetimeFactory.instance( {
-            title: $scope.input.title,
-            date: $scope.record[$scope.input.key],
-            minDate: angular.isDefined( $scope.record[$scope.input.min] ) ?
-              $scope.record[$scope.input.min] : $scope.input.min,
-            maxDate: angular.isDefined( $scope.record[$scope.input.max] ) ?
-              $scope.record[$scope.input.max] : $scope.input.max,
-            pickerType: $scope.input.type,
-            emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
-            hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
-            minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
-            secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
-          } ).show();
-
-          if( false !== response ) {
-            $scope.record[$scope.input.key] = response;
-            $scope.formattedRecord[$scope.input.key] =
-              CnSession.formatValue( response, $scope.input.type, true );
-          }
-        };
+        } );
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
@@ -1640,34 +1640,36 @@ cenozo.directive( 'cnRecordCalendar', [
         preventSiteChange: '@?'
       },
       controller: [ '$scope', '$element', function( $scope, $element ) {
-        $scope.directive = 'cnRecordCalendar';
-        $scope.reportTypeListOpen = false;
-        $scope.refresh = async function() {
-          if( !$scope.model.calendarModel.isLoading ) {
-            await $scope.model.calendarModel.onCalendar( true );
-            $element.find( 'div.calendar' ).fullCalendar( 'refetchEvents' );
+        angular.extend( $scope, {
+          directive: 'cnRecordCalendar',
+          reportTypeListOpen: false,
+          refresh: async function() {
+            if( !$scope.model.calendarModel.isLoading ) {
+              await $scope.model.calendarModel.onCalendar( true );
+              $element.find( 'div.calendar' ).fullCalendar( 'refetchEvents' );
+            }
+          },
+
+          clickHeading: async function() {
+            var siteId = await CnModalSiteFactory.instance( { id: $scope.model.site.id } ).show();
+            if( siteId ) {
+              await $state.go(
+                $state.current.name,
+                { identifier: CnSession.siteList.findByProperty( 'id', siteId ).getIdentifier() }
+              );
+            }
+          },
+
+          toggleReportTypeDropdown: function() {
+            $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
+          },
+
+          getReport: async function( format ) {
+            await $scope.model.calendarModel.onReport( format );
+            saveAs( $scope.model.calendarModel.reportBlob, $scope.model.calendarModel.reportFilename );
+            $scope.toggleReportTypeDropdown();
           }
-        };
-
-        $scope.clickHeading = async function() {
-          var siteId = await CnModalSiteFactory.instance( { id: $scope.model.site.id } ).show();
-          if( siteId ) {
-            await $state.go(
-              $state.current.name,
-              { identifier: CnSession.siteList.findByProperty( 'id', siteId ).getIdentifier() }
-            );
-          }
-        };
-
-        $scope.toggleReportTypeDropdown = function() {
-          $element.find( '.report-dropdown' ).find( '.dropdown-menu' ).toggle();
-        };
-
-        $scope.getReport = async function( format ) {
-          await $scope.model.calendarModel.onReport( format );
-          saveAs( $scope.model.calendarModel.reportBlob, $scope.model.calendarModel.reportFilename );
-          $scope.toggleReportTypeDropdown();
-        };
+        } );
 
         // only include a viewList operation if the state exists
         var find = $state.current.name.substr( 0, $state.current.name.indexOf( '.' ) ) + '.list';
@@ -1820,11 +1822,11 @@ cenozo.directive( 'cnRecordList', [
           }
         } );
 
-        await $scope.model.listModel.onList( true )
-        if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
-
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
+
+        await $scope.model.listModel.onList( true )
+        if( 'list' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
       } ],
       link: function( scope, element, attrs ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -2032,6 +2034,9 @@ cenozo.directive( 'cnRecordView', [
           }
         } );
 
+        // emit that the directive is ready
+        $scope.$emit( $scope.directive + ' ready', $scope );
+
         try {
           await $scope.model.viewModel.onView();
           if( 'view' == $scope.model.getActionFromState() ) $scope.model.setupBreadcrumbTrail();
@@ -2066,9 +2071,6 @@ cenozo.directive( 'cnRecordView', [
         } finally {
           $scope.isComplete = true;
         }
-
-        // emit that the directive is ready
-        $scope.$emit( $scope.directive + ' ready', $scope );
       } ],
       link: function( scope ) {
         if( angular.isUndefined( scope.model ) ) {
@@ -2168,119 +2170,121 @@ cenozo.directive( 'cnViewInput', [
         condensed: '='
       },
       controller: [ '$scope', function( $scope ) {
-        $scope.directive = 'cnViewInput';
-        $scope.state = $state;
+        angular.extend( $scope, {
+          directive: 'cnViewInput',
+          state: $state,
 
-        $scope.getTitle = function() {
-           return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
-        };
+          getTitle: function() {
+             return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
+          },
 
-        $scope.getColClass = function() {
-          var viewModel = $scope.model.viewModel;
-          var width = 12;
+          getColClass: function() {
+            var viewModel = $scope.model.viewModel;
+            var width = 12;
 
-          // convert old-form "included" expression to isIncluded function
-          if( angular.isUndefined( $scope.input.isIncluded ) && angular.isDefined( $scope.input.included ) )
-            $scope.input.isIncluded = $scope.input.included;
-          $scope.input.isIncluded = $scope.model.module.processInputFunction( $scope.input.isIncluded, true );
+            // convert old-form "included" expression to isIncluded function
+            if( angular.isUndefined( $scope.input.isIncluded ) && angular.isDefined( $scope.input.included ) )
+              $scope.input.isIncluded = $scope.input.included;
+            $scope.input.isIncluded = $scope.model.module.processInputFunction( $scope.input.isIncluded, true );
 
-          // convert old-form "constant" expression to isConstant function
-          if( angular.isUndefined( $scope.input.isConstant ) && angular.isDefined( $scope.input.constant ) )
-            $scope.input.isConstant = $scope.input.constant;
-          $scope.input.isConstant = $scope.model.module.processInputFunction( $scope.input.isConstant, false );
+            // convert old-form "constant" expression to isConstant function
+            if( angular.isUndefined( $scope.input.isConstant ) && angular.isDefined( $scope.input.constant ) )
+              $scope.input.isConstant = $scope.input.constant;
+            $scope.input.isConstant = $scope.model.module.processInputFunction( $scope.input.isConstant, false );
 
-          var constant = $scope.input.isConstant( $scope.state, $scope.model );
-          if( $scope.input.action && $scope.input.isIncluded( $scope.state, $scope.model ) ) width -= 2;
-          if( $scope.model.getEditEnabled() &&
-              true !== constant && 'view' != constant &&
-              viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
-              // and to protect against null != emptry string
-              !( !viewModel.record[$scope.input.key] && !viewModel.backupRecord[$scope.input.key] ) ) width--;
-          return 12 > width ? 'col-slim-left col-sm-' + width : '';
-        };
+            var constant = $scope.input.isConstant( $scope.state, $scope.model );
+            if( $scope.input.action && $scope.input.isIncluded( $scope.state, $scope.model ) ) width -= 2;
+            if( $scope.model.getEditEnabled() &&
+                true !== constant && 'view' != constant &&
+                viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
+                // and to protect against null != emptry string
+                !( !viewModel.record[$scope.input.key] && !viewModel.backupRecord[$scope.input.key] ) ) width--;
+            return 12 > width ? 'col-slim-left col-sm-' + width : '';
+          },
 
-        $scope.undo = async function() {
-          if( $scope.model.getEditEnabled() ) {
-            var property = $scope.input.key;
-            if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
-              $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
-              if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) ) {
-                $scope.model.viewModel.formattedRecord[property] =
-                  $scope.model.viewModel.backupRecord['formatted_'+property];
+          undo: async function() {
+            if( $scope.model.getEditEnabled() ) {
+              var property = $scope.input.key;
+              if( $scope.model.viewModel.record[property] != $scope.model.viewModel.backupRecord[property] ) {
+                $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+                if( angular.isDefined( $scope.model.viewModel.backupRecord['formatted_'+property] ) ) {
+                  $scope.model.viewModel.formattedRecord[property] =
+                    $scope.model.viewModel.backupRecord['formatted_'+property];
+                }
+                await $scope.patch( property );
               }
-              await $scope.patch( property );
             }
-          }
-        };
+          },
 
-        $scope.patch = async function( property ) {
-          if( angular.isUndefined( property ) ) property = $scope.input.key;
+          patch: async function( property ) {
+            if( angular.isUndefined( property ) ) property = $scope.input.key;
 
-          var found = false;
-          var parentScope = $scope.$parent;
-          while( parentScope ) {
-            if( angular.isDefined( parentScope.patch ) ) {
-              await parentScope.patch( property );
-              found = true;
-              break;
+            var found = false;
+            var parentScope = $scope.$parent;
+            while( parentScope ) {
+              if( angular.isDefined( parentScope.patch ) ) {
+                await parentScope.patch( property );
+                found = true;
+                break;
+              }
+              parentScope = parentScope.$parent;
             }
-            parentScope = parentScope.$parent;
-          }
 
-          if( !found ) console.error( 'Couldn\'t find the patch() function in any of the scope\'s ancestors.' );
-        }
+            if( !found ) console.error( 'Couldn\'t find the patch() function in any of the scope\'s ancestors.' );
+          },
 
-        $scope.onEmptyTypeahead = async function() {
-          var property = $scope.input.key;
-          await $scope.model.metadata.getPromise();
-
-          // if the input isn't required then set the value to null
-          if( !$scope.model.metadata.columnList[property].required ) {
-            $scope.model.viewModel.record[property] = null;
-            await $scope.patch( property );
-          }
-        };
-
-        $scope.getTypeaheadValues = async function( viewValue ) {
-          return $scope.model.getEditEnabled() ? await $scope.model.getTypeaheadValues( $scope.input, viewValue ) : []
-        };
-
-        $scope.onSelectTypeahead = async function( $item, $model, $label ) {
-          if( $scope.model.getEditEnabled() ) {
-            if( 'lookup-typeahead' == $scope.input.type ) {
-              $scope.model.viewModel.formattedRecord[$scope.input.key] = $label;
-              $scope.model.viewModel.record[$scope.input.key] = $model;
-            } else {
-              $scope.model.viewModel.record[$scope.input.key] = $item;
-            }
-            await $scope.patch( $scope.input.key );
-          }
-        };
-
-        $scope.selectDatetime = async function() {
-          if( $scope.model.getEditEnabled() ) {
+          onEmptyTypeahead: async function() {
+            var property = $scope.input.key;
             await $scope.model.metadata.getPromise();
 
-            var response = await CnModalDatetimeFactory.instance( {
-              title: $scope.input.title,
-              date: $scope.model.viewModel.record[$scope.input.key],
-              minDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.min] ) ?
-                       $scope.model.viewModel.record[$scope.input.min] : $scope.input.min,
-              maxDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.max] ) ?
-                       $scope.model.viewModel.record[$scope.input.max] : $scope.input.max,
-              pickerType: $scope.input.type,
-              emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
-              hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
-              minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
-              secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
-            } ).show();
+            // if the input isn't required then set the value to null
+            if( !$scope.model.metadata.columnList[property].required ) {
+              $scope.model.viewModel.record[property] = null;
+              await $scope.patch( property );
+            }
+          },
 
-            if( false !== response ) {
-              $scope.model.viewModel.record[$scope.input.key] = response;
+          getTypeaheadValues: async function( viewValue ) {
+            return $scope.model.getEditEnabled() ? await $scope.model.getTypeaheadValues( $scope.input, viewValue ) : []
+          },
+
+          onSelectTypeahead: async function( $item, $model, $label ) {
+            if( $scope.model.getEditEnabled() ) {
+              if( 'lookup-typeahead' == $scope.input.type ) {
+                $scope.model.viewModel.formattedRecord[$scope.input.key] = $label;
+                $scope.model.viewModel.record[$scope.input.key] = $model;
+              } else {
+                $scope.model.viewModel.record[$scope.input.key] = $item;
+              }
               await $scope.patch( $scope.input.key );
             }
+          },
+
+          selectDatetime: async function() {
+            if( $scope.model.getEditEnabled() ) {
+              await $scope.model.metadata.getPromise();
+
+              var response = await CnModalDatetimeFactory.instance( {
+                title: $scope.input.title,
+                date: $scope.model.viewModel.record[$scope.input.key],
+                minDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.min] ) ?
+                         $scope.model.viewModel.record[$scope.input.min] : $scope.input.min,
+                maxDate: angular.isDefined( $scope.model.viewModel.record[$scope.input.max] ) ?
+                         $scope.model.viewModel.record[$scope.input.max] : $scope.input.max,
+                pickerType: $scope.input.type,
+                emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+                hourStep: angular.isDefined( $scope.input.hourStep ) ? $scope.input.hourStep : 1,
+                minuteStep: angular.isDefined( $scope.input.minuteStep ) ? $scope.input.minuteStep : 1,
+                secondStep: angular.isDefined( $scope.input.secondStep ) ? $scope.input.secondStep : 1
+              } ).show();
+
+              if( false !== response ) {
+                $scope.model.viewModel.record[$scope.input.key] = response;
+                await $scope.patch( $scope.input.key );
+              }
+            }
           }
-        };
+        } );
 
         // emit that the directive is ready
         $scope.$emit( $scope.directive + ' ready', $scope );
