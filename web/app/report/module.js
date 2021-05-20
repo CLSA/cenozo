@@ -373,25 +373,25 @@ define( function() {
 
           // extend getMetadata
           getMetadata: async function() {
-            var r = Math.floor( Math.random() * 100 );
-
-            await this.$$getMetadata();
+            var reportTypeIdentifier = this.getParentIdentifier().identifier;
 
             // don't use the parent identifier when in the view state, it doesn't work
-            if( this.reportTypeIdentifier != this.getParentIdentifier().identifier ) {
-              this.reportTypeIdentifier = this.getParentIdentifier().identifier;
+            if( 'view' == this.getActionFromState() ) {
+               var response = await CnHttpFactory.instance( {
+                 path: this.getServiceResourcePath(),
+                 data: { select: { column: [ 'report_type_id' ] } }
+               } ).get();
+              reportTypeIdentifier = response.data.report_type_id;
+            }
 
-              if( 'view' == this.getActionFromState() ) {
-                var response = await CnHttpFactory.instance( {
-                  path: this.getServiceResourcePath(),
-                  data: { select: { column: [ 'report_type_id' ] } }
-                } ).get();
-                this.reportTypeIdentifier = response.data.report_type_id;
-              }
-
-              // remove the parameter group's input list and metadata
+            if( this.reportTypeIdentifier != reportTypeIdentifier ) {
+              this.reportTypeIdentifier = reportTypeIdentifier;
               var parameterData = this.module.inputGroupList.findByProperty( 'title', 'Parameters' );
               parameterData.inputList = {};
+
+              await this.$$getMetadata();
+
+              // remove the parameter group's input list and metadata
               for( var column in this.metadata.columnList )
                 if( 'restrict_' == column.substring( 0, 9 ) )
                   delete this.metadata.columnList[column];
@@ -402,16 +402,15 @@ define( function() {
               } ).get();
 
               // replace all restrictions from the module and metadata
-              var self = this;
               for( var restriction of response.data ) {
                 var key = 'restrict_' + restriction.name;
                 var input = await cenozo.getInputFromRestriction( restriction, CnHttpFactory );
                 parameterData.inputList[key] = input;
-                self.metadata.columnList[key] = {
+                this.metadata.columnList[key] = {
                   required: restriction.mandatory,
                   restriction_type: restriction.restriction_type
                 };
-                if( angular.isDefined( input.enumList ) ) self.metadata.columnList[key].enumList = input.enumList;
+                if( angular.isDefined( input.enumList ) ) this.metadata.columnList[key].enumList = input.enumList;
               }
             }
           },
