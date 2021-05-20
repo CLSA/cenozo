@@ -7448,22 +7448,26 @@ cenozo.factory( 'CnScriptLauncherFactory', [
                 if( angular.isDefined( this.onReady ) ) this.onReady();
               } else {
                 var self = this;
-                var response = await CnHttpFactory.instance( {
-                  path: 'script/' + this.script.id + '/token/' + this.identifier,
-                  data: { select: { column: [ 'token', 'completed' ] } },
-                  onError: function( error ) {
-                    // ignore 404
-                    if( 404 == error.status ) {
-                      self.token = null;
-                      if( angular.isDefined( self.onReady ) ) self.onReady();
-                    } else {
-                      CnModalMessageFactory.httpError( error );
+                try {
+                  var response = await CnHttpFactory.instance( {
+                    path: 'script/' + this.script.id + '/token/' + this.identifier,
+                    data: { select: { column: [ 'token', 'completed' ] } },
+                    onError: function( error ) {
+                      // ignore 404
+                      if( 404 == error.status ) {
+                        self.token = null;
+                        if( angular.isDefined( self.onReady ) ) self.onReady();
+                      } else {
+                        CnModalMessageFactory.httpError( error );
+                      }
                     }
-                  }
-                } ).get();
+                  } ).get();
 
-                this.token = response.data;
-                if( angular.isDefined( this.onReady ) ) this.onReady();
+                  this.token = response.data;
+                  if( angular.isDefined( this.onReady ) ) this.onReady();
+                } catch( error ) {
+                  // handled by onError above
+                }
               }
             }
           }
