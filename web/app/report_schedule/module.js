@@ -143,7 +143,7 @@ define( function() {
           var cnRecordViewScope = null;
           $scope.$on( 'cnRecordView ready', async function( event, data ) {
             cnRecordViewScope = data;
-            $scope.model.metadata.getPromise();
+            await $scope.model.metadata.getPromise();
             cnRecordViewScope.dataArray = $scope.model.getDataArray( [], 'view' );
           } );
 
@@ -278,7 +278,7 @@ define( function() {
         var lastReportTypeIdentifier = null;
         var lastAction = null;
         var self = this;
-        this.metadata = { getPromise: async function() { self.getMetadata(); } };
+        this.metadata = { getPromise: async function() { await self.getMetadata(); } };
 
         // extend getMetadata
         this.getMetadata = async function() {

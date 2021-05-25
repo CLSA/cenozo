@@ -1431,7 +1431,7 @@ cenozo.directive( 'cnRecordAdd', [
 
         try {
           await $scope.model.addModel.onNew( $scope.record );
-          $scope.model.metadata.getPromise();
+          await $scope.model.metadata.getPromise();
           if( 'add' == $scope.model.getActionFromState().substring( 0, 3 ) ) $scope.model.setupBreadcrumbTrail();
 
           $scope.dataArray.forEach( function( group ) {

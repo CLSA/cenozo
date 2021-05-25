@@ -141,7 +141,7 @@ define( function() {
           $scope.$on( 'cnRecordAdd ready', async function( event, data ) {
             cnRecordAddScope = data;
 
-            await $scope.model.getMetadata();
+            await $scope.model.metadata.getPromise();
 
             cnRecordAddScope.dataArray = $scope.model.getDataArray( [], 'add' );
             var parameters = cnRecordAddScope.dataArray.findByProperty( 'title', 'Parameters' );
@@ -196,7 +196,7 @@ define( function() {
           $scope.$on( 'cnRecordView ready', async function( event, data ) {
             cnRecordViewScope = data;
 
-            await $scope.model.getMetadata()
+            await $scope.model.metadata.getPromise();
             cnRecordViewScope.dataArray = $scope.model.getDataArray( [], 'view' );
           } );
 
@@ -242,7 +242,7 @@ define( function() {
 
           onNew: async function( record ) {
             await this.$$onNew( record );
-            await this.parentModel.getMetadata();
+            await this.parentModel.metadata.getPromise();
 
             for( var column in this.parentModel.metadata.columnList ) {
               var meta = this.parentModel.metadata.columnList[column];
@@ -412,6 +412,8 @@ define( function() {
                 };
                 if( angular.isDefined( input.enumList ) ) this.metadata.columnList[key].enumList = input.enumList;
               }
+            } else {
+              await CnHttpFactory.instance( { path: 'self/0' } ).get();
             }
           },
 

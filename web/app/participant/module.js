@@ -1558,11 +1558,11 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         var self = this;
         async function init() {
           try {
-            await self.parentModel.getMetadata();
+            await self.parentModel.metadata.getPromise();
             self.sexList = self.parentModel.metadata.columnList.sex.enumList.map( row => row.name );
 
-            await self.addressModel.getMetadata();
-            await elf.phoneModel.getMetadata();
+            await self.addressModel.metadata.getPromise();
+            await self.phoneModel.metadata.getPromise();
             self.phoneTypeList = self.phoneModel.metadata.columnList.type.enumList.map( row => row.name );
 
             // get the source list
