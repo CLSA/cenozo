@@ -17,6 +17,12 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         column: 'participant.uid',
         title: 'UID'
       },
+      sid: {
+        column: 'participant_identifier.value',
+        title: 'Study ID',
+        isIncluded: function( $state, model ) { return model.hasIdentifier; },
+        help: 'Special study identifier used by this application.'
+      },
       first: {
         column: 'participant.first_name',
         title: 'First'
@@ -55,6 +61,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       title: 'Unique ID',
       type: 'string',
       isConstant: true
+    },
+    sid: {
+      column: 'participant_identifier.value',
+      title: 'Study ID',
+      type: 'string',
+      isExcluded: function( $state, model ) { return !model.hasIdentifier; },
+      isConstant: true,
+      help: 'Special study identifier used by this application.'
     },
     cohort: {
       column: 'cohort.name',
@@ -1360,57 +1374,61 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         this.listModel = CnParticipantListFactory.instance( this );
         if( root ) this.viewModel = CnParticipantViewFactory.instance( this, root );
 
-        // extend getMetadata
-        this.getMetadata = async function() {
-          var self = this;
-          await this.$$getMetadata();
+        angular.extend( this, {
+          hasIdentifier: null != CnSession.application.identifier,
 
-          var response = await CnHttpFactory.instance( {
-            path: 'availability_type',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
-          this.metadata.columnList.availability_type_id.enumList = [];
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.availability_type_id.enumList.push( {
-              value: item.id, name: item.name
-            } );
-          } );
+          // extend getMetadata
+          getMetadata: async function() {
+            var self = this;
+            await this.$$getMetadata();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'language',
-            data: {
-              select: { column: [ 'id', 'name', 'code' ] },
-              modifier: {
-                where: { column: 'active', operator: '=', value: true },
-                order: 'name',
-                limit: 1000
+            var response = await CnHttpFactory.instance( {
+              path: 'availability_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
               }
-            }
-          } ).query();
-          this.metadata.columnList.language_id.enumList = [];
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.language_id.enumList.push( {
-              value: item.id,
-              name: item.name,
-              code: item.code // code is needed by the withdraw action
+            } ).query();
+            this.metadata.columnList.availability_type_id.enumList = [];
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.availability_type_id.enumList.push( {
+                value: item.id, name: item.name
+              } );
             } );
-          } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'site',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
-          this.metadata.columnList.preferred_site_id = { enumList: [] };
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
-        };
+            var response = await CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: [ 'id', 'name', 'code' ] },
+                modifier: {
+                  where: { column: 'active', operator: '=', value: true },
+                  order: 'name',
+                  limit: 1000
+                }
+              }
+            } ).query();
+            this.metadata.columnList.language_id.enumList = [];
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.language_id.enumList.push( {
+                value: item.id,
+                name: item.name,
+                code: item.code // code is needed by the withdraw action
+              } );
+            } );
+
+            var response = await CnHttpFactory.instance( {
+              path: 'site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query();
+            this.metadata.columnList.preferred_site_id = { enumList: [] };
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
+            } );
+          }
+        } );
       };
 
       return {

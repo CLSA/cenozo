@@ -12,6 +12,7 @@ define( function() {
     },
     columnList: {
       name: { title: 'Name' },
+      identifier: { column: 'identifier.name', title: 'Identifier' },
       consent_type: { column: 'consent_type.name', title: 'Consent Type' },
       completed_event_type: { column: 'event_type.name', title: 'Completed Event Type' },
       description: { column: 'study.description', title: 'Description', align: 'left' }
@@ -26,6 +27,11 @@ define( function() {
     name: {
       title: 'Name',
       type: 'string'
+    },
+    identifier_id: {
+      title: 'Special Identifier',
+      type: 'enum',
+      help: 'Whether a special identifier is used by the study.'
     },
     consent_type_id: {
       title: 'Extra Consent Type',
@@ -129,6 +135,21 @@ define( function() {
         this.getMetadata = async function() {
           var self = this;
           await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'identifier',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+          this.metadata.columnList.identifier_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.identifier_id.enumList.push( {
+              value: item.id,
+              name: item.name
+            } );
+          } );
 
           var response = await CnHttpFactory.instance( {
             path: 'consent_type',

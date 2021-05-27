@@ -57,6 +57,12 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $db_application = lib::create( 'business\session' )->get_application();
+    $db_identifier = $db_application->get_identifier();
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'participant_identifier.participant_id', false );
+    $join_mod->where( 'participant_identifier.identifier_id', '=', is_null( $db_identifier ) ? NULL : $db_identifier->id );
+    $modifier->join_modifier( 'participant_identifier', $join_mod, 'left' );
 
     $modifier->left_join( 'source', 'participant.source_id', 'source.id' );
     $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );

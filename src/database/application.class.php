@@ -266,9 +266,22 @@ class application extends record
   }
 
   /**
+   * Returns the special identifier used by this application
+   * 
+   * Note, this will return NULL if the application isn't liked to a study phase or the parent study isn't linked
+   * to a special identifier.
+   */
+  public function get_identifier()
+  {
+    $db_study_phase = $this->get_study_phase();
+    $db_study = is_null( $db_study_phase ) ? NULL : $db_study_phase->get_study();
+    return is_null( $db_study ) ? NULL : $db_study->get_identifier();
+  }
+
+  /**
    * Returns the extra consent type
    * 
-   * Note, this will return NULL ff the application doesn't use a study phase or the study phase belongs to
+   * Note, this will return NULL if the application doesn't use a study phase or the study phase belongs to
    * a study which doesn't have an extra consent type.
    */
   public function get_extra_consent_type()

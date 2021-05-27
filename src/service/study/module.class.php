@@ -22,6 +22,7 @@ class module extends \cenozo\service\module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    $modifier->left_join( 'identifier', 'study.identifier_id', 'identifier.id' );
     $modifier->left_join( 'consent_type', 'study.consent_type_id', 'consent_type.id' );
     $modifier->left_join( 'event_type', 'study.completed_event_type_id', 'event_type.id' );
 

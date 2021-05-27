@@ -38,6 +38,7 @@ class get extends \cenozo\service\service
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
+    $db_identifier = $db_application->get_identifier();
     $db_site = $session->get_site();
     $db_role = $session->get_role();
     $db_user = $session->get_user();
@@ -127,6 +128,8 @@ class get extends \cenozo\service\service
       'final_hold_type_list' => $final_hold_type_list,
       'session_list' => $session->get_session_list(),
       'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false );
+
+    $pseudo_record['application']['identifier'] = is_null( $db_identifier ) ? NULL : $db_identifier->name;
 
     if( $setting_manager->get_setting( 'module', 'script' ) )
     {
