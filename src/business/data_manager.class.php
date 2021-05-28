@@ -131,7 +131,24 @@ class data_manager extends \cenozo\singleton
     $subject = $parts[0];
 
     $value = NULL;
-    if( 'alternate' == $subject ||
+    if( 'identifier' == $subject )
+    {
+      $identifier_class_name = lib::get_class_name( 'database\identifier' );
+      $participant_identifier_class_name = lib::get_class_name( 'database\participant_identifier' );
+
+      // participant.identifier.<name>
+      $value = NULL;
+      $db_identifier = $identifier_class_name::get_unique_record( 'name', $parts[1] );
+      if( !is_null( $db_identifier ) )
+      {
+        $db_participant_identifier = $participant_identifier_class_name::get_unique_record(
+          array( 'participant_id', 'identifier_id' ),
+          array( $db_participant->id, $db_identifier->id )
+        );
+        if( !is_null( $db_participant_identifier ) ) $value = $db_participant_identifier->value;
+      }
+    }
+    else if( 'alternate' == $subject ||
         'informant' == $subject ||
         'decedent' == $subject ||
         'emergency' == $subject ||
