@@ -119,9 +119,23 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnProxyAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+    'CnBaseAddFactory', 'CnModalConfirmFactory',
+    function( CnBaseAddFactory, CnModalConfirmFactory ) {
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // show the prompt before adding, if there is one
+        this.onAdd = async function( record ) {
+          var prompt = this.parentModel.metadata.columnList.proxy_type_id.enumList.findByProperty(
+            'value', record.proxy_type_id
+          ).prompt;
+
+          if( null != prompt && !( await CnModalConfirmFactory.instance( { message: prompt } ).show() ) )
+            throw 'Cancelled by user';
+
+          await this.$$onAdd( record );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -171,7 +185,7 @@ define( function() {
           var response = await CnHttpFactory.instance( {
             path: 'proxy_type',
             data: {
-              select: { column: [ 'id', 'name', 'access' ] },
+              select: { column: [ 'id', 'name', 'prompt', 'access' ] },
               modifier: { order: 'name', limit: 1000 }
             }
           } ).query();
@@ -180,7 +194,7 @@ define( function() {
           var self = this;
           response.data.forEach( function( item ) {
             self.metadata.columnList.proxy_type_id.enumList.push( {
-              value: item.id, name: item.name, disabled: !item.access
+              value: item.id, name: item.name, prompt: item.prompt, disabled: !item.access
             } );
           } );
         };

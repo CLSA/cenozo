@@ -25,11 +25,17 @@ define( function() {
   module.addInputGroup( '', {
     name: {
       title: 'Name',
-      type: 'string'
+      type: 'string',
+      isConstant: true
     },
     description: {
       title: 'Description',
       type: 'text'
+    },
+    prompt: {
+      title: 'Prompt',
+      type: 'text',
+      help: 'This message will appear to any user adding this proxy type asking to confirm whether they wish to proceed.'
     }
   } );
 
