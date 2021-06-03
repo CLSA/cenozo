@@ -155,7 +155,11 @@ define( function() {
             path: 'consent_type',
             data: {
               select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
+              modifier: {
+                where: { column: 'type', operator: '=', value: 'participant' },
+                order: 'name',
+                limit: 1000
+              }
             }
           } ).query();
           this.metadata.columnList.consent_type_id.enumList = [];

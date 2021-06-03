@@ -97,8 +97,14 @@ class module extends \cenozo\service\site_restricted_participant_module
       $modifier->where( 'assignment.site_id', '=', $db_restrict_site->id );
     }
 
-    if( $select->has_table_columns( 'phone' ) )
-      $modifier->join( 'phone', 'phone_call.phone_id', 'phone.id' );
+    $modifier->join( 'phone', 'phone_call.phone_id', 'phone.id' );
+    
+    if( $select->has_column( 'person' ) )
+    {
+      $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
+      $modifier->left_join( 'alternate', 'phone.alternate_id', 'alternate.id' );
+      $select->add_column( 'IFNULL( CONCAT( alternate.first_name, " ", alternate.last_name ), "Participant" )', 'person', false );
+    }
   }
 
   /**

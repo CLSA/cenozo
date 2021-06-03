@@ -493,6 +493,11 @@ define( function() {
         this.listModel = CnAlternateListFactory.instance( this );
         this.viewModel = CnAlternateViewFactory.instance( this, root );
 
+        // prevent add button from showing when viewing list of alternates under the wrong context
+        this.getAddEnabled = function() {
+          return [ 'alternate', 'participant' ].includes( this.getSubjectFromState() ) && this.$$getAddEnabled();
+        };
+
         // extend getMetadata
         this.getMetadata = async function() {
           await this.$$getMetadata();

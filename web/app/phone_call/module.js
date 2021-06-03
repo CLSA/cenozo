@@ -15,6 +15,10 @@ define( function() {
       possessive: 'phone call\'s'
     },
     columnList: {
+      person: {
+        title: 'Person',
+        isIncluded: function( $state, model ) { return model.proxyInterview; }
+      },
       phone: {
         column: 'phone.type',
         title: 'Phone'
@@ -65,16 +69,19 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneCallModelFactory', [
-    'CnBaseModelFactory', 'CnPhoneCallListFactory',
-    function( CnBaseModelFactory, CnPhoneCallListFactory ) {
+    'CnBaseModelFactory', 'CnPhoneCallListFactory', 'CnSession',
+    function( CnBaseModelFactory, CnPhoneCallListFactory, CnSession ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.listModel = CnPhoneCallListFactory.instance( this );
 
-        // need to explicitely disable the add and delete options
-        this.getAddEnabled = function() { return false; };
-        this.getDeleteEnabled = function() { return false; };
+        angular.extend( this, {
+          listModel: CnPhoneCallListFactory.instance( this ),
+          proxyInterview: CnSession.setting.proxy,
+          // need to explicitely disable the add and delete options
+          getAddEnabled: function() { return false; },
+          getDeleteEnabled: function() { return false; }
+        } );
       };
 
       return {

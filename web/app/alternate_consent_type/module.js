@@ -1,13 +1,13 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'consent_type', true ); } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'alternate_consent_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {
-      singular: 'consent type',
-      plural: 'consent types',
-      possessive: 'consent type\'s'
+      singular: 'alternate consent type',
+      plural: 'alternate consent types',
+      possessive: 'alternate consent type\'s'
     },
     columnList: {
       name: { title: 'Name' },
@@ -45,52 +45,52 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentTypeAdd', [
-    'CnConsentTypeModelFactory',
-    function( CnConsentTypeModelFactory ) {
+  cenozo.providers.directive( 'cnAlternateConsentTypeAdd', [
+    'CnAlternateConsentTypeModelFactory',
+    function( CnAlternateConsentTypeModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentTypeModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateConsentTypeModelFactory.root;
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentTypeList', [
-    'CnConsentTypeModelFactory',
-    function( CnConsentTypeModelFactory ) {
+  cenozo.providers.directive( 'cnAlternateConsentTypeList', [
+    'CnAlternateConsentTypeModelFactory',
+    function( CnAlternateConsentTypeModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentTypeModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateConsentTypeModelFactory.root;
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentTypeView', [
-    'CnConsentTypeModelFactory',
-    function( CnConsentTypeModelFactory ) {
+  cenozo.providers.directive( 'cnAlternateConsentTypeView', [
+    'CnAlternateConsentTypeModelFactory',
+    function( CnAlternateConsentTypeModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentTypeModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateConsentTypeModelFactory.root;
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeAddFactory', [
+  cenozo.providers.factory( 'CnAlternateConsentTypeAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
@@ -99,7 +99,7 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeListFactory', [
+  cenozo.providers.factory( 'CnAlternateConsentTypeListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
@@ -108,15 +108,15 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeViewFactory', [
+  cenozo.providers.factory( 'CnAlternateConsentTypeViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
-        CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
+        CnBaseViewFactory.construct( this, parentModel, root, 'alternate' );
 
         var self = this;
         async function init() {
-          // allow add/delete of roles and participants
+          // allow add/delete of roles and alternates
           await self.deferred.promise;
 
           if( angular.isDefined( self.roleModel ) )
@@ -130,14 +130,14 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeModelFactory', [
-    'CnBaseModelFactory', 'CnConsentTypeAddFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
-    function( CnBaseModelFactory, CnConsentTypeAddFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
+  cenozo.providers.factory( 'CnAlternateConsentTypeModelFactory', [
+    'CnBaseModelFactory', 'CnAlternateConsentTypeAddFactory', 'CnAlternateConsentTypeListFactory', 'CnAlternateConsentTypeViewFactory',
+    function( CnBaseModelFactory, CnAlternateConsentTypeAddFactory, CnAlternateConsentTypeListFactory, CnAlternateConsentTypeViewFactory ) {
       var object = function( root ) {
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnConsentTypeAddFactory.instance( this );
-        this.listModel = CnConsentTypeListFactory.instance( this );
-        this.viewModel = CnConsentTypeViewFactory.instance( this, root );
+        this.addModel = CnAlternateConsentTypeAddFactory.instance( this );
+        this.listModel = CnAlternateConsentTypeListFactory.instance( this );
+        this.viewModel = CnAlternateConsentTypeViewFactory.instance( this, root );
       };
 
       return {

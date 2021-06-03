@@ -35,6 +35,10 @@ abstract class site_restricted_participant_module extends site_restricted_module
       {
         $db_participant = $record;
       }
+      else if( is_a( $record, lib::get_class_name( 'database\alternate_consent' ) ) )
+      {
+        $db_participant = $record->get_alternate()->get_participant();
+      }
       else if( is_a( $record, lib::get_class_name( 'database\assignment' ) ) )
       {
         $db_interview = $record->get_interview();

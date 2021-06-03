@@ -44,6 +44,7 @@ class form extends record
    * 
    * @param string $type The type of consent (see consent_type.name)
    * @param array $consent An associative array containing "datetime" and "accept" keys
+   * @param string $note A note to add to the consent record
    * @return database\consent The consent record created by this method
    * @access public
    */
@@ -87,14 +88,43 @@ class form extends record
    * 
    * @param string $type The type of consent (see consent_type.name)
    * @param int $alternate_id The primary key of the alternate associated with the consent.
-   * @param array $consent An associative array containing "datetime" and "accept" keys
+   * @param array $alternate_consent An associative array containing "datetime" and "accept" keys
    * @return database\consent The consent record created by this method
    * @access public
    */
-  public function add_proxy_consent( $type, $alternate_id, $consent, $note = NULL )
+  public function add_proxy_consent( $type, $alternate_id, $alternate_consent, $note = NULL )
   {
     // same as a consent form but associate the alternate as well
-    $this->add_consent( $type, $consent, $note );
+    $alternate_consent_type_class_name = lib::get_class_name( 'database\alternate_consent_type' );
+
+    // Determine the datetime: note that if the time is midnight then we only have the date and not the time so we
+    // must advance by 12 hours so that UTC conversion doesn't cause the date to show on the wrong day
+    $datetime = array_key_exists( 'datetime', $alternate_consent ) ? $alternate_consent['datetime'] : $this->date;
+    if( '00:00:00' == $datetime->format( 'H:i:s' ) ) $datetime->setTime( 12, 0 );
+
+    $db_alternate = lib::create( 'database\alternate', $alternate_id );
+    $db_alternate_consent_type = $alternate_consent_type_class_name::get_unique_record( 'name', $type );
+    $alternate_consent_mod = lib::create( 'database\modifier' );
+    $alternate_consent_mod->where( 'alternate_consent_type_id', '=', $db_alternate_consent_type->id );
+    $alternate_consent_mod->where( 'accept', '=', $alternate_consent['accept'] );
+    $alternate_consent_mod->where( 'written', '=', true );
+    $alternate_consent_mod->where( 'datetime', '=', $datetime );
+    $alternate_consent_list = $db_alternate->get_alternate_consent_object_list( $alternate_consent_mod );
+    $db_alternate_consent = current( $alternate_consent_list );
+
+    if( !$db_alternate_consent )
+    {
+      $db_alternate_consent = lib::create( 'database\alternate_consent' );
+      $db_alternate_consent->alternate_id = $alternate_id;
+      $db_alternate_consent->alternate_consent_type_id = $db_alternate_consent_type->id;
+      $db_alternate_consent->accept = $alternate_consent['accept'];
+      $db_alternate_consent->written = true;
+      $db_alternate_consent->datetime = $datetime;
+      $db_alternate_consent->note = $note;
+      $db_alternate_consent->save();
+    }
+
+    $this->add_association( 'alternate_consent', $db_alternate_consent->id );
     $this->add_association( 'alternate', $alternate_id );
   }
 
