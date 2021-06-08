@@ -65,6 +65,8 @@ class participant extends record
    */
   public function get_status()
   {
+    $proxy_interviewing = lib::create( 'business\setting_manager' )->get_setting( 'general', 'proxy' );
+
     if( !is_null( $this->exclusion_id ) ) return 'not enrolled';
     $db_hold_type = $this->get_last_hold()->get_hold_type();
     if( !is_null( $db_hold_type ) && 'final' == $db_hold_type->type ) return $db_hold_type->to_string();
@@ -72,7 +74,7 @@ class participant extends record
     if( !is_null( $db_trace_type ) ) return 'trace: '.$db_trace_type->name;
     if( !is_null( $db_hold_type ) ) return $db_hold_type->to_string();
     if( !is_null( $db_proxy_type ) ) return 'proxy: '.$db_proxy_type->name;
-    return 'active';
+    return $proxy_interviewing ? 'no proxy status' : 'active';
   }
 
   /**
@@ -83,12 +85,16 @@ class participant extends record
    */
   public static function get_status_column_sql()
   {
-    return
+    $proxy_interviewing = lib::create( 'business\setting_manager' )->get_setting( 'general', 'proxy' );
+
+    return sprintf(
       "IF( exclusion.name IS NOT NULL, 'not enrolled',\n".
       "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
       "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
       "IF( hold_type.type IS NOT NULL, CONCAT( hold_type.type, ': ', hold_type.name ),\n".
-      "IF( proxy_type.name IS NOT NULL, CONCAT( 'proxy: ', proxy_type.name ), 'active' )))))";
+      "IF( proxy_type.name IS NOT NULL, CONCAT( 'proxy: ', proxy_type.name ), '%s' )))))",
+      $proxy_interviewing ? 'no proxy status' : 'active'
+    );
   }
 
   /**
