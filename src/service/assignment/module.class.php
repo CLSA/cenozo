@@ -105,6 +105,8 @@ class module extends \cenozo\service\site_restricted_participant_module
    */
   public function prepare_read( $select, $modifier )
   {
+    $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
+
     parent::prepare_read( $select, $modifier );
 
     // restrict by site
@@ -146,12 +148,35 @@ class module extends \cenozo\service\site_restricted_participant_module
     // add whether the participant has consented to provide HIN but has no HIN on file
     if( $select->has_column( 'missing_hin' ) )
     {
-      $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
-      $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
-      $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
+      $db_hin_consent_type = $consent_type_class_name::get_unique_record( 'name', 'HIN access' );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'participant_last_hin_consent.participant_id', false );
+      $join_mod->where( 'participant_last_hin_consent.consent_type_id', '=', $db_hin_consent_type->id );
+
+      $modifier->join_modifier( 'participant_last_consent', $join_mod, '', 'participant_last_hin_consent' );
+      $modifier->left_join( 'consent', 'participant_last_hin_consent.consent_id', 'hin_consent.id', 'hin_consent' );
       $modifier->join( 'participant_last_hin', 'participant.id', 'participant_last_hin.participant_id' );
-      $modifier->where( 'consent_type.name', '=', 'HIN access' );
-      $select->add_column( 'IFNULL( consent.accept, false ) AND participant_last_hin.hin_id IS NULL', 'missing_hin', false, 'boolean' );
+      $select->add_column(
+        'IFNULL( hin_consent.accept, false ) AND participant_last_hin.hin_id IS NULL',
+        'missing_hin',
+        false,
+        'boolean'
+      );
+    }
+
+    // add whether the participant has consented to using a DM
+    if( $select->has_column( 'use_decision_maker' ) )
+    {
+      $db_usedm_consent_type = $consent_type_class_name::get_unique_record( 'name', 'Use Decision Maker' );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'participant_last_usedm_consent.participant_id', false );
+      $join_mod->where( 'participant_last_usedm_consent.consent_type_id', '=', $db_usedm_consent_type->id );
+
+      $modifier->join_modifier( 'participant_last_consent', $join_mod, '', 'participant_last_usedm_consent' );
+      $modifier->left_join( 'consent', 'participant_last_usedm_consent.consent_id', 'usedm_consent.id', 'usedm_consent' );
+      $select->add_column( 'usedm_consent.accept', 'use_decision_maker', false, 'boolean' );
     }
   }
 
