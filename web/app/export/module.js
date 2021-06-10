@@ -1,7 +1,9 @@
 define( [
-  'address', 'collection', 'consent', 'event', 'hold', 'hin', 'participant', 'phone', 'proxy', 'site', 'trace'
+  'address', 'collection', 'consent', 'event', 'hold', 'hin', 'interview', 'participant', 'phone', 'proxy', 'site', 'trace'
 ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+  // only require the interview module if it has been activated
+  return 'interview' == name && angular.isUndefined( cenozoApp.moduleList.interview ) ?
+    list : list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
 
@@ -152,14 +154,18 @@ define( [
     'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
     'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory', 'CnHinModelFactory',
     'CnHoldModelFactory', 'CnProxyModelFactory', 'CnTraceModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$injector',
     function( CnBaseViewFactory,
               CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
               CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory, CnHinModelFactory,
               CnHoldModelFactory, CnProxyModelFactory, CnTraceModelFactory,
-              CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory ) {
+              CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $injector ) {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'export_file' );
+
+        var interviewModule = angular.isDefined( cenozoApp.moduleList.interview );
+
+        var CnInterviewModelFactory = interviewModule ? $injector.get( 'CnInterviewModelFactory' ) : null;
 
         angular.extend( this, {
           // create a custom child list that includes the column and restriction dialogs
@@ -895,9 +901,32 @@ define( [
           this.subtypeList.application = [];
         }
 
+        // add the interview column/restriction entries if using the interview module
+        if( interviewModule ) {
+          // add interview after participant in the model list
+          cenozo.insertPropertyAfter( this.modelList, 'participant', 'interview', CnInterviewModelFactory.root );
+
+          // add interview after participant in the column list
+          cenozo.insertPropertyAfter( this.tableColumnList, 'participant', 'interview', {
+            isLoading: true,
+            list: [ { key: undefined, title: 'Loading...' } ]
+          } );
+
+          // add interview after participant in the restriction list
+          cenozo.insertPropertyAfter( this.tableRestrictionList, 'participant', 'interview', {
+            isLoading: true,
+            promise: null,
+            list: [ { key: undefined, title: 'Loading...' } ]
+          } );
+
+
+          this.subtypeList.interview = [];
+        }
+
         var self = this;
         async function init() {
           await self.processMetadata( 'participant' );
+          if( interviewModule ) await self.processMetadata( 'interview' );
           await self.processMetadata( 'site' );
           await self.processMetadata( 'address' );
           await self.processMetadata( 'phone' );
@@ -908,6 +937,22 @@ define( [
           await self.processMetadata( 'hold' );
           await self.processMetadata( 'proxy' );
           await self.processMetadata( 'trace' );
+
+          if( interviewModule ) {
+            var response = await CnHttpFactory.instance( {
+              path: 'qnaire',
+              data: {
+                select: { column: [ 'id', 'rank', 'name' ] },
+                modifier: {
+                  order: ['name']
+                }
+              }
+            } ).query();
+
+            response.data.forEach( function( item ) {
+              self.subtypeList.interview.push( { key: item.id.toString(), name: item.rank + '. ' + item.name } );
+            } );
+          }
 
           var response = await CnHttpFactory.instance( {
             path: 'collection',

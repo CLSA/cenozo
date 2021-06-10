@@ -199,6 +199,16 @@ class export_column extends has_rank
         $modifier->left_join( 'hin', 'participant_last_hin.hin_id', 'hin.id' );
       }
     }
+    else if( 'interview' == $this->table_name )
+    {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', $table_name.'.participant_id', false );
+        $join_mod->where( $table_name.'.qnaire_id', '=', $this->subtype );
+        $modifier->join_modifier( 'interview', $join_mod, 'left', $table_name );
+      }
+    }
     else if( 'hold' == $this->table_name ||
              'proxy' == $this->table_name ||
              'trace' == $this->table_name ||
