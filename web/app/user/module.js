@@ -280,14 +280,18 @@ define( function() {
           },
 
           stopListenToCall: function() {
-            return CnHttpFactory.instance( {
-              path: 'voip/0',
-              onError: function( error ) {
-                if( 404 == error.status ) {
-                  // ignore 404 errors, it just means there was no phone call found to hang up
-                } else { CnModalMessageFactory.httpError( error ); }
-              }
-            } ).delete();
+            try {
+              return CnHttpFactory.instance( {
+                path: 'voip/0',
+                onError: function( error ) {
+                  if( 404 == error.status ) {
+                    // ignore 404 errors, it just means there was no phone call found to hang up
+                  } else { CnModalMessageFactory.httpError( error ); }
+                }
+              } ).delete();
+            } catch( error ) {
+              // handled by onError above
+            }
           },
 
           // extend the onPatch function

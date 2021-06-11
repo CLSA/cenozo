@@ -87,22 +87,26 @@ define( function() {
                 data.recording_file_id = this.activeRecordingFile.id;
               }
 
-              await CnHttpFactory.instance( {
-                path: 'voip/0',
-                data: data,
-                onError: function( error ) {
-                  self.voipOperation = null;
-                  if( 404 == error.status ) {
-                    // 404 means there is no active call
-                    CnModalMessageFactory.instance( {
-                      title: 'No Active Call',
-                      message: 'The system was unable to start the recording since you do not appear to be ' +
-                               'in a phone call.',
-                      error: true
-                    } ).show();
-                  } else CnModalMessageFactory.httpError( error );
-                }
-              } ).patch();
+              try {
+                await CnHttpFactory.instance( {
+                  path: 'voip/0',
+                  data: data,
+                  onError: function( error ) {
+                    self.voipOperation = null;
+                    if( 404 == error.status ) {
+                      // 404 means there is no active call
+                      CnModalMessageFactory.instance( {
+                        title: 'No Active Call',
+                        message: 'The system was unable to start the recording since you do not appear to be ' +
+                                 'in a phone call.',
+                        error: true
+                      } ).show();
+                    } else CnModalMessageFactory.httpError( error );
+                  }
+                } ).patch();
+              } catch( error ) {
+                // handled by onError above
+              }
 
               // start the timer
               if( null != this.timerValue && null == this.timerPromise ) {
@@ -114,15 +118,19 @@ define( function() {
                     await self.stopRecording();
                   } else if( self.activeRecording.timer <= self.timerValue ) {
                     self.timerValue = self.activeRecording.timer;
-                    await CnHttpFactory.instance( {
-                      path: 'voip/0',
-                      data: {
-                        operation: 'play_sound',
-                        filename: 'beep',
-                        volume: parseInt( self.playbackVolume )
-                      },
-                      onError: function() {} // ignore all errors
-                    } ).patch()
+                    try {
+                      await CnHttpFactory.instance( {
+                        path: 'voip/0',
+                        data: {
+                          operation: 'play_sound',
+                          filename: 'beep',
+                          volume: parseInt( self.playbackVolume )
+                        },
+                        onError: function() {} // ignore all errors
+                      } ).patch()
+                    } catch( error ) {
+                      // handled by onError above
+                    }
                     await self.stopRecording();
                   }
                 }, 1000 );
@@ -161,11 +169,15 @@ define( function() {
                 this.timerPromise = null;
               }
 
-              await CnHttpFactory.instance( {
-                path: 'voip/0',
-                data: { operation: 'stop_monitoring' },
-                onError: function() { this.voipOperation = null; }
-              } ).patch();
+              try {
+                await CnHttpFactory.instance( {
+                  path: 'voip/0',
+                  data: { operation: 'stop_monitoring' },
+                  onError: function() { this.voipOperation = null; }
+                } ).patch();
+              } catch( error ) {
+                // handled by onError above
+              }
               this.voipOperation = null;
             }
           } );
