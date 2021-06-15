@@ -104,6 +104,35 @@ class address extends has_rank
   }
 
   /**
+   * Provides a string representation of the address
+   * @return string
+   */
+  public function to_string()
+  {
+    $string = $this->address1;
+    if( !is_null( $this->address2 ) ) $string .= sprintf( ' %s', $this->address2 );
+
+    if( $this->international )
+    {
+      if( !is_null( $this->city ) ) $string .= sprintf( ', %s', $this->city );
+      if( !is_null( $this->international_region ) ) $string .= sprintf( ', %s', $this->international_region );
+      if( !is_null( $this->postcode ) ) $string .= sprintf( ', %s', $this->postcode );
+      if( !is_null( $this->international_country ) ) $string .= sprintf( ', %s', $this->international_country );
+    }
+    else
+    {
+      $string .= sprintf(
+        ', %s, %s, %s',
+        $this->city,
+        $this->get_region()->abbreviation,
+        $this->postcode
+      );
+    }
+
+    return $string;
+  }
+
+  /**
    * Sets the region, timezone offset and daylight savings columns based on the postcode.
    * @access public
    */
