@@ -238,14 +238,7 @@ class data_manager extends \cenozo\singleton
           }
           else if( 'full' == $column )
           {
-            $value = $db_address->address1;
-            if( !is_null( $db_address->address2 ) ) $value .= ' '.$db_address->address2;
-            $value .= sprintf(
-              ', %s, %s, %s',
-              $db_address->city,
-              $db_address->get_region()->abbreviation,
-              $db_address->postcode
-            );
+            $value = $db_address->to_string();
           }
           else
           {
