@@ -117,7 +117,11 @@ class consent extends record
           catch( \cenozo\exception\runtime $e )
           {
             // note runtime errors but keep processing anyway
-            log::error( $e->get_message() );
+            log::error( sprintf(
+              "Unable to repopulate queue for %s\n%s",
+              $db_participant->uid,
+              $e->get_message()
+            ) );
           }
         }
       }
