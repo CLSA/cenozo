@@ -236,8 +236,11 @@ class ldap_manager extends \cenozo\singleton
       }
 
       // handle connection refused
-      if( false !== strpos( $result['output'], 'NT_STATUS_CONNECTION_REFUSED' ) )
+      if( false !== strpos( $result['output'], 'NT_STATUS_CONNECTION_REFUSED' ) ||
+          false !== strpos( $result['output'], 'NT_STATUS_HOST_UNREACHABLE' ) )
+      {
         throw lib::create( 'exception\ldap', 'Unable to connect to the LDAP server.', 255 );
+      }
 
       // ignore errors caused by invalid credentials
       $valid = false !== strpos( $result['output'], sprintf( 'GPOs for user %s', $username ) );
