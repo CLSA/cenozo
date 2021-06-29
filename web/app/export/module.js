@@ -215,6 +215,8 @@ define( [
               var columnObject = {
                 id: item.id,
                 table_name: item.table_name,
+                table_title:
+                  'participant_identifier' == item.table_name ? 'Identifier' : item.table_name.replace( /_/g, ' ' ).ucWords(),
                 subtype: null == item.subtype ? null : item.subtype.toString(),
                 oldSubtype: null == item.subtype ? null : item.subtype.toString(),
                 column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
@@ -850,7 +852,10 @@ define( [
               }
 
               restrictionType.isLoading = false;
-              restrictionType.list.findByProperty( 'key', undefined ).title = 'Select a new ' + tableName + ' restriction...';
+              restrictionType.list.findByProperty( 'key', undefined ).title =
+                'Select a new ' + (
+                  'participant_identifier' == tableName ? 'identifier' : tableName.replace( /_/g, ' ' )
+                ) + ' restriction...';
             }
 
             var ignoreColumnList = [ 'check_withdraw', 'participant_id', 'preferred_site_id' ];
@@ -884,7 +889,9 @@ define( [
               }
             }
             columnList.list.findByProperty( 'key', undefined ).title =
-              'Add a new ' + subject + ' column...';
+              'Add a new ' + (
+                'participant_identifier' == subject ? 'identifier' : subject.replace( /_/g, ' ' )
+              ) + ' column...';
             columnList.isLoading = false;
 
             // add special meta columns

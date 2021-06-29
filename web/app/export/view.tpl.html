@@ -48,7 +48,7 @@
                   ng-options="rank for rank in [] | cnRange:1:model.viewModel.columnList.length">
           </select>
         </div>
-        <div class="col-sm-2 text-center"><strong>{{ item.table_name|cnUCWords }}</strong></div>
+        <div class="col-sm-2 text-center"><strong>{{ item.table_title }}</strong></div>
         <div class="col-sm-2 text-center"><strong>{{ item.column.title }}</strong></div>
         <div class="col-sm-4 col-slim-right">
           <select class="form-control"
@@ -134,7 +134,7 @@
           </select>
         </div>
         <label class="col-sm-2 control-label text-center" ng-if="null == item.subtype">
-          {{ item.table_name|cnUCWords }}
+          {{ item.table_title }}
         </label>
         <div class="col-sm-2 col-slim" ng-if="null != item.subtype">
           <select class="form-control pull-right"
