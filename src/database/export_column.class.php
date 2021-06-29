@@ -251,6 +251,20 @@ class export_column extends has_rank
         }
       }
     }
+    else if( 'participant_identifier' == $this->table_name )
+    {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $joining_table_name = 'participant_identifier_'.$this->subtype;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $joining_table_name.'.participant_id', false );
+          $join_mod->where( $joining_table_name.'.identifier_id', '=', $this->subtype );
+          $modifier->join_modifier( 'participant_identifier', $join_mod, 'left', $joining_table_name );
+        }
+      }
+    }
     else if( 'phone' == $this->table_name )
     {
       if( !$modifier->has_join( 'phone' ) )
@@ -392,6 +406,11 @@ class export_column extends has_rank
     {
       // get the event type name
       array_unshift( $alias_parts, lib::create( 'database\event_type', $this->subtype )->name );
+    }
+    else if( 'participant_identifier' == $this->table_name )
+    {
+      // get the identifier name
+      array_unshift( $alias_parts, lib::create( 'database\identifier', $this->subtype )->name );
     }
     else if( 'site' == $this->table_name )
     {
