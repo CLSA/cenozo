@@ -1,5 +1,6 @@
 define( [
-  'address', 'collection', 'consent', 'event', 'hold', 'hin', 'interview', 'participant', 'phone', 'proxy', 'site', 'trace'
+  'address', 'collection', 'consent', 'event', 'hold', 'hin', 'interview',
+  'participant', 'participant_identifier', 'phone', 'proxy', 'site', 'trace'
 ].reduce( function( list, name ) {
   // only require the interview module if it has been activated
   return 'interview' == name && angular.isUndefined( cenozoApp.moduleList.interview ) ?
@@ -151,14 +152,14 @@ define( [
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnExportViewFactory', [
     'CnBaseViewFactory',
-    'CnParticipantModelFactory', 'CnAddressModelFactory', 'CnPhoneModelFactory', 'CnSiteModelFactory',
-    'CnCollectionModelFactory', 'CnConsentModelFactory', 'CnEventModelFactory', 'CnHinModelFactory',
-    'CnHoldModelFactory', 'CnProxyModelFactory', 'CnTraceModelFactory',
+    'CnParticipantModelFactory', 'CnParticipantIdentifierModelFactory', 'CnAddressModelFactory',
+    'CnPhoneModelFactory', 'CnSiteModelFactory', 'CnCollectionModelFactory', 'CnConsentModelFactory',
+    'CnEventModelFactory', 'CnHinModelFactory', 'CnHoldModelFactory', 'CnProxyModelFactory', 'CnTraceModelFactory',
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnModalDatetimeFactory', '$injector',
     function( CnBaseViewFactory,
-              CnParticipantModelFactory, CnAddressModelFactory, CnPhoneModelFactory, CnSiteModelFactory,
-              CnCollectionModelFactory, CnConsentModelFactory, CnEventModelFactory, CnHinModelFactory,
-              CnHoldModelFactory, CnProxyModelFactory, CnTraceModelFactory,
+              CnParticipantModelFactory, CnParticipantIdentifierModelFactory, CnAddressModelFactory,
+              CnPhoneModelFactory, CnSiteModelFactory, CnCollectionModelFactory, CnConsentModelFactory,
+              CnEventModelFactory, CnHinModelFactory, CnHoldModelFactory, CnProxyModelFactory, CnTraceModelFactory,
               CnSession, CnHttpFactory, CnModalMessageFactory, CnModalDatetimeFactory, $injector ) {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'export_file' );
@@ -280,6 +281,7 @@ define( [
           
           modelList: {
             participant: CnParticipantModelFactory.root,
+            participant_identifier: CnParticipantIdentifierModelFactory.root,
             site: CnSiteModelFactory.root,
             address: CnAddressModelFactory.root,
             phone: CnPhoneModelFactory.root,
@@ -339,6 +341,11 @@ define( [
               ]
             },
             participant: {
+              isLoading: true,
+              promise: null,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
+            participant_identifier: {
               isLoading: true,
               promise: null,
               list: [ { key: undefined, title: 'Loading...' } ]
@@ -411,6 +418,10 @@ define( [
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
             },
+            participant_identifier: {
+              isLoading: true,
+              list: [ { key: undefined, title: 'Loading...' } ]
+            },
             site: {
               isLoading: true,
               list: [ { key: undefined, title: 'Loading...' } ]
@@ -457,6 +468,7 @@ define( [
           columnList: [],
           
           subtypeList: {
+            participant_identifier: [],
             site: [
               { key: 'effective', name: 'Effective', inUse: false },
               { key: 'default', name: 'Default', inUse: false },
@@ -904,16 +916,16 @@ define( [
         // add the interview column/restriction entries if using the interview module
         if( interviewModule ) {
           // add interview after participant in the model list
-          cenozo.insertPropertyAfter( this.modelList, 'participant', 'interview', CnInterviewModelFactory.root );
+          cenozo.insertPropertyAfter( this.modelList, 'participant_identifier', 'interview', CnInterviewModelFactory.root );
 
           // add interview after participant in the column list
-          cenozo.insertPropertyAfter( this.tableColumnList, 'participant', 'interview', {
+          cenozo.insertPropertyAfter( this.tableColumnList, 'participant_identifier', 'interview', {
             isLoading: true,
             list: [ { key: undefined, title: 'Loading...' } ]
           } );
 
           // add interview after participant in the restriction list
-          cenozo.insertPropertyAfter( this.tableRestrictionList, 'participant', 'interview', {
+          cenozo.insertPropertyAfter( this.tableRestrictionList, 'participant_identifier', 'interview', {
             isLoading: true,
             promise: null,
             list: [ { key: undefined, title: 'Loading...' } ]
@@ -926,6 +938,7 @@ define( [
         var self = this;
         async function init() {
           await self.processMetadata( 'participant' );
+          await self.processMetadata( 'participant_identifier' );
           if( interviewModule ) await self.processMetadata( 'interview' );
           await self.processMetadata( 'site' );
           await self.processMetadata( 'address' );
@@ -937,6 +950,18 @@ define( [
           await self.processMetadata( 'hold' );
           await self.processMetadata( 'proxy' );
           await self.processMetadata( 'trace' );
+
+          var response = await CnHttpFactory.instance( {
+            path: 'identifier',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: ['name'] }
+            }
+          } ).query();
+
+          response.data.forEach( function( item ) {
+            self.subtypeList.participant_identifier.push( { key: item.id.toString(), name: item.name } );
+          } );
 
           if( interviewModule ) {
             var response = await CnHttpFactory.instance( {
