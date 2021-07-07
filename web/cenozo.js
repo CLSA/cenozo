@@ -6021,194 +6021,224 @@ cenozo.factory( 'CnHttpFactory', [
       if( angular.isUndefined( params.path ) )
         throw new Error( 'Tried to create CnHttpFactory instance without a path' );
 
-      this.path = null;
-      this.data = {};
-      this.redirectOnError = false;
-      this.redirected = false;
-      this.onError = CnModalMessageFactory.httpError;
-      this.guid = cenozo.generateGUID();
-      this.format = 'json';
-      this.noActivity = true;
+      angular.extend( this, {
+        debug: false,
+        path: null,
+        data: {},
+        redirectOnError: false,
+        redirected: false,
+        onError: CnModalMessageFactory.httpError,
+        guid: cenozo.generateGUID(),
+        format: 'json',
+        noActivity: true
+      } );
+
       angular.extend( this, params );
 
-      var self = this;
-      async function http( method, url, cancelOnTransition ) {
-        if( angular.isUndefined( cancelOnTransition ) ) cancelOnTransition = false;
-        var object = {
-          url: cenozoApp.baseUrl + '/' + url,
-          method: method,
-          // broadcast when http requests start/finish
-          transformRequest: appendTransform(
-            $http.defaults.transformRequest,
-            function( request ) {
-              $rootScope.$broadcast( 'httpRequest', self.guid, request );
-              return request;
-            }
-          ),
-          transformResponse: appendTransform(
-            $http.defaults.transformResponse,
-            function( data, getHeader, status ) {
-              // ignore a status of -1 (cancelled requests get a status of -1)
-              if( -1 == status ) {
-                $rootScope.$broadcast( 'httpCancel', self.guid, data );
-              } else {
-                var site = angular.fromJson( getHeader( 'Site' ) );
-                var user = angular.fromJson( getHeader( 'User' ) );
-                var role = angular.fromJson( getHeader( 'Role' ) );
+      angular.extend( this, {
+        delete: async function() { return await this.http( 'DELETE', false ); },
+        get: async function() { return await this.http( 'GET', true ); },
+        head: async function() { return await this.http( 'HEAD', true ); },
+        patch: async function() { return await this.http( 'PATCH', false ); },
+        post: async function() { return await this.http( 'POST', false ); },
+        query: async function() { return await this.http( 'GET', true ); },
 
-                if( null == user ) {
-                  // our session has expired, reloading the page will bring us back to the login screen
-                  document.getElementById( 'view' ).innerHTML = '';
-                  $window.location.reload();
+        count: async function() {
+          this.path += ( this.path.includes( '?' ) ? '&' : '?' ) + 'count=true';
+          return await this.query();
+        },
+
+        file: async function() {
+          // change the default error
+          if( this.onError === CnModalMessageFactory.httpError ) {
+            this.onError = function( error ) {
+              if( 404 == error.status ) {
+                CnModalMessageFactory.instance( {
+                  title: 'File Not Found',
+                  message: 'Sorry, the file you are trying to download doesn\'t exist on the server.',
+                  error: true
+                } ).show();
+              } else CnModalMessageFactory.httpError( error );
+            };
+          }
+          if( 'json' === this.format ) this.format = 'pdf';
+          if( angular.isUndefined( this.data.download ) || !this.data.download ) this.data.download = true;
+
+          var response = await this.get();
+          saveAs(
+            new Blob(
+              [response.data],
+              { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
+            ),
+            response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
+          );
+
+          return response;
+        },
+
+        http: async function( method, cancelOnTransition, callStack ) {
+          this.stack = Error().stack
+            .replace( /^Error\n/, '' ) // Chrome adds a superfluous line
+            .split( '\n' )
+            .splice( 1, 8 ) // the first line is this (http) function, so ignore it
+            .map( ( x, index ) => x.trim().replace( /^at /, '  ' + index + ') ' ) // Chrome
+                                          .replace( /^([^@]*)@(.*)/, '  ' + index + ') $1 ($2)' ) ) // Firefox
+            .join( '\n' );
+
+          if( angular.isUndefined( cancelOnTransition ) ) cancelOnTransition = false;
+          var self = this;
+          var object = {
+            url: cenozoApp.baseUrl + '/api/' + this.path,
+            method: method,
+            // broadcast when http requests start/finish
+            transformRequest: appendTransform(
+              $http.defaults.transformRequest,
+              function( request ) {
+                $rootScope.$broadcast( 'httpRequest', self.guid, request );
+                return request;
+              }
+            ),
+            transformResponse: appendTransform(
+              $http.defaults.transformResponse,
+              function( data, getHeader, status ) {
+                // ignore a status of -1 (cancelled requests get a status of -1)
+                if( -1 == status ) {
+                  $rootScope.$broadcast( 'httpCancel', self.guid, data );
                 } else {
-                  // assert login
-                  if( ( null != login.site && site != login.site ) ||
-                      ( null != login.user && user != login.user ) ||
-                      ( null != login.role && role != login.role ) ) {
-                    var err = new Error;
-                    err.name = 'Login Mismatch',
-                    err.message =
-                      'The server reports that you are no longer logged in as:\n' +
-                      '\n' +
-                      '        site: ' + login.site + '\n' +
-                      '        user: ' + login.user + '\n' +
-                      '        role: ' + login.role + '\n' +
-                      '\n' +
-                      'The application will now be reloaded after which you will be logged in as:\n' +
-                      '\n' +
-                      '        site: ' + site + '\n' +
-                      '        user: ' + user + '\n' +
-                      '        role: ' + role + '\n' +
-                      '\n' +
-                      'This should only happen as a result of accessing the application from a different ' +
-                      'browser window.  If this message persists then please contact support as someone ' +
-                      'else may be logged into your account.';
-                    throw err;
+                  var site = angular.fromJson( getHeader( 'Site' ) );
+                  var user = angular.fromJson( getHeader( 'User' ) );
+                  var role = angular.fromJson( getHeader( 'Role' ) );
+
+                  if( null == user ) {
+                    // our session has expired, reloading the page will bring us back to the login screen
+                    document.getElementById( 'view' ).innerHTML = '';
+                    $window.location.reload();
+                  } else {
+                    // assert login
+                    if( ( null != login.site && site != login.site ) ||
+                        ( null != login.user && user != login.user ) ||
+                        ( null != login.role && role != login.role ) ) {
+                      var err = new Error;
+                      err.name = 'Login Mismatch',
+                      err.message =
+                        'The server reports that you are no longer logged in as:\n' +
+                        '\n' +
+                        '        site: ' + login.site + '\n' +
+                        '        user: ' + login.user + '\n' +
+                        '        role: ' + login.role + '\n' +
+                        '\n' +
+                        'The application will now be reloaded after which you will be logged in as:\n' +
+                        '\n' +
+                        '        site: ' + site + '\n' +
+                        '        user: ' + user + '\n' +
+                        '        role: ' + role + '\n' +
+                        '\n' +
+                        'This should only happen as a result of accessing the application from a different ' +
+                        'browser window.  If this message persists then please contact support as someone ' +
+                        'else may be logged into your account.';
+                      throw err;
+                    }
+
+                    $rootScope.$broadcast( 'httpResponse', self.guid, data );
                   }
-
-                  $rootScope.$broadcast( 'httpResponse', self.guid, data );
                 }
+
+                return data;
               }
+            )
+          };
 
-              return data;
-            }
-          )
-        };
+          // Set this http request's timeout to the transition's canceller.
+          // We do this so that we can cancel requests should the user transition away from this state.
+          if( cancelOnTransition && transitionCanceller ) object.timeout = transitionCanceller.promise;
 
-        // Set this http request's timeout to the transition's canceller.
-        // We do this so that we can cancel requests should the user transition away from this state.
-        if( cancelOnTransition && transitionCanceller ) object.timeout = transitionCanceller.promise;
-
-        if( null !== self.data ) {
-          if( 'POST' == method || 'PATCH' == method ) object.data = self.data;
-          else object.params = self.data;
-        }
-
-        if( ['csv','jpeg','ods','pdf','txt','unknown','xlsx','zip'].includes( self.format ) ) {
-          var format = null;
-          if( 'csv' == self.format ) format = 'text/csv;charset=utf-8';
-          else if( 'jpeg' == self.format ) format = 'image/jpeg';
-          else if( 'ods' == self.format ) format = 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8';
-          else if( 'pdf' == self.format ) format = 'application/pdf';
-          else if( 'txt' == self.format ) format = 'text/plain';
-          else if( 'unknown' == self.format ) format = 'application/octet-stream';
-          else if( 'xlsx' == self.format )
-            format = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8';
-          else if( 'zip' == self.format ) format = 'application/zip';
-
-          if( 'PATCH' == method ) {
-            object.headers = { 'Content-Type': format };
-          } else if( 'GET' == method ) {
-            object.headers = { 'Accept': format };
-            object.responseType = 'arraybuffer';
+          if( null !== this.data ) {
+            if( 'POST' == method || 'PATCH' == method ) object.data = this.data;
+            else object.params = this.data;
           }
-        } else {
-          object.headers = {};
-        }
 
-        if( 'GET' == method || 'HEAD' == method ) object.headers['No-Activity'] = self.noActivity;
+          if( ['csv','jpeg','ods','pdf','txt','unknown','xlsx','zip'].includes( this.format ) ) {
+            var format = null;
+            if( 'csv' == this.format ) format = 'text/csv;charset=utf-8';
+            else if( 'jpeg' == this.format ) format = 'image/jpeg';
+            else if( 'ods' == this.format ) format = 'application/vnd.oasis.opendocument.spreadsheet;charset=utf-8';
+            else if( 'pdf' == this.format ) format = 'application/pdf';
+            else if( 'txt' == this.format ) format = 'text/plain';
+            else if( 'unknown' == this.format ) format = 'application/octet-stream';
+            else if( 'xlsx' == this.format )
+              format = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8';
+            else if( 'zip' == this.format ) format = 'application/zip';
 
-        try {
-          return await $http( object );
-        } catch( error ) {
-          if( error instanceof Error ) {
-            // blank content
-            document.getElementById( 'view' ).innerHTML = '';
-
-            if( 'Login Mismatch' == error.name ) {
-              if( hasLoginMismatch ) return; // do nothing if we've already been here
-              hasLoginMismatch = true;
+            if( 'PATCH' == method ) {
+              object.headers = { 'Content-Type': format };
+            } else if( 'GET' == method ) {
+              object.headers = { 'Accept': format };
+              object.responseType = 'arraybuffer';
             }
-
-            await CnModalMessageFactory.instance( {
-              title: error.name,
-              message: error.message,
-              error: true
-            } ).show();
-
-            if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
           } else {
-            // do not send cancelled requests to the error handler
-            if( -1 != error.status ) {
-              if( self.redirectOnError ) {
-                // only redirect once, afterwords ignore any additional error redirect requests
-                if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
-                  hasRedirectedOnError = true;
-                  await $state.go(
-                    'error.' + ( angular.isDefined( error ) ? error.status : 500 ),
-                    error
-                  );
-                  $timeout( function() { hasRedirectedOnError = false; }, 500 );
-                }
-              } else {
-                // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
-                // don't want to bother showing a non-redirecting error message
-                await $timeout( function() { if( !hasRedirectedOnError ) self.onError( error ); }, 400 );
-              }
-            }
+            object.headers = {};
           }
 
-          throw method + ' failed';
-        }
-      };
+          if( 'GET' == method || 'HEAD' == method ) object.headers['No-Activity'] = this.noActivity;
 
-      this.delete = async function() { return await http( 'DELETE', 'api/' + this.path, false ); };
-      this.get = async function() { return await http( 'GET', 'api/' + this.path, true ); };
-      this.head = async function() { return await http( 'HEAD', 'api/' + this.path, true ); };
-      this.patch = async function() { return await http( 'PATCH', 'api/' + this.path, false ); };
-      this.post = async function() { return await http( 'POST', 'api/' + this.path, false ); };
-      this.query = async function() { return await http( 'GET', 'api/' + this.path, true ); };
-      this.count = async function() {
-        this.path += ( this.path.includes( '?' ) ? '&' : '?' ) + 'count=true';
-        return await this.query();
-      }
-      this.file = async function() {
-        // change the default error
-        if( this.onError === CnModalMessageFactory.httpError ) {
-          this.onError = function( error ) {
-            if( 404 == error.status ) {
-              CnModalMessageFactory.instance( {
-                title: 'File Not Found',
-                message: 'Sorry, the file you are trying to download doesn\'t exist on the server.',
+          try {
+            return await $http( object );
+          } catch( error ) {
+            if( error instanceof Error ) {
+              // blank content
+              document.getElementById( 'view' ).innerHTML = '';
+
+              if( 'Login Mismatch' == error.name ) {
+                if( hasLoginMismatch ) return; // do nothing if we've already been here
+                hasLoginMismatch = true;
+              }
+
+              await CnModalMessageFactory.instance( {
+                title: error.name,
+                message: error.message,
                 error: true
               } ).show();
-            } else CnModalMessageFactory.httpError( error );
-          };
+
+              if( hasLoginMismatch ) $window.location.assign( cenozoApp.baseUrl );
+            } else {
+              // do not send cancelled requests to the error handler
+              if( -1 != error.status ) {
+                if( this.redirectOnError ) {
+                  // only redirect once, afterwords ignore any additional error redirect requests
+                  if( !hasRedirectedOnError && null == $state.current.name.match( /^error\./ ) ) {
+                    hasRedirectedOnError = true;
+                    await $state.go(
+                      'error.' + ( angular.isDefined( error ) ? error.status : 500 ),
+                      error
+                    );
+                    $timeout( function() { hasRedirectedOnError = false; }, 500 );
+                  }
+                } else {
+                  // wait a bit to make sure we don't have a batch of errors, because if one redirects then we
+                  // don't want to bother showing a non-redirecting error message
+                  var self = this;
+                  await $timeout( function() { if( !hasRedirectedOnError ) self.onError( error ); }, 400 );
+                }
+              }
+
+              // Report the call stack back to the server when receiving a 500 error
+              // Note that we don't do this when sending debug info to the server (to avoid infinite loops)
+              if( !this.debug && 500 == error.status ) {
+                // try sending back the browser's call stack to help debug argument errors
+                console.log( 'Sending the following call stack back to the server:\n' + this.stack );
+                debugInstance( { path: 'debug', data: this.stack } ).post();
+              }
+            }
+
+            throw method + ' failed';
+          }
         }
-        if( 'json' === this.format ) this.format = 'pdf';
-        if( angular.isUndefined( this.data.download ) || !this.data.download ) this.data.download = true;
+      } );
+    };
 
-        var response = await this.get();
-        saveAs(
-          new Blob(
-            [response.data],
-            { type: response.headers( 'Content-Type' ).replace( /"(.*)"/, '$1' ) }
-          ),
-          response.headers( 'Content-Disposition' ).match( /filename=(.*);/ )[1]
-        );
-
-        return response;
-      }
+    var debugInstance = function( params ) {
+      params.debug = true;
+      return new object( angular.isUndefined( params ) ? {} : params );
     };
 
     return {
@@ -6741,19 +6771,19 @@ cenozo.service( 'CnModalMessageFactory', [
 
     return {
       instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); },
-      httpError: function( response ) {
+      httpError: function( error ) {
         // do not show errors if we are already in an error state
         var stateNameParts = $state.current.name.split( '.' );
         if( 0 < stateNameParts.length && 'error' == stateNameParts[0] ) return;
 
-        var type = angular.isDefined( response ) && angular.isDefined( response.status )
-                 ? response.status : 500;
+        var type = angular.isDefined( error ) && angular.isDefined( error.status )
+                 ? error.status : 500;
         var title = 'Error';
         var message = 'Unfortunately your request cannot be processed ';
 
-        if( 306 == type && angular.isDefined( response.data ) ) {
+        if( 306 == type && angular.isDefined( error.data ) ) {
           title = 'Please Note';
-          message = angular.fromJson( response.data );
+          message = angular.fromJson( error.data );
         } else if( 403 == type ) {
           title = 'Permission Denied';
           message += 'because you do not have access to the requested resource.';
@@ -6774,19 +6804,19 @@ cenozo.service( 'CnModalMessageFactory', [
         message += '\n';
 
         var small = '';
-        if( angular.isDefined( response.config ) && 306 != type ) {
+        if( angular.isDefined( error.config ) && 306 != type ) {
           // add the url as a small message
           var re = new RegExp( '^' + cenozoApp.baseUrl + '/(api/?)?' );
-          small = '    Resource: "' + response.config.method + ':'
-                + response.config.url.replace( re, '' ) + '"';
+          small = '    Resource: "' + error.config.method + ':'
+                + error.config.url.replace( re, '' ) + '"';
 
-          if( angular.isDefined( response.config.params ) )
-            small += '\n    Parameters: ' + angular.toJson( response.config.params );
+          if( angular.isDefined( error.config.params ) )
+            small += '\n    Parameters: ' + angular.toJson( error.config.params );
         }
-        if( 'string' == cenozo.getType( response.data ) &&
-            0 < response.data.length &&
-            20 > response.data.length &&
-            306 != type && 406 != type ) small += '\n    Error Code: ' + response.data;
+        if( 'string' == cenozo.getType( error.data ) &&
+            0 < error.data.length &&
+            20 > error.data.length &&
+            306 != type && 406 != type ) small += '\n    Error Code: ' + error.data;
         var modal = new object( { title: title, message: message, small: small, error: true } );
         return modal.show();
       }
