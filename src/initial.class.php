@@ -16,7 +16,6 @@ final class initial
 {
   /**
    * Constructor
-   * 
    * @access public
    */
   public function __construct()
@@ -27,9 +26,10 @@ final class initial
     unset( $SETTINGS );
 
     // include the framework's initialization settings
-    require_once( dirname( __FILE__ ).'/../settings.local.ini.php' );
+    $base_path = $this->settings['path']['CENOZO'];
+    require_once( $base_path.'/settings.local.ini.php' );
     $this->add_settings( $settings );
-    require_once( dirname( __FILE__ ).'/../settings.ini.php' );
+    require_once( $base_path.'/settings.ini.php' );
     $this->add_settings( $settings );
 
     if( !array_key_exists( 'general', $this->settings ) ||

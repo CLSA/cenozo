@@ -42,7 +42,7 @@ class ui extends \cenozo\base_object
       // build the error interface
       ob_start();
       if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', ' ' );
-      include( dirname( __FILE__ ).'/error.php' );
+      include( CENOZO_PATH.'/src/ui/error.php' );
       $interface = ob_get_clean();
     }
     else if( is_null( $db_user ) )
@@ -53,7 +53,7 @@ class ui extends \cenozo\base_object
       $firefox_minimum_version = $setting_manager->get_setting( 'general', 'firefox_minimum_version' );
       $admin_email = $setting_manager->get_setting( 'general', 'admin_email' );
       $login_footer = $db_application->login_footer;
-      include( dirname( __FILE__ ).'/login.php' );
+      include( CENOZO_PATH.'/src/ui/login.php' );
       $interface = ob_get_clean();
     }
     else
@@ -104,7 +104,7 @@ class ui extends \cenozo\base_object
 
       // build the interface
       ob_start();
-      include( dirname( __FILE__ ).'/interface.php' );
+      include( CENOZO_PATH.'/src/ui/interface.php' );
       $interface = ob_get_clean();
     }
 
