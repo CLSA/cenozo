@@ -15,10 +15,7 @@ $patch_version = $_SERVER['argv'][1];
 $patch_dir = sprintf( 'db/upgrade/%s', $patch_version );
 
 chdir( dirname( __FILE__ ).'/../' );
-chdir( dirname( __FILE__ ).'/../' );
-//require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
-
 define( 'INSTANCE', $settings['general']['framework_name'] );
 define( 'USER', substr( $settings['db']['database_prefix'], 0, -1 ) );
 define( 'HOST', $settings['db']['server'] );
