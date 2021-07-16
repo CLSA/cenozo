@@ -1898,6 +1898,7 @@ cenozo.directive( 'cnRecordView', [
           directive: 'cnRecordView',
           isComplete: false,
           showTimestamps: 2 < CnSession.role.tier,
+          patchPromise: null,
           getDeleteText: function() { return 'Delete'; },
           getViewText: function( subject ) { return 'View ' + $scope.parentName( subject ); },
 
@@ -1921,67 +1922,73 @@ cenozo.directive( 'cnRecordView', [
           },
 
           patch: async function( property ) {
-            if( $scope.model.getEditEnabled() ) {
-              // This function is sometimes called when it shouldn't with the record having all null or undefined values.
-              // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
-              if( angular.isUndefined( $scope.model.viewModel.record[property] ) ) {
-                var valid = false;
-                for( var prop in $scope.model.viewModel.record ) {
-                  if( angular.isDefined( $scope.model.viewModel.record[prop] ) && null !== $scope.model.viewModel.record[prop] ) {
-                    valid = true;
-                    break;
-                  }
-                }
-
-                if( !valid ) {
-                  console.warn( 'Invalid call to patch() detected and ignored.' );
-                  return;
-                }
-              }
-
-              var element = cenozo.getFormElement( property );
-              var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
-
-              if( element ) {
-                element.$error.format = !valid;
-                cenozo.updateFormElement( element, true );
-              }
-
-              if( valid ) {
-                // convert size types and write record property from formatted record
-                if( null != $scope.input && 'size' == $scope.input.type )
-                  $scope.model.viewModel.record[property] =
-                    $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
-
-                // validation passed, proceed with patch
-                var data = {};
-                data[property] = $scope.model.viewModel.record[property];
-
-                // get the identifier now (in case it is changed before it is used below)
-                var identifier = $scope.model.viewModel.record.getIdentifier();
-
-                await $scope.model.viewModel.onPatch( data );
-
-                // if the data in the identifier was patched then reload with the new url
-                if( identifier.split( /[;=]/ ).includes( property ) ) {
-                  $scope.model.setQueryParameter( 'identifier', identifier );
-                  await $scope.model.reloadState();
-                } else {
-                  var currentElement = cenozo.getFormElement( property );
-                  if( currentElement ) {
-                    if( currentElement.$error.conflict ) {
-                      cenozo.forEachFormElement( 'form', function( element ) {
-                        element.$error.conflict = false;
-                        cenozo.updateFormElement( element, true );
-                      } );
+            // Keep track of the patch operation in a scope variable so we can make sure to let it finish before
+            // transitioning away from the current state
+            $scope.patchPromise = new Promise( async function( resolve, reject ) {
+              if( $scope.model.getEditEnabled() ) {
+                // This function is sometimes called when it shouldn't with the record having all null or undefined values.
+                // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
+                if( angular.isUndefined( $scope.model.viewModel.record[property] ) ) {
+                  var valid = false;
+                  for( var prop in $scope.model.viewModel.record ) {
+                    if( angular.isDefined( $scope.model.viewModel.record[prop] ) && null !== $scope.model.viewModel.record[prop] ) {
+                      valid = true;
+                      break;
                     }
                   }
 
-                  // update the formatted value
-                  $scope.model.viewModel.updateFormattedRecord( property );
+                  if( !valid ) {
+                    console.warn( 'Invalid call to patch() detected and ignored.' );
+                    return;
+                  }
+                }
+
+                var element = cenozo.getFormElement( property );
+                var valid = $scope.model.testFormat( property, $scope.model.viewModel.record[property] );
+
+                if( element ) {
+                  element.$error.format = !valid;
+                  cenozo.updateFormElement( element, true );
+                }
+
+                if( valid ) {
+                  // convert size types and write record property from formatted record
+                  if( null != $scope.input && 'size' == $scope.input.type )
+                    $scope.model.viewModel.record[property] =
+                      $filter( 'cnSize' )( $scope.model.viewModel.formattedRecord[property].join( ' ' ), true );
+
+                  // validation passed, proceed with patch
+                  var data = {};
+                  data[property] = $scope.model.viewModel.record[property];
+
+                  // get the identifier now (in case it is changed before it is used below)
+                  var identifier = $scope.model.viewModel.record.getIdentifier();
+
+                  await $scope.model.viewModel.onPatch( data );
+
+                  // if the data in the identifier was patched then reload with the new url
+                  if( identifier.split( /[;=]/ ).includes( property ) ) {
+                    $scope.model.setQueryParameter( 'identifier', identifier );
+                    await $scope.model.reloadState();
+                  } else {
+                    var currentElement = cenozo.getFormElement( property );
+                    if( currentElement ) {
+                      if( currentElement.$error.conflict ) {
+                        cenozo.forEachFormElement( 'form', function( element ) {
+                          element.$error.conflict = false;
+                          cenozo.updateFormElement( element, true );
+                        } );
+                      }
+                    }
+
+                    // update the formatted value
+                    $scope.model.viewModel.updateFormattedRecord( property );
+                  }
                 }
               }
-            }
+
+              resolve();
+            } );
           },
 
           getReport: async function( format ) {
@@ -2004,6 +2011,8 @@ cenozo.directive( 'cnRecordView', [
           },
 
           viewParent: async function( subject ) {
+            // make sure to wait for any pending patches to complete before transitioning away
+            await $scope.patchPromise;
             await $scope.model.viewModel.transitionOnViewParent( subject );
           },
 
@@ -6225,7 +6234,6 @@ cenozo.factory( 'CnHttpFactory', [
               // Note that we don't do this when sending debug info to the server (to avoid infinite loops)
               if( !this.debug && 500 == error.status ) {
                 // try sending back the browser's call stack to help debug argument errors
-                console.log( 'Sending the following call stack back to the server:\n' + this.stack );
                 debugInstance( { path: 'debug', data: this.stack } ).post();
               }
             }
