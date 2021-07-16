@@ -126,12 +126,14 @@ define( function() {
 
         // show the prompt before adding, if there is one
         this.onAdd = async function( record ) {
-          var prompt = this.parentModel.metadata.columnList.proxy_type_id.enumList.findByProperty(
-            'value', record.proxy_type_id
-          ).prompt;
+          if( angular.isDefined( record.proxy_type_id ) ) {
+            var prompt = this.parentModel.metadata.columnList.proxy_type_id.enumList.findByProperty(
+              'value', record.proxy_type_id
+            ).prompt;
 
-          if( null != prompt && !( await CnModalConfirmFactory.instance( { message: prompt } ).show() ) )
-            throw 'Cancelled by user';
+            if( null != prompt && !( await CnModalConfirmFactory.instance( { message: prompt } ).show() ) )
+              throw 'Cancelled by user';
+          }
 
           await this.$$onAdd( record );
         };
