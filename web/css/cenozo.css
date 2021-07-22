@@ -33,7 +33,9 @@ pre { white-space: pre-wrap; }
 .form-text { margin-top: 7px; }
 .spacer { margin: 0.5em; content: " " }
 .vertical-spacer { margin-top: 0.5em; margin-bottom: 0.5em; }
+.vertical-spacer-wide { margin-top: 1.0em; margin-bottom: 1.0em; }
 .horizontal-spacer { margin-left: 0.5em; margin-right: 0.5em; }
+.horizontal-spacer-wide { margin-left: 1.0em; margin-right: 1.0em; }
 .striped { background-color: #f9f9f9; }
 .hover { background-color: #f5f5f5; }
 .highlight { background-color: #fcf8e3 !important; font-weight: bold !important; }
