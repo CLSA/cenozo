@@ -102,7 +102,7 @@ class module extends \cenozo\service\site_restricted_module
       if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );
-        $sub_mod->where( 'alternate_consent.participant_id', '=', 'participant_site.participant_id', false );
+        $sub_mod->where( 'alternate.participant_id', '=', 'participant_site.participant_id', false );
         $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
         $sub_mod->where( 'participant_site.site_id', '=', $db_restrict_site->id );
         $join_mod->join_modifier( 'participant_site', $sub_mod );
