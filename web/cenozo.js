@@ -1151,7 +1151,8 @@ cenozo.directive( 'cnElastic', [
       link: function( scope, element ) {
         scope.initialHeight = scope.initialHeight || element[0].style.height;
         var resize = function() {
-          element[0].style.height = scope.initialHeight; // affects scrollHeight
+          // The following line was causing problems with scrolling the browser while editing text area boxes
+          //element[0].style.height = scope.initialHeight; // affects scrollHeight
           var height = element[0].scrollHeight + 2;
           if( height > 700 ) height = 700; // maximum height of 700 pixels
           element[0].style.height = height + 'px';
