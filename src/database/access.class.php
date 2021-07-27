@@ -21,14 +21,8 @@ class access extends record
    */
   public function save()
   {
-    if( is_null( $this->id ) )
-    {
-      // do not allow access to a higher tier or all-site (if the user doesn't have all-site access)
-      $db_role = lib::create( 'business\session' )->get_role();
-      $db_access_role = $this->get_role();
-      if( $db_access_role->tier > $db_role->tier || ( !$db_role->all_sites && $db_access_role->all_sites ) )
-        throw lib::create( 'exception\permission', 'Access creation', __METHOD__ );
-    }
+    if( is_null( $this->id ) && !$this->is_modification_allowed() )
+      throw lib::create( 'exception\permission', 'Access creation', __METHOD__ );
 
     parent::save();
   }
@@ -41,10 +35,7 @@ class access extends record
    */
   public function delete()
   {
-    $db_role = lib::create( 'business\session' )->get_role();
-    $db_access_role = $this->get_role();
-    if( $db_access_role->tier > $db_role->tier || ( !$db_role->all_sites && $db_access_role->all_sites ) )
-      throw lib::create( 'exception\permission', 'Access removal', __METHOD__ );
+    if( !$this->is_modification_allowed() ) throw lib::create( 'exception\permission', 'Access removal', __METHOD__ );
 
     parent::delete();
   }
@@ -62,5 +53,17 @@ class access extends record
     $modifier->where( 'id', '=', $this->id );
 
     return 0 < static::count( $modifier );
+  }
+
+  /* 
+   * Determines if the current role can add/remove this access
+   * @return boolean
+   */
+  public function is_modification_allowed()
+  {
+    // do not allow access to a higher tier or all-site (if the user doesn't have all-site access)
+    $db_role = lib::create( 'business\session' )->get_role();
+    $db_access_role = $this->get_role();
+    return $db_access_role->tier <= $db_role->tier && ( $db_role->all_sites || !$db_access_role->all_sites );
   }
 }
