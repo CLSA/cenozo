@@ -143,6 +143,7 @@ class mail_manager extends \cenozo\base_object
         'name' => $setting_manager->get_setting( 'mail', 'default_from_name' )
       );
     }
+    $headers[] = sprintf( 'From: %s', static::encode_email( $from ) );
     $headers[] = sprintf( 'Reply-To: %s', static::encode_email( $from ) );
 
     // process the "to", "cc" and "bcc" email lists
