@@ -5,6 +5,7 @@ mbstring: apt-get install php7.2-mbstring
 php-zip: apt-get install php-zip php7.2-zip (Used by PHPExcel)
 sendmail: apt-get install sendmail
 curl: apt-get install php7.2-curl
+intl: apt-get install php7.2-intl
 
 Modify the following mysql parameters:
   innodb_stats_on_metadata = 0

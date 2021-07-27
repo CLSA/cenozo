@@ -817,8 +817,10 @@ class database extends \cenozo\base_object
       $string
     ) );
 
-    return 0 == strlen( $string ) ?
-      'NULL' : sprintf( '"%s"', $this->connection->real_escape_string( $string ) );
+    // Note: the normalizer will convert combination characters to standard versions
+    return 0 == strlen( $string ) ?  'NULL' : (
+      sprintf( '"%s"', \Normalizer::normalize( $this->connection->real_escape_string( $string ), \Normalizer::FORM_KC ) )
+    );
   }
 
   /**
