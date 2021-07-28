@@ -3476,7 +3476,7 @@ cenozo.factory( 'CnBaseAddFactory', [
           } );
 
           this.fileList.forEach( function( file ) {
-            if( null != file.file ) file.upload( this.parentModel.getServiceResourcePath( record.getIdentifier() ) );
+            if( null != file.file ) file.upload( self.parentModel.getServiceResourcePath( record.getIdentifier() ) );
           } );
 
           this.afterAddFunctions.forEach( function( fn ) { fn( record ); } );
