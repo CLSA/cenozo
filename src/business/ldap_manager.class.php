@@ -114,8 +114,12 @@ class ldap_manager extends \cenozo\singleton
 
       if( 0 != $result['exitcode'] )
       {
-        $code = false !== strpos( $result['output'], 'LDAP_ENTRY_ALREADY_EXISTS' ) ? 68 : $result['exitcode'];
-        throw lib::create( 'exception\ldap', $result['output'], $code );
+        // LDAP sometimes responds with a non 0 code even upon success
+        if( 1 > preg_match( 'User .* created successfully', $result['output'] ) )
+        {
+          $code = false !== strpos( $result['output'], 'LDAP_ENTRY_ALREADY_EXISTS' ) ? 68 : $result['exitcode'];
+          throw lib::create( 'exception\ldap', $result['output'], $code );
+        }
       }
     }
     else
