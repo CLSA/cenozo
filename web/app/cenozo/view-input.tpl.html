@@ -162,8 +162,7 @@
           <select ng-switch-when="select"
             ng-attr-id="{{ input.key }}"
             name="name"
-            ng-options="item.value as item.name for item in input.enumList"
-            cn-options-disabled="item.disabled for item in input.enumList"
+            ng-options="item.value as item.name disable when item.disabled for item in input.enumList"
             ng-model="model.viewModel.record[input.key]"
             ng-change="model.getEditEnabled() &&
                        true !== input.isConstant( state, model ) &&

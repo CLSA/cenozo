@@ -357,8 +357,7 @@
                       <select ng-switch-when="enum"
                               ng-attr-id="{{ input.column }}"
                               name="name"
-                              ng-options="item.value as item.name for item in input.enumList"
-                              cn-options-disabled="item.disabled for item in input.enumList"
+                              ng-options="item.value as item.name disable when item.disabled for item in input.enumList"
                               ng-model="input.value"
                               class="form-control"
                               ng-required="input.required"></select>
