@@ -242,8 +242,15 @@ class mail_manager extends \cenozo\base_object
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $to = mb_encode_mimeheader( $email['address'], 'UTF-8', 'Q' );
+    // Only encode the address if there are accents (underscores won't work when we encode, so we have to hope we won't send email to
+    // an address with both accents and underscores!
+    $to = $email['address'];
+    if( preg_match( '/[ÀàÁáÂâÃãÄäÇçÈèÉéÊêËëÌìÍíÎîÏïÑñÒòÓóÔôÕõÖöŠšÚùÛúÜûÙüÝýŸÿŽž]/', $to ) )
+      $to = mb_encode_mimeheader( $to, 'UTF-8', 'Q' );
+
+    // if there's a name convert the charset and add it to the "to" field
     if( !is_null( $email['name'] ) ) $to = sprintf( '%s <%s>', $util_class_name::convert_charset( $email['name'] ), $to );
+
     return $to;
   }
 
