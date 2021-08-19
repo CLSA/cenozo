@@ -31,6 +31,7 @@ define( function() {
     identifier_id: {
       title: 'Special Identifier',
       type: 'enum',
+      isExcluded: function( $state, model ) { return !model.isRole( 'administrator' ); },
       help: 'Whether a special identifier is used by the study.'
     },
     consent_type_id: {
@@ -136,20 +137,22 @@ define( function() {
           var self = this;
           await this.$$getMetadata();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'identifier',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
-          this.metadata.columnList.identifier_id.enumList = [];
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.identifier_id.enumList.push( {
-              value: item.id,
-              name: item.name
+          if( this.isRole( 'administrator' ) ) {
+            var response = await CnHttpFactory.instance( {
+              path: 'identifier',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query();
+            this.metadata.columnList.identifier_id.enumList = [];
+            response.data.forEach( function( item ) {
+              self.metadata.columnList.identifier_id.enumList.push( {
+                value: item.id,
+                name: item.name
+              } );
             } );
-          } );
+          }
 
           var response = await CnHttpFactory.instance( {
             path: 'consent_type',
