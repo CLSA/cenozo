@@ -6249,22 +6249,23 @@ cenozo.service( 'CnModalAccountFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-account.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.allowCancel = self.allowCancel;
-            $scope.user = self.user;
-            $scope.ok = function() {
-              $uibModalInstance.close( true );
-              isOpen = false;
-            };
-            $scope.cancel = function() {
-              if( self.allowCancel ) {
-                $uibModalInstance.close( false );
+            angular.extend( $scope, {
+              model: self,
+              ok: function() {
+                $uibModalInstance.close( true );
                 isOpen = false;
+              },
+              cancel: function() {
+                if( $scope.model.allowCancel ) {
+                  $uibModalInstance.close( false );
+                  isOpen = false;
+                }
+              },
+              testEmailFormat: function() {
+                $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]{2,}$/.test( $scope.model.user.email );
+                cenozo.updateFormElement( $scope.form.email, true );
               }
-            };
-            $scope.testEmailFormat = function() {
-              $scope.form.email.$error.format = false === /^[^ ,]+@[^ ,]+\.[^ ,]{2,}$/.test( $scope.user.email );
-              cenozo.updateFormElement( $scope.form.email, true );
-            };
+            } );
           } ]
         } ).result;
       };
@@ -6291,7 +6292,8 @@ cenozo.service( 'CnModalConfirmFactory', [
         title: 'Please Confirm',
         message: 'Are you sure?',
         noText: 'No',
-        yesText: 'Yes'
+        yesText: 'Yes',
+        html: false
       } );
       angular.extend( this, params );
 
@@ -6302,9 +6304,11 @@ cenozo.service( 'CnModalConfirmFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.model = self;
-            $scope.yes = function() { $uibModalInstance.close( true ); };
-            $scope.no = function() { $uibModalInstance.close( false ); };
+            angular.extend( $scope, {
+              model: self,
+              yes: function() { $uibModalInstance.close( true ); },
+              no: function() { $uibModalInstance.close( false ); }
+            } );
           } ]
         } ).result;
       };
@@ -6336,19 +6340,22 @@ cenozo.service( 'CnModalDatetimeFactory', [
       };
 
       // service vars which can be defined by the contructor's params
-      this.locale = 'en';
-      this.date = null;
-      this.viewingDate = null;
-      this.title = 'Title';
-      this.pickerType = 'datetime';
-      this.mode = 'day';
-      this.emptyAllowed = true;
-      this.minDate = null;
-      this.maxDate = null;
-      this.hourStep = 1;
-      this.minuteStep = 1;
-      this.secondStep = 1;
+      angular.extend( this, {
+        locale: 'en',
+        date: null,
+        viewingDate: null,
+        title: 'Title',
+        pickerType: 'datetime',
+        mode: 'day',
+        emptyAllowed: true,
+        minDate: null,
+        maxDate: null,
+        hourStep: 1,
+        minuteStep: 1,
+        secondStep: 1
+      } );
       angular.extend( this, params );
+      console.log( this );
 
       moment.locale( this.locale );
 
@@ -6574,41 +6581,43 @@ cenozo.service( 'CnModalDatetimeFactory', [
             modalFade: true,
             templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-datetime.tpl.html' ),
             controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-              $scope.local = self;
-              $scope.weekdayNameList = moment.weekdaysShort();
-              $scope.nowDisabled = !self.isDateAllowed( moment(), 'second' );
-              $scope.todayDisabled = !self.isDateAllowed( moment(), 'day' );
-              $scope.ok = function() {
-                var response = null;
-                if( null !== $scope.local.date ) {
-                  var format =
-                    'time' == self.pickerType || 'time_notz' == self.pickerType ? 'HH:mm' :
-                    'timesecond' == self.pickerType || 'timesecond_notz' == self.pickerType ? 'HH:mm:ss' :
-                    undefined;
-                  response = cenozo.isDatetimeType( self.pickerType, 'timezone' )
-                           ? $scope.local.date.tz( 'utc' ).format( format )
-                           : $scope.local.date.format( format );
-                }
-                $uibModalInstance.close( response );
-              };
-              $scope.cancel = function() { $uibModalInstance.close( false ); };
+              angular.extend( $scope, {
+                model: self,
+                weekdayNameList: moment.weekdaysShort(),
+                nowDisabled: !self.isDateAllowed( moment(), 'second' ),
+                todayDisabled: !self.isDateAllowed( moment(), 'day' ),
+                ok: function() {
+                  var response = null;
+                  if( null !== $scope.model.date ) {
+                    var format =
+                      'time' == self.pickerType || 'time_notz' == self.pickerType ? 'HH:mm' :
+                      'timesecond' == self.pickerType || 'timesecond_notz' == self.pickerType ? 'HH:mm:ss' :
+                      undefined;
+                    response = cenozo.isDatetimeType( self.pickerType, 'timezone' )
+                             ? $scope.model.date.tz( 'utc' ).format( format )
+                             : $scope.model.date.format( format );
+                  }
+                  $uibModalInstance.close( response );
+                },
+                cancel: function() { $uibModalInstance.close( false ); }
+              } );
 
-              $scope.$watch( 'local.hourSliderValue', function( hour ) {
-                if( 'moment' == cenozo.getType( $scope.local.date ) ) {
-                  $scope.local.updateDateFromSliders();
-                  $scope.local.updateDisplayTime();
+              $scope.$watch( 'model.hourSliderValue', function( hour ) {
+                if( 'moment' == cenozo.getType( $scope.model.date ) ) {
+                  $scope.model.updateDateFromSliders();
+                  $scope.model.updateDisplayTime();
                 }
               } );
-              $scope.$watch( 'local.minuteSliderValue', function( minute ) {
-                if( 'moment' == cenozo.getType( $scope.local.date ) ) {
-                  $scope.local.updateDateFromSliders();
-                  $scope.local.updateDisplayTime();
+              $scope.$watch( 'model.minuteSliderValue', function( minute ) {
+                if( 'moment' == cenozo.getType( $scope.model.date ) ) {
+                  $scope.model.updateDateFromSliders();
+                  $scope.model.updateDisplayTime();
                 }
               } );
-              $scope.$watch( 'local.secondSliderValue', function( second ) {
-                if( 'moment' == cenozo.getType( $scope.local.date ) ) {
-                  $scope.local.updateDateFromSliders();
-                  $scope.local.updateDisplayTime();
+              $scope.$watch( 'model.secondSliderValue', function( second ) {
+                if( 'moment' == cenozo.getType( $scope.model.date ) ) {
+                  $scope.model.updateDateFromSliders();
+                  $scope.model.updateDisplayTime();
                 }
               } );
             } ]
@@ -6707,23 +6716,25 @@ cenozo.service( 'CnModalMessageFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.model = self;
-            $scope.close = function() { $uibModalInstance.close( false ); };
-            $scope.printMessage = function() {
-              var printWindow = $window.open(
-                '',
-                '_blank',
-                'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no'
-              );
-              printWindow.document.open();
-              printWindow.document.write(
-                '<html><body onload="window.print()">' +
-                  '<h3>' + $scope.model.title + '</h3>' +
-                  '<div>' + $filter( 'cnNewlines' )( $scope.model.message ) + '</div>' +
-                '</body></html>'
-              );
-              printWindow.document.close();
-            }
+            angular.extend( $scope, {
+              model: self,
+              close: function() { $uibModalInstance.close( false ); },
+              printMessage: function() {
+                var printWindow = $window.open(
+                  '',
+                  '_blank',
+                  'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no'
+                );
+                printWindow.document.open();
+                printWindow.document.write(
+                  '<html><body onload="window.print()">' +
+                    '<h3>' + $scope.model.title + '</h3>' +
+                    '<div>' + $filter( 'cnNewlines' )( $scope.model.message ) + '</div>' +
+                  '</body></html>'
+                );
+                printWindow.document.close();
+              }
+            } );
           } ]
         } );
 
@@ -6796,24 +6807,29 @@ cenozo.service( 'CnModalMessageFactory', [
  * @param required: empty responses are not allowed
  * @param minValue: The minimum possible value
  * @param maxValue: The maximum possible value
+ * @param enumList: An array of { value:, name: } items to select from (enum format only)
  * @param format: one of the following (optional)
  *   integer: will only accept integers
  *   float: will only accept float and integers
  *   alphanum: will only accept numbers and letters
  *   alpha_num: will only accept numbers, letters and underscores
  *   email: requires a valid email address (<name>@<domain>.<type>)
+ *   enum: select from an enum list; enumList must be provided
  */
 cenozo.service( 'CnModalInputFactory', [
   '$uibModal',
   function( $uibModal ) {
     var object = function( params ) {
-      this.title = 'Provide Input';
-      this.message = 'Please provide input:';
-      this.value = '';
-      this.format = undefined
-      this.minValue = undefined;
-      this.maxValue = undefined;
-      this.required = false;
+      angular.extend( this, {
+        title: 'Provide Input',
+        message: 'Please provide input:',
+        value: '',
+        format: undefined,
+        minValue: undefined,
+        maxValue: undefined,
+        required: false,
+        enumList: null
+      } );
       angular.extend( this, params );
 
       this.show = function() {
@@ -6825,34 +6841,27 @@ cenozo.service( 'CnModalInputFactory', [
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-input.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
             angular.extend( $scope, {
-              title: self.title,
-              message: self.message,
-              value: self.value,
-              format: self.format,
-              minValue: self.minValue,
-              maxValue: self.maxValue,
-              required: self.required,
+              model: self,
               check: function() {
                 // determine the regex
                 var re = undefined;
-                if( 'integer' == $scope.format ) re = /^-?[0-9]+$/;
-                else if( 'float' == $scope.format ) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
-                else if( 'alphanum' == $scope.format ) re = /^[a-zA-Z0-9]+$/;
-                else if( 'alpha_num' == $scope.format ) re = /^[a-zA-Z0-9_]+$/;
-                else if( 'email' == $scope.format ) re = /^[^ ,]+@[^ ,]+\.[^ ,]+$/;
+                if( 'integer' == $scope.model.format ) re = /^-?[0-9]+$/;
+                else if( 'float' == $scope.model.format ) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
+                else if( 'alphanum' == $scope.model.format ) re = /^[a-zA-Z0-9]+$/;
+                else if( 'alpha_num' == $scope.model.format ) re = /^[a-zA-Z0-9_]+$/;
+                else if( 'email' == $scope.model.format ) re = /^[^ ,]+@[^ ,]+\.[^ ,]+$/;
 
                 // test the regex, min and max values
-                var valid = true;
-                if( angular.isDefined( re ) && !re.test( $scope.value ) ) valid = false;
-                else if( angular.isDefined( $scope.minValue ) && $scope.minValue > $scope.value ) valid = false;
-                else if( angular.isDefined( $scope.maxValue ) && $scope.maxValue < $scope.value ) valid = false;
+                var valid = !( angular.isDefined( re ) && !re.test( $scope.model.value ) ) &&
+                            !( angular.isDefined( $scope.model.minValue ) && $scope.model.minValue > $scope.model.value ) &&
+                            !( angular.isDefined( $scope.model.maxValue ) && $scope.model.maxValue < $scope.model.value );
 
                 var form = cenozo.getScopeByQuerySelector( 'form' ).form;
                 form.value.$error.format = !valid;
                 form.value.$invalid = !valid || angular.isDefined( form.value.$error.required );
               },
               ok: function() {
-                $uibModalInstance.close( angular.isUndefined( $scope.value ) ? '' : $scope.value );
+                $uibModalInstance.close( angular.isUndefined( $scope.model.value ) ? '' : $scope.model.value );
               },
               cancel: function() { $uibModalInstance.close( false ); }
             } );
@@ -6965,9 +6974,11 @@ cenozo.service( 'CnModalPasswordFactory', [
     var isOpen = false;
 
     var object = function( params ) {
-      this.confirm = true;
-      this.showCancel = false;
-      this.showPasswords = false;
+      angular.extend( this, {
+        confirm: true,
+        showCancel: false,
+        showPasswords: false
+      } );
       angular.extend( this, params );
       if( this.confirm ) this.showCancel = true;
 
@@ -6980,42 +6991,40 @@ cenozo.service( 'CnModalPasswordFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-password.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.confirm = self.confirm;
-            $scope.showCancel = self.showCancel;
-            $scope.showPasswords = self.showPasswords;
-            $scope.ok = function() {
-              $uibModalInstance.close( {
-                currentPass: $scope.currentPass,
-                requestedPass: $scope.newPass1
-              } );
-              isOpen = false;
-            };
-            $scope.cancel = function() {
-              if( this.showCancel ) {
-                $uibModalInstance.close( false );
+            angular.extend( $scope, {
+              model: self,
+              toggleShowPasswords: function() { $scope.model.showPasswords = !$scope.model.showPasswords; },
+              ok: function() {
+                $uibModalInstance.close( {
+                  currentPass: $scope.currentPass,
+                  requestedPass: $scope.newPass1
+                } );
                 isOpen = false;
-              }
-            };
-            $scope.checkPasswordMatch = function() {
-              var match = true;
-              var item1 = $scope.form.newPass1;
-              var item2 = $scope.form.newPass2;
-              if( item1.$dirty && item2.$dirty ) {
-                if( ( item1.$error.noMatch || !item1.$invalid ) &&
-                    ( item2.$error.noMatch || !item2.$invalid ) ) {
-                  var match = $scope.newPass1 === $scope.newPass2;
-                  item1.$error.noMatch = !match;
-                  cenozo.updateFormElement( item1, false );
-                  item2.$error.noMatch = !match;
-                  cenozo.updateFormElement( item2, false );
+              },
+              cancel: function() {
+                if( $scope.model.showCancel ) {
+                  $uibModalInstance.close( false );
+                  isOpen = false;
                 }
-              }
+              },
+              checkPasswordMatch: function() {
+                var match = true;
+                var item1 = $scope.form.newPass1;
+                var item2 = $scope.form.newPass2;
+                if( item1.$dirty && item2.$dirty ) {
+                  if( ( item1.$error.noMatch || !item1.$invalid ) &&
+                      ( item2.$error.noMatch || !item2.$invalid ) ) {
+                    var match = $scope.newPass1 === $scope.newPass2;
+                    item1.$error.noMatch = !match;
+                    cenozo.updateFormElement( item1, false );
+                    item2.$error.noMatch = !match;
+                    cenozo.updateFormElement( item2, false );
+                  }
+                }
 
-              return match;
-            };
-            $scope.toggleShowPasswords = function() {
-              $scope.showPasswords = !$scope.showPasswords;
-            };
+                return match;
+              }
+            } );
           } ]
         } ).result;
       };
@@ -7040,70 +7049,75 @@ cenozo.service( 'CnModalRestrictFactory', [
       if( angular.isUndefined( params.column ) )
         throw new Error( 'Tried to create CnModalRestrictFactory instance without a column.' );
 
-      this.name = null;
-      this.column = null;
-      this.type = 'string';
+      angular.extend( this, {
+        name: null,
+        column: null,
+        type: 'string'
+      } );
       angular.extend( this, params );
+
       if( 'text' == this.type ) this.type = 'string';
       if( !angular.isArray( this.emptyList ) ) this.emptyList = [];
       if( !angular.isArray( this.restrictList ) ) this.restrictList = [];
 
-      this.getInitialValue = function() {
-        if( 'string' == this.type ) return '';
-        else if( cenozo.isDatetimeType( this.type ) ) return null;
-        return 1; // boolean, number, size, rank
-      };
+      angular.extend( this, {
+        getInitialValue: function() {
+          if( 'string' == this.type ) return '';
+          else if( cenozo.isDatetimeType( this.type ) ) return null;
+          return 1; // boolean, number, size, rank
+        },
 
-      this.addRestriction = function() {
-        var restriction = { test: '<=>', value: this.getInitialValue() };
-        if( 'size' == this.type ) restriction.unit = 'Bytes';
-        if( 0 < this.restrictList.length ) restriction.logic = 'and';
-        this.restrictList.push( restriction );
-        this.emptyList.push( { isEmpty: true } );
-        this.describeRestriction( this.restrictList.length - 1 );
-      };
+        addRestriction: function() {
+          var restriction = { test: '<=>', value: this.getInitialValue() };
+          if( 'size' == this.type ) restriction.unit = 'Bytes';
+          if( 0 < this.restrictList.length ) restriction.logic = 'and';
+          this.restrictList.push( restriction );
+          this.emptyList.push( { isEmpty: true } );
+          this.describeRestriction( this.restrictList.length - 1 );
+        },
 
-      this.updateEmpty = function( index ) {
-        // first make sure the empty list is correct
-        this.emptyList[index].isEmpty = null === this.restrictList[index].value;
-      }
+        updateEmpty: function( index ) {
+          // first make sure the empty list is correct
+          this.emptyList[index].isEmpty = null === this.restrictList[index].value;
+        },
 
-      this.removeRestriction = function( index ) {
-        this.restrictList.splice( index, 1 );
-        this.emptyList.splice( index, 1 );
-      };
+        removeRestriction: function( index ) {
+          this.restrictList.splice( index, 1 );
+          this.emptyList.splice( index, 1 );
+        },
 
-      this.describeRestriction = function( index ) {
-        this.restrictList[index].description = CnSession.describeRestriction(
-          this.type,
-          this.restrictList[index].test,
-          this.restrictList[index].value,
-          this.restrictList[index].unit
-        );
-      }
+        describeRestriction: function( index ) {
+          this.restrictList[index].description = CnSession.describeRestriction(
+            this.type,
+            this.restrictList[index].test,
+            this.restrictList[index].value,
+            this.restrictList[index].unit
+          );
+        },
 
-      this.toggleEmpty = function( index ) {
-        if( this.emptyList[index].isEmpty ) {
-          this.emptyList[index].oldValue = this.restrictList[index].value;
-          this.restrictList[index].value = null;
-          // make sure to select <=> or <>
-          if( !['<=>','<>'].includes( this.restrictList[index].test ) )
-            this.restrictList[index].test = '<=>';
-        } else {
-          this.restrictList[index].value = angular.isUndefined( this.emptyList[index].oldValue )
-                                         ? this.getInitialValue()
-                                         : this.emptyList[index].oldValue;
-          if( null == this.restrictList[index].value && cenozo.isDatetimeType( this.type ) ) {
-            var date = moment().tz( 'utc' );
-            if( !cenozo.isDatetimeType( this.type, 'second' ) ) date.second( 0 );
-            this.restrictList[index].value = date.format();
+        toggleEmpty: function( index ) {
+          if( this.emptyList[index].isEmpty ) {
+            this.emptyList[index].oldValue = this.restrictList[index].value;
+            this.restrictList[index].value = null;
+            // make sure to select <=> or <>
+            if( !['<=>','<>'].includes( this.restrictList[index].test ) )
+              this.restrictList[index].test = '<=>';
+          } else {
+            this.restrictList[index].value = angular.isUndefined( this.emptyList[index].oldValue )
+                                           ? this.getInitialValue()
+                                           : this.emptyList[index].oldValue;
+            if( null == this.restrictList[index].value && cenozo.isDatetimeType( this.type ) ) {
+              var date = moment().tz( 'utc' );
+              if( !cenozo.isDatetimeType( this.type, 'second' ) ) date.second( 0 );
+              this.restrictList[index].value = date.format();
+            }
           }
-        }
 
-        this.formattedValueList[index] =
-          CnSession.formatValue( this.restrictList[index].value, this.type, true );
-        this.describeRestriction( index );
-      };
+          this.formattedValueList[index] =
+            CnSession.formatValue( this.restrictList[index].value, this.type, true );
+          this.describeRestriction( index );
+        }
+      } );
 
       this.preExisting = 0 < this.restrictList.length;
       if( 0 == this.restrictList.length ) this.addRestriction();
@@ -7122,19 +7136,21 @@ cenozo.service( 'CnModalRestrictFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-restrict.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.local = self;
-            $scope.ok = function( restrictList ) {
-              // remove restrictions with no values before returning the list
-              restrictList.filter( function( item ) { return angular.isDefined( item ); } );
+            angular.extend( $scope, {
+              local: self,
+              ok: function( restrictList ) {
+                // remove restrictions with no values before returning the list
+                restrictList.filter( function( item ) { return angular.isDefined( item ); } );
 
-              // make sure the first item in the list has no logic set
-              if( 0 < restrictList.length && angular.isDefined( restrictList[0].logic ) )
-                delete restrictList[0].logic;
+                // make sure the first item in the list has no logic set
+                if( 0 < restrictList.length && angular.isDefined( restrictList[0].logic ) )
+                  delete restrictList[0].logic;
 
-              $uibModalInstance.close( restrictList );
-            };
-            $scope.remove = function() { $uibModalInstance.close( [] ); };
-            $scope.cancel = function() { $uibModalInstance.dismiss( 'cancel' ); };
+                $uibModalInstance.close( restrictList );
+              },
+              remove: function() { $uibModalInstance.close( [] ); },
+              cancel: function() { $uibModalInstance.dismiss( 'cancel' ); }
+            } );
 
             if( cenozo.isDatetimeType( $scope.local.type ) ) {
               $scope.selectDatetime = async function( index ) {
@@ -7191,12 +7207,12 @@ cenozo.service( 'CnModalSiteFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            // load the data from the session once it is available
-            $scope.siteList = CnSession.siteList;
-            $scope.siteId = self.id;
-
-            $scope.ok = function() { $uibModalInstance.close( $scope.siteId ); };
-            $scope.cancel = function() { $uibModalInstance.close( false ); };
+            angular.extend( $scope, {
+              siteList: CnSession.siteList,
+              siteId: self.id,
+              ok: function() { $uibModalInstance.close( $scope.siteId ); },
+              cancel: function() { $uibModalInstance.close( false ); }
+            } );
           } ]
         } ).result;
       };
@@ -7225,23 +7241,23 @@ cenozo.service( 'CnModalSiteRoleFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-site-role.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', async function( $scope, $uibModalInstance ) {
-            $scope.refreshRoleList = function() {
-              this.siteList.forEach( function( item, index ) {
-                if( this.siteId == item.id ) this.roleList = item.roleList;
-              }, this );
-              this.roleId = this.roleList[0].id;
-            };
-
-            $scope.ok = function() {
-              $uibModalInstance.close( {
-                siteId: $scope.siteId,
-                roleId: $scope.roleId
-              } );
-            };
-            $scope.cancel = function() { $uibModalInstance.close( false ); };
-
-            $scope.siteList = [];
-            $scope.loading = true;
+            angular.extend( $scope, {
+              siteList: [],
+              loading: true,
+              refreshRoleList: function() {
+                this.siteList.forEach( function( item, index ) {
+                  if( this.siteId == item.id ) this.roleList = item.roleList;
+                }, this );
+                this.roleId = this.roleList[0].id;
+              },
+              ok: function() {
+                $uibModalInstance.close( {
+                  siteId: $scope.siteId,
+                  roleId: $scope.roleId
+                } );
+              },
+              cancel: function() { $uibModalInstance.close( false ); }
+            } );
 
             // get access records
             var response = await CnHttpFactory.instance( { path: 'self/0/access' } ).get();
@@ -7284,10 +7300,13 @@ cenozo.service( 'CnModalTextFactory', [
   '$uibModal',
   function( $uibModal ) {
     var object = function( params ) {
-      this.title = 'Provide Text';
-      this.message = 'Please provide details:';
-      this.text = '';
-      this.minLength = 0;
+      angular.extend( this, {
+        title: 'Provide Text',
+        message: 'Please provide details:',
+        text: '',
+        minLength: 0,
+        html: false
+      } );
       angular.extend( this, params );
 
       this.show = function() {
@@ -7298,14 +7317,11 @@ cenozo.service( 'CnModalTextFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-text.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.title = self.title;
-            $scope.message = self.message;
-            $scope.text = self.text;
-            $scope.minLength = self.minLength;
-            $scope.ok = function() {
-              $uibModalInstance.close( angular.isUndefined( $scope.text ) ? '' : $scope.text );
-            };
-            $scope.cancel = function() { $uibModalInstance.close( false ); };
+            angular.extend( $scope, {
+              model: self,
+              ok: function() { $uibModalInstance.close( angular.isUndefined( $scope.model.text ) ? '' : $scope.model.text ); },
+              cancel: function() { $uibModalInstance.close( false ); }
+            } );
           } ]
         } ).result;
       };
@@ -7324,10 +7340,12 @@ cenozo.service( 'CnModalTimezoneFactory', [
   '$uibModal', 'CnSession',
   function( $uibModal, CnSession ) {
     var object = function( params ) {
-
-      this.timezone = null;
-      this.use12hourClock = false;
+      angular.extend( this, {
+        timezone: null,
+        use12hourClock: false
+      } );
       angular.extend( this, params );
+      this.use12hourClock = this.use12hourClock ? 1 : 0;
 
       this.show = function() {
         var self = this;
@@ -7337,29 +7355,23 @@ cenozo.service( 'CnModalTimezoneFactory', [
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-timezone.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
-            $scope.timezone = self.timezone;
-            $scope.use12hourClock = self.use12hourClock ? 1 : 0;
-            $scope.timezoneList = moment.tz.names();
-
-            $scope.getTypeaheadValues = function( viewValue ) {
-              var re = new RegExp( viewValue.toLowerCase() );
-              return $scope.timezoneList.filter( function( value ) {
-                return re.test( value.toLowerCase() );
-              } );
-            };
-
-            $scope.siteTimezone = function() {
-              $scope.timezone = CnSession.site.timezone;
-            };
-
-            $scope.ok = function() {
-              $uibModalInstance.close( {
-                timezone: $scope.timezone,
-                // need to convert boolean to integer for select dropdown
-                use12hourClock: 1 == parseInt( $scope.use12hourClock )
-              } );
-            };
-            $scope.cancel = function() { $uibModalInstance.close( false ); };
+            angular.extend( $scope, {
+              model: self,
+              timezoneList: moment.tz.names(),
+              siteTimezone: function() { $scope.model.timezone = CnSession.site.timezone; },
+              getTypeaheadValues: function( viewValue ) {
+                var re = new RegExp( viewValue.toLowerCase() );
+                return $scope.timezoneList.filter( value => re.test( value.toLowerCase() ) );
+              },
+              ok: function() {
+                $uibModalInstance.close( {
+                  timezone: $scope.model.timezone,
+                  // need to convert boolean to integer for select dropdown
+                  use12hourClock: 1 == parseInt( $scope.model.use12hourClock )
+                } );
+              },
+              cancel: function() { $uibModalInstance.close( false ); }
+            } );
           } ]
         } ).result;
       };

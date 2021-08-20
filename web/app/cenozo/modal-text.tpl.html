@@ -1,15 +1,16 @@
 <form ng-submit="ok()" novalidate name="form" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">{{ title }}</h4>
+    <h4 class="modal-title">{{ model.title }}</h4>
   </div>
   <div class="modal-body">
-    <span class="allow-select" style="white-space: pre-wrap;">{{ message }}</span>
+    <span ng-if="!model.html" class="allow-select" style="white-space: pre-wrap;">{{ model.message }}</span>
+    <span ng-if="model.html" class="allow-select" ng-bind-html="model.message"></span>
     <div class="row container-fluid vertical-spacer">
       <textarea id="text"
                 name="text"
-                ng-model="text"
-                ng-minlength="{{ minLength }}"
-                ng-required="0 < minLength"
+                ng-model="model.text"
+                ng-minlength="{{ model.minLength }}"
+                ng-required="0 < model.minLength"
                 class="form-control note" cn-elastic></textarea>
       <span ng-if="form.text.$invalid && form.text.$dirty">
         <span class="help-block" ng-if="form.text.$error.required">

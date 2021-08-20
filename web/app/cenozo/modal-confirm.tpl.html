@@ -3,7 +3,8 @@
     <h4 class="modal-title">{{ model.title }}</h4>
   </div>
   <div class="modal-body allow-select">
-    <span style="white-space: pre-wrap;">{{ model.message }}</span>
+    <span ng-if="!model.html" class="allow-select" style="white-space: pre-wrap;">{{ model.message }}</span>
+    <span ng-if="model.html" class="allow-select" ng-bind-html="model.message"></span>
   </div>
   <div class="modal-footer bg-info">
     <button type="button" class="btn btn-default" ng-click="no()">&#x2718 {{ model.noText }}</button>

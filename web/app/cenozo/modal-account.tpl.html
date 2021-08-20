@@ -15,7 +15,7 @@
              ng-class="{ 'has-feedback has-error': form.firstName.$invalid }">
           <input id="firstName"
                  name="firstName"
-                 ng-model="user.firstName"
+                 ng-model="model.user.firstName"
                  class="form-control"
                  type="text"
                  required />
@@ -33,7 +33,7 @@
              ng-class="{ 'has-feedback has-error': form.lastName.$invalid }">
           <input id="lastName"
                  name="lastName"
-                 ng-model="user.lastName"
+                 ng-model="model.user.lastName"
                  class="form-control"
                  type="text"
                  required />
@@ -52,7 +52,7 @@
              ng-class="{ 'has-feedback has-error': form.email.$invalid }">
           <input id="email"
                  name="email"
-                 ng-model="user.email"
+                 ng-model="model.user.email"
                  ng-change="testEmailFormat()"
                  class="form-control"
                  type="text"
@@ -66,7 +66,7 @@
     </div>
   </div>
   <div class="modal-footer bg-info">
-    <button type="button" class="btn btn-default" ng-if="allowCancel" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-if="model.allowCancel" ng-click="cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary"
             ng-disabled="form.email.$error.format || form.$invalid">OK</button>
   </div>

@@ -1,16 +1,26 @@
 <form ng-submit="ok()" novalidate name="form" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">{{ title }}</h4>
+    <h4 class="modal-title">{{ model.title }}</h4>
   </div>
   <div class="modal-body">
-    <span class="allow-select" style="white-space: pre-wrap;">{{ message }}</span>
+    <span ng-if="!model.html" class="allow-select" style="white-space: pre-wrap;">{{ model.message }}</span>
+    <span ng-if="model.html" class="allow-select" ng-bind-html="model.message"></span>
     <div class="row container-fluid vertical-spacer">
       <input id="value"
              name="value"
-             ng-model="value"
-             ng-required="required"
+             ng-if="'enum' != model.format"
+             ng-model="model.value"
+             ng-required="model.required"
              ng-change="check()"
              class="form-control"></input>
+      <select id="value"
+              name="value"
+              ng-options="item.value as item.name disable when item.disabled for item in model.enumList"
+              ng-model="model.value"
+              ng-if="'enum' == model.format"
+              ng-required="model.required"
+              ng-change="check()"
+              class="form-control"></select>
       <span ng-if="form.value.$invalid && form.value.$dirty">
         <span class="help-block" ng-if="form.value.$error.required">You cannot leave this field empty.</span>
         <span class="help-block" ng-if="form.value.$error.format">Invalid format</span>

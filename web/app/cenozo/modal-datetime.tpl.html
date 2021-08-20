@@ -1,44 +1,44 @@
 <form ng-submit="ok()" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">{{ 'fr' == local.locale ? 'Sélectionner une valeur pour' : 'Select a value for' }} {{ local.title }}</h4>
+    <h4 class="modal-title">{{ 'fr' == model.locale ? 'Sélectionner une valeur pour' : 'Select a value for' }} {{ model.title }}</h4>
   </div>
   <div class="modal-body">
     <div>
-      <div ng-if="'date' == local.pickerType ||
-                  'dob' == local.pickerType ||
-                  'dod' == local.pickerType ||
-                  'datetime' == local.pickerType ||
-                  'datetimesecond' == local.pickerType"
+      <div ng-if="'date' == model.pickerType ||
+                  'dob' == model.pickerType ||
+                  'dod' == model.pickerType ||
+                  'datetime' == model.pickerType ||
+                  'datetimesecond' == model.pickerType"
            class="container-fluid">
         <table class="full-width">
           <thead>
             <tr>
               <th>
-                <button type="button" class="btn btn-default full-width" ng-click="local.viewPrev()">
+                <button type="button" class="btn btn-default full-width" ng-click="model.viewPrev()">
                   <i class="glyphicon glyphicon-chevron-left"></i>
                 </button>
               </th>
-              <th colspan="{{ 'day' == local.mode ? 5 : ( 'month' == local.mode ? 1 : 3 ) }}">
-                <button type="button" class="btn btn-default full-width" ng-click="local.nextMode()">
-                  <strong>{{ local.modeTitle }}</strong>
+              <th colspan="{{ 'day' == model.mode ? 5 : ( 'month' == model.mode ? 1 : 3 ) }}">
+                <button type="button" class="btn btn-default full-width" ng-click="model.nextMode()">
+                  <strong>{{ model.modeTitle }}</strong>
                 </button>
               </th>
               <th>
-                <button type="button" class="btn btn-default full-width" ng-click="local.viewNext()">
+                <button type="button" class="btn btn-default full-width" ng-click="model.viewNext()">
                   <i class="glyphicon glyphicon-chevron-right"></i>
                 </button>
               </th>
             </tr>
-            <tr ng-if="'day' == local.mode">
+            <tr ng-if="'day' == model.mode">
               <th class="text-center" ng-repeat="weekdayName in weekdayNameList"><small>{{ weekdayName }}</small></th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="row in local.cellList">
+            <tr ng-repeat="row in model.cellList">
               <td ng-repeat="cell in row" class="text-center">
                 <button type="button" class="btn btn-default full-width"
                         ng-class="{'btn-muted':cell.weekend&&!cell.current,'btn-info':cell.current}"
-                        ng-click="local.select(cell.date)" ng-disabled="cell.disabled">
+                        ng-click="model.select(cell.date)" ng-disabled="cell.disabled">
                   <span ng-class="{'text-muted': cell.offMonth}">{{cell.label}}</span>
                 </button>
               </td>
@@ -46,23 +46,23 @@
           </tbody>
         </table>
       </div>
-      <div ng-if="'datetime' == local.pickerType || 'datetimesecond' == local.pickerType"
+      <div ng-if="'datetime' == model.pickerType || 'datetimesecond' == model.pickerType"
            class="vertical-spacer"></div>
-      <div ng-if="'dob' != local.pickerType &&
-                  'dod' != local.pickerType &&
-                  'date' != local.pickerType" class="container-fluid timepicker">
+      <div ng-if="'dob' != model.pickerType &&
+                  'dod' != model.pickerType &&
+                  'date' != model.pickerType" class="container-fluid timepicker">
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Time:</strong></div>
-          <div class="col-xs-10">{{ local.displayTime }}</div>
+          <div class="col-xs-10">{{ model.displayTime }}</div>
         </div>
         <div class="vertical-spacer"></div>
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Hour:</strong></div>
           <div class="col-xs-10">
-            <cn-slider ng-model="local.hourSliderValue"
+            <cn-slider ng-model="model.hourSliderValue"
                        floor="0"
                        ceiling="23"
-                       step="{{ local.hourStep }}">
+                       step="{{ model.hourStep }}">
             </cn-slider>
           </div>
         </div>
@@ -70,21 +70,21 @@
         <div class="row timepicker-row">
           <div class="col-xs-2"><strong>Minute:</strong></div>
           <div class="col-xs-10">
-            <cn-slider ng-model="local.minuteSliderValue"
+            <cn-slider ng-model="model.minuteSliderValue"
                        floor="0"
                        ceiling="59"
-                       step="{{ local.minuteStep }}">
+                       step="{{ model.minuteStep }}">
             </cn-slider>
           </div>
         </div>
-        <div ng-if="'datetimesecond' == local.pickerType" class="vertical-spacer"></div>
-        <div ng-if="'datetimesecond' == local.pickerType" class="row timepicker-row">
+        <div ng-if="'datetimesecond' == model.pickerType" class="vertical-spacer"></div>
+        <div ng-if="'datetimesecond' == model.pickerType" class="row timepicker-row">
           <div class="col-xs-2"><strong>Second:</strong></div>
           <div class="col-xs-10">
-            <cn-slider ng-model="local.secondSliderValue"
+            <cn-slider ng-model="model.secondSliderValue"
                        floor="0"
                        ceiling="59"
-                       step="{{ local.secondStep }}">
+                       step="{{ model.secondStep }}">
             </cn-slider>
           </div>
         </div>
@@ -93,27 +93,27 @@
   </div>
   <div class="modal-footer bg-info">
     <div class="btn-group pull-left">
-      <button ng-if="'dob' != local.pickerType &&
-                     'dod' != local.pickerType &&
-                     'date' != local.pickerType"
+      <button ng-if="'dob' != model.pickerType &&
+                     'dod' != model.pickerType &&
+                     'date' != model.pickerType"
               type="button"
               class="btn btn-info"
-              ng-click="local.select('now')"
-              ng-disabled="nowDisabled">{{ 'fr' == local.locale ? 'Maintenant' : 'Now' }}</button>
-      <button ng-if="'timesecond' != local.pickerType &&
-                     'timesecond_notz' != local.pickerType &&
-                     'time' != local.pickerType &&
-                     'time_notz' != local.pickerType"
+              ng-click="model.select('now')"
+              ng-disabled="nowDisabled">{{ 'fr' == model.locale ? 'Maintenant' : 'Now' }}</button>
+      <button ng-if="'timesecond' != model.pickerType &&
+                     'timesecond_notz' != model.pickerType &&
+                     'time' != model.pickerType &&
+                     'time_notz' != model.pickerType"
               type="button"
               class="btn btn-info"
-              ng-click="local.select('today')"
-              ng-disabled="todayDisabled">{{ 'fr' == local.locale ? "Aujourd'hui" : 'Today' }}</button>
-      <button ng-if="local.emptyAllowed"
+              ng-click="model.select('today')"
+              ng-disabled="todayDisabled">{{ 'fr' == model.locale ? "Aujourd'hui" : 'Today' }}</button>
+      <button ng-if="model.emptyAllowed"
               type="button"
               class="btn btn-warning"
-              ng-click="local.select(null)">{{ 'fr' == local.locale ? "Ne s'applique pas" : 'Empty' }}</button>
+              ng-click="model.select(null)">{{ 'fr' == model.locale ? "Ne s'applique pas" : 'Empty' }}</button>
     </div>
-    <button type="button" class="btn btn-default" ng-click="cancel()">{{ 'fr' == local.locale ? 'Annuler' : 'Cancel' }}</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">{{ 'fr' == model.locale ? 'Annuler' : 'Cancel' }}</button>
     <button type="submit" class="btn btn-primary" ng-autofocus>OK</button>
   </div>
 </form>

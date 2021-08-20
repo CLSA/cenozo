@@ -17,7 +17,7 @@
              ng-class="{ 'has-feedback has-error': form.timezone.$dirty && form.timezone.$invalid }">
           <input id="timezone"
                  name="timezone"
-                 ng-model="timezone"
+                 ng-model="model.timezone"
                  uib-typeahead="item for item in getTypeaheadValues( $viewValue )"
                  typeahead-editable="false"
                  typeahead-min-length="2"
@@ -41,7 +41,7 @@
         <div class="input-group">
           <select id="use12hourClock"
                   name="use12hourClock"
-                  ng-model="use12hourClock"
+                  ng-model="model.use12hourClock"
                   class="form-control"
                   cn-to-number
                   required>
