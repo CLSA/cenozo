@@ -16,6 +16,7 @@ pre { white-space: pre-wrap; }
 .panel { border-radius: 6px; }
 .btn { font-weight: bold; }
 .btn-narrow { padding-left: 6px; padding-right: 6px; }
+.btn-thin { padding-top: 2px; padding-bottom: 2px; }
 .btn-muted { background-color: #eaeaea; }
 .btn-menu { line-height: 1; }
 .nav-tabs { font-weight: bold; border: 0px; }
