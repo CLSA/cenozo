@@ -351,7 +351,7 @@ abstract class module extends \cenozo\base_object
   /**
    * The module's service
    * @var service\service
-   * @access private
+   * @access protected
    */
-  private $service = NULL;
+  protected $service = NULL;
 }

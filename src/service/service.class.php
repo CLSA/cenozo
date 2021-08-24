@@ -408,9 +408,9 @@ abstract class service extends \cenozo\base_object
    * 
    * @param integer $index
    * @return string
-   * @access protected
+   * @access public
    */
-  protected function get_resource_value( $index )
+  public function get_resource_value( $index )
   {
     return array_key_exists( $index, $this->resource_value_list ) ? $this->resource_value_list[$index] : NULL;
   }
