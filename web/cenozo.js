@@ -6293,7 +6293,8 @@ cenozo.service( 'CnModalConfirmFactory', [
         message: 'Are you sure?',
         noText: 'No',
         yesText: 'Yes',
-        html: false
+        html: false,
+        size: null // can be null (normal), "sm" or "lg"
       } );
       angular.extend( this, params );
 
@@ -6301,6 +6302,7 @@ cenozo.service( 'CnModalConfirmFactory', [
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: false,
+          size: this.size,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-confirm.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -6355,7 +6357,6 @@ cenozo.service( 'CnModalDatetimeFactory', [
         secondStep: 1
       } );
       angular.extend( this, params );
-      console.log( this );
 
       moment.locale( this.locale );
 
@@ -6704,7 +6705,8 @@ cenozo.service( 'CnModalMessageFactory', [
         error: false,
         block: false,
         print: false,
-        html: false
+        html: false,
+        size: null // can be null (normal), "sm" or "lg"
       } );
       angular.extend( this, params );
 
@@ -6713,6 +6715,7 @@ cenozo.service( 'CnModalMessageFactory', [
         this.modal = $uibModal.open( {
           backdrop: 'static',
           keyboard: !this.block,
+          size: this.size,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-message.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -6828,7 +6831,8 @@ cenozo.service( 'CnModalInputFactory', [
         minValue: undefined,
         maxValue: undefined,
         required: false,
-        enumList: null
+        enumList: null,
+        size: null // can be null (normal), "sm" or "lg"
       } );
       angular.extend( this, params );
 
@@ -6837,6 +6841,7 @@ cenozo.service( 'CnModalInputFactory', [
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: false,
+          size: this.size,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-input.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
@@ -7305,7 +7310,8 @@ cenozo.service( 'CnModalTextFactory', [
         message: 'Please provide details:',
         text: '',
         minLength: 0,
-        html: false
+        html: false,
+        size: null // can be null (normal), "sm" or "lg"
       } );
       angular.extend( this, params );
 
@@ -7314,6 +7320,7 @@ cenozo.service( 'CnModalTextFactory', [
         return $uibModal.open( {
           backdrop: 'static',
           keyboard: true,
+          size: this.size,
           modalFade: true,
           templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-text.tpl.html' ),
           controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
