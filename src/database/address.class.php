@@ -14,6 +14,38 @@ use cenozo\lib, cenozo\log;
 class address extends has_rank
 {
   /**
+   * Override parent method if identifier uses type=primary or type=first
+   */
+  public static function get_record_from_identifier( $identifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // convert type=primary|first and participant_id to address id
+    if( !$util_class_name::string_matches_int( $identifier ) && null != preg_match( '/type=(primary|first)/', $identifier ) )
+    {
+      $regex = '/participant_id=([0-9]+)/';
+      $matches = array();
+      if( preg_match( $regex, $identifier, $matches ) )
+      {
+        $db_participant = lib::create( 'database\participant', $matches[1] );
+        if( !is_null( $db_participant ) ) 
+        {
+          $regex = '/type=(primary|first)/';
+          $matches = array();
+          if( preg_match( $regex, $identifier, $matches ) )
+          {
+            $identifier = 'primary' == $matches[1]
+                        ? $db_participant->get_primary_address()->id
+                        : $db_participant->get_first_address()->id;
+          }
+        }
+      }
+    }
+
+    return parent::get_record_from_identifier( $identifier );
+  }
+
+  /**
    * Override parent method
    */
   public function save()
