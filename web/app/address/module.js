@@ -278,7 +278,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
           if( traceResponse ) {
             await this.$$onPatch( data );
             if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
-            if( angular.isDefined( data.postcode ) ) await this.onView();
+            if( angular.isDefined( data.postcode ) ) await this.onView( true );
           } else {
             this.record.active = this.backupRecord.active;
           }
