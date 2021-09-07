@@ -17,6 +17,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
+            ng-change="input.changed = true"
             cn-change="model.getEditEnabled() &&
                        true !== input.isConstant( state, model ) &&
                        'view' !== input.isConstant( state, model ) && patch()"
@@ -54,6 +55,7 @@
               <input ng-attr-id="{{ input.key }}"
                 name="name"
                 ng-model="model.viewModel.formattedRecord[input.key][0]"
+                ng-change="input.changed = true"
                 cn-change="model.getEditEnabled() &&
                            true !== input.isConstant( state, model ) &&
                            'view' !== input.isConstant( state, model ) && patch()"
@@ -177,6 +179,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
+            ng-change="input.changed = true"
             cn-change="model.getEditEnabled() &&
                        true !== input.isConstant( state, model ) &&
                        'view' !== input.isConstant( state, model ) &&
@@ -521,7 +524,8 @@
                   model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
                   !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
            class="col-sm-1 col-slim">
-        <button class="btn btn-warning" type="button" ng-click="undo()">Undo</button>
+        <button class="btn btn-success" type="button" ng-if="input.changed">Save</button>
+        <button class="btn btn-warning" type="button" ng-if="!input.changed" ng-click="undo()">Undo</button>
       </div>
       <div ng-if="input.action && input.action.isIncluded( state, model )" class="col-sm-2 col-slim-right">
         <button

@@ -2189,6 +2189,7 @@ cenozo.directive( 'cnViewInput', [
             while( parentScope ) {
               if( angular.isDefined( parentScope.patch ) ) {
                 await parentScope.patch( property );
+                $scope.input.changed = false;
                 found = true;
                 break;
               }
