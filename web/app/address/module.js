@@ -1,5 +1,17 @@
+var useTrace = true;
 define( [ 'trace' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+  // this module can be used without needing any of the above requirements so we need to ignore missing module errors
+  var files = [];
+  try {
+    files = list.concat( cenozoApp.module( name ).getRequiredFiles() );
+  } catch( e ) {
+    if( null == e.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) {
+      throw e;
+    } else {
+      useTrace = false;
+    }
+  }
+  return files;
 }, [] ), function() {
   'use strict';
 
@@ -199,62 +211,101 @@ define( [ 'trace' ].reduce( function( list, name ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAddressAddFactory', [
-    'CnBaseAddFactory', 'CnTraceModelFactory',
+  var factoryArray = [ 'CnBaseAddFactory' ];
+  if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
+  factoryArray.push(
     function( CnBaseAddFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
         CnBaseAddFactory.construct( this, parentModel );
-        var traceModel = CnTraceModelFactory.root;
+        if( useTrace ) {
+          var traceModel = CnTraceModelFactory.root;
 
-        this.onAdd = async function( record ) {
-          var identifier = this.parentModel.getParentIdentifier();
-          var traceResponse = await traceModel.checkForTraceResolvedAfterAddressAdded( identifier );
-          if( traceResponse ) {
-            await this.$$onAdd( record )
-            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            throw 'Cancelled by user';
-          }
-        };
+          this.onAdd = async function( record ) {
+            var identifier = this.parentModel.getParentIdentifier();
+            var traceResponse = await traceModel.checkForTraceResolvedAfterAddressAdded( identifier );
+            if( traceResponse ) {
+              await this.$$onAdd( record )
+              if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              throw 'Cancelled by user';
+            }
+          };
+        }
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
-  ] );
+  );
+  cenozo.providers.factory( 'CnAddressAddFactory', factoryArray );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAddressListFactory', [
-    'CnBaseListFactory', 'CnTraceModelFactory',
+  var factoryArray = [ 'CnBaseListFactory' ];
+  if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
+  factoryArray.push(
     function( CnBaseListFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
         CnBaseListFactory.construct( this, parentModel );
-        var traceModel = CnTraceModelFactory.root;
+        if( useTrace ) {
+          var traceModel = CnTraceModelFactory.root;
 
-        this.onDelete = async function( record ) {
-          var identifier = {
-            subject: this.parentModel.getSubjectFromState(),
-            identifier: this.parentModel.getQueryParameter( 'identifier', true )
+          this.onDelete = async function( record ) {
+            var identifier = {
+              subject: this.parentModel.getSubjectFromState(),
+              identifier: this.parentModel.getQueryParameter( 'identifier', true )
+            };
+            var traceResponse = await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
+            if( traceResponse ) {
+              await this.$$onDelete( record );
+              if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              throw 'Cancelled by user';
+            }
           };
-          var traceResponse = await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
-          if( traceResponse ) {
-            await this.$$onDelete( record );
-            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            throw 'Cancelled by user';
-          }
-        };
+        }
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
-  ] );
+  );
+  cenozo.providers.factory( 'CnAddressListFactory', factoryArray );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAddressViewFactory', [
-    'CnBaseViewFactory', 'CnTraceModelFactory', 'CnSession', '$state', '$window',
-    function( CnBaseViewFactory, CnTraceModelFactory, CnSession, $state, $window ) {
+  var factoryArray = [ 'CnBaseViewFactory', 'CnSession', '$state', '$window' ];
+  if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
+  factoryArray.push(
+    function( CnBaseViewFactory, CnSession, $state, $window, CnTraceModelFactory ) {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root );
-        var traceModel = CnTraceModelFactory.root;
-        this.onViewPromise = null;
+        if( useTrace ) {
+          var traceModel = CnTraceModelFactory.root;
+          this.onViewPromise = null;
+
+          this.onPatch = async function( data ) {
+            var identifier = this.parentModel.getParentIdentifier();
+            var traceResponse = !angular.isDefined( data.active )
+                              ? true
+                              : data.active
+                              ? await traceModel.checkForTraceResolvedAfterAddressAdded( identifier )
+                              : await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
+
+            if( traceResponse ) {
+              await this.$$onPatch( data );
+              if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+              if( angular.isDefined( data.postcode ) ) await this.onView( true );
+            } else {
+              this.record.active = this.backupRecord.active;
+            }
+          };
+
+          this.onDelete = async function() {
+            var identifier = this.parentModel.getParentIdentifier();
+            var traceResponse = await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
+            if( traceResponse ) {
+              await this.$$onDelete();
+              if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              throw 'Cancelled by user';
+            }
+          };
+        }
 
         this.useTimezone = async function() {
           await CnSession.setTimezone( { 'address_id': this.record.id } );
@@ -266,38 +317,11 @@ define( [ 'trace' ].reduce( function( list, name ) {
           this.onViewPromise = this.$$onView( force );
           return this.onViewPromise;
         };
-
-        this.onPatch = async function( data ) {
-          var identifier = this.parentModel.getParentIdentifier();
-          var traceResponse = !angular.isDefined( data.active )
-                            ? true
-                            : data.active
-                            ? await traceModel.checkForTraceResolvedAfterAddressAdded( identifier )
-                            : await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
-
-          if( traceResponse ) {
-            await this.$$onPatch( data );
-            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
-            if( angular.isDefined( data.postcode ) ) await this.onView( true );
-          } else {
-            this.record.active = this.backupRecord.active;
-          }
-        };
-
-        this.onDelete = async function() {
-          var identifier = this.parentModel.getParentIdentifier();
-          var traceResponse = await traceModel.checkForTraceRequiredAfterAddressRemoved( identifier );
-          if( traceResponse ) {
-            await this.$$onDelete();
-            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            throw 'Cancelled by user';
-          }
-        };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
-  ] );
+  );
+  cenozo.providers.factory( 'CnAddressViewFactory', factoryArray );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAddressModelFactory', [

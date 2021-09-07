@@ -1,5 +1,12 @@
 define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+  // this module can be used without needing any of the above requirements so we need to ignore missing module errors
+  var files = [];
+  try {
+    files = list.concat( cenozoApp.module( name ).getRequiredFiles() );
+  } catch( e ) {
+    if( null == e.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) throw e;
+  }
+  return files;
 }, [] ), function() {
   'use strict';
 
@@ -368,13 +375,18 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     }
   } catch( err ) {}
 
-  var searchResultModule = cenozoApp.module( 'search_result' );
-  if( angular.isDefined( searchResultModule.actions.list ) ) {
-    module.addExtraOperation( 'list', {
-      title: 'Search',
-      isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
-      operation: async function( $state, model ) { await $state.go( 'search_result.list' ); }
-    } );
+  try {
+    var searchResultModule = cenozoApp.module( 'search_result' );
+    if( angular.isDefined( searchResultModule.actions.list ) ) {
+      module.addExtraOperation( 'list', {
+        title: 'Search',
+        isIncluded: function( $state, model ) { return 'participant' == model.getSubjectFromState(); },
+        operation: async function( $state, model ) { await $state.go( 'search_result.list' ); }
+      } );
+    }
+  } catch( e ) {
+    // ignore missing module
+    if( 'Tried to load module "search_result" which doesn\'t exist.' != e.message ) throw e;
   }
 
   if( angular.isDefined( module.actions.import ) ) {
@@ -1321,13 +1333,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             await self.deferred.promise;
 
             // override the collection model's getServiceData function (list active collections only)
-            self.collectionModel.getServiceData = function( type, columnRestrictLists ) {
-              var data = self.collectionModel.$$getServiceData( type, columnRestrictLists );
-              if( angular.isUndefined( data.modifier ) ) data.modifier = { where: [] };
-              else if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
-              data.modifier.where.push( { column: 'collection.active', operator: '=', value: true } );
-              return data;
-            };
+            if( self.collectionModel ) {
+              self.collectionModel.getServiceData = function( type, columnRestrictLists ) {
+                var data = self.collectionModel.$$getServiceData( type, columnRestrictLists );
+                if( angular.isUndefined( data.modifier ) ) data.modifier = { where: [] };
+                else if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
+                data.modifier.where.push( { column: 'collection.active', operator: '=', value: true } );
+                return data;
+              };
+            }
 
             if( angular.isDefined( self.applicationModel ) ) {
               self.applicationModel.getViewEnabled = function() { return false; };
@@ -1347,12 +1361,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             }
 
             // only allow adding a hold or proxy if the participant is enrolled
-            self.holdModel.getAddEnabled = function() {
-              return self.holdModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
-            };
-            self.proxyModel.getAddEnabled = function() {
-              return self.proxyModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
-            };
+            if( self.holdModel ) {
+              self.holdModel.getAddEnabled = function() {
+                return self.holdModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
+              };
+              self.proxyModel.getAddEnabled = function() {
+                return self.proxyModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
+              };
+            }
           }
         }
 
