@@ -21,6 +21,7 @@ class module extends \cenozo\service\site_restricted_module
     parent::prepare_read( $select, $modifier );
 
     $db_application = lib::create( 'business\session' )->get_application();
+    $db_restrict_site = $this->get_restricted_site();
 
     // if the application has a study-phase then only show the parent study's strata
     $db_study_phase = $db_application->get_study_phase();
@@ -52,7 +53,6 @@ class module extends \cenozo\service\site_restricted_module
       }
 
       // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );
@@ -102,7 +102,6 @@ class module extends \cenozo\service\site_restricted_module
       }
 
       // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );
@@ -152,7 +151,6 @@ class module extends \cenozo\service\site_restricted_module
       }
 
       // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );
@@ -199,7 +197,6 @@ class module extends \cenozo\service\site_restricted_module
       }
 
       // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
       if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );

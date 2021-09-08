@@ -93,15 +93,15 @@ class module extends \cenozo\service\site_restricted_participant_module
         'application_has_participant', $sub_mod, $db_application->release_based ? '' : 'left' );
     }
 
-    // restrict by site
     $sub_mod = lib::create( 'database\modifier' );
     $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
     $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
     $modifier->join_modifier( 'participant_site', $sub_mod, 'left' );
     $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
+
+    // restrict by site
     $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) )
-      $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
+    if( !is_null( $db_restrict_site ) ) $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
 
     // add the "types" column if needed
     if( $select->has_column( 'types' ) )

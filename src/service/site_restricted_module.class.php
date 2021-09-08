@@ -22,30 +22,35 @@ abstract class site_restricted_module extends module
   {
     if( false === $this->db_restricted_site )
     {
+      $session = lib::create( 'business\session' );
+
       $this->db_restricted_site = NULL;
 
-      $session = lib::create( 'business\session' );
-      $db_role = $session->get_role();
-
-      if( !is_null( $db_role ) && $db_role->all_sites )
+      // non site-based applications do not restrict by site
+      if( $session->get_application()->site_based )
       {
-        $restricted_site_id = $this->get_argument( 'restricted_site_id', false );
-        if( $restricted_site_id )
+        $db_role = $session->get_role();
+
+        if( !is_null( $db_role ) && $db_role->all_sites )
         {
-          try
+          $restricted_site_id = $this->get_argument( 'restricted_site_id', false );
+          if( $restricted_site_id )
           {
-            $this->db_restricted_site = lib::create( 'database\site', $restricted_site_id );
-          }
-          catch( \cenozo\exception\runtime $e )
-          {
-            log::warning(
-              sprintf( 'Module tried to restrict to site id "%s" which doesn\'t exist.', $restricted_site_id ) );
+            try
+            {
+              $this->db_restricted_site = lib::create( 'database\site', $restricted_site_id );
+            }
+            catch( \cenozo\exception\runtime $e )
+            {
+              log::warning(
+                sprintf( 'Module tried to restrict to site id "%s" which doesn\'t exist.', $restricted_site_id ) );
+            }
           }
         }
-      }
-      else
-      {
-        $this->db_restricted_site = $session->get_site();
+        else
+        {
+          $this->db_restricted_site = $session->get_site();
+        }
       }
     }
 
