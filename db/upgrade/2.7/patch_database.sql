@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE application.sql
 SOURCE study.sql
 SOURCE proxy_type.sql
 SOURCE alternate_consent_type.sql

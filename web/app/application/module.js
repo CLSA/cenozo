@@ -18,12 +18,12 @@ define( function() {
         title: 'Released',
         type: 'boolean'
       },
-      update_queue: {
-        title: 'Queued',
+      site_based: {
+        title: 'Site Based',
         type: 'boolean'
       },
-      update_participant_site: {
-        title: 'Update Sites',
+      update_queue: {
+        title: 'Queued',
         type: 'boolean'
       },
       participant_count: {
@@ -79,15 +79,15 @@ define( function() {
       isConstant: true,
       help: 'Whether the application only has access to participants once they are released.'
     },
+    site_based: {
+      title: 'Site Based',
+      type: 'boolean',
+      help: 'Whether the application assigns participants to sites based on jurisdictions or region-sites.'
+    },
     update_queue: {
       title: 'Update Queue',
       type: 'boolean',
       help: 'Whether the application has a queue which should be updated when changes are made to the database.'
-    },
-    update_participant_site: {
-      title: 'Update Participant Sites',
-      type: 'boolean',
-      help: 'Whether the application assigns participants to sites based on jurisdictions or region-sites.'
     },
     primary_color: {
       title: 'Primary Colour',

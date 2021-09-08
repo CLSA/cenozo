@@ -244,7 +244,7 @@ class ui extends \cenozo\base_object
       // add child/choose actions to certain modules
       if( 'application' == $module->get_subject() )
       {
-        if( $db_application->update_participant_site ) $module->add_child( 'cohort' );
+        if( $db_application->site_based ) $module->add_child( 'cohort' );
         $module->add_child( 'role' );
         $module->add_choose( 'site' );
         $module->add_choose( 'script' );
