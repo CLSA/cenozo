@@ -1090,7 +1090,7 @@ cenozo.directive( 'cnChange', [
           $timeout( function() { oldValue = element.val(); } );
         } );
         element.bind( 'blur', function() {
-          scope.$evalAsync( function() { if( element.val() != oldValue ) { console.log('b'); scope.$eval( attrs.cnChange ); } } );
+          scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
         } );
 
         // mouseover/mouseout captures changes after the mouse moves away from the element
@@ -1098,7 +1098,7 @@ cenozo.directive( 'cnChange', [
           $timeout( function() { oldValue = element.val(); } );
         } );
         element.bind( 'mouseout', function() {
-          scope.$evalAsync( function() { if( element.val() != oldValue ) { console.log('m'); scope.$eval( attrs.cnChange ); } } );
+          scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
         } );
 
         // if the element isn't a textarea then also update when the enter key is pushed
@@ -2173,6 +2173,8 @@ cenozo.directive( 'cnViewInput', [
             if( $scope.input.action && $scope.input.isIncluded( $scope.state, $scope.model ) ) width -= 2;
             if( $scope.model.getEditEnabled() &&
                 true !== constant && 'view' != constant &&
+                'file' != $scope.input.type &&
+                !$scope.input.changed &&
                 viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
                 // and to protect against null != emptry string
                 !( !viewModel.record[$scope.input.key] && !viewModel.backupRecord[$scope.input.key] ) ) width--;
@@ -2201,6 +2203,7 @@ cenozo.directive( 'cnViewInput', [
             while( parentScope ) {
               if( angular.isDefined( parentScope.patch ) ) {
                 await parentScope.patch( property );
+                $scope.input.changed = false;
                 found = true;
                 break;
               }
