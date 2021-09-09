@@ -1084,12 +1084,24 @@ cenozo.directive( 'cnChange', [
       controller: [ '$scope', function( $scope ) { $scope.directive = 'cnChange'; } ],
       link: function( scope, element, attrs ) {
         var oldValue = null;
+
+        // focus/blur captures non-mouse over/out events which may result in a changed value
         element.bind( 'focus', function() {
           $timeout( function() { oldValue = element.val(); } );
         } );
         element.bind( 'blur', function() {
-          scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
+          scope.$evalAsync( function() { if( element.val() != oldValue ) { console.log('b'); scope.$eval( attrs.cnChange ); } } );
         } );
+
+        // mouseover/mouseout captures changes after the mouse moves away from the element
+        element.bind( 'mouseover', function() {
+          $timeout( function() { oldValue = element.val(); } );
+        } );
+        element.bind( 'mouseout', function() {
+          scope.$evalAsync( function() { if( element.val() != oldValue ) { console.log('m'); scope.$eval( attrs.cnChange ); } } );
+        } );
+
+        // if the element isn't a textarea then also update when the enter key is pushed
         if( !element.is( 'textarea' ) ) {
           element.bind( 'keydown', function( event ) {
             scope.$evalAsync( function() {
