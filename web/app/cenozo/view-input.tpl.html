@@ -521,6 +521,7 @@
                   true !== input.isConstant( state, model ) &&
                   'view' != input.isConstant( state, model ) &&
                   'file' != input.type &&
+                  !input.changed &&
                   model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
                   !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
            class="col-sm-1 col-slim">
