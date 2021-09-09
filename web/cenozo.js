@@ -1083,22 +1083,23 @@ cenozo.directive( 'cnChange', [
       require: 'ngModel',
       controller: [ '$scope', function( $scope ) { $scope.directive = 'cnChange'; } ],
       link: function( scope, element, attrs ) {
-        var oldValue = null;
+        var oldNonMouseValue = null;
+        var oldMouseValue = null;
 
         // focus/blur captures non-mouse over/out events which may result in a changed value
         element.bind( 'focus', function() {
-          $timeout( function() { oldValue = element.val(); } );
+          $timeout( function() { oldNonMouseValue = element.val(); } );
         } );
         element.bind( 'blur', function() {
-          scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
+          scope.$evalAsync( function() { if( element.val() != oldNonMouseValue ) scope.$eval( attrs.cnChange ); } );
         } );
 
         // mouseover/mouseout captures changes after the mouse moves away from the element
         element.bind( 'mouseover', function() {
-          $timeout( function() { oldValue = element.val(); } );
+          $timeout( function() { oldMouseValue = element.val(); } );
         } );
         element.bind( 'mouseout', function() {
-          scope.$evalAsync( function() { if( element.val() != oldValue ) scope.$eval( attrs.cnChange ); } );
+          scope.$evalAsync( function() { if( element.val() != oldMouseValue ) scope.$eval( attrs.cnChange ); } );
         } );
 
         // if the element isn't a textarea then also update when the enter key is pushed
@@ -1107,7 +1108,7 @@ cenozo.directive( 'cnChange', [
             scope.$evalAsync( function() {
               if( 13 == event.which ) {
                 scope.$eval( attrs.cnChange );
-                oldValue = element.val(); // update the old value, otherwise the blur event will fire
+                oldNonMouseValue = element.val(); // update the old value, otherwise the blur event will fire
                 $timeout( function() { event.target.blur() }, 0, false );
               }
             } );
