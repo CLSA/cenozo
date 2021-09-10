@@ -1907,7 +1907,7 @@ cenozo.directive( 'cnRecordView', [
                   }
 
                   if( !valid ) {
-                    console.warn( 'Invalid call to patch() detected and ignored.' );
+                    console.warn( 'Invalid call to cnRecordView.patch() detected and ignored.' );
                     return;
                   }
                 }
@@ -2198,6 +2198,17 @@ cenozo.directive( 'cnViewInput', [
 
           patch: async function( property ) {
             if( angular.isUndefined( property ) ) property = $scope.input.key;
+
+            // This function is sometimes called when the state is no longer viewing the page that called the patch function.
+            // If we proceed the onPatch function will not use the correct path resulting in an error.
+            // For example: participant/uid=A123456/address/uid=A123456
+            // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
+            if( angular.isUndefined( $scope.model.viewModel ) ||
+                angular.isUndefined( $scope.model.viewModel.record ) ||
+                angular.isUndefined( $scope.model.viewModel.record[property] ) ) {
+              console.warn( 'Invalid call to cnViewInput.patch() detected and ignored.' );
+              return;
+            }
 
             var found = false;
             var parentScope = $scope.$parent;
