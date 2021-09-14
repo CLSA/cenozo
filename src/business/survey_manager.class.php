@@ -292,6 +292,7 @@ class survey_manager extends \cenozo\singleton
 
         $modifier = lib::create( 'database\modifier' );
         $modifier->join( 'participant', 'supporting_script_check.participant_id', 'participant.id' );
+        $modifier->where( 'supporting_script_check.script_id', '=', $db_script->id );
         static::join_survey_and_token_tables( $db_script->sid, $modifier, true );
 
         foreach( $supporting_script_check_class_name::select( $select, $modifier ) as $row )
@@ -469,6 +470,7 @@ class survey_manager extends \cenozo\singleton
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $proxy_type_class_name = lib::get_class_name( 'database\proxy_type' );
+    $proxy_class_name = lib::get_class_name( 'database\proxy' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $proxy_initiation_use_proxy = $setting_manager->get_setting( 'general', 'proxy_initiation_use_proxy' );
     $session = lib::create( 'business\session' );
@@ -506,29 +508,45 @@ class survey_manager extends \cenozo\singleton
             $db_proxy_type = $proxy_type_class_name::get_unique_record(
               'name', $proxy_initiation['consent'] ? 'ready for proxy system' : 'consent form required' );
 
-            $db_proxy = lib::create( 'database\proxy' );
-            $db_proxy->participant_id = $db_participant->id;
-            $db_proxy->proxy_type_id = $db_proxy_type->id;
-            $db_proxy->datetime = $proxy_initiation['datetime'];
-            $db_proxy->user_id = $db_user->id;
-            $db_proxy->site_id = $db_site->id;
-            $db_proxy->role_id = $db_role->id;
-            $db_proxy->application_id = $db_application->id;
-            $db_proxy->note = 'Added as part of the proxy initiation process.';
-            $db_proxy->save();
+            $db_proxy = $proxy_class_name::get_unique_record(
+              array( 'participant_id', 'datetime' ),
+              array( $db_participant->id, $proxy_initiation['datetime'] )
+            );
+            if( !is_null( $db_proxy ) )
+            {
+              $db_proxy = lib::create( 'database\proxy' );
+              $db_proxy->participant_id = $db_participant->id;
+              $db_proxy->proxy_type_id = $db_proxy_type->id;
+              $db_proxy->datetime = $proxy_initiation['datetime'];
+              $db_proxy->user_id = $db_user->id;
+              $db_proxy->site_id = $db_site->id;
+              $db_proxy->role_id = $db_role->id;
+              $db_proxy->application_id = $db_application->id;
+              $db_proxy->note = 'Added as part of the proxy initiation process.';
+              $db_proxy->save();
+            }
 
             if( !is_null( $proxy_initiation['use_proxy'] ) )
             {
               // set whether to use a decision maker based on the use_proxy column
               $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'Use Decision Maker' );
-              $db_consent = lib::create( 'database\consent' );
-              $db_consent->participant_id = $db_participant->id;
-              $db_consent->consent_type_id = $db_consent_type->id;
-              $db_consent->accept = $proxy_initiation['use_proxy'];
-              $db_consent->written = false;
-              $db_consent->datetime = $proxy_initiation['datetime'];
-              $db_consent->note = 'Added as part of the proxy initiation process.';
-              $db_consent->save();
+
+              $consent_mod = lib::create( 'database\modifier' );
+              $consent_mod->where( 'consent_type_id', '=', $db_consent_type->id );
+              $consent_mod->where( 'accept', '=', $proxy_initiation['use_proxy'] );
+              $consent_mod->where( 'written', '=', false );
+              $consent_mod->where( 'datetime', '=', $proxy_initiation['datetime'] );
+              if( 0 == $db_participant->get_consent_count( $consent_mod ) )
+              {
+                $db_consent = lib::create( 'database\consent' );
+                $db_consent->participant_id = $db_participant->id;
+                $db_consent->consent_type_id = $db_consent_type->id;
+                $db_consent->accept = $proxy_initiation['use_proxy'];
+                $db_consent->written = false;
+                $db_consent->datetime = $proxy_initiation['datetime'];
+                $db_consent->note = 'Added as part of the proxy initiation process.';
+                $db_consent->save();
+              }
             }
           }
           else
