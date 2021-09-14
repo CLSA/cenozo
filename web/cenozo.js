@@ -7549,8 +7549,21 @@ cenozo.factory( 'CnScriptLauncherFactory', [
 
             // add a check to supporting scripts
             if( this.script.supporting && !this.script.repeated ) {
+              var self = this;
               await CnHttpFactory.instance ( {
-                path: ['script', this.script.id, 'token', this.identifier+'?update_check=1'].join( '/' )
+                path: ['script', this.script.id, 'token', this.identifier+'?update_check=1'].join( '/' ),
+                onError: function( error ) {
+                  if( 404 == error.status ) {
+                    CnModalMessageFactory.instance( {
+                      title: 'Missing Survey',
+                      message:
+                        'Unable to find this participant\'s entry for the "' + self.script.name + '" script.\n\n' +
+                        'Please reload your web browser and try again. ' +
+                        'If this message appears again after reloading please contact support.',
+                      error: true
+                    } ).show();
+                  } else CnModalMessageFactory.httpError( error );
+                }
               } ).get();
             }
 
