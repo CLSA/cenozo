@@ -4772,9 +4772,12 @@ cenozo.factory( 'CnBaseViewFactory', [
                 for( var column in group.inputList ) {
                   var input = group.inputList[column];
                   var exclude = angular.isDefined( input.isExcluded ) && input.isExcluded( $state, self.parentModel );
-                  if( true !== exclude && 'view' !== exclude &&
-                      ['boolean','enum','rank'].includes( input.type ) &&
-                      null === self.record[column] ) {
+                  // TODO: remove the following comment-block if nothing is broken:
+                  //   NOTE: The following two checks were removed from the next if statement as they were stopping hidden
+                  //   columns from being updated correctly, so when they become visible they would still be null instead of
+                  //   and empty string (see pine/web/app/question/module device_id column)
+                  //   true !== exclude && 'view' !== exclude &&  TODO: the following was removed 
+                  if( ['boolean','enum','rank'].includes( input.type ) && null === self.record[column] ) {
                     var metadata = self.parentModel.metadata.columnList[column];
                     if( angular.isDefined( metadata ) && !metadata.required ) {
                       self.record[column] = '';
