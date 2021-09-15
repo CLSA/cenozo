@@ -2175,7 +2175,7 @@ cenozo.directive( 'cnViewInput', [
             if( $scope.model.getEditEnabled() &&
                 true !== constant && 'view' != constant &&
                 'file' != $scope.input.type &&
-                !$scope.input.changed &&
+                !$scope.changed &&
                 viewModel.record[$scope.input.key] != viewModel.backupRecord[$scope.input.key] &&
                 // and to protect against null != emptry string
                 !( !viewModel.record[$scope.input.key] && !viewModel.backupRecord[$scope.input.key] ) ) width--;
@@ -2215,7 +2215,7 @@ cenozo.directive( 'cnViewInput', [
             while( parentScope ) {
               if( angular.isDefined( parentScope.patch ) ) {
                 await parentScope.patch( property );
-                $scope.input.changed = false;
+                $scope.changed = false;
                 found = true;
                 break;
               }
