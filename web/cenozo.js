@@ -1083,14 +1083,17 @@ cenozo.directive( 'cnChange', [
       require: 'ngModel',
       controller: [ '$scope', function( $scope ) { $scope.directive = 'cnChange'; } ],
       link: function( scope, element, attrs ) {
+        var hasFocus = false;
         var oldNonMouseValue = null;
         var oldMouseValue = null;
 
         // focus/blur captures non-mouse over/out events which may result in a changed value
         element.bind( 'focus', function() {
+          hasFocus = true;
           $timeout( function() { oldNonMouseValue = element.val(); } );
         } );
         element.bind( 'blur', function() {
+          hasFocus = false;
           scope.$evalAsync( function() { if( element.val() != oldNonMouseValue ) scope.$eval( attrs.cnChange ); } );
         } );
 
@@ -1099,7 +1102,7 @@ cenozo.directive( 'cnChange', [
           $timeout( function() { oldMouseValue = element.val(); } );
         } );
         element.bind( 'mouseout', function() {
-          scope.$evalAsync( function() { if( element.val() != oldMouseValue ) scope.$eval( attrs.cnChange ); } );
+          if( hasFocus ) scope.$evalAsync( function() { if( element.val() != oldMouseValue ) scope.$eval( attrs.cnChange ); } );
         } );
 
         // if the element isn't a textarea then also update when the enter key is pushed
