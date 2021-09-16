@@ -1542,7 +1542,7 @@ cenozo.directive( 'cnAddInput', [
           state: $state,
 
           getTitle: function() {
-             return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
+             return ( !$scope.noHelpIndicator && $scope.input.help ? '<b class="invert">ⓘ</b> ' : '' ) + $scope.input.title;
           },
 
           check: function() { $scope.$parent.check( $scope.input.key ); },
@@ -2156,7 +2156,7 @@ cenozo.directive( 'cnViewInput', [
           state: $state,
 
           getTitle: function() {
-             return $scope.input.title + ( !$scope.noHelpIndicator && $scope.input.help ? '<sup>ⓘ</sup>' : '' );
+             return ( !$scope.noHelpIndicator && $scope.input.help ? '<b class="invert">ⓘ</b> ' : '' ) + $scope.input.title;
           },
 
           getColClass: function() {
