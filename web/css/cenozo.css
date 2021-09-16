@@ -44,7 +44,7 @@ pre { white-space: pre-wrap; }
 .invert {
   background: black;
   color: white;
-  padding: 3px 3px 0px;
+  padding: 2px;
   border-radius: 1em;
 }
 .alert-header {
