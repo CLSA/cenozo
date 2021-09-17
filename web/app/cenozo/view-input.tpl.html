@@ -17,7 +17,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            ng-change="changed = true"
+            ng-change="setChanged()"
             cn-change="model.getEditEnabled() &&
                        true !== input.isConstant( state, model ) &&
                        'view' !== input.isConstant( state, model ) && patch()"
@@ -55,7 +55,7 @@
               <input ng-attr-id="{{ input.key }}"
                 name="name"
                 ng-model="model.viewModel.formattedRecord[input.key][0]"
-                ng-change="changed = true"
+                ng-change="setChanged()"
                 cn-change="model.getEditEnabled() &&
                            true !== input.isConstant( state, model ) &&
                            'view' !== input.isConstant( state, model ) && patch()"
@@ -179,7 +179,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            ng-change="changed = true"
+            ng-change="setChanged()"
             cn-change="model.getEditEnabled() &&
                        true !== input.isConstant( state, model ) &&
                        'view' !== input.isConstant( state, model ) &&
