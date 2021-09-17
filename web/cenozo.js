@@ -1084,25 +1084,41 @@ cenozo.directive( 'cnChange', [
       controller: [ '$scope', function( $scope ) { $scope.directive = 'cnChange'; } ],
       link: function( scope, element, attrs ) {
         var hasFocus = false;
-        var oldNonMouseValue = null;
-        var oldMouseValue = null;
+        var oldValue = null;
 
-        // focus/blur captures non-mouse over/out events which may result in a changed value
+        // focus/blur captures whether the input gains or loses focus which may result in a changed value
         element.bind( 'focus', function() {
           hasFocus = true;
-          $timeout( function() { oldNonMouseValue = element.val(); } );
+          $timeout( function() { oldValue = element.val(); } );
         } );
         element.bind( 'blur', function() {
           hasFocus = false;
-          scope.$evalAsync( function() { if( element.val() != oldNonMouseValue ) scope.$eval( attrs.cnChange ); } );
+          scope.$evalAsync( function() {
+            if( element.val() != oldValue ) {
+              oldValue = element.val();
+              scope.$eval( attrs.cnChange );
+            }
+          } );
         } );
 
-        // mouseover/mouseout captures changes after the mouse moves away from the element
-        element.bind( 'mouseover', function() {
-          $timeout( function() { oldMouseValue = element.val(); } );
-        } );
+        // mouseout captures changes after the mouse moves away from the element
         element.bind( 'mouseout', function() {
-          if( hasFocus ) scope.$evalAsync( function() { if( element.val() != oldMouseValue ) scope.$eval( attrs.cnChange ); } );
+          if( hasFocus ) scope.$evalAsync( function() {
+            if( element.val() != oldValue ) {
+              oldValue = element.val();
+              scope.$eval( attrs.cnChange );
+            }
+          } );
+        } );
+
+        // locationChangeStart captures the forward/backward buttons, navigating away from the page
+        scope.$on( '$locationChangeStart', function() {
+          if( hasFocus && element.val() != oldValue ) scope.$eval( attrs.cnChange );
+        } );
+
+        // beforeunload captures reloading the page, or closing the tab/window
+        scope.$on( 'beforeunload', function() {
+          if( hasFocus && element.val() != oldValue ) scope.$eval( attrs.cnChange );
         } );
 
         // if the element isn't a textarea then also update when the enter key is pushed
@@ -1111,7 +1127,7 @@ cenozo.directive( 'cnChange', [
             scope.$evalAsync( function() {
               if( 13 == event.which ) {
                 scope.$eval( attrs.cnChange );
-                oldNonMouseValue = element.val(); // update the old value, otherwise the blur event will fire
+                oldValue = element.val(); // update the old value, otherwise the blur event will fire
                 $timeout( function() { event.target.blur() }, 0, false );
               }
             } );
@@ -2154,6 +2170,7 @@ cenozo.directive( 'cnViewInput', [
         angular.extend( $scope, {
           directive: 'cnViewInput',
           state: $state,
+          setChanged: function() { $scope.changed = true; },
 
           getTitle: function() {
              return ( !$scope.noHelpIndicator && $scope.input.help ? '<b class="invert">ⓘ</b> ' : '' ) + $scope.input.title;
@@ -7629,8 +7646,8 @@ cenozo.config( [
  * Adds callbacks to various events, primarily for logging
  */
 cenozo.run( [
-  '$state', '$location', '$transitions', '$rootScope', 'CnSession', 'CnHttpFactory',
-  function( $state, $location, $transitions, $rootScope, CnSession, CnHttpFactory ) {
+  '$window', '$state', '$location', '$transitions', '$rootScope', 'CnSession', 'CnHttpFactory',
+  function( $window, $state, $location, $transitions, $rootScope, CnSession, CnHttpFactory ) {
     // track whether we're transitioning a state due to an error (to avoid infinite loops)
     var stateErrorTransition = false;
     $transitions.onStart( {}, function( transition ) {
@@ -7665,6 +7682,11 @@ cenozo.run( [
     } );
     $rootScope.$on( 'httpCancel', function( event, guid, response ) {
       CnSession.updateWorkingGUID( guid, false );
+    } );
+
+    // fire event before page is unloaded
+    $window.addEventListener( 'beforeunload', function() {
+      $rootScope.$broadcast( 'beforeunload' );
     } );
   }
 ] );
