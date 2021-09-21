@@ -7636,6 +7636,8 @@ cenozo.run( [
     } );
     $transitions.onSuccess( {}, function( transition ) {
       if( stateErrorTransition ) stateErrorTransition = false;
+      // scroll to the top of the page if the transition isn't relative
+      if( null != transition._options.relative ) $window.scrollTo( 0, 0 );
     } );
     $transitions.onError( {}, async function( transition ) {
       if( 5 != transition.error().type ) { // ignore "transition was ignored" errors
