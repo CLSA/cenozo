@@ -133,29 +133,33 @@ define( function() {
           var self = this;
           await this.$$getMetadata();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'role',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: { name: false }, limit: 1000 },
-              granting: true // only return roles which we can grant access to
-            }
-          } ).query();
+          var [roleResponse, siteResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'role',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: { name: false }, limit: 1000 },
+                granting: true // only return roles which we can grant access to
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: { name: false }, limit: 1000 },
+                granting: true // only return sites which we can grant access to
+              }
+            } ).query()
+          ] );
+
           this.metadata.columnList.role_id.enumList = [];
-          response.data.forEach( function( item ) {
+          roleResponse.data.forEach( function( item ) {
             self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'site',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: { name: false }, limit: 1000 },
-              granting: true // only return sites which we can grant access to
-            }
-          } ).query();
           this.metadata.columnList.site_id.enumList = [];
-          response.data.forEach( function( item ) {
+          siteResponse.data.forEach( function( item ) {
             self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };

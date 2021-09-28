@@ -412,54 +412,51 @@ define( function() {
           var self = this;
           await this.$$getMetadata();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'application_type/name=' + CnSession.application.type + '/role',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: { name: false }, limit: 1000 },
-              granting: true // only return roles which we can grant access to
-            }
-          } ).query();
-          this.metadata.columnList.role_id = {
-            required: true,
-            enumList: []
-          };
-          response.data.forEach( function( item ) {
+          var [roleResponse, siteResponse, languageResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'application_type/name=' + CnSession.application.type + '/role',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: { name: false }, limit: 1000 },
+                granting: true // only return roles which we can grant access to
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: { name: false }, limit: 1000 },
+                granting: true // only return sites which we can grant access to
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: [ { column: 'active', operator: '=', value: true } ],
+                  order: { name: false },
+                  limit: 1000
+                }
+              }
+            } ).query()
+          ] );
+
+          angular.extend( this.metadata.columnList, {
+            role_id: { required: true, enumList: [] },
+            site_id: { required: true, enumList: [] },
+            language_id: { required: false, enumList: [] }
+          } );
+
+          roleResponse.data.forEach( function( item ) {
             self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
           } );
-
-          var response = await CnHttpFactory.instance( {
-            path: 'site',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: { name: false }, limit: 1000 },
-              granting: true // only return sites which we can grant access to
-            }
-          } ).query();
-          this.metadata.columnList.site_id = {
-            required: true,
-            enumList: []
-          };
-          response.data.forEach( function( item ) {
+          siteResponse.data.forEach( function( item ) {
             self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
-
-          var response = await CnHttpFactory.instance( {
-            path: 'language',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: {
-                where: [ { column: 'active', operator: '=', value: true } ],
-                order: { name: false },
-                limit: 1000
-              }
-            }
-          } ).query();
-          this.metadata.columnList.language_id = {
-            required: false,
-            enumList: []
-          };
-          response.data.forEach( function( item ) {
+          languageResponse.data.forEach( function( item ) {
             self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };

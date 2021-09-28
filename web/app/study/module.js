@@ -137,52 +137,63 @@ define( function() {
           var self = this;
           await this.$$getMetadata();
 
-          if( this.isRole( 'administrator' ) ) {
-            var response = await CnHttpFactory.instance( {
-              path: 'identifier',
+          var promiseList = [
+            CnHttpFactory.instance( {
+              path: 'consent_type',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: { order: 'name', limit: 1000 }
               }
-            } ).query();
-            this.metadata.columnList.identifier_id.enumList = [];
-            response.data.forEach( function( item ) {
-              self.metadata.columnList.identifier_id.enumList.push( {
-                value: item.id,
-                name: item.name
-              } );
-            } );
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'event_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query()
+          ];
+
+          if( this.isRole( 'administrator' ) ) {
+            promiseList.push(
+              CnHttpFactory.instance( {
+                path: 'identifier',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name', limit: 1000 }
+                }
+              } ).query()
+            );
           }
 
-          var response = await CnHttpFactory.instance( {
-            path: 'consent_type',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
+          var [consentTypeResponse, eventTypeResponse, identifierResponse] = await Promise.all( promiseList );
+
           this.metadata.columnList.consent_type_id.enumList = [];
-          response.data.forEach( function( item ) {
+          consentTypeResponse.data.forEach( function( item ) {
             self.metadata.columnList.consent_type_id.enumList.push( {
               value: item.id,
               name: item.name
             } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'event_type',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
           this.metadata.columnList.completed_event_type_id.enumList = [];
-          response.data.forEach( function( item ) {
+          eventTypeResponse.data.forEach( function( item ) {
             self.metadata.columnList.completed_event_type_id.enumList.push( {
               value: item.id,
               name: item.name
             } );
           } );
+
+          if( this.isRole( 'administrator' ) ) {
+            this.metadata.columnList.identifier_id.enumList = [];
+            identifierResponse.data.forEach( function( item ) {
+              self.metadata.columnList.identifier_id.enumList.push( {
+                value: item.id,
+                name: item.name
+              } );
+            } );
+          }
         };
       };
 

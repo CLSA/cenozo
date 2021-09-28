@@ -104,7 +104,7 @@ define( function() {
           } );
 
           // change the heading to the form's title
-          var respose = await CnHttpFactory.instance( {
+          var response = await CnHttpFactory.instance( {
             path: 'report_type/' + $scope.model.getParentIdentifier().identifier,
             data: { select: { column: [ 'title' ] } }
           } ).get();
@@ -288,12 +288,13 @@ define( function() {
           // don't use the parent identifier when in the view state, it doesn't work
           var reportTypeIdentifier = this.getParentIdentifier().identifier;
 
+          
           if( 'view' == this.getActionFromState() ) {
-            var response = await CnHttpFactory.instance( {
+            var reportTypeResponse = await CnHttpFactory.instance( {
               path: this.getServiceResourcePath(),
               data: { select: { column: [ 'report_type_id' ] } }
             } ).get();
-            reportTypeIdentifier = response.data.report_type_id;
+            reportTypeIdentifier = reportTypeResponse.data.report_type_id;
           }
 
           // remove the parameter group's input list and metadata
@@ -306,39 +307,41 @@ define( function() {
           lastReportTypeIdentifier = reportTypeIdentifier;
           lastAction = this.getActionFromState();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'site',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
+          var [siteResponse, roleResponse, reportRestrictionResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'report_type/' + reportTypeIdentifier + '/role',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
+              data: { modifier: { order: { rank: false }, limit: 1000 } }
+            } ).get()
+          ] );
 
           this.metadata.columnList.site_id.enumList = [];
-          response.data.forEach( function( item ) {
+          siteResponse.data.forEach( function( item ) {
             self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'report_type/' + reportTypeIdentifier + '/role',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
-
           this.metadata.columnList.role_id.enumList = [];
-          response.data.forEach( function( item ) {
+          roleResponse.data.forEach( function( item ) {
             self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'report_type/' + reportTypeIdentifier + '/report_restriction',
-            data: { modifier: { order: { rank: false }, limit: 1000 } }
-          } ).get();
-
           // replace all restrictions from the module and metadata
-          await Promise.all( response.data.map( async function( restriction ) {
+          await Promise.all( reportRestrictionResponse.data.map( async function( restriction ) {
             var key = 'restrict_' + restriction.name;
 
             var dateType = 'date' == restriction.restriction_type;

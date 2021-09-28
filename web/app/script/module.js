@@ -161,40 +161,46 @@ define( function() {
         this.getMetadata = async function() {
           var self = this;
           await this.$$getMetadata();
-          var response = await CnHttpFactory.instance( {
-            path: 'survey',
-            data: {
-              select: { column: [ 'sid', 'title' ] },
-              modifier: { order: { title: false }, limit: 1000 }
-            }
-          } ).query();
+
+          var [surveyResponse, pineQnaireResponse, eventTypeResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'survey',
+              data: {
+                select: { column: [ 'sid', 'title' ] },
+                modifier: { order: { title: false }, limit: 1000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'pine_qnaire',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: { name: false }, limit: 1000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'event_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query()
+          ] );
+
           this.metadata.columnList.sid.enumList = [];
-          response.data.forEach( function( item ) {
+          surveyResponse.data.forEach( function( item ) {
             self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'pine_qnaire',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: { name: false }, limit: 1000 }
-            }
-          } ).query();
           this.metadata.columnList.pine_qnaire_id.enumList = [];
-          response.data.forEach( function( item ) {
+          pineQnaireResponse.data.forEach( function( item ) {
             self.metadata.columnList.pine_qnaire_id.enumList.push( { value: item.id, name: item.name } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'event_type',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
           this.metadata.columnList.started_event_type_id.enumList = [];
           this.metadata.columnList.finished_event_type_id.enumList = [];
-          response.data.forEach( function( item ) {
+          eventTypeResponse.data.forEach( function( item ) {
             self.metadata.columnList.started_event_type_id.enumList.push( { value: item.id, name: item.name } );
             self.metadata.columnList.finished_event_type_id.enumList.push( { value: item.id, name: item.name } );
           } );

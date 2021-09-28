@@ -377,11 +377,11 @@ define( function() {
 
             // don't use the parent identifier when in the view state, it doesn't work
             if( 'view' == this.getActionFromState() ) {
-               var response = await CnHttpFactory.instance( {
+               var reportTypeResponse = await CnHttpFactory.instance( {
                  path: this.getServiceResourcePath(),
                  data: { select: { column: [ 'report_type_id' ] } }
                } ).get();
-              reportTypeIdentifier = response.data.report_type_id;
+              reportTypeIdentifier = reportTypeResponse.data.report_type_id;
             }
 
             if( this.reportTypeIdentifier != reportTypeIdentifier ) {
@@ -396,13 +396,13 @@ define( function() {
                 if( 'restrict_' == column.substring( 0, 9 ) )
                   delete this.metadata.columnList[column];
 
-              var response = await CnHttpFactory.instance( {
+              var reportRestrictionResponse = await CnHttpFactory.instance( {
                 path: 'report_type/' + this.reportTypeIdentifier + '/report_restriction',
                 data: { modifier: { order: { rank: false } } }
               } ).get();
 
               // replace all restrictions from the module and metadata
-              for( var restriction of response.data ) {
+              for( var restriction of reportRestrictionResponse.data ) {
                 var key = 'restrict_' + restriction.name;
                 var input = await cenozo.getInputFromRestriction( restriction, CnHttpFactory );
                 parameterData.inputList[key] = input;

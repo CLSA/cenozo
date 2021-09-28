@@ -502,99 +502,62 @@ define( function() {
         this.getMetadata = async function() {
           await this.$$getMetadata();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'language',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: {
-                where: { column: 'active', operator: '=', value: true },
-                order: 'name',
-                limit: 1000
+          var [languageResponse, phoneResponse, addressResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: { column: 'active', operator: '=', value: true },
+                  order: 'name',
+                  limit: 1000
+                }
               }
-            }
-          } ).query();
+            } ).query(),
+            CnHttpFactory.instance( { path: 'phone' } ).head(),
+            CnHttpFactory.instance( { path: 'address' } ).head()
+          ] );
 
           this.metadata.columnList.language_id.enumList = [];
           var self = this;
-          response.data.forEach( function( item ) {
+          languageResponse.data.forEach( function( item ) {
             self.metadata.columnList.language_id.enumList.push( {
               value: item.id,
               name: item.name
             } );
           } );
 
-          var response = await CnHttpFactory.instance( { path: 'phone' } ).head();
-
-          var columnList = angular.fromJson( response.headers( 'Columns' ) );
-
-          // international column
-          columnList.international.required = '1' == columnList.international.required;
-          if( angular.isUndefined( this.metadata.columnList.phone_international ) )
-            this.metadata.columnList.phone_international = {};
-          angular.extend( this.metadata.columnList.phone_international, columnList.international );
-
-          // type column
-          columnList.type.required = '1' == columnList.type.required;
-          columnList.type.enumList = [];
-          cenozo.parseEnumList( columnList.type ).forEach( function( item ) {
-            columnList.type.enumList.push( { value: item, name: item } );
+          var phoneColumnList = angular.fromJson( phoneResponse.headers( 'Columns' ) );
+          phoneColumnList.international.required = '1' == phoneColumnList.international.required;
+          phoneColumnList.type.required = '1' == phoneColumnList.type.required;
+          phoneColumnList.number.required = '1' == phoneColumnList.number.required;
+          phoneColumnList.note.required = '1' == phoneColumnList.note.required;
+          phoneColumnList.type.enumList = [];
+          cenozo.parseEnumList( phoneColumnList.type ).forEach( function( item ) {
+            phoneColumnList.type.enumList.push( { value: item, name: item } );
           } );
-          if( angular.isUndefined( this.metadata.columnList.phone_type ) )
-            this.metadata.columnList.phone_type = {};
-          angular.extend( this.metadata.columnList.phone_type, columnList.type );
 
-          // number column
-          columnList.number.required = '1' == columnList.number.required;
-          if( angular.isUndefined( this.metadata.columnList.phone_number ) )
-            this.metadata.columnList.phone_number = {};
-          angular.extend( this.metadata.columnList.phone_number, columnList.number );
+          var addressColumnList = angular.fromJson( addressResponse.headers( 'Columns' ) );
+          addressColumnList.international.required = false;
+          addressColumnList.address1.required = false;
+          addressColumnList.address2.required = false;
+          addressColumnList.city.required = false;
+          addressColumnList.postcode.required = false;
+          addressColumnList.note.required = false;
+          addressColumnList.international.default = null;
 
-          // note column
-          columnList.note.required = '1' == columnList.note.required;
-          if( angular.isUndefined( this.metadata.columnList.phone_note ) )
-            this.metadata.columnList.phone_note = {};
-          angular.extend( this.metadata.columnList.phone_note, columnList.note );
-
-          var response = await CnHttpFactory.instance( { path: 'address' } ).head();
-
-          var columnList = angular.fromJson( response.headers( 'Columns' ) );
-
-          // international column
-          columnList.international.required = false;
-          columnList.international.default = null;
-          if( angular.isUndefined( this.metadata.columnList.address_international ) )
-            this.metadata.columnList.address_international = {};
-          angular.extend( this.metadata.columnList.address_international, columnList.international );
-
-          // address1 column
-          columnList.address1.required = false;
-          if( angular.isUndefined( this.metadata.columnList.address_address1 ) )
-            this.metadata.columnList.address_address1 = {};
-          angular.extend( this.metadata.columnList.address_address1, columnList.address1 );
-
-          // address2 column
-          columnList.address2.required = false;
-          if( angular.isUndefined( this.metadata.columnList.address_address2 ) )
-            this.metadata.columnList.address_address2 = {};
-          angular.extend( this.metadata.columnList.address_address2, columnList.address2 );
-
-          // city column
-          columnList.city.required = false;
-          if( angular.isUndefined( this.metadata.columnList.address_city ) )
-            this.metadata.columnList.address_city = {};
-          angular.extend( this.metadata.columnList.address_city, columnList.city );
-
-          // postcode column
-          columnList.postcode.required = false;
-          if( angular.isUndefined( this.metadata.columnList.address_postcode ) )
-            this.metadata.columnList.address_postcode = {};
-          angular.extend( this.metadata.columnList.address_postcode, columnList.postcode );
-
-          // note column
-          columnList.note.required = false;
-          if( angular.isUndefined( this.metadata.columnList.address_note ) )
-            this.metadata.columnList.address_note = {};
-          angular.extend( this.metadata.columnList.address_note, columnList.note );
+          angular.extend( this.metadata.columnList, {
+            phone_international: phoneColumnList.international,
+            phone_type: phoneColumnList.type,
+            phone_number: phoneColumnList.number,
+            phone_note: phoneColumnList.note,
+            address_international: addressColumnList.international,
+            address_address1: addressColumnList.address1,
+            address_address2: addressColumnList.address2,
+            address_city: addressColumnList.city,
+            address_postcode: addressColumnList.postcode,
+            address_note: addressColumnList.note
+          } );
         };
       };
 
