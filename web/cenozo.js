@@ -5666,6 +5666,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          *   title: the column's heading
          *   type: one of the following
          *     boolean: yes/no
+         *     currency: can be used in the format currency:<symbol>:<digits> (default is currency:$:2)
          *     date: date (with no time)
          *     datetime: date and time (with no seconds)
          *     datetimesecond: date, time and seconds
@@ -5689,6 +5690,7 @@ cenozo.factory( 'CnBaseModelFactory', [
           else if( 'rank' == type ) column.filter = 'cnOrdinal';
           else if( 'size' == type ) column.filter = 'cnSize';
           else if( 'boolean' == type ) column.filter = 'cnYesNo';
+          else if( type.match( /^currency/ ) ) column.filter = type;
           else if( 'seconds' == type ) column.filter = 'cnSeconds';
           else if( 'text' == type )
             column.filter = 'cnStub:' + ( angular.isDefined( column.limit ) ? column.limit : 10 );
