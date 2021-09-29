@@ -281,6 +281,13 @@ abstract class module extends \cenozo\base_object
     $join_table_name = sprintf( '%s_join_%s', $subject, $table );
     $table_primary_key = sprintf( '%s.id', $table );
     $subject_primary_key = sprintf( '%s.id', $subject );
+    $column_sql = sprintf(
+      'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )',
+      $table,
+      $column,
+      $table,
+      is_null( $order ) ? $column : $order
+    );
 
     $relationship = $record_class_name::get_relationship( $table );
     if( $relationship_class_name::MANY_TO_MANY === $relationship || !is_null( $joining_table ) )
@@ -294,17 +301,7 @@ abstract class module extends \cenozo\base_object
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $joining_table );
       $join_sel->add_column( $subject_id );
-      $join_sel->add_column(
-        sprintf(
-          'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )',
-          $table,
-          $column,
-          $table,
-          is_null( $order ) ? $column : $order
-        ),
-        $column_name,
-        false
-      );
+      $join_sel->add_column( $column_sql, $column_name, false );
 
       if( is_null( $join_mod ) ) $join_mod = lib::create( 'database\modifier' );
       $join_mod->join( $table, sprintf( '%s.%s_id', $joining_table, $table ), $table_primary_key );
@@ -322,11 +319,7 @@ abstract class module extends \cenozo\base_object
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( $subject );
       $join_sel->add_column( 'id', $subject_id );
-      $join_sel->add_column(
-        sprintf( 'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )', $table, $column, $table, $column ),
-        $column_name,
-        false
-      );
+      $join_sel->add_column( $column_sql, $column_name, false );
 
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->left_join( $table, $subject_primary_key, sprintf( '%s.%s', $table, $subject_id ) );
