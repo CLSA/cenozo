@@ -512,7 +512,7 @@ class survey_manager extends \cenozo\singleton
               array( 'participant_id', 'datetime' ),
               array( $db_participant->id, $proxy_initiation['datetime'] )
             );
-            if( !is_null( $db_proxy ) )
+            if( is_null( $db_proxy ) )
             {
               $db_proxy = lib::create( 'database\proxy' );
               $db_proxy->participant_id = $db_participant->id;
