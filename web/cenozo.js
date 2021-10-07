@@ -5500,8 +5500,9 @@ cenozo.factory( 'CnBaseModelFactory', [
             modifier.where.push( {
               column: angular.isUndefined( input.typeahead.select ) ? 'name' : input.select,
               operator: 'like',
-              value: viewValue + '%'
+              value: '%' + viewValue + '%'
             } );
+
           } else {
             var whereList = angular.isArray( input.typeahead.where )
                           ? input.typeahead.where
@@ -5513,7 +5514,7 @@ cenozo.factory( 'CnBaseModelFactory', [
               modifier.where.push( {
                 column: item,
                 operator: 'like',
-                value: viewValue + '%',
+                value: '%' + viewValue + '%',
                 or: true
               } );
             } );
