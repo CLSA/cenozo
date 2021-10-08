@@ -224,23 +224,13 @@ define( function() {
         var response = await CnHttpFactory.instance( {
           path: 'alternate/' + $state.params.identifier + '/address',
           data: {
-            modifier: {
-              join: {
-                table: 'region',
-                onleft: 'address.region_id',
-                onright: 'region.id'
-              }
-            },
+            modifier: { join: { table: 'region', onleft: 'address.region_id', onright: 'region.id' } },
             select: {
-              column: [ 'create_timestamp', 'rank', 'address1', 'address2',
-                        'city', 'postcode', 'international', {
-                table: 'region',
-                column: 'name',
-                alias: 'region'
-              }, {
-                table: 'region',
-                column: 'country'
-              } ]
+              column: [
+                'create_timestamp', 'rank', 'address1', 'address2', 'city', 'postcode', 'international',
+                { table: 'region', column: 'name', alias: 'region' },
+                { table: 'country', column: 'name', alias: 'country' }
+              ]
             }
           }
         } ).query();
@@ -268,23 +258,15 @@ define( function() {
           path: 'alternate/' + $state.params.identifier + '/note',
           data: {
             modifier: {
-              join: {
-                table: 'user',
-                onleft: 'note.user_id',
-                onright: 'user.id'
-              },
+              join: { table: 'user', onleft: 'note.user_id', onright: 'user.id' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', 'note', {
-                table: 'user',
-                column: 'first_name',
-                alias: 'user_first'
-              }, {
-                table: 'user',
-                column: 'last_name',
-                alias: 'user_last'
-              } ]
+              column: [
+                'datetime', 'note',
+                { table: 'user', column: 'first_name', alias: 'user_first' },
+                { table: 'user', column: 'last_name', alias: 'user_last' }
+              ]
             }
           }
         } ).query();

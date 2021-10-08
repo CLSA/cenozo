@@ -20,6 +20,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $modifier->join( 'country', 'application.country_id', 'country.id' );
     $modifier->left_join( 'study_phase', 'application.study_phase_id', 'study_phase.id' );
     $modifier->left_join( 'study', 'study_phase.study_id', 'study.id' );
 
@@ -71,5 +72,8 @@ class module extends \cenozo\service\module
       if( $select->has_table_columns( 'preferred_site' ) )
         $modifier->left_join( 'site', 'preferred_site_id', 'preferred_site.id', 'preferred_site' );
     }
+
+    // include supplemental data
+    if( !is_null( $this->get_resource() ) ) $select->add_table_column( 'country', 'name', 'formatted_country_id' );
   }
 }

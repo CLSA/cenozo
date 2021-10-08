@@ -345,11 +345,11 @@ define( [ 'trace' ].reduce( function( list, name ) {
               select: {
                 column: [
                   'id',
-                  'country',
-                  { column: 'CONCAT_WS( ", ", name, country )', alias: 'name', table_prefix: false }
+                  { table: 'country', column: 'name', alias: 'country' },
+                  { column: 'CONCAT_WS( ", ", region.name, country.name )', alias: 'name', table_prefix: false }
                 ]
               },
-              modifier: { order: ['country','name'], limit: 1000 }
+              modifier: { order: ['country.name','name'], limit: 1000 }
             }
           } ).query();
 

@@ -154,7 +154,8 @@ define( function() {
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: {
-                  where: { column: 'country', operator: '=', value: CnSession.application.country },
+                  join: { table: 'country', onleft: 'region.country_id', onright: 'country.id' },
+                  where: { column: 'country.name', operator: '=', value: CnSession.application.country },
                   order: 'name',
                   limit: 1000
                 }

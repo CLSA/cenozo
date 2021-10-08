@@ -51,6 +51,9 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
+    $modifier->left_join( 'region', 'site.region_id', 'region.id' );
+    $modifier->left_join( 'country', 'region.country_id', 'country.id' );
+
     $db_application = lib::create( 'business\session' )->get_application();
 
     if( false === $this->get_argument( 'choosing', false ) )

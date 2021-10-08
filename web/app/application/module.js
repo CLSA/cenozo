@@ -124,9 +124,10 @@ define( function() {
       type: 'text',
       help: 'A footer which is added to all emails sent out by the application.  This text may contain HTML markup.'
     },
-    country: {
+    country_id: {
       title: 'Country',
-      type: 'string'
+      type: 'lookup-typeahead',
+      typeahead: { table: 'country' }
     },
     timezone: {
       title: 'Default Time Zone',

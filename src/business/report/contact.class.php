@@ -44,7 +44,7 @@ class contact extends \cenozo\business\report\base_report
     $select->add_column( 'address.city', 'City', false );
     $select->add_column( 'region.abbreviation', 'Province/State', false );
     $select->add_column( 'address.postcode', 'Postcode', false );
-    $select->add_column( 'region.country', 'Country', false );
+    $select->add_column( 'country.name', 'Country', false );
     $select->add_column( 'IFNULL( email, "" )', 'Email', false );
     $select->add_column(
       'CONCAT( hold_type.type, ": ", hold_type.name )',
@@ -91,6 +91,7 @@ class contact extends \cenozo\business\report\base_report
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->left_join( 'address', 'participant_first_address.address_id', 'address.id' );
     $modifier->left_join( 'region', 'address.region_id', 'region.id' );
+    $modifier->left_join( 'country', 'region.country_id', 'country.id' );
     $modifier->where( 'consent_type.name', '=', 'participation' );
 
     // set up requirements

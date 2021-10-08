@@ -45,6 +45,9 @@ class module extends \cenozo\service\module
 
     parent::prepare_read( $select, $modifier );
 
+    $modifier->left_join( 'region', 'address.region_id', 'region.id' );
+    $modifier->left_join( 'country', 'region.country_id', 'country.id' );
+
     // add the "participant_uid" column if needed
     if( $select->has_table_alias( 'participant', 'participant_uid' ) )
       $modifier->left_join( 'participant', 'address.participant_id', 'participant.id' );
@@ -60,8 +63,6 @@ class module extends \cenozo\service\module
     // add the "summary" and "region" columns if needed
     if( $select->has_column( 'summary' ) || $select->has_column( 'region' ) )
     {
-      $modifier->left_join( 'region', 'address.region_id', 'region.id' );
-
       if( $select->has_column( 'summary' ) )
         $select->add_column(
           'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )', 'summary', false );
@@ -70,11 +71,6 @@ class module extends \cenozo\service\module
           'IF( international, IFNULL( international_country, "(international)" ), region.name )',
           'region',
           false );
-    }
-    else if( $modifier->has_join( 'region' ) )
-    {
-      // make sure the join to the region table is a left join
-      $modifier->left_join( 'region', 'address.region_id', 'region.id' );
     }
   }
 }

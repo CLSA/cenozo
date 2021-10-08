@@ -71,9 +71,8 @@ class module extends \cenozo\service\module
 
     parent::prepare_read( $select, $modifier );
 
-    // make sure the join to the region table is a left join
-    if( $select->has_table_columns( 'region' ) )
-      $modifier->left_join( 'region', 'hin.region_id', 'region.id' );
+    $modifier->left_join( 'region', 'hin.region_id', 'region.id' );
+    $modifier->left_join( 'country', 'region.country_id', 'country.id' );
   }
 
   /**

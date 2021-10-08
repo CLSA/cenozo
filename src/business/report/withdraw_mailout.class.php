@@ -45,7 +45,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'address.city', 'City', false );
     $select->add_column( 'region.abbreviation', 'Province/State', false );
     $select->add_column( 'address.postcode', 'Postcode', false );
-    $select->add_column( 'region.country', 'Country', false );
+    $select->add_column( 'country.name', 'Country', false );
     $select->add_column( 'IF( survey.submitdate IS NULL, "no", "yes" )', 'Script', false );
 
     $modifier = lib::create( 'database\modifier' );
@@ -55,6 +55,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
     $modifier->join( 'region', 'address.region_id', 'region.id' );
+    $modifier->join( 'country', 'region.country_id', 'country.id' );
     $modifier->where( 'exclusion_id', '=', NULL );
 
     // make sure the current consent is negative or the participant has been withdrawn by a 3rd party

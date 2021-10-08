@@ -435,22 +435,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/address',
           data: {
             modifier: {
-              join: {
-                table: 'region',
-                onleft: 'address.region_id',
-                onright: 'region.id'
-              }
+              join: { table: 'region', onleft: 'address.region_id', onright: 'region.id' }
             },
             select: {
-              column: [ 'create_timestamp', 'rank', 'address1', 'address2',
-                        'city', 'postcode', 'international', {
-                table: 'region',
-                column: 'name',
-                alias: 'region'
-              }, {
-                table: 'region',
-                column: 'country'
-              } ]
+              column: [
+                'create_timestamp', 'rank', 'address1', 'address2', 'city', 'postcode', 'international',
+                { table: 'region', column: 'name', alias: 'region' },
+                { table: 'country', column: 'name', alias: 'country' }
+              ]
             }
           }
         } ).query();
@@ -478,15 +470,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/alternate',
           data: {
             select: { column: [
-              'create_timestamp',
-              'association',
-              'alternate',
-              'decedent',
-              'emergency',
-              'informant',
-              'proxy',
-              'first_name',
-              'last_name'
+              'create_timestamp', 'association', 'alternate', 'decedent',
+              'emergency', 'informant', 'proxy', 'first_name', 'last_name'
             ] }
           }
         } ).query();
@@ -525,21 +510,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/consent',
           data: {
             modifier: {
-              join: {
-                table: 'consent_type',
-                onleft: 'consent.consent_type_id',
-                onright: 'consent_type.id'
-              },
+              join: { table: 'consent_type', onleft: 'consent.consent_type_id', onright: 'consent_type.id' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', 'accept', 'written', 'note', {
-                table: 'consent_type',
-                column: 'name'
-              }, {
-                table: 'consent_type',
-                column: 'description'
-              } ]
+              column: [
+                'datetime', 'accept', 'written', 'note',
+                { table: 'consent_type', column: 'name' },
+                { table: 'consent_type', column: 'description' }
+              ]
             }
           }
         } ).query();
@@ -564,21 +543,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/event',
           data: {
             modifier: {
-              join: {
-                table: 'event_type',
-                onleft: 'event.event_type_id',
-                onright: 'event_type.id'
-              },
+              join: { table: 'event_type', onleft: 'event.event_type_id', onright: 'event_type.id' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', {
-                table: 'event_type',
-                column: 'name'
-              }, {
-                table: 'event_type',
-                column: 'description'
-              } ]
+              column: [
+                'datetime',
+                { table: 'event_type', column: 'name' },
+                { table: 'event_type', column: 'description' }
+              ]
             }
           }
         } ).query();
@@ -602,21 +575,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/form',
           data: {
             modifier: {
-              join: {
-                table: 'form_type',
-                onleft: 'form.form_type_id',
-                onright: 'form_type.id'
-              },
+              join: { table: 'form_type', onleft: 'form.form_type_id', onright: 'form_type.id' },
               order: { date: true }
             },
             select: {
-              column: [ 'date', {
-                table: 'form_type',
-                column: 'name'
-              }, {
-                table: 'form_type',
-                column: 'description'
-              } ]
+              column: [
+                'date',
+                { table: 'form_type', column: 'name' },
+                { table: 'form_type', column: 'description' }
+              ]
             }
           }
         } ).query();
@@ -640,25 +607,16 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/hold',
           data: {
             modifier: {
-              join: {
-                table: 'hold_type',
-                onleft: 'hold.hold_type_id',
-                onright: 'hold_type.id',
-                type: 'left'
-              },
+              join: { table: 'hold_type', onleft: 'hold.hold_type_id', onright: 'hold_type.id', type: 'left' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', {
-                table: 'hold_type',
-                column: 'name'
-              }, {
-                table: 'hold_type',
-                column: 'type'
-              }, {
-                table: 'hold_type',
-                column: 'description'
-              } ]
+              column: [
+                'datetime',
+                { table: 'hold_type', column: 'name' },
+                { table: 'hold_type', column: 'type' },
+                { table: 'hold_type', column: 'description' }
+              ]
             }
           }
         } ).query();
@@ -705,23 +663,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/note',
           data: {
             modifier: {
-              join: {
-                table: 'user',
-                onleft: 'note.user_id',
-                onright: 'user.id'
-              },
+              join: { table: 'user', onleft: 'note.user_id', onright: 'user.id' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', 'note', {
-                table: 'user',
-                column: 'first_name',
-                alias: 'user_first'
-              }, {
-                table: 'user',
-                column: 'last_name',
-                alias: 'user_last'
-              } ]
+              column: [
+                'datetime', 'note',
+                { table: 'user', column: 'first_name', alias: 'user_first' },
+                { table: 'user', column: 'last_name', alias: 'user_last' }
+              ]
             }
           }
         } ).query();
@@ -743,9 +693,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       promise: async function( historyList, $state, CnHttpFactory ) {
         var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/phone',
-          data: {
-            select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] }
-          }
+          data: { select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] } }
         } ).query();
 
         response.data.forEach( function( item ) {
@@ -767,22 +715,15 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/proxy',
           data: {
             modifier: {
-              join: {
-                table: 'proxy_type',
-                onleft: 'proxy.proxy_type_id',
-                onright: 'proxy_type.id',
-                type: 'left'
-              },
+              join: { table: 'proxy_type', onleft: 'proxy.proxy_type_id', onright: 'proxy_type.id', type: 'left' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', {
-                table: 'proxy_type',
-                column: 'name'
-              }, {
-                table: 'proxy_type',
-                column: 'description'
-              } ]
+              column: [
+                'datetime',
+                { table: 'proxy_type', column: 'name' },
+                { table: 'proxy_type', column: 'description' }
+              ]
             }
           }
         } ).query();
@@ -806,25 +747,16 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           path: 'participant/' + $state.params.identifier + '/trace',
           data: {
             modifier: {
-              join: {
-                table: 'trace_type',
-                onleft: 'trace.trace_type_id',
-                onright: 'trace_type.id',
-                type: 'left'
-              },
+              join: { table: 'trace_type', onleft: 'trace.trace_type_id', onright: 'trace_type.id', type: 'left' },
               order: { datetime: true }
             },
             select: {
-              column: [ 'datetime', 'note', {
-                table: 'trace_type',
-                column: 'name'
-              }, {
-                table: 'user',
-                column: 'first_name'
-              }, {
-                table: 'user',
-                column: 'last_name'
-              } ]
+              column: [
+                'datetime', 'note',
+                { table: 'trace_type', column: 'name' },
+                { table: 'user', column: 'first_name' },
+                { table: 'user', column: 'last_name' }
+              ]
             }
           }
         } ).query();
@@ -863,23 +795,13 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             data: {
               modifier: { order: { start_datetime: true } },
               select: {
-                column: [ 'start_datetime', 'end_datetime', {
-                  table: 'user',
-                  column: 'first_name',
-                  alias: 'user_first'
-                }, {
-                  table: 'user',
-                  column: 'last_name',
-                  alias: 'user_last'
-                }, {
-                  table: 'site',
-                  column: 'name',
-                  alias: 'site'
-                }, {
-                  table: 'script',
-                  column: 'name',
-                  alias: 'script'
-                } ]
+                column: [
+                  'start_datetime', 'end_datetime',
+                  { table: 'user', column: 'first_name', alias: 'user_first' },
+                  { table: 'user', column: 'last_name', alias: 'user_last' },
+                  { table: 'site', column: 'name', alias: 'site' },
+                  { table: 'script', column: 'name', alias: 'script' }
+                ]
               }
             }
           } ).query();

@@ -56,7 +56,10 @@ class get extends \cenozo\service\service
     $application_sel->add_column( 'name' );
     $application_sel->add_column( 'title' );
     $application_sel->add_column( 'version' );
-    $application_sel->add_column( 'country' );
+    $application_sel->add_table_column( 'country', 'name', 'country' );
+
+    $application_mod = lib::create( 'database\modifier' );
+    $application_mod->join( 'country', 'application.country_id', 'country.id' );
 
     $user_sel = lib::create( 'database\select' );
     $user_sel->from( 'user' );
@@ -69,7 +72,7 @@ class get extends \cenozo\service\service
     $user_sel->add_column( 'use_12hour_clock' );
 
     $pseudo_record = array(
-      'application' => $db_application->get_column_values( $application_sel ),
+      'application' => $db_application->get_column_values( $application_sel, $application_mod ),
       'user' => $db_user->get_column_values( $user_sel )
     );
     $pseudo_record['application']['identifier'] = is_null( $db_identifier ) ? NULL : $db_identifier->name;
