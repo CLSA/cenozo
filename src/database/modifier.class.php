@@ -692,17 +692,9 @@ class modifier extends \cenozo\base_object
    */
   public function replace_group( $column, $replace )
   {
-    if( array_key_exists( $column, $this->group_list ) )
-    {
-      // we must preserve the order of the associative array
-      $this->group_list = array_combine(
-        array_map(
-          function( $key ) use( $column, $replace ) { return $column == $key ? $replace : $key; },
-          array_keys( $this->group_list )
-        ),
-        array_values( $this->group_list )
-      );
-    }
+    foreach( $this->group_list as $index => $group )
+      if( $column == $group )
+        $this->group_list[$index] = $replace;
   }
 
   /**
