@@ -28,6 +28,9 @@ define( function() {
         title: 'Repeated',
         type: 'boolean'
       },
+      total_pages: {
+        title: 'Pages'
+      },
       access: {
         title: 'In Application',
         type: 'boolean'
@@ -60,6 +63,13 @@ define( function() {
     repeated: {
       title: 'Repeated',
       type: 'boolean'
+    },
+    total_pages: {
+      title: 'Total Number of Pages',
+      type: 'string',
+      isConstant: true,
+      isExcluded: 'add',
+      help: 'Updated nightly from Pine.'
     },
     started_event_type_id: {
       title: 'Started Event Type',

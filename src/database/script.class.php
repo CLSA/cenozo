@@ -286,4 +286,61 @@ class script extends record
     return is_null( $this->finished_event_type_id ) ?
       NULL : lib::create( 'database\event_type', $this->finished_event_type_id );
   }
+
+  /**
+   * Updates metadata about all scripts
+   * @static 
+   */
+  public static function update_data()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    if( $cenozo_manager->exists() )
+    {
+      // get a list of all pine qnaire ids
+      $pine_qnaire_id_list = array();
+      $script_mod = lib::create( 'database\modifier' );
+      $script_mod->where( 'pine_qnaire_id', '!=', NULL );
+      $script_list = static::select_objects( $script_mod );
+      foreach( $script_list as $db_script ) $pine_qnaire_id_list[] = $db_script->pine_qnaire_id;
+
+      if( 0 < count( $pine_qnaire_id_list ) )
+      {
+        $select = array( 'column' => array( 'id', 'total_pages' ));
+        $modifier = array(
+          'where' => array(
+            'column' => 'qnaire.id',
+            'operator' => 'IN',
+            'value' => $pine_qnaire_id_list
+          )
+        );
+
+        $service = sprintf(
+          'qnaire?no_activity=1&select=%s&modifier=%s',
+          $util_class_name::json_encode( $select ),
+          $util_class_name::json_encode( $modifier )
+        );
+        
+        $data = array();
+        foreach( $cenozo_manager->get( $service ) as $obj ) $data[$obj->id] = $obj->total_pages;
+
+        foreach( $script_list as $db_script )
+        {
+          if( !array_key_exists( $db_script->pine_qnaire_id, $data ) )
+          {
+            log::warning( sprintf(
+              'Tried to update script "%s" but corresponding pine_qnaire_id "%d" does not exist in Pine.',
+              $db_script->name,
+              $db_script->pine_qnaire_id
+            ) );
+          }
+          else
+          {
+            $db_script->total_pages = $data[$db_script->pine_qnaire_id];
+            $db_script->save();
+          }
+        }
+      }
+    }
+  }
 }
