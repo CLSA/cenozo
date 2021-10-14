@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE script.sql
 SOURCE country.sql
 SOURCE application.sql
 SOURCE region.sql

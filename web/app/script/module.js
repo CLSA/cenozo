@@ -28,6 +28,9 @@ define( function() {
         title: 'Repeated',
         type: 'boolean'
       },
+      total_pages: {
+        title: 'Pages'
+      },
       access: {
         title: 'In Application',
         type: 'boolean'
@@ -60,6 +63,13 @@ define( function() {
     repeated: {
       title: 'Repeated',
       type: 'boolean'
+    },
+    total_pages: {
+      title: 'Total Number of Pages',
+      type: 'string',
+      isConstant: true,
+      isExcluded: 'add',
+      help: 'Updated nightly from Pine.'
     },
     started_event_type_id: {
       title: 'Started Event Type',
@@ -124,7 +134,18 @@ define( function() {
   cenozo.providers.factory( 'CnScriptAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        CnBaseAddFactory.construct( this, parentModel );
+
+        this.onAdd = async function( record ) {
+          // define the number of pages if this is a pine script
+          if( angular.isDefined( record.pine_qnaire_id ) ) {
+            var enumList = this.parentModel.metadata.columnList.pine_qnaire_id.enumList;
+            record.total_pages = enumList.findByProperty( 'value', record.pine_qnaire_id ).total_pages;
+          }
+          this.$$onAdd( record );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -174,7 +195,7 @@ define( function() {
             CnHttpFactory.instance( {
               path: 'pine_qnaire',
               data: {
-                select: { column: [ 'id', 'name' ] },
+                select: { column: [ 'id', 'name', 'total_pages' ] },
                 modifier: { order: { name: false }, limit: 1000 }
               }
             } ).query(),
@@ -195,7 +216,9 @@ define( function() {
 
           this.metadata.columnList.pine_qnaire_id.enumList = [];
           pineQnaireResponse.data.forEach( function( item ) {
-            self.metadata.columnList.pine_qnaire_id.enumList.push( { value: item.id, name: item.name } );
+            self.metadata.columnList.pine_qnaire_id.enumList.push( {
+              value: item.id, name: item.name, total_pages: item.total_pages
+            } );
           } );
 
           this.metadata.columnList.started_event_type_id.enumList = [];
