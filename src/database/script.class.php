@@ -306,19 +306,18 @@ class script extends record
 
       if( 0 < count( $pine_qnaire_id_list ) )
       {
-        $select = array( 'column' => array( 'id', 'total_pages' ));
-        $modifier = array(
+        $select_obj = array( 'column' => array( 'id', 'total_pages' ) );
+        $modifier_obj = array(
           'where' => array(
             'column' => 'qnaire.id',
             'operator' => 'IN',
             'value' => $pine_qnaire_id_list
           )
         );
-
         $service = sprintf(
           'qnaire?no_activity=1&select=%s&modifier=%s',
-          $util_class_name::json_encode( $select ),
-          $util_class_name::json_encode( $modifier )
+          $util_class_name::json_encode( $select_obj ),
+          $util_class_name::json_encode( $modifier_obj )
         );
         
         $data = array();

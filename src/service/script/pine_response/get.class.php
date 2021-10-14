@@ -19,6 +19,7 @@ class get extends \cenozo\service\get
 
     if( 'pine_response' == $this->get_subject( $index ) )
     {
+      $util_class_name = lib::get_class_name( 'util' );
       $participant_class_name = lib::get_class_name( 'database\participant' );
 
       // get the pine token as a pseudo-record
@@ -29,11 +30,14 @@ class get extends \cenozo\service\get
         $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
         try
         {
-          $response = $cenozo_manager->get( sprintf(
-            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
+          $select_obj = array( 'column' => array( 'token' ) );
+          $service = sprintf(
+            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select=%s',
             $db_script->pine_qnaire_id,
-            $db_participant->id
-          ) );
+            $db_participant->id,
+            $util_class_name::json_encode( $select_obj )
+          );
+          $response = $cenozo_manager->get( $service );
           $record = array( 'token' => $response->token );
         }
         catch( \cenozo\exception\runtime $e )
@@ -47,11 +51,14 @@ class get extends \cenozo\service\get
           );
 
           // now get the token which was just created
-          $response = $cenozo_manager->get( sprintf(
-            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
+          $select_obj = array( 'column' => array( 'token' ) );
+          $service = sprintf(
+            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select=%s',
             $db_script->pine_qnaire_id,
-            $db_participant->id
-          ) );
+            $db_participant->id,
+            $util_class_name::json_encode( $select_obj )
+          );
+          $response = $cenozo_manager->get( $service );
           $record = array( 'token' => $response->token );
         }
       }

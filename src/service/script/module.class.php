@@ -20,6 +20,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $util_class_name = lib::get_class_name( 'util' );
     $application_class_name = lib::get_class_name( 'database\application' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $script_class_name = lib::get_class_name( 'database\script' );
@@ -47,9 +48,13 @@ class module extends \cenozo\service\module
       $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
       if( $cenozo_manager->exists() )
       {
+        $select_obj = array( 'column' => array( 'id', 'name' ) );
+        $service = sprintf( 'qnaire?no_activity=1&select=%s', $util_class_name::json_encode( $select_obj ) );
+
         $qnaire_table_array = array();
-        foreach( $cenozo_manager->get( 'qnaire?no_activity=1&select={"column":["id","name"]}' ) as $obj )
+        foreach( $cenozo_manager->get( $service ) as $obj )
           $qnaire_table_array[] = sprintf( 'SELECT %s id, "%s" name', $obj->id, $obj->name );
+
         if( 0 < count( $qnaire_table_array ) )
         {
           $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( $qnaire_table_array, ' UNION ' ) );
