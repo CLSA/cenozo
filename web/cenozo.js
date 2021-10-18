@@ -6794,7 +6794,12 @@ cenozo.service( 'CnModalMessageFactory', [
 
         if( 306 == type && angular.isDefined( error.data ) ) {
           title = 'Please Note';
-          message = angular.fromJson( error.data );
+          try {
+            message = angular.fromJson( error.data );
+          } catch( e ) {
+            // the data isn't JSON encoded so use it directly
+            message = error.data;
+          }
         } else if( 403 == type ) {
           title = 'Permission Denied';
           message += 'because you do not have access to the requested resource.';
