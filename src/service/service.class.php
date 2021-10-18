@@ -317,7 +317,9 @@ abstract class service extends \cenozo\base_object
           $session->check_authorization_header( $user, $pass ) &&
           $session->login( $user ) ) $this->temporary_login = true;
 
-      if( is_null( $session->get_user() ) || is_null( $session->get_role() ) ) $code = 401;
+      if( is_null( $session->get_user() ) ||
+          // don't allow users with no role any access except to confirm basic information about their account
+          ( is_null( $session->get_role() ) && 'GET' != $this->method ) ) $code = 401;
     }
 
     if( 300 > $code && 0 < strlen( $path ) )
