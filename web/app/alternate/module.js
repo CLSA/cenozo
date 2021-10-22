@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'alternate', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'alternate', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -235,7 +233,7 @@ define( function() {
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           var description = item.address1;
           if( item.address2 ) description += '\n' + item.address2;
           description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
@@ -271,7 +269,7 @@ define( function() {
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Note',
@@ -293,7 +291,7 @@ define( function() {
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.create_timestamp,
             category: 'Phone',
@@ -500,14 +498,10 @@ define( function() {
             CnHttpFactory.instance( { path: 'address' } ).head()
           ] );
 
-          this.metadata.columnList.language_id.enumList = [];
-          var self = this;
-          languageResponse.data.forEach( function( item ) {
-            self.metadata.columnList.language_id.enumList.push( {
-              value: item.id,
-              name: item.name
-            } );
-          } );
+          this.metadata.columnList.language_id.enumList = languageResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
           var phoneColumnList = angular.fromJson( phoneResponse.headers( 'Columns' ) );
           phoneColumnList.international.required = '1' == phoneColumnList.international.required;
@@ -515,7 +509,7 @@ define( function() {
           phoneColumnList.number.required = '1' == phoneColumnList.number.required;
           phoneColumnList.note.required = '1' == phoneColumnList.note.required;
           phoneColumnList.type.enumList = [];
-          cenozo.parseEnumList( phoneColumnList.type ).forEach( function( item ) {
+          cenozo.parseEnumList( phoneColumnList.type ).forEach( item => {
             phoneColumnList.type.enumList.push( { value: item, name: item } );
           } );
 
@@ -557,9 +551,8 @@ define( function() {
       var object = function() {
         CnBaseHistoryFactory.construct( this, module, CnAlternateModelFactory.root );
 
-        var self = this;
-        async function init() {
-          await this.onView();
+        async function init( object ) {
+          await object.onView();
 
           CnSession.setBreadcrumbTrail(
             [ {
@@ -574,7 +567,7 @@ define( function() {
           );
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function() { return new object( false ); } };
@@ -588,9 +581,8 @@ define( function() {
       var object = function() {
         CnBaseNoteFactory.construct( this, module );
 
-        var self = this;
-        async function init() {
-          await this.onView();
+        async function init( object ) {
+          await object.onView();
 
           CnSession.setBreadcrumbTrail(
             [ {
@@ -605,7 +597,7 @@ define( function() {
           );
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function() { return new object( false ); } };

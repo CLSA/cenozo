@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'proxy', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'proxy', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -192,13 +190,10 @@ define( function() {
             }
           } ).query();
 
-          this.metadata.columnList.proxy_type_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.proxy_type_id.enumList.push( {
-              value: item.id, name: item.name, prompt: item.prompt, disabled: !item.access
-            } );
-          } );
+          this.metadata.columnList.proxy_type_id.enumList = response.data.reduce( function( list, item ) {
+            list.push( { value: item.id, name: item.name, prompt: item.prompt, disabled: !item.access } );
+            return list;
+          }, [] );
         };
       };
 

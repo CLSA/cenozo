@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'application', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'application', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {
@@ -224,21 +222,17 @@ define( function() {
 
           if( this.showStudyPhase() ) {
             var response = await CnHttpFactory.instance( {
-                path: 'study_phase',
-                data: {
-                  select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
-                  modifier: { order: { 'study.name': false, 'study_phase.rank': false }, limit: 1000 }
-                }
-              } ).query();
+              path: 'study_phase',
+              data: {
+                select: { column: [ 'id', 'name', { table: 'study', column: 'name', alias: 'study' } ] },
+                modifier: { order: { 'study.name': false, 'study_phase.rank': false }, limit: 1000 }
+              }
+            } ).query();
 
-            this.metadata.columnList.study_phase_id.enumList = [];
-            var self = this;
-            response.data.forEach( function( item ) {
-              self.metadata.columnList.study_phase_id.enumList.push( {
-                value: item.id,
-                name: [ item.study, item.name ].join( ' ' )
-              } );
-            } );
+            this.metadata.columnList.study_phase_id.enumList = response.data.reduce( ( list, item ) => {
+              list.push( { value: item.id, name: [ item.study, item.name ].join( ' ' ) } );
+              return list;
+            }, [] );
           }
         };
       };

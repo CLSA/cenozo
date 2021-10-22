@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'root', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'root', true ); } catch( err ) { console.warn( err ); return; }
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnHome', [

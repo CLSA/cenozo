@@ -198,7 +198,6 @@ define( [
           },
 
           onView: async function() {
-            var self = this;
             await this.$$onView();
             await this.promise;
 
@@ -211,7 +210,7 @@ define( [
             } ).query();
 
             this.columnList = [];
-            await Promise.all( response.data.map( async function( item ) {
+            await Promise.all( response.data.map( async item => {
               var columnObject = {
                 id: item.id,
                 table_name: item.table_name,
@@ -219,20 +218,20 @@ define( [
                   'participant_identifier' == item.table_name ? 'Identifier' : item.table_name.replace( /_/g, ' ' ).ucWords(),
                 subtype: null == item.subtype ? null : item.subtype.toString(),
                 oldSubtype: null == item.subtype ? null : item.subtype.toString(),
-                column: self.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                column: this.tableColumnList[item.table_name].list.findByProperty( 'key', item.column_name ),
                 rank: item.rank,
                 include: item.include,
                 isUpdating: false
               };
-              self.columnList.push( columnObject );
+              this.columnList.push( columnObject );
 
               // mark that the table/subtype is in use
               if( null != item.subtype ) {
-                self.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
+                this.subtypeList[item.table_name].findByProperty( 'key', item.subtype ).inUse = true;
               }
 
               // load the restriction list
-              await self.loadRestrictionList( item.table_name );
+              await this.loadRestrictionList( item.table_name );
             } ) );
 
             this.columnListIsLoading = false;
@@ -247,14 +246,14 @@ define( [
             } ).query();
 
             this.restrictionList = [];
-            response.data.forEach( function( item ) {
+            response.data.forEach( item => {
               var restriction = {
                 id: item.id,
                 table_name: item.table_name,
                 subtype: item.subtype,
                 column_name: item.column_name,
                 rank: item.rank,
-                restriction: self.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
+                restriction: this.tableRestrictionList[item.table_name].list.findByProperty( 'key', item.column_name ),
                 logic: item.logic,
                 value: item.value,
                 test: item.test,
@@ -273,7 +272,7 @@ define( [
                                   : parseInt( restriction.value );
                 if( null == restriction.value ) restriction.value = '';
               }
-              self.restrictionList.push( restriction );
+              this.restrictionList.push( restriction );
             } );
             this.restrictionListIsLoading = false;
             await this.updateParticipantCount();
@@ -486,12 +485,12 @@ define( [
           },
 
           getDataPointCount: function() {
-            return this.participantCount * this.columnList.filter( function( c ) { return c.include; } ).length;
+            return this.participantCount * this.columnList.filter( c => c.include ).length;
           },
 
           addRestriction: async function( tableName, key ) {
             // get a list of all subtypes from columns for this table
-            var subtypeList = this.columnList.reduce( function( subtypeList, column ) {
+            var subtypeList = this.columnList.reduce( ( subtypeList, column ) => {
               if( column.table_name == tableName && !subtypeList.includes( column.subtype ) )
                 subtypeList.push( column.subtype );
               return subtypeList;
@@ -543,7 +542,7 @@ define( [
             var restriction = this.restrictionList.findByProperty( 'id', restrictionId );
             var data = {};
             if( angular.isArray( key ) ) {
-              key.forEach( function( k ) { data[k] = restriction[k]; } );
+              key.forEach( k => data[k] = restriction[k] );
             } else {
               data[key] = restriction[key];
             }
@@ -635,7 +634,7 @@ define( [
                 isUpdating: false,
                 include: true
               } );
-              this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+              this.columnList.forEach( ( item, index ) => { item.rank = index + 1; } ); // re-rank
             }
             this.newColumn[tableName] = undefined;
 
@@ -652,7 +651,7 @@ define( [
 
             var column = this.columnList.splice( oldIndex, 1 );
             this.columnList.splice( newIndex, 0, column[0] );
-            this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+            this.columnList.forEach( ( item, index ) => { item.rank = index + 1; } ); // re-rank
           },
 
           updateColumn: async function( columnId, key ) {
@@ -665,15 +664,15 @@ define( [
             var updateRestrictionList = [];
             if( 'subtype' == key ) {
               // check if this column had a unique table/subtype
-              var hasUniqueTableSubtype = !this.columnList.some( function( column ) {
+              var hasUniqueTableSubtype = !this.columnList.some( column => {
                 return column.id != workingColumn.id &&
                        column.table_name == tableName &&
                        column.subtype == subtype;
               } );
               if( hasUniqueTableSubtype ) {
-                updateRestrictionList = this.restrictionList.filter( function( restriction ) {
-                  return restriction.table_name == tableName && restriction.subtype == subtype;
-                } );
+                updateRestrictionList = this.restrictionList.filter(
+                  restriction => restriction.table_name == tableName && restriction.subtype == subtype
+                );
               }
 
               // also update the subtype list inUse property
@@ -685,7 +684,7 @@ define( [
 
             var data = {};
             if( angular.isArray( key ) ) {
-              key.forEach( function( k ) { data[k] = workingColumn[k]; } );
+              key.forEach( k => data[k] = workingColumn[k] );
             } else {
               data[key] = workingColumn[key];
             }
@@ -694,10 +693,9 @@ define( [
 
             try {
               // update all restrictions and return when all promises from those operations have completed
-              var self = this;
-              await Promise.all( updateRestrictionList.map( async function( restriction ) {
+              await Promise.all( updateRestrictionList.map( async restriction => {
                 restriction.subtype = workingColumn.subtype;
-                await self.updateRestriction( restriction.id, 'subtype' );
+                await this.updateRestriction( restriction.id, 'subtype' );
               } ) );
             } finally {
               // we don't need the old subtype anymore, so let it match the new one in preperation
@@ -713,16 +711,16 @@ define( [
             var subtype = removeColumn.subtype;
 
             // check if this column has a unique table/subtype
-            var hasUniqueTableSubtype = !this.columnList.some( function( column ) {
-              return column.id != removeColumn.id && column.table_name == tableName && column.subtype == subtype;
-            } );
+            var hasUniqueTableSubtype = !this.columnList.some(
+              column => column.id != removeColumn.id && column.table_name == tableName && column.subtype == subtype
+            );
 
             var proceed = true;
             if( hasUniqueTableSubtype ) {
               // if no longer in use then make sure there isn't a restriction using the table/subtype
-              var restricted = this.restrictionList.some( function( restriction ) {
-                return restriction.table_name == tableName && restriction.subtype == subtype;
-              } );
+              var restricted = this.restrictionList.some(
+                restriction => restriction.table_name == tableName && restriction.subtype == subtype
+              );
               if( restricted ) {
                 proceed = false;
                 CnModalMessageFactory.instance( {
@@ -741,7 +739,7 @@ define( [
             if( proceed ) {
               await CnHttpFactory.instance( { path: 'export_column/' + this.columnList[index].id } ).delete();
               this.columnList.splice( index, 1 );
-              this.columnList.forEach( function( item, index ) { item.rank = index + 1; } ); // re-rank
+              this.columnList.forEach( ( item, index ) => { item.rank = index + 1; } ); // re-rank
               await this.updateParticipantCount();
             }
           },
@@ -752,25 +750,20 @@ define( [
           },
 
           getSubtypeList: function( tableName ) {
-            return this.subtypeList[tableName].filter( function( subtypeObject ) {
-              return subtypeObject.inUse;
-            } );
+            return this.subtypeList[tableName].filter( subtypeObject => subtypeObject.inUse );
           },
 
           showRestrictionList: function( tableName ) {
-            return this.columnList.some( function( column ) {
-              return tableName == column.table_name;
-            } );
+            return this.columnList.some( column => tableName == column.table_name );
           },
 
           getRestrictionColumnList: function( columnRank ) {
             if( angular.isUndefined( columnRank ) ) return [];
 
             var type = this.columnList.findByProperty( 'rank', columnRank ).type;
-            var self = this;
-            var test = this.columnList.reduce( function( list, item ) {
+            var test = this.columnList.reduce( ( list, item ) => {
               if( type === item.type && angular.isDefined( item.subtype ) ) {
-                list.push( self.subtypeList[type].findByProperty( 'key', item.subtype ) );
+                list.push( this.subtypeList[type].findByProperty( 'key', item.subtype ) );
               }
               return list;
             }, [] );
@@ -829,9 +822,7 @@ define( [
                 item.type = 'enum';
                 item.required = false;
                 item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
-                response.data.forEach( function( source ) {
-                  item.enumList.push( { value: source.id, name: source.name } );
-                } );
+                response.data.forEach( source => { item.enumList.push( { value: source.id, name: source.name } ); } );
 
                 // participant.cohort_id is not filled in regularly, we must do it here
                 var response = await CnHttpFactory.instance( {
@@ -846,9 +837,7 @@ define( [
                 item.type = 'enum';
                 item.required = true;
                 item.enumList = item.required ? [] : [ { value: '', name: '(empty)' } ];
-                response.data.forEach( function( cohort ) {
-                  item.enumList.push( { value: cohort.id, name: cohort.name } );
-                } );
+                response.data.forEach( cohort => { item.enumList.push( { value: cohort.id, name: cohort.name } ); } );
               }
 
               restrictionType.isLoading = false;
@@ -942,21 +931,20 @@ define( [
           this.subtypeList.interview = [];
         }
 
-        var self = this;
-        async function init() {
-          await self.processMetadata( 'participant' );
-          await self.processMetadata( 'participant_identifier' );
-          if( interviewModule ) await self.processMetadata( 'interview' );
-          await self.processMetadata( 'site' );
-          await self.processMetadata( 'address' );
-          await self.processMetadata( 'phone' );
-          await self.processMetadata( 'collection' );
-          await self.processMetadata( 'consent' );
-          await self.processMetadata( 'event' );
-          await self.processMetadata( 'hin' );
-          await self.processMetadata( 'hold' );
-          await self.processMetadata( 'proxy' );
-          await self.processMetadata( 'trace' );
+        async function init( object ) {
+          await object.processMetadata( 'participant' );
+          await object.processMetadata( 'participant_identifier' );
+          if( interviewModule ) await object.processMetadata( 'interview' );
+          await object.processMetadata( 'site' );
+          await object.processMetadata( 'address' );
+          await object.processMetadata( 'phone' );
+          await object.processMetadata( 'collection' );
+          await object.processMetadata( 'consent' );
+          await object.processMetadata( 'event' );
+          await object.processMetadata( 'hin' );
+          await object.processMetadata( 'hold' );
+          await object.processMetadata( 'proxy' );
+          await object.processMetadata( 'trace' );
 
           var response = await CnHttpFactory.instance( {
             path: 'identifier',
@@ -966,8 +954,8 @@ define( [
             }
           } ).query();
 
-          response.data.forEach( function( item ) {
-            self.subtypeList.participant_identifier.push( { key: item.id.toString(), name: item.name } );
+          response.data.forEach( item => {
+            object.subtypeList.participant_identifier.push( { key: item.id.toString(), name: item.name } );
           } );
 
           if( interviewModule ) {
@@ -981,8 +969,8 @@ define( [
               }
             } ).query();
 
-            response.data.forEach( function( item ) {
-              self.subtypeList.interview.push( { key: item.id.toString(), name: item.rank + '. ' + item.name } );
+            response.data.forEach( item => {
+              object.subtypeList.interview.push( { key: item.id.toString(), name: item.rank + '. ' + item.name } );
             } );
           }
 
@@ -994,8 +982,8 @@ define( [
             }
           } ).query();
 
-          response.data.forEach( function( item ) {
-            self.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
+          response.data.forEach( item => {
+            object.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
           } );
 
           var response = await CnHttpFactory.instance( {
@@ -1006,8 +994,8 @@ define( [
             }
           } ).query();
 
-          response.data.forEach( function( item ) {
-            self.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+          response.data.forEach( item => {
+            object.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
           } );
 
           var response = await CnHttpFactory.instance( {
@@ -1018,11 +1006,11 @@ define( [
             }
           } ).query();
 
-          response.data.forEach( function( item ) {
-            self.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
+          response.data.forEach( item => {
+            object.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
           } );
 
-          if( self.extendedSiteSelection ) {
+          if( object.extendedSiteSelection ) {
             var response = await CnHttpFactory.instance( {
               path: 'application',
               data: {
@@ -1051,12 +1039,12 @@ define( [
               }
             } ).query();
 
-            var siteSubtypeList = self.subtypeList.site;
-            self.subtypeList.site = [];
-            response.data.forEach( function( application ) {
+            var siteSubtypeList = object.subtypeList.site;
+            object.subtypeList.site = [];
+            response.data.forEach( application => {
               // extend site subtype list when we have extended site selection
-              self.subtypeList.site = self.subtypeList.site.concat(
-                siteSubtypeList.reduce( function( list, subtype ) {
+              object.subtypeList.site = object.subtypeList.site.concat(
+                siteSubtypeList.reduce( ( list, subtype ) => {
                   list.push( {
                     key: subtype.key + '_' + application.id,
                     name: application.title + ': ' + subtype.name,
@@ -1067,12 +1055,12 @@ define( [
               );
 
               // add a subtype to the application subtype list
-              self.subtypeList.application.push( { key: application.id.toString(), name: application.title } );
+              object.subtypeList.application.push( { key: application.id.toString(), name: application.title } );
             } );
           }
         }
 
-        this.promise = init();
+        this.promise = init( this );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

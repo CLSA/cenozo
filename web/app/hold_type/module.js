@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'hold_type', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'hold_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: ['type','name'] },
     name: {

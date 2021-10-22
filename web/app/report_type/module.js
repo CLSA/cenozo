@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'report_type', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'report_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'title' },
     name: {
@@ -38,7 +36,7 @@ define( function() {
     }
   } );
 
-  module.children.some( function( child ) {
+  module.children.some( child => {
     if( 'report' == child.subject.snake ) {
       if( angular.isDefined( child.actions.add ) ) {
         module.addExtraOperation( 'view', {
@@ -128,23 +126,22 @@ define( function() {
         // track the promise returned by the onView function
         this.onView = async function( force ) { this.onViewPromise = await this.$$onView( force ); };
 
-        var self = this;
-        async function init() {
-          await self.deferred.promise;
+        async function init( object ) {
+          await object.deferred.promise;
 
-          if( angular.isDefined( self.reportModel ) )
-            self.reportModel.listModel.heading = 'Generated Report List';
-          if( angular.isDefined( self.reportScheduleModel ) )
-            self.reportScheduleModel.listModel.heading = 'Schedule List';
-          if( angular.isDefined( self.reportRestrictionModel ) )
-            self.reportRestrictionModel.listModel.heading = 'Parameter List';
-          if( angular.isDefined( self.applicationTypeModel ) )
-            self.applicationTypeModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier; };
-          if( angular.isDefined( self.roleModel ) )
-            self.roleModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier };
+          if( angular.isDefined( object.reportModel ) )
+            object.reportModel.listModel.heading = 'Generated Report List';
+          if( angular.isDefined( object.reportScheduleModel ) )
+            object.reportScheduleModel.listModel.heading = 'Schedule List';
+          if( angular.isDefined( object.reportRestrictionModel ) )
+            object.reportRestrictionModel.listModel.heading = 'Parameter List';
+          if( angular.isDefined( object.applicationTypeModel ) )
+            object.applicationTypeModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier; };
+          if( angular.isDefined( object.roleModel ) )
+            object.roleModel.getChooseEnabled = function() { return 3 <= CnSession.role.tier };
         }
 
-        init();
+        init( this );
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'access', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'access', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: [ {
@@ -154,14 +152,14 @@ define( function() {
           ] );
 
           this.metadata.columnList.role_id.enumList = [];
-          roleResponse.data.forEach( function( item ) {
-            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          roleResponse.data.forEach(
+            item => self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } )
+          );
 
           this.metadata.columnList.site_id.enumList = [];
-          siteResponse.data.forEach( function( item ) {
-            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          siteResponse.data.forEach(
+            item => self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } )
+          );
         };
 
         // extend getTypeaheadData

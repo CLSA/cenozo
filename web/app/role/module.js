@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'role', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'role', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {

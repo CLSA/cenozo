@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'system_message', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'system_message', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {
@@ -176,7 +174,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           var [siteResponse, roleResponse] = await Promise.all( [
@@ -201,15 +198,15 @@ define( function() {
             } ).query()
           ] );
 
-          this.metadata.columnList.site_id.enumList = [];
-          siteResponse.data.forEach( function( item ) {
-            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.role_id.enumList = [];
-          roleResponse.data.forEach( function( item ) {
-            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.role_id.enumList = roleResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
           // create metadata for application_id (this application only)
           this.metadata.columnList.application_id.enumList = [ {

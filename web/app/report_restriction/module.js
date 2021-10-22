@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'report_restriction', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'report_restriction', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {

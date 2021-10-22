@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'form', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'form', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -140,11 +138,10 @@ define( function() {
             }
           } ).query();
 
-          this.metadata.columnList.form_type_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.form_type_id.enumList.push( { value: item.id, name: item.title } );
-          } );
+          this.metadata.columnList.form_type_id.enumList = response.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.title } );
+            return list;
+          }, [] );
         };
       };
 

@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'alternate_consent', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'alternate_consent', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -173,7 +171,7 @@ define( function() {
 
           this.metadata.columnList.alternate_consent_type_id.enumList = [];
           var self = this;
-          response.data.forEach( function( item ) {
+          response.data.forEach( item => {
             self.metadata.columnList.alternate_consent_type_id.enumList.push( {
               value: item.id, name: item.name, disabled: !item.access
             } );

@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'region_site', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'region_site', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {
@@ -133,7 +131,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           var [languageResponse, regionResponse, siteResponse] = await Promise.all( [
@@ -171,20 +168,20 @@ define( function() {
             } ).query()
           ] );
 
-          this.metadata.columnList.language_id.enumList = [];
-          languageResponse.data.forEach( function( item ) {
-            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.language_id.enumList = languageResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.region_id.enumList = [];
-          regionResponse.data.forEach( function( item ) {
-            self.metadata.columnList.region_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.region_id.enumList = regionResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.site_id.enumList = [];
-          siteResponse.data.forEach( function( item ) {
-            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
         };
       };
 

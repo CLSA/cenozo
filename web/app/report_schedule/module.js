@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'report_schedule', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'report_schedule', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -93,12 +91,9 @@ define( function() {
             await $scope.model.metadata.getPromise();
 
             cnRecordAddScope.dataArray = $scope.model.getDataArray( [], 'add' );
-            cnRecordAddScope.dataArray
-                            .findByProperty( 'title', 'Parameters' )
-                            .inputArray.forEach( function( input ) {
-              if( 'date' != input.type && cenozo.isDatetimeType( input.type ) ) {
+            cnRecordAddScope.dataArray.findByProperty( 'title', 'Parameters' ).inputArray.forEach( input => {
+              if( 'date' != input.type && cenozo.isDatetimeType( input.type ) )
                 cnRecordAddScope.formattedRecord[input.key] = '(empty)';
-              }
             } );
             $scope.loading = false;
           } );
@@ -204,7 +199,6 @@ define( function() {
 
         // extend onView
         this.onView = async function( updateRestrictions ) {
-          var self = this;
           if( angular.isUndefined( updateRestrictions ) ) updateRestrictions = true;
 
           if( !updateRestrictions ) var recordBackup = angular.copy( this.record );
@@ -220,21 +214,21 @@ define( function() {
               }
             } ).query();
 
-            response.data.forEach( function( restriction ) {
+            response.data.forEach( restriction => {
               var key = 'restrict_' + restriction.name;
               if( 'table' == restriction.restriction_type ) {
-                self.record[key] = parseInt( restriction.value );
+                this.record[key] = parseInt( restriction.value );
               } else if( 'boolean' == restriction.restriction_type ) {
-                self.record[key] = '1' == restriction.value;
+                this.record[key] = '1' == restriction.value;
               } else {
-                self.record[key] = restriction.value;
+                this.record[key] = restriction.value;
               }
 
               // date types must be treated as enums
               if( 'date' == restriction.restriction_type )
                 restriction.restriction_type = 'enum';
 
-              self.updateFormattedRecord( key, cenozo.getTypeFromRestriction( restriction ) );
+              this.updateFormattedRecord( key, cenozo.getTypeFromRestriction( restriction ) );
             } );
           } else {
             for( var column in recordBackup ) {
@@ -246,16 +240,14 @@ define( function() {
           }
 
           var parameterData = this.parentModel.module.inputGroupList.findByProperty( 'title', 'Parameters' );
-          Object.keys( parameterData.inputList ).filter( function( column ) {
-            return 'restrict_' == column.substring( 0, 9 );
-          } ).forEach( function( column ) {
+          Object.keys( parameterData.inputList ).filter( column => 'restrict_' == column.substring( 0, 9 ) ).forEach( column => {
             var type = parameterData.inputList[column].type;
-            if( angular.isDefined( self.record[column] ) ) {
-              self.updateFormattedRecord( column, type );
+            if( angular.isDefined( this.record[column] ) ) {
+              this.updateFormattedRecord( column, type );
             } else if( 'date' != type && cenozo.isDatetimeType( type ) ) {
-              self.formattedRecord[column] = '(empty)';
+              this.formattedRecord[column] = '(empty)';
             } else if( 'boolean' == type ) {
-              self.record[column] = '';
+              this.record[column] = '';
             }
           } );
         };
@@ -282,7 +274,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           // don't use the parent identifier when in the view state, it doesn't work
@@ -330,18 +321,18 @@ define( function() {
             } ).get()
           ] );
 
-          this.metadata.columnList.site_id.enumList = [];
-          siteResponse.data.forEach( function( item ) {
-            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.role_id.enumList = [];
-          roleResponse.data.forEach( function( item ) {
-            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.role_id.enumList = roleResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
           // replace all restrictions from the module and metadata
-          await Promise.all( reportRestrictionResponse.data.map( async function( restriction ) {
+          await Promise.all( reportRestrictionResponse.data.map( async restriction => {
             var key = 'restrict_' + restriction.name;
 
             var dateType = 'date' == restriction.restriction_type;
@@ -365,30 +356,26 @@ define( function() {
 
             if( dateType ) {
               // convert enum values to integers (with string types)
-              input.enumList
-                .filter( e => angular.isString( e.value ) )
-                .forEach( function( e ) {
-                  if( 'same day' == e.value ) e.value = '0';
-                  else if( e.value.match( /before/ ) ) e.value = String( -parseInt( e.value ) );
-                  else if( e.value.match( /after/ ) ) e.value = String( parseInt( e.value ) );
-                } );
+              input.enumList.filter( e => angular.isString( e.value ) ).forEach( e => {
+                if( 'same day' == e.value ) e.value = '0';
+                else if( e.value.match( /before/ ) ) e.value = String( -parseInt( e.value ) );
+                else if( e.value.match( /after/ ) ) e.value = String( parseInt( e.value ) );
+              } );
             }
 
             parameterData.inputList[key] = input;
-            self.metadata.columnList[key] = {
+            this.metadata.columnList[key] = {
               required: restriction.mandatory,
               restriction_type: restriction.restriction_type
             };
-            if( angular.isDefined( input.enumList ) ) self.metadata.columnList[key].enumList = input.enumList;
+            if( angular.isDefined( input.enumList ) ) this.metadata.columnList[key].enumList = input.enumList;
           } ) );
         };
 
         this.getServiceData = function( type, columnRestrictLists ) {
           // remove restrict_* columns from service data's select.column array
           var data = this.$$getServiceData( type, columnRestrictLists );
-          data.select.column = data.select.column.filter( function( column ) {
-            return 'restrict_' != column.column.substring( 0, 9 );
-          } );
+          data.select.column = data.select.column.filter( column => 'restrict_' != column.column.substring( 0, 9 ) );
           return data;
         };
       };

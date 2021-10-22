@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'user', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'user', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {
@@ -331,7 +329,7 @@ define( function() {
 
               await CnModalMessageFactory.instance( {
                 title: 'Password Reset',
-                message: 'The password for user "' + self.record.name + '" has been successfully reset.'
+                message: 'The password for user "' + this.record.name + '" has been successfully reset.'
               } ).show();
             }
           }
@@ -376,13 +374,13 @@ define( function() {
           } catch( err ) {}
         } );
 
-        async function init() {
-          await self.deferred.promise;
-          if( angular.isDefined( self.languageModel ) )
-            self.languageModel.listModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
+        async function init( object ) {
+          await object.deferred.promise;
+          if( angular.isDefined( object.languageModel ) )
+            object.languageModel.listModel.heading = 'Spoken Language List (if empty then all languages are spoken)';
         }
 
-        init();
+        init( this );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -409,7 +407,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           var [roleResponse, siteResponse, languageResponse] = await Promise.all( [
@@ -450,15 +447,18 @@ define( function() {
             language_id: { required: false, enumList: [] }
           } );
 
-          roleResponse.data.forEach( function( item ) {
-            self.metadata.columnList.role_id.enumList.push( { value: item.id, name: item.name } );
-          } );
-          siteResponse.data.forEach( function( item ) {
-            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
-          languageResponse.data.forEach( function( item ) {
-            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.role_id.enumList = roleResponse.data.forEach( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
+          this.metadata.columnList.site_id.enumList = siteResponse.data.forEach( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
+          this.metadata.columnList.language_id.enumList = languageResponse.data.forEach( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
         };
       };
 
@@ -510,7 +510,7 @@ define( function() {
 
       angular.extend( overviewModule.columnList, columnList );
 
-      async function init() {
+      async function init( object ) {
         // remove some columns based on the voip and role details
         await CnSession.promise;
 
@@ -521,7 +521,7 @@ define( function() {
         if( !CnSession.role.allSites ) delete overviewModule.columnList.site;
       }
 
-      init();
+      init( this );
 
       var object = function() {
         CnBaseModelFactory.construct( this, overviewModule );

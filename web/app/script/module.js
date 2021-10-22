@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'script', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'script', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {
@@ -180,7 +178,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           var [surveyResponse, pineQnaireResponse, eventTypeResponse] = await Promise.all( [
@@ -209,24 +206,23 @@ define( function() {
             } ).query()
           ] );
 
-          this.metadata.columnList.sid.enumList = [];
-          surveyResponse.data.forEach( function( item ) {
-            self.metadata.columnList.sid.enumList.push( { value: item.sid, name: item.title } );
-          } );
+          this.metadata.columnList.sid.enumList = surveyResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.sid, name: item.title } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.pine_qnaire_id.enumList = [];
-          pineQnaireResponse.data.forEach( function( item ) {
-            self.metadata.columnList.pine_qnaire_id.enumList.push( {
-              value: item.id, name: item.name, total_pages: item.total_pages
-            } );
-          } );
+          this.metadata.columnList.pine_qnaire_id.enumList = pineQnaireResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name, total_pages: item.total_pages } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.started_event_type_id.enumList = [];
-          this.metadata.columnList.finished_event_type_id.enumList = [];
-          eventTypeResponse.data.forEach( function( item ) {
-            self.metadata.columnList.started_event_type_id.enumList.push( { value: item.id, name: item.name } );
-            self.metadata.columnList.finished_event_type_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.started_event_type_id.enumList = eventTypeResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
+
+          this.metadata.columnList.finished_event_type_id.enumList =
+            angular.copy( this.metadata.columnList.started_event_type_id.enumList );
         };
       };
 

@@ -1,9 +1,5 @@
-define( [ 'trace' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( 'phone', [ 'trace' ], ( module ) => {
 
-  try { var module = cenozoApp.module( 'phone', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: [ {
@@ -246,11 +242,10 @@ define( [ 'trace' ].reduce( function( list, name ) {
             }
           } ).query();
 
-          this.metadata.columnList.address_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.address_id.enumList.push( { value: item.id, name: item.summary } );
-          } );
+          this.metadata.columnList.address_id.enumList = response.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.summary } );
+            return list;
+          }, [] );
         };
       };
 

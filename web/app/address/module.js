@@ -1,5 +1,5 @@
 var useTrace = true;
-define( [ 'trace' ].reduce( function( list, name ) {
+define( [ 'trace' ].reduce( ( list, name ) => {
   // this module can be used without needing any of the above requirements so we need to ignore missing module errors
   var files = [];
   try {
@@ -355,9 +355,9 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
           this.metadata.columnList.region_id.enumList = [];
           var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.region_id.enumList.push( { value: item.id, country: item.country, name: item.name } );
-          } );
+          response.data.forEach(
+            item => self.metadata.columnList.region_id.enumList.push( { value: item.id, country: item.country, name: item.name } )
+          );
         };
       };
 

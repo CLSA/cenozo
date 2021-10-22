@@ -1,9 +1,5 @@
-define( [ 'study' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( 'stratum', [ 'study' ], ( module ) => {
 
-  try { var module = cenozoApp.module( 'stratum', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {

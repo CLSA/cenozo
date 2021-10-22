@@ -1,8 +1,5 @@
-define( function() {
+cenozoApp.defineModule( 'study', null, ( module ) => {
 
-  'use strict';
-
-  try { var module = cenozoApp.module( 'study', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {
@@ -134,7 +131,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           var promiseList = [
@@ -169,30 +165,21 @@ define( function() {
 
           var [consentTypeResponse, eventTypeResponse, identifierResponse] = await Promise.all( promiseList );
 
-          this.metadata.columnList.consent_type_id.enumList = [];
-          consentTypeResponse.data.forEach( function( item ) {
-            self.metadata.columnList.consent_type_id.enumList.push( {
-              value: item.id,
-              name: item.name
-            } );
-          } );
+          this.metadata.columnList.consent_type_id.enumList = consentTypeResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.completed_event_type_id.enumList = [];
-          eventTypeResponse.data.forEach( function( item ) {
-            self.metadata.columnList.completed_event_type_id.enumList.push( {
-              value: item.id,
-              name: item.name
-            } );
-          } );
+          this.metadata.columnList.completed_event_type_id.enumList = eventTypeResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
           if( this.isRole( 'administrator' ) ) {
-            this.metadata.columnList.identifier_id.enumList = [];
-            identifierResponse.data.forEach( function( item ) {
-              self.metadata.columnList.identifier_id.enumList.push( {
-                value: item.id,
-                name: item.name
-              } );
-            } );
+            this.metadata.columnList.identifier_id.enumList = identifierResponse.data.reduce( ( list, item ) => {
+              list.push( { value: item.id, name: item.name } );
+              return list;
+            }, [] );
           }
         };
       };

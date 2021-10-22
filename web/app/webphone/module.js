@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'webphone', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'webphone', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {},
     name: {
@@ -74,7 +72,6 @@ define( function() {
             activeRecordingFile: null,
 
             startRecording: async function() {
-              var self = this;
               this.voipOperation = null == this.activeRecordingFile ? 'monitoring' : 'playing';
               var data = {
                 operation: null == this.activeRecordingFile ? 'start_monitoring' : 'play_sound',
@@ -88,6 +85,7 @@ define( function() {
               }
 
               try {
+                var self = this;
                 await CnHttpFactory.instance( {
                   path: 'voip/0',
                   data: data,
@@ -110,28 +108,28 @@ define( function() {
 
               // start the timer
               if( null != this.timerValue && null == this.timerPromise ) {
-                this.timerPromise = $interval( async function() {
-                  self.timerValue++;
+                this.timerPromise = $interval( async () => {
+                  this.timerValue++;
 
-                  if( null == self.activeRecording.timer ) {
-                    self.timerValue = null;
-                    await self.stopRecording();
-                  } else if( self.activeRecording.timer <= self.timerValue ) {
-                    self.timerValue = self.activeRecording.timer;
+                  if( null == this.activeRecording.timer ) {
+                    this.timerValue = null;
+                    await this.stopRecording();
+                  } else if( this.activeRecording.timer <= this.timerValue ) {
+                    this.timerValue = this.activeRecording.timer;
                     try {
                       await CnHttpFactory.instance( {
                         path: 'voip/0',
                         data: {
                           operation: 'play_sound',
                           filename: 'beep',
-                          volume: parseInt( self.playbackVolume )
+                          volume: parseInt( this.playbackVolume )
                         },
                         onError: function() {} // ignore all errors
                       } ).patch()
                     } catch( error ) {
                       // handled by onError above
                     }
-                    await self.stopRecording();
+                    await this.stopRecording();
                   }
                 }, 1000 );
               }
@@ -182,21 +180,19 @@ define( function() {
             }
           } );
 
-          async function init() {
+          async function init( object ) {
             // get the recording and recording-file lists
             var response = await CnHttpFactory.instance( {
               path: 'recording'
             } ).get()
 
-            self.recordingList = response.data.map( function( recording ) {
-              return {
-                id: recording.id,
-                name: recording.rank + '. ' + recording.name,
-                record: recording.record,
-                timer: recording.timer,
-                fileList: []
-              };
-            } );
+            object.recordingList = response.data.map( recording => ( {
+              id: recording.id,
+              name: recording.rank + '. ' + recording.name,
+              record: recording.record,
+              timer: recording.timer,
+              fileList: []
+            } ) );
 
             var response = await CnHttpFactory.instance( {
               path: 'recording_file',
@@ -211,8 +207,8 @@ define( function() {
               }
             } ).get();
 
-            response.data.forEach( function( file ) {
-              self.recordingList.findByProperty( 'id', file.recording_id ).fileList.push( {
+            response.data.forEach( file => {
+              object.recordingList.findByProperty( 'id', file.recording_id ).fileList.push( {
                 id: file.id,
                 language_id: file.language_id,
                 name: file.language
@@ -220,22 +216,21 @@ define( function() {
             } );
 
             // now select a default recording and language
-            if( 0 < self.recordingList.length ) {
-              self.activeRecording = self.recordingList[0];
-              if( 0 < self.activeRecording.fileList.length ) {
-                self.activeRecordingFile = self.activeRecording.fileList[0];
-                self.lastLanguageId = self.activeRecordingFile.language_id;
+            if( 0 < object.recordingList.length ) {
+              object.activeRecording = object.recordingList[0];
+              if( 0 < object.activeRecording.fileList.length ) {
+                object.activeRecordingFile = object.activeRecording.fileList[0];
+                object.lastLanguageId = object.activeRecordingFile.language_id;
               }
             }
           }
 
-          init();
+          init( this );
         }
 
         // update the information now and again in 10 seconds (to give the webphone applet time to load)
         this.updateInformation();
-        var self = this;
-        $timeout( function() { self.updateInformation(); }, 10000 );
+        $timeout( () => this.updateInformation(), 10000 );
       };
 
       return { instance: function() { return new object( false ); } };

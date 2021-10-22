@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'trace', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'trace', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -140,16 +138,12 @@ define( function() {
             }
           } ).query();
 
-          this.metadata.columnList.trace_type_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
+          this.metadata.columnList.trace_type_id.enumList = response.data.forEach( ( list, item ) => {
             // only allow all-site roles to use the "unreachable" trace type
-            if( 'unreachable' != item.name || CnSession.role.allSites ) {
-              self.metadata.columnList.trace_type_id.enumList.push( {
-                value: item.id, name: item.name, disabled: false
-              } );
-            }
-          } );
+            if( 'unreachable' != item.name || CnSession.role.allSites )
+              list.push( { value: item.id, name: item.name, disabled: false } );
+            return list;
+          }, [] );
         };
 
         // When in the trace.list state only show enrolled participants whose last trace_type is not empty
@@ -219,7 +213,7 @@ define( function() {
 
           if( 0 < response.data.length ) {
             // disable the last trace's type
-            this.metadata.columnList.trace_type_id.enumList.forEach( function( traceType ) {
+            this.metadata.columnList.trace_type_id.enumList.forEach( traceType => {
               traceType.disabled = traceType.value == response.data[0].trace_type_id;
             } );
           }

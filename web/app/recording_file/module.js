@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'recording_file', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'recording_file', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -143,11 +141,10 @@ define( function() {
             }
           } ).query();
 
-          this.metadata.columnList.language_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.language_id.enumList = response.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
         };
       };
 

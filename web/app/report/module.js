@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'report', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'report', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -146,7 +144,7 @@ define( function() {
             cnRecordAddScope.dataArray = $scope.model.getDataArray( [], 'add' );
             var parameters = cnRecordAddScope.dataArray.findByProperty( 'title', 'Parameters' );
             if( null != parameters && angular.isArray( parameters.inputArray ) ) {
-              parameters.inputArray.forEach( function( input ) {
+              parameters.inputArray.forEach( input => {
                 if( cenozo.isDatetimeType( input.type ) )
                   cnRecordAddScope.formattedRecord[input.key] = '(empty)';
               } );
@@ -285,7 +283,6 @@ define( function() {
 
         // extend onView
         this.onView = async function( updateRestrictions ) {
-          var self = this;
           if( angular.isUndefined( updateRestrictions ) ) updateRestrictions = true;
 
           if( !updateRestrictions ) var recordBackup = angular.copy( this.record );
@@ -300,16 +297,16 @@ define( function() {
                 modifier: { order: { rank: false } }
               }
             } ).query();
-            response.data.forEach( function( restriction ) {
+            response.data.forEach( restriction => {
               var key = 'restrict_' + restriction.name;
               if( 'table' == restriction.restriction_type ) {
-                self.record[key] = '_NULL_' == restriction.value ? restriction.value : parseInt( restriction.value );
+                this.record[key] = '_NULL_' == restriction.value ? restriction.value : parseInt( restriction.value );
               } else if( 'boolean' == restriction.restriction_type ) {
-                self.record[key] = '1' == restriction.value;
+                this.record[key] = '1' == restriction.value;
               } else {
-                self.record[key] = restriction.value;
+                this.record[key] = restriction.value;
               }
-              self.updateFormattedRecord( key, cenozo.getTypeFromRestriction( restriction ) );
+              this.updateFormattedRecord( key, cenozo.getTypeFromRestriction( restriction ) );
             } );
           } else {
             for( var column in recordBackup ) {
@@ -321,16 +318,14 @@ define( function() {
           }
 
           var parameterData = this.parentModel.module.inputGroupList.findByProperty( 'title', 'Parameters' );
-          Object.keys( parameterData.inputList ).filter( function( column ) {
-            return 'restrict_' == column.substring( 0, 9 );
-          } ).forEach( function( column ) {
+          Object.keys( parameterData.inputList ).filter( column => 'restrict_' == column.substring( 0, 9 ) ).forEach( column => {
             var type = parameterData.inputList[column].type;
-            if( angular.isDefined( self.record[column] ) ) {
-              self.updateFormattedRecord( column, type );
+            if( angular.isDefined( this.record[column] ) ) {
+              this.updateFormattedRecord( column, type );
             } else if( cenozo.isDatetimeType( type ) ) {
-              self.formattedRecord[column] = '(empty)';
+              this.formattedRecord[column] = '(empty)';
             } else if( 'boolean' == type ) {
-              self.record[column] = '';
+              this.record[column] = '';
             }
           } );
         };
@@ -420,9 +415,7 @@ define( function() {
           getServiceData: function( type, columnRestrictLists ) {
             // remove restrict_* columns from service data's select.column array
             var data = this.$$getServiceData( type, columnRestrictLists );
-            data.select.column = data.select.column.filter( function( column ) {
-              return 'restrict_' != column.column.substring( 0, 9 );
-            } );
+            data.select.column = data.select.column.filter( column => 'restrict_' != column.column.substring( 0, 9 ) );
             return data;
           }
         } );

@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'alternate_consent_type', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'alternate_consent_type', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {

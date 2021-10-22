@@ -1,9 +1,5 @@
-define( [ 'trace' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( 'mail', [ 'trace' ], ( module ) => {
 
-  try { var module = cenozoApp.module( 'mail', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {

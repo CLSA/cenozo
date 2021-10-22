@@ -1,9 +1,5 @@
-define( [ 'participant', 'site' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( 'callback', [ 'participant', 'site' ], ( module ) => {
 
-  try { var module = cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {},
     name: {
@@ -83,7 +79,7 @@ define( [ 'participant', 'site' ].reduce( function( list, name ) {
           var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
           await this.$$onCalendar( replace, minDate, maxDate, ignoreParent );
 
-          this.cache.forEach( function( item, index, array ) {
+          this.cache.forEach( ( item, index, array ) => {
             array[index] = getEventFromParticipant( item, CnSession.user.timezone );
           } );
         };

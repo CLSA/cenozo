@@ -1,4 +1,4 @@
-define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].reduce( function( list, name ) {
+define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].reduce( ( list, name ) => {
   // this module can be used without needing any of the above requirements so we need to ignore missing module errors
   var files = [];
   try {
@@ -447,7 +447,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           var description = item.address1;
           if( item.address2 ) description += '\n' + item.address2;
           description += '\n' + item.city + ', ' + item.region + ', ' + item.country + "\n" + item.postcode;
@@ -476,7 +476,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           var description = ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n';
           var list = [];
           if( item.alternate ) list.push( 'alternate contact' );
@@ -487,7 +487,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           if( 0 == list.length ) {
             description = '(not registiered for any role)';
           } else {
-            list.forEach( function( name, index, array ) {
+            list.forEach( ( name, index, array ) => {
               if( 0 < index ) description += index == array.length - 1 ? ' and ' : ', ';
               description += name;
             } );
@@ -523,7 +523,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Consent',
@@ -556,7 +556,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Event',
@@ -588,7 +588,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.date,
             category: 'Form',
@@ -621,7 +621,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Hold',
@@ -644,7 +644,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.sent_datetime,
             category: 'Mail',
@@ -676,7 +676,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Note',
@@ -696,7 +696,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           data: { select: { column: [ 'create_timestamp', 'rank', 'type', 'number', 'international' ] } }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.create_timestamp,
             category: 'Phone',
@@ -728,7 +728,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Proxy',
@@ -761,7 +761,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        response.data.forEach( function( item ) {
+        response.data.forEach( item => {
           historyList.push( {
             datetime: item.datetime,
             category: 'Trace',
@@ -789,7 +789,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           }
         } ).query();
 
-        await Promise.all( response.data.map( async function( participant ) {
+        await Promise.all( response.data.map( async participant => {
           var subResponse = await CnHttpFactory.instance( {
             path: 'interview/' + participant.id + '/assignment',
             data: {
@@ -806,7 +806,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             }
           } ).query();
 
-          subResponse.data.forEach( function( assignment ) {
+          subResponse.data.forEach( assignment => {
             if( null != assignment.start_datetime ) {
               historyList.push( {
                 datetime: assignment.start_datetime,
@@ -1033,8 +1033,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           },
 
           onView: async function( force ) {
-            var self = this;
-
             // always assume that the decedent script is not allowed (until more details are found below)
             angular.extend( this, {
               hasDecedent: null,
@@ -1048,62 +1046,65 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             // only create launchers for each supporting script if the script module is activated
             if( CnSession.moduleList.includes( 'script' ) ) {
               // note: there's no need to wait for these calls so there's no "Promise.all" here
-              CnSession.supportingScriptList.forEach( async function( script ) {
+              CnSession.supportingScriptList.forEach( async script => {
                 if( null != script.name.match( /Decedent/ ) ) {
                   // only check for the decedent token if we're allowed to launch the script
-                  self.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
-                  if( self.allowDecedent ) {
+                  this.allowDecedent = 'mastodon' == CnSession.application.type && CnSession.role.allSites;
+                  if( this.allowDecedent ) {
                     var name = 'Decedent';
-                    self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                    this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
                       script: script,
-                      identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                      identifier: this.parentModel.getQueryParameter( 'identifier' ),
                       onReady: function() {
-                        self.hasDecedent =
+                        this.hasDecedent =
                           null != this.token &&
                           null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                       }
                     } );
-                    try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                    try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                   }
                 } else if( null != script.name.match( /Proxy Initiation/ ) ) {
+                  var self = this;
                   var name = 'Proxy Initiation';
-                  self.allowProxyInitiation = true;
-                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                  this.allowProxyInitiation = true;
+                  this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
                     script: script,
-                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasProxyInitiation =
                         null != this.token &&
                         null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                     }
                   } );
-                  try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                  try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                 } else if( null != script.name.match( /Quality Control/ ) ) {
+                  var self = this;
                   var name = 'Quality Control';
-                  self.allowQualityControl = true;
-                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                  this.allowQualityControl = true;
+                  this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
                     script: script,
-                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasQualityControl =
                         null != this.token &&
                         null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                     }
                   } );
-                  try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                  try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                 } else if( null != script.name.match( /Withdraw/ ) ) {
+                  var self = this;
                   var name = 'Withdraw';
-                  self.allowWithdraw = true;
-                  self.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
+                  this.allowWithdraw = true;
+                  this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
                     script: script,
-                    identifier: self.parentModel.getQueryParameter( 'identifier' ),
+                    identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasWithdraw =
                         null != this.token &&
                         null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                     }
                   } );
-                  try { await self.scriptLaunchers[name].initialize(); } catch( error ) {}
+                  try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                 }
               } );
             }
@@ -1134,8 +1135,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             }
 
             // don't allow excluded participants to be edited
+            var self = this;
             this.parentModel.getEditEnabled = function() {
-              return self.parentModel.$$getEditEnabled() &&
+              return this.$$getEditEnabled() &&
                      null != self.record.exclusion &&
                      null == self.record.exclusion.match( /^No/ );
             };
@@ -1238,26 +1240,24 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             this.scriptLaunchers[scriptName].launch();
 
             // check for when the window gets focus back and update the participant details
-            var self = this;
-            var win = angular.element( $window ).on( 'focus', async function() {
-              await self.onView();
-              if( self.consentModel ) self.consentModel.listModel.onList( true );
-              if( self.proxyModel ) self.proxyModel.listModel.onList( true );
-              if( self.holdModel ) self.holdModel.listModel.onList( true );
+            var win = angular.element( $window ).on( 'focus', async () => {
+              await this.onView();
+              if( this.consentModel ) this.consentModel.listModel.onList( true );
+              if( this.proxyModel ) this.proxyModel.listModel.onList( true );
+              if( this.holdModel ) this.holdModel.listModel.onList( true );
               win.off( 'focus' );
             } );
           };
         }
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           if( root ) {
-            await self.deferred.promise;
+            await object.deferred.promise;
 
             // override the collection model's getServiceData function (list active collections only)
-            if( self.collectionModel ) {
-              self.collectionModel.getServiceData = function( type, columnRestrictLists ) {
-                var data = self.collectionModel.$$getServiceData( type, columnRestrictLists );
+            if( object.collectionModel ) {
+              object.collectionModel.getServiceData = function( type, columnRestrictLists ) {
+                var data = object.collectionModel.$$getServiceData( type, columnRestrictLists );
                 if( angular.isUndefined( data.modifier ) ) data.modifier = { where: [] };
                 else if( angular.isUndefined( data.modifier.where ) ) data.modifier.where = [];
                 data.modifier.where.push( { column: 'collection.active', operator: '=', value: true } );
@@ -1265,36 +1265,36 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               };
             }
 
-            if( angular.isDefined( self.applicationModel ) ) {
-              self.applicationModel.getViewEnabled = function() { return false; };
-              self.applicationModel.addColumn(
+            if( angular.isDefined( object.applicationModel ) ) {
+              object.applicationModel.getViewEnabled = function() { return false; };
+              object.applicationModel.addColumn(
                 'default_site',
                 { title: 'Default Site', column: 'default_site.name' }
               );
-              self.applicationModel.addColumn(
+              object.applicationModel.addColumn(
                 'preferred_site',
                 { title: 'Preferred Site', column: 'preferred_site.name' }
               );
-              self.applicationModel.addColumn(
+              object.applicationModel.addColumn(
                 'datetime',
                 { title: 'Release Date & Time', column: 'datetime', type: 'datetime' }
               );
-              self.applicationModel.listModel.heading = 'Release List';
+              object.applicationModel.listModel.heading = 'Release List';
             }
 
             // only allow adding a hold or proxy if the participant is enrolled
-            if( self.holdModel ) {
-              self.holdModel.getAddEnabled = function() {
-                return self.holdModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
+            if( object.holdModel ) {
+              object.holdModel.getAddEnabled = function() {
+                return object.holdModel.$$getAddEnabled() && 'Yes' == object.record.exclusion;
               };
-              self.proxyModel.getAddEnabled = function() {
-                return self.proxyModel.$$getAddEnabled() && 'Yes' == self.record.exclusion;
+              object.proxyModel.getAddEnabled = function() {
+                return object.proxyModel.$$getAddEnabled() && 'Yes' == object.record.exclusion;
               };
             }
           }
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -1317,7 +1317,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
           // extend getMetadata
           getMetadata: async function() {
-            var self = this;
             await this.$$getMetadata();
 
             var [availabilityTypeResponse, languageResponse, siteResponse] = await Promise.all( [
@@ -1350,26 +1349,22 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               } ).query()
             ] );
 
-            this.metadata.columnList.availability_type_id.enumList = [];
-            availabilityTypeResponse.data.forEach( function( item ) {
-              self.metadata.columnList.availability_type_id.enumList.push( {
-                value: item.id, name: item.name
-              } );
-            } );
+            this.metadata.columnList.availability_type_id.enumList = availabilityTypeResponse.data.reduce( ( list, item ) => {
+              list.push( { value: item.id, name: item.name } );
+              return list;
+            }, [] );
 
-            this.metadata.columnList.language_id.enumList = [];
-            languageResponse.data.forEach( function( item ) {
-              self.metadata.columnList.language_id.enumList.push( {
-                value: item.id,
-                name: item.name,
-                code: item.code // code is needed by the withdraw action
-              } );
-            } );
+            this.metadata.columnList.language_id.enumList = languageResponse.data.reduce( ( list, item ) => {
+              // code is needed by the withdraw action
+              list.push( { value: item.id, name: item.name, code: item.code } );
+              return list;
+            }, [] );
 
             this.metadata.columnList.preferred_site_id = { enumList: [] };
-            siteResponse.data.forEach( function( item ) {
-              self.metadata.columnList.preferred_site_id.enumList.push( { value: item.id, name: item.name } );
-            } );
+            this.metadata.columnList.preferred_site_id.enumList = siteResponse.data.reduce( ( list, item ) => {
+              list.push( { value: item.id, name: item.name } );
+              return list;
+            }, [] );
           }
         } );
       };
@@ -1438,7 +1433,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                   if( 0 < csv.length ) {
                     // assume the first line is a header
                     var columnLookup = csv.shift().map( column => column.trim().toLowerCase().replace( ' ', '_' ) );
-                    columnLookup.forEach( function( column, index ) {
+                    columnLookup.forEach( ( column, index ) => {
                       // check for regular column names and multi (address and phone) column names
                       if( !validColumnList.includes( column ) &&
                           !validMultiColumnList.includes( column.replace( /_[0-9]+$/, '' ) ) ) {
@@ -1451,9 +1446,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                     var participantList = [];
                     if( validColumnCount ) {
                       // go through all lines which aren't empty
-                      csv.filter( line => line.length ).forEach( function( line ) {
+                      csv.filter( line => line.length ).forEach( line => {
                         var participant = {};
-                        line.forEach( function( value, index ) {
+                        line.forEach( ( value, index ) => {
                           if( null !== columnLookup[index] && null !== value ) participant[columnLookup[index]] = value;
                         } );
 
@@ -1516,15 +1511,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           'phone_note'
         ];
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           try {
-            await self.parentModel.metadata.getPromise();
-            self.sexList = self.parentModel.metadata.columnList.sex.enumList.map( row => row.name );
+            await object.parentModel.metadata.getPromise();
+            object.sexList = object.parentModel.metadata.columnList.sex.enumList.map( row => row.name );
 
-            await self.addressModel.metadata.getPromise();
-            await self.phoneModel.metadata.getPromise();
-            self.phoneTypeList = self.phoneModel.metadata.columnList.type.enumList.map( row => row.name );
+            await object.addressModel.metadata.getPromise();
+            await object.phoneModel.metadata.getPromise();
+            object.phoneTypeList = object.phoneModel.metadata.columnList.type.enumList.map( row => row.name );
 
             // get the source list
             var response = await CnHttpFactory.instance( {
@@ -1534,7 +1528,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 modifier: { order: 'name' }
               }
             } ).query();
-            self.sourceList = response.data.map( row => row.name );
+            object.sourceList = response.data.map( row => row.name );
 
             // get the cohort list
             var response = await CnHttpFactory.instance( {
@@ -1544,7 +1538,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 modifier: { order: 'name' }
               }
             } ).query();
-            self.cohortList = response.data.map( row => row.name );
+            object.cohortList = response.data.map( row => row.name );
 
             // get the language list
             var response = await CnHttpFactory.instance( {
@@ -1554,7 +1548,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 modifier: { where: { column: 'active', operator: '=', value: true }, order: 'code' }
               }
             } ).query();
-            self.languageList = response.data.map( row => row.code );
+            object.languageList = response.data.map( row => row.code );
 
             // get the availability_type list
             var response = await CnHttpFactory.instance( {
@@ -1564,14 +1558,14 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 modifier: { order: 'name' }
               }
             } ).query();
-            self.availabilityTypeList = response.data.map( row => row.name );
+            object.availabilityTypeList = response.data.map( row => row.name );
           } finally {
-            self.loading = false;
+            object.loading = false;
           }
         }
 
         // this is a contructor function so don't await the init() function
-        init();
+        init( this );
       };
 
       return { instance: function() { return new object( false ); } };
@@ -1631,8 +1625,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
           deactivateInput: function( column ) {
             this.participantInputList.findByProperty( 'column', column ).active = false;
-            this.hasActiveInputs = 0 < this.participantInputList
-              .filter( function( input ) { return input.active; }).length;
+            this.hasActiveInputs = 0 < this.participantInputList.filter( input => input.active ).length;
           },
 
           applyMultiedit: async function( type ) {
@@ -1672,7 +1665,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
               messageObj.title = 'Note Records Added';
               messageObj.message = 'The note record has been successfully added to <TOTAL> participant(s).'
             } else if( 'participant' == type ) {
-              var inputList = this.participantInputList.filter( function( input ) { return input.active; } );
+              var inputList = this.participantInputList.filter( input => input.active );
               var model = CnParticipantModelFactory.root;
               messageObj.title = 'Participant Details Updated';
               messageObj.message = 'The listed details have been successfully updated on ' + identifierList.length +
@@ -1685,7 +1678,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             } else throw new Error( 'Called addRecords() with invalid type "' + type + '".' );
 
             if( inputList ) {
-              inputList.forEach( function( input ) {
+              inputList.forEach( input => {
                 var element = cenozo.getFormElement( input.column );
                 if( element ) {
                   var valid = model.testFormat( input.column, input.value );
@@ -1707,9 +1700,9 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
                 data.note = this.note;
               } else if( 'participant' == type ) {
                 data.input_list = {};
-                inputList.forEach( function( input ) { data.input_list[input.column] = input.value; } );
+                inputList.forEach( input => data.input_list[input.column] = input.value );
               } else {
-                data[type] = inputList.reduce( function( record, input ) {
+                data[type] = inputList.reduce( ( record, input ) => {
                   record[input.column] = input.value;
                   return record;
                 }, {} );
@@ -1731,10 +1724,10 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
         // given a module and metadata this function will build an input list
         function processInputList( list, module, metadata ) {
-          list.forEach( function( column, index, array ) {
+          list.forEach( ( column, index, array ) => {
             // find this column's input details in the module's input group list
             var input = null
-            module.inputGroupList.some( function( group ) {
+            module.inputGroupList.some( group => {
               for( var groupListColumn in group.inputList ) {
                 if( column == groupListColumn ) {
                   input = group.inputList[groupListColumn];
@@ -1782,20 +1775,19 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           return list;
         };
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           // populate the participant input list once the participant's metadata has been loaded
           await CnParticipantModelFactory.root.metadata.getPromise();
-          self.participantInputList = processInputList( [
+          object.participantInputList = processInputList( [
               'honorific', 'sex', 'current_sex', 'language_id', 'availability_type_id',
               'preferred_site_id', 'out_of_area', 'email', 'email2', 'mass_email', 'note'
             ],
-            self.module,
+            object.module,
             CnParticipantModelFactory.root.metadata.columnList
           );
 
           // add the placeholder to the column list
-          self.participantInputList.unshift( {
+          object.participantInputList.unshift( {
             active: false,
             column: '',
             title: 'Select which column to edit'
@@ -1803,7 +1795,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
           // populate the consent input list once the consent's metadata has been loaded
           await CnConsentModelFactory.root.metadata.getPromise();
-          self.consentInputList = processInputList(
+          object.consentInputList = processInputList(
             [ 'consent_type_id', 'accept', 'written', 'datetime', 'note' ],
             cenozoApp.module( 'consent' ),
             CnConsentModelFactory.root.metadata.columnList
@@ -1823,12 +1815,12 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
             }
           } ).query();
 
-          self.collectionList = response.data;
-          self.collectionList.unshift( { id: undefined, name: '(Select Collection)' } );
+          object.collectionList = response.data;
+          object.collectionList.unshift( { id: undefined, name: '(Select Collection)' } );
 
           // populate the event input list once the event's metadata has been loaded
           await CnEventModelFactory.root.metadata.getPromise();
-          self.eventInputList = processInputList(
+          object.eventInputList = processInputList(
             [ 'event_type_id', 'datetime' ],
             cenozoApp.module( 'event' ),
             CnEventModelFactory.root.metadata.columnList
@@ -1836,7 +1828,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
           // populate the hold input list once the hold's metadata has been loaded
           await CnHoldModelFactory.root.metadata.getPromise();
-          self.holdInputList = processInputList(
+          object.holdInputList = processInputList(
             [ 'hold_type_id', 'datetime' ],
             cenozoApp.module( 'hold' ),
             CnHoldModelFactory.root.metadata.columnList
@@ -1844,7 +1836,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
 
           // populate the proxy input list once the proxy's metadata has been loaded
           await CnProxyModelFactory.root.metadata.getPromise();
-          self.proxyInputList = processInputList(
+          object.proxyInputList = processInputList(
             [ 'proxy_type_id', 'datetime' ],
             cenozoApp.module( 'proxy' ),
             CnProxyModelFactory.root.metadata.columnList
@@ -1852,7 +1844,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         }
 
         // this is a contructor function so don't await the init() function
-        init();
+        init( this );
       };
 
       return { instance: function() { return new object( false ); } };
@@ -1866,9 +1858,8 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
       var object = function() {
         CnBaseNoteFactory.construct( this, module );
 
-        var self = this;
-        async function init() {
-          await self.onView();
+        async function init( object ) {
+          await object.onView();
           CnSession.setBreadcrumbTrail(
             [ {
               title: 'Participants',
@@ -1883,7 +1874,7 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
         }
 
         // this is a contructor function so don't await the init() function
-        init();
+        init( this );
       };
 
       return { instance: function() { return new object( false ); } };

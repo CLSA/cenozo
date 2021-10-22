@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'recording', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'recording', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'rank' },
     name: {

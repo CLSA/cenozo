@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( 'hold', null, ( module ) => {
 
-  try { var module = cenozoApp.module( 'hold', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -197,13 +195,10 @@ define( function() {
             }
           } ).query();
 
-          this.metadata.columnList.hold_type_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.hold_type_id.enumList.push( {
-              value: item.id, name: item.type + ': ' + item.name, disabled: !item.access || item.system
-            } );
-          } );
+          this.metadata.columnList.hold_type_id.enumList = response.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.type + ': ' + item.name, disabled: !item.access || item.system } );
+            return list;
+          }, [] );
         };
       };
 

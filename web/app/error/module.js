@@ -1,7 +1,4 @@
-define( function() {
-  'use strict';
-
-  try { var module = cenozoApp.module( 'error', true ); } catch( err ) { console.warn( err ); return; }
+cenozoApp.defineModule( 'error', null, ( module ) => {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnError', [
