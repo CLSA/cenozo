@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'proxy', null, ( module ) => {
+cenozoApp.defineModule( { name: 'proxy', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -71,51 +71,6 @@ cenozoApp.defineModule( 'proxy', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnProxyAdd', [
-    'CnProxyModelFactory',
-    function( CnProxyModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnProxyModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnProxyList', [
-    'CnProxyModelFactory',
-    function( CnProxyModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnProxyModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnProxyView', [
-    'CnProxyModelFactory',
-    function( CnProxyModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnProxyModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnProxyAddFactory', [
     'CnBaseAddFactory', 'CnModalConfirmFactory',
     function( CnBaseAddFactory, CnModalConfirmFactory ) {
@@ -137,24 +92,6 @@ cenozoApp.defineModule( 'proxy', null, ( module ) => {
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnProxyListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnProxyViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -204,4 +141,4 @@ cenozoApp.defineModule( 'proxy', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

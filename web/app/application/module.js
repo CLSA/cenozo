@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'application', null, ( module ) => {
+cenozoApp.defineModule( { name: 'application', models: ['list', 'view'], defaultTab: 'site', create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -145,21 +145,6 @@ cenozoApp.defineModule( 'application', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnApplicationList', [
-    'CnApplicationModelFactory',
-    function( CnApplicationModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnApplicationModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnApplicationView', [
     'CnApplicationModelFactory', 'CnSession',
     function( CnApplicationModelFactory, CnSession ) {
@@ -173,24 +158,6 @@ cenozoApp.defineModule( 'application', null, ( module ) => {
             $scope.model.getQueryParameter( 'identifier' ).split( '=' ).pop() == CnSession.application.name;
         }
       };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root, 'site' ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -244,4 +211,4 @@ cenozoApp.defineModule( 'application', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

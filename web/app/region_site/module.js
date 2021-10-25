@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'region_site', null, ( module ) => {
+cenozoApp.defineModule( { name: 'region_site', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard
@@ -44,78 +44,6 @@ cenozoApp.defineModule( 'region_site', null, ( module ) => {
       type: 'enum'
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteAdd', [
-    'CnRegionSiteModelFactory',
-    function( CnRegionSiteModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRegionSiteModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteList', [
-    'CnRegionSiteModelFactory',
-    function( CnRegionSiteModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRegionSiteModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRegionSiteView', [
-    'CnRegionSiteModelFactory',
-    function( CnRegionSiteModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRegionSiteModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnRegionSiteAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnRegionSiteListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnRegionSiteViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRegionSiteModelFactory', [
@@ -192,4 +120,4 @@ cenozoApp.defineModule( 'region_site', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

@@ -1,4 +1,6 @@
-cenozoApp.defineModule( 'callback', [ 'participant', 'site' ], ( module ) => {
+cenozoApp.defineModule( { name: 'callback',
+                          dependencies: [ 'participant', 'site' ],
+                          create: module => {
 
   angular.extend( module, {
     identifier: {},
@@ -143,4 +145,4 @@ cenozoApp.defineModule( 'callback', [ 'participant', 'site' ], ( module ) => {
     }
   ] );
 
-} );
+} } );

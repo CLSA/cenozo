@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'identifier', null, ( module ) => {
+cenozoApp.defineModule( { name: 'identifier', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -45,51 +45,6 @@ cenozoApp.defineModule( 'identifier', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnIdentifierAdd', [
-    'CnIdentifierModelFactory',
-    function( CnIdentifierModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnIdentifierModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnIdentifierList', [
-    'CnIdentifierModelFactory',
-    function( CnIdentifierModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnIdentifierModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnIdentifierView', [
-    'CnIdentifierModelFactory',
-    function( CnIdentifierModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnIdentifierModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnIdentifierImport', [
     'CnIdentifierModelFactory', 'CnSession', '$state',
     function( CnIdentifierModelFactory, CnSession, $state ) {
@@ -115,24 +70,6 @@ cenozoApp.defineModule( 'identifier', null, ( module ) => {
           } ] );
         }
       };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnIdentifierAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnIdentifierListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -205,22 +142,4 @@ cenozoApp.defineModule( 'identifier', null, ( module ) => {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnIdentifierModelFactory', [
-    'CnBaseModelFactory', 'CnIdentifierListFactory', 'CnIdentifierAddFactory', 'CnIdentifierViewFactory',
-    function( CnBaseModelFactory, CnIdentifierListFactory, CnIdentifierAddFactory, CnIdentifierViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnIdentifierAddFactory.instance( this );
-        this.listModel = CnIdentifierListFactory.instance( this );
-        this.viewModel = CnIdentifierViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

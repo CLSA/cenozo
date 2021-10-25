@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'cohort', null, ( module ) => {
+cenozoApp.defineModule( { name: 'cohort', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -23,44 +23,4 @@ cenozoApp.defineModule( 'cohort', null, ( module ) => {
     }
   } );
 
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCohortList', [
-    'CnCohortModelFactory',
-    function( CnCohortModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnCohortModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCohortListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCohortModelFactory', [
-    'CnBaseModelFactory', 'CnCohortListFactory',
-    function( CnBaseModelFactory, CnCohortListFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnCohortListFactory.instance( this );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

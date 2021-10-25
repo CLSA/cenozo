@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'user', null, ( module ) => {
+cenozoApp.defineModule( { name: 'user', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -141,36 +141,6 @@ cenozoApp.defineModule( 'user', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserAdd', [
-    'CnUserModelFactory',
-    function( CnUserModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnUserModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserList', [
-    'CnUserModelFactory',
-    function( CnUserModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnUserModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnUserOverview', [
     'CnUserOverviewFactory',
     function( CnUserOverviewFactory ) {
@@ -182,21 +152,6 @@ cenozoApp.defineModule( 'user', null, ( module ) => {
           $scope.model = CnUserOverviewFactory.instance();
           $scope.model.listModel.heading = "Active User List";
           $scope.model.setupBreadcrumbTrail();
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnUserView', [
-    'CnUserModelFactory',
-    function( CnUserModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnUserModelFactory.root;
         }
       };
     }
@@ -248,15 +203,6 @@ cenozoApp.defineModule( 'user', null, ( module ) => {
         };
       };
 
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnUserListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -549,4 +495,4 @@ cenozoApp.defineModule( 'user', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

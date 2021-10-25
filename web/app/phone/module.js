@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'phone', [ 'trace' ], ( module ) => {
+cenozoApp.defineModule( { name: 'phone', dependencies: [ 'trace' ], models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -73,51 +73,6 @@ cenozoApp.defineModule( 'phone', [ 'trace' ], ( module ) => {
       type: 'text'
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnPhoneAdd', [
-    'CnPhoneModelFactory',
-    function( CnPhoneModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnPhoneList', [
-    'CnPhoneModelFactory',
-    function( CnPhoneModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnPhoneView', [
-    'CnPhoneModelFactory',
-    function( CnPhoneModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneModelFactory.root;
-        }
-      };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneAddFactory', [
@@ -256,4 +211,4 @@ cenozoApp.defineModule( 'phone', [ 'trace' ], ( module ) => {
     }
   ] );
 
-} );
+} } );

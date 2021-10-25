@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'hold_type', null, ( module ) => {
+cenozoApp.defineModule( { name: 'hold_type', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: ['type','name'] },
@@ -40,69 +40,6 @@ cenozoApp.defineModule( 'hold_type', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnHoldTypeAdd', [
-    'CnHoldTypeModelFactory',
-    function( CnHoldTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHoldTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnHoldTypeList', [
-    'CnHoldTypeModelFactory',
-    function( CnHoldTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHoldTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnHoldTypeView', [
-    'CnHoldTypeModelFactory',
-    function( CnHoldTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHoldTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnHoldTypeAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnHoldTypeListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnHoldTypeViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
@@ -124,22 +61,4 @@ cenozoApp.defineModule( 'hold_type', null, ( module ) => {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnHoldTypeModelFactory', [
-    'CnBaseModelFactory', 'CnHoldTypeListFactory', 'CnHoldTypeAddFactory', 'CnHoldTypeViewFactory',
-    function( CnBaseModelFactory, CnHoldTypeListFactory, CnHoldTypeAddFactory, CnHoldTypeViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnHoldTypeAddFactory.instance( this );
-        this.listModel = CnHoldTypeListFactory.instance( this );
-        this.viewModel = CnHoldTypeViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

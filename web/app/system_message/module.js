@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'system_message', null, ( module ) => {
+cenozoApp.defineModule( { name: 'system_message', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard
@@ -76,51 +76,6 @@ cenozoApp.defineModule( 'system_message', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageAdd', [
-    'CnSystemMessageModelFactory',
-    function( CnSystemMessageModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSystemMessageModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageList', [
-    'CnSystemMessageModelFactory',
-    function( CnSystemMessageModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSystemMessageModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSystemMessageView', [
-    'CnSystemMessageModelFactory',
-    function( CnSystemMessageModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSystemMessageModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSystemMessageAddFactory', [
     'CnBaseAddFactory', 'CnSession',
     function( CnBaseAddFactory, CnSession ) {
@@ -135,24 +90,6 @@ cenozoApp.defineModule( 'system_message', null, ( module ) => {
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSystemMessageListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSystemMessageViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -223,4 +160,4 @@ cenozoApp.defineModule( 'system_message', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'consent_type', null, ( module ) => {
+cenozoApp.defineModule( { name: 'consent_type', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -43,69 +43,6 @@ cenozoApp.defineModule( 'consent_type', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentTypeAdd', [
-    'CnConsentTypeModelFactory',
-    function( CnConsentTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentTypeList', [
-    'CnConsentTypeModelFactory',
-    function( CnConsentTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnConsentTypeView', [
-    'CnConsentTypeModelFactory',
-    function( CnConsentTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnConsentTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnConsentTypeViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
@@ -127,22 +64,4 @@ cenozoApp.defineModule( 'consent_type', null, ( module ) => {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnConsentTypeModelFactory', [
-    'CnBaseModelFactory', 'CnConsentTypeAddFactory', 'CnConsentTypeListFactory', 'CnConsentTypeViewFactory',
-    function( CnBaseModelFactory, CnConsentTypeAddFactory, CnConsentTypeListFactory, CnConsentTypeViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnConsentTypeAddFactory.instance( this );
-        this.listModel = CnConsentTypeListFactory.instance( this );
-        this.viewModel = CnConsentTypeViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

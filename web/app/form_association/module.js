@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'form_association', null, ( module ) => {
+cenozoApp.defineModule( { name: 'form_association', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -27,21 +27,6 @@ cenozoApp.defineModule( 'form_association', null, ( module ) => {
       reverse: false
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnFormAssociationList', [
-    'CnFormAssociationModelFactory',
-    function( CnFormAssociationModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnFormAssociationModelFactory.root;
-        }
-      };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnFormAssociationListFactory', [
@@ -87,4 +72,4 @@ cenozoApp.defineModule( 'form_association', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

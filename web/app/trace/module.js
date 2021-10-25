@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'trace', null, ( module ) => {
+cenozoApp.defineModule( { name: 'trace', models: ['add', 'list'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -56,36 +56,6 @@ cenozoApp.defineModule( 'trace', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnTraceAdd', [
-    'CnTraceModelFactory',
-    function( CnTraceModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnTraceModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnTraceList', [
-    'CnTraceModelFactory',
-    function( CnTraceModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnTraceModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnTraceAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
@@ -98,15 +68,6 @@ cenozoApp.defineModule( 'trace', null, ( module ) => {
           await this.parentModel.updateTraceTypeList();
         };
       };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnTraceListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -314,4 +275,4 @@ cenozoApp.defineModule( 'trace', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

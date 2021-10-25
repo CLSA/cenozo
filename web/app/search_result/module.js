@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'search_result', null, ( module ) => {
+cenozoApp.defineModule( { name: 'search_result', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {},
@@ -94,4 +94,4 @@ cenozoApp.defineModule( 'search_result', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

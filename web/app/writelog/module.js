@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'writelog', null, ( module ) => {
+cenozoApp.defineModule( { name: 'writelog', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard
@@ -46,44 +46,4 @@ cenozoApp.defineModule( 'writelog', null, ( module ) => {
     }
   } );
 
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnWritelogList', [
-    'CnWritelogModelFactory',
-    function( CnWritelogModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnWritelogModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnWritelogListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnWritelogModelFactory', [
-    'CnBaseModelFactory', 'CnWritelogListFactory',
-    function( CnBaseModelFactory, CnWritelogListFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnWritelogListFactory.instance( this );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

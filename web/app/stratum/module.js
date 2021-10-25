@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'stratum', [ 'study' ], ( module ) => {
+cenozoApp.defineModule( { name: 'stratum', dependencies: [ 'study' ], models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -64,36 +64,6 @@ cenozoApp.defineModule( 'stratum', [ 'study' ], ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStratumAdd', [
-    'CnStratumModelFactory',
-    function( CnStratumModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnStratumModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStratumList', [
-    'CnStratumModelFactory',
-    function( CnStratumModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnStratumModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnStratumMassParticipant', [
     'CnStratumMassParticipantFactory', 'CnSession', '$state',
     function( CnStratumMassParticipantFactory, CnSession, $state ) {
@@ -117,39 +87,6 @@ cenozoApp.defineModule( 'stratum', [ 'study' ], ( module ) => {
           } ] );
         }
       };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnStratumView', [
-    'CnStratumModelFactory',
-    function( CnStratumModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnStratumModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStratumAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStratumListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -228,36 +165,17 @@ cenozoApp.defineModule( 'stratum', [ 'study' ], ( module ) => {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
-        var self = this;
-        async function init() {
-          await self.deferred.promise;
-          if( angular.isDefined( self.participantModel ) ) {
-            self.participantModel.getChooseEnabled = function() { return false; };
+        async function init( object ) {
+          await object.deferred.promise;
+          if( angular.isDefined( object.participantModel ) ) {
+            object.participantModel.getChooseEnabled = function() { return false; };
           }
         }
 
-        init();
+        init( this );
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnStratumModelFactory', [
-    'CnBaseModelFactory', 'CnStratumListFactory', 'CnStratumAddFactory', 'CnStratumViewFactory',
-    function( CnBaseModelFactory, CnStratumListFactory, CnStratumAddFactory, CnStratumViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnStratumAddFactory.instance( this );
-        this.listModel = CnStratumListFactory.instance( this );
-        this.viewModel = CnStratumViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

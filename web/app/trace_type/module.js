@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'trace_type', null, ( module ) => {
+cenozoApp.defineModule( { name: 'trace_type', models: ['list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -31,69 +31,4 @@ cenozoApp.defineModule( 'trace_type', null, ( module ) => {
     }
   } );
 
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnTraceTypeList', [
-    'CnTraceTypeModelFactory',
-    function( CnTraceTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnTraceTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnTraceTypeView', [
-    'CnTraceTypeModelFactory',
-    function( CnTraceTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnTraceTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnTraceTypeListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnTraceTypeViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnTraceTypeModelFactory', [
-    'CnBaseModelFactory', 'CnTraceTypeListFactory', 'CnTraceTypeViewFactory',
-    function( CnBaseModelFactory, CnTraceTypeListFactory, CnTraceTypeViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnTraceTypeListFactory.instance( this );
-        this.viewModel = CnTraceTypeViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'webphone', null, ( module ) => {
+cenozoApp.defineModule( { name: 'webphone', create: module => {
 
   angular.extend( module, {
     identifier: {},
@@ -237,4 +237,4 @@ cenozoApp.defineModule( 'webphone', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

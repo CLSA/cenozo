@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'collection', null, ( module ) => {
+cenozoApp.defineModule( { name: 'collection', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -55,69 +55,6 @@ cenozoApp.defineModule( 'collection', null, ( module ) => {
       type: 'text'
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionAdd', [
-    'CnCollectionModelFactory',
-    function( CnCollectionModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnCollectionModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionList', [
-    'CnCollectionModelFactory',
-    function( CnCollectionModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnCollectionModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCollectionView', [
-    'CnCollectionModelFactory',
-    function( CnCollectionModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnCollectionModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCollectionAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCollectionListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCollectionViewFactory', [
@@ -215,22 +152,4 @@ cenozoApp.defineModule( 'collection', null, ( module ) => {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCollectionModelFactory', [
-    'CnBaseModelFactory', 'CnCollectionListFactory', 'CnCollectionAddFactory', 'CnCollectionViewFactory',
-    function( CnBaseModelFactory, CnCollectionListFactory, CnCollectionAddFactory, CnCollectionViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnCollectionAddFactory.instance( this );
-        this.listModel = CnCollectionListFactory.instance( this );
-        this.viewModel = CnCollectionViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

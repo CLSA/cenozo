@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'language', null, ( module ) => {
+cenozoApp.defineModule( { name: 'language', models: ['list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'code' },
@@ -54,84 +54,4 @@ cenozoApp.defineModule( 'language', null, ( module ) => {
     }
   } );
 
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnLanguageAdd', [
-    'CnLanguageModelFactory',
-    function( CnLanguageModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnLanguageModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnLanguageList', [
-    'CnLanguageModelFactory',
-    function( CnLanguageModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnLanguageModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnLanguageView', [
-    'CnLanguageModelFactory',
-    function( CnLanguageModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnLanguageModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnLanguageListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnLanguageViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnLanguageModelFactory', [
-    'CnBaseModelFactory', 'CnLanguageListFactory', 'CnLanguageViewFactory',
-    function( CnBaseModelFactory, CnLanguageListFactory, CnLanguageViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnLanguageListFactory.instance( this );
-        this.viewModel = CnLanguageViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'jurisdiction', null, ( module ) => {
+cenozoApp.defineModule( { name: 'jurisdiction', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard
@@ -53,78 +53,6 @@ cenozoApp.defineModule( 'jurisdiction', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnJurisdictionAdd', [
-    'CnJurisdictionModelFactory',
-    function( CnJurisdictionModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnJurisdictionModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnJurisdictionList', [
-    'CnJurisdictionModelFactory',
-    function( CnJurisdictionModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnJurisdictionModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnJurisdictionView', [
-    'CnJurisdictionModelFactory',
-    function( CnJurisdictionModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnJurisdictionModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnJurisdictionAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnJurisdictionListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnJurisdictionViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnJurisdictionModelFactory', [
     'CnBaseModelFactory', 'CnJurisdictionListFactory', 'CnJurisdictionAddFactory', 'CnJurisdictionViewFactory',
     'CnHttpFactory',
@@ -162,4 +90,4 @@ cenozoApp.defineModule( 'jurisdiction', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

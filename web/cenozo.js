@@ -186,14 +186,46 @@ angular.extend( cenozoApp, {
     return module;
   },
 
-  // Used to define all modules
-  defineModule: function( moduleName, dependencyList, func ) {
+  /**
+   * Used to define all modules
+   * @param object: {
+   *   name: [string] the name of the  module in snake_case
+   *   dependencies: [array] an array of all modules (in snake_case) this module depends on
+   *   models: [array] an array of all models this module will use (any of 'add', 'list', and/or 'view')
+   *   create: [function] the function to run when creating the module (the module object will be passed as the only argument)
+   *   defaultTab: [string] The default tab to show in the view state (only necessary when the list model has multiple children)
+   * }
+   */
+  defineModule: function( object ) {
+    if( angular.isUndefined( object.name ) ) throw new Error( 'Tried to define module without a name.' );
+
+    if( !angular.isArray( object.dependencies ) ) {
+      if( angular.isUndefined( object.dependencies ) ) object.dependencies = [];
+      else if( angular.isString( object.dependencies ) ) object.dependencies = [ object.dependencies ];
+      else throw  new Error( 'Tried to define module "' + object.name + '"with invalid dependencies property.' );
+    }
+
+    if( !angular.isArray( object.models ) ) {
+      if( angular.isUndefined( object.models ) ) object.models = [];
+      else if( angular.isString( object.models ) ) object.models = [ object.models ];
+      else throw  new Error( 'Tried to define module "' + object.name + '"with invalid models property.' );
+    }
+
+    if( !angular.isFunction( object.create ) ) throw new Error( 'Tried to define module with invalid create parameter.' );
+
+    if( !angular.isString( object.defaultTab ) ) {
+      if( angular.isUndefined( object.defaultTab ) ) object.defaultTab = null;
+      else throw new Error( 'Tried to define module with invalid defaultTab parameter.' );
+    }
+
     define(
-      null == dependencyList ? [] : dependencyList.reduce( ( l, m ) => l.concat( this.module( m ).getRequiredFiles() ), [] ),
+      angular.isDefined( object.dependencies ) ?
+        object.dependencies.reduce( ( l, m ) => l.concat( this.module( m ).getRequiredFiles() ), [] ) : [],
       () => {
         'use strict';
-        try { var module = cenozoApp.module( moduleName, true ); } catch( err ) { console.warn( err ); return; }
-        func( module );
+        try { object.module = cenozoApp.module( object.name, true ); } catch( err ) { console.warn( err ); return; }
+        object.create( object.module );
+        cenozo.defineModuleModel( object );
       }
     );
   },
@@ -1020,48 +1052,57 @@ angular.extend( cenozo, {
     ] );
   },
 
-  defineModuleModel: function( module, subModels, defaultTab ) {
+  /**
+   * Used to create a module's base model
+   * @param object: {
+   *   module: [object] The module object created by cenozoApp.defineModule()
+   *   models: [array] an array of all models this module will use (any of 'add', 'list', and/or 'view')
+   *   defaultTab: [string] The default tab to show in the view state (only necessary when the list model has multiple children)
+   * }
+   */
+  defineModuleModel: function( object ) {
     // determine what to create
     var models = {
-      add: { include: subModels.includes( 'add' ), index: null },
-      list: { include: subModels.includes( 'list' ), index: null },
-      view: { include: subModels.includes( 'view' ), index: null },
+      add: { include: object.models.includes( 'add' ), index: null },
+      list: { include: object.models.includes( 'list' ), index: null },
+      view: { include: object.models.includes( 'view' ), index: null },
     };
 
     // define models if requested to
     if( models.add.include ) {
-      if( !this.hasDirective( 'cn' + module.subject.Camel + 'Add' ) ) this.defineModuleAddDirective( module );
-      if( !this.hasService( 'Cn' + module.subject.Camel + 'AddFactory' ) ) this.defineModuleAddModel( module );
+      if( !this.hasDirective( 'cn' + object.module.subject.Camel + 'Add' ) ) this.defineModuleAddDirective( object.module );
+      if( !this.hasService( 'Cn' + object.module.subject.Camel + 'AddFactory' ) ) this.defineModuleAddModel( object.module );
     }
 
     if( models.list.include ) {
-      if( !this.hasDirective( 'cn' + module.subject.Camel + 'List' ) ) this.defineModuleListDirective( module );
-      if( !this.hasService( 'Cn' + module.subject.Camel + 'ListFactory' ) ) this.defineModuleListModel( module );
+      if( !this.hasDirective( 'cn' + object.module.subject.Camel + 'List' ) ) this.defineModuleListDirective( object.module );
+      if( !this.hasService( 'Cn' + object.module.subject.Camel + 'ListFactory' ) ) this.defineModuleListModel( object.module );
     }
 
     if( models.view.include ) {
-      if( !this.hasDirective( 'cn' + module.subject.Camel + 'View' ) ) this.defineModuleViewDirective( module );
-      if( !this.hasService( 'Cn' + module.subject.Camel + 'ViewFactory' ) ) this.defineModuleViewModel( module, defaultTab );
+      if( !this.hasDirective( 'cn' + object.module.subject.Camel + 'View' ) ) this.defineModuleViewDirective( object.module );
+      if( !this.hasService( 'Cn' + object.module.subject.Camel + 'ViewFactory' ) )
+        this.defineModuleViewModel( object.module, object.defaultTab );
     }
 
     // create the base model
-    var moduleName = 'Cn' + module.subject.Camel + 'ModelFactory';
+    var moduleName = 'Cn' + object.module.subject.Camel + 'ModelFactory';
     if( !this.hasService( moduleName ) ) {
       var functionList = [ 'CnBaseModelFactory' ];
       var index = 1;
 
       if( models.add.include ) {
-        functionList.push( 'Cn' + module.subject.Camel + 'AddFactory' );
+        functionList.push( 'Cn' + object.module.subject.Camel + 'AddFactory' );
         models.add.index = index;
         index++;
       }
       if( models.list.include ) {
-        functionList.push( 'Cn' + module.subject.Camel + 'ListFactory' );
+        functionList.push( 'Cn' + object.module.subject.Camel + 'ListFactory' );
         models.list.index = index;
         index++;
       }
       if( models.view.include ) {
-        functionList.push( 'Cn' + module.subject.Camel + 'ViewFactory' );
+        functionList.push( 'Cn' + object.module.subject.Camel + 'ViewFactory' );
         models.view.index = index;
         index++;
       }
@@ -1069,16 +1110,16 @@ angular.extend( cenozo, {
       functionList.push(
         function( CnBaseModelFactory ) {
           var constructorArguments = arguments;
-          var object = function( root ) {
-            CnBaseModelFactory.construct( this, module );
+          var constructorObject = function( root ) {
+            CnBaseModelFactory.construct( this, object.module );
             if( models.add.include ) this.addModel = constructorArguments[models.add.index].instance( this );
             if( models.list.include ) this.listModel = constructorArguments[models.list.index].instance( this );
             if( models.view.include ) this.viewModel = constructorArguments[models.view.index].instance( this, root );
           };
 
           return {
-            root: new object( true ),
-            instance: function() { return new object( false ); }
+            root: new constructorObject( true ),
+            instance: function() { return new constructorObject( false ); }
           };
         }
       );

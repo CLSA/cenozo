@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'failed_login', null, ( module ) => {
+cenozoApp.defineModule( { name: 'failed_login', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard
@@ -30,44 +30,4 @@ cenozoApp.defineModule( 'failed_login', null, ( module ) => {
     }
   } );
 
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnFailedLoginList', [
-    'CnFailedLoginModelFactory',
-    function( CnFailedLoginModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnFailedLoginModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnFailedLoginListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnFailedLoginModelFactory', [
-    'CnBaseModelFactory', 'CnFailedLoginListFactory',
-    function( CnBaseModelFactory, CnFailedLoginListFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnFailedLoginListFactory.instance( this );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

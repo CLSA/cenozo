@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'hin', null, ( module ) => {
+cenozoApp.defineModule( { name: 'hin', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -46,60 +46,6 @@ cenozoApp.defineModule( 'hin', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnHinAdd', [
-    'CnHinModelFactory',
-    function( CnHinModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHinModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnHinList', [
-    'CnHinModelFactory',
-    function( CnHinModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHinModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnHinView', [
-    'CnHinModelFactory',
-    function( CnHinModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnHinModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnHinAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnHinListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -115,15 +61,6 @@ cenozoApp.defineModule( 'hin', null, ( module ) => {
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnHinViewFactory', [
-    'CnBaseViewFactory', 'CnHttpFactory',
-    function( CnBaseViewFactory, CnHttpFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -171,4 +108,4 @@ cenozoApp.defineModule( 'hin', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

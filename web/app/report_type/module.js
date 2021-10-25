@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'report_type', null, ( module ) => {
+cenozoApp.defineModule( { name: 'report_type', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'title' },
@@ -53,69 +53,6 @@ cenozoApp.defineModule( 'report_type', null, ( module ) => {
 
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnReportTypeAdd', [
-    'CnReportTypeModelFactory',
-    function( CnReportTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnReportTypeList', [
-    'CnReportTypeModelFactory',
-    function( CnReportTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnReportTypeView', [
-    'CnReportTypeModelFactory',
-    function( CnReportTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnReportTypeAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnReportTypeListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnReportTypeViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
@@ -147,22 +84,4 @@ cenozoApp.defineModule( 'report_type', null, ( module ) => {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnReportTypeModelFactory', [
-    'CnBaseModelFactory', 'CnReportTypeAddFactory', 'CnReportTypeListFactory', 'CnReportTypeViewFactory',
-    function( CnBaseModelFactory, CnReportTypeAddFactory, CnReportTypeListFactory, CnReportTypeViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnReportTypeAddFactory.instance( this );
-        this.listModel = CnReportTypeListFactory.instance( this );
-        this.viewModel = CnReportTypeViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

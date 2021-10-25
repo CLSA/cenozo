@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'mail', [ 'trace' ], ( module ) => {
+cenozoApp.defineModule( { name: 'mail', dependencies: [ 'trace' ], models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -148,51 +148,6 @@ cenozoApp.defineModule( 'mail', [ 'trace' ], ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnMailAdd', [
-    'CnMailModelFactory',
-    function( CnMailModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnMailModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnMailList', [
-    'CnMailModelFactory',
-    function( CnMailModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnMailModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnMailView', [
-    'CnMailModelFactory',
-    function( CnMailModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnMailModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnMailAddFactory', [
     'CnBaseAddFactory', 'CnHttpFactory',
     function( CnBaseAddFactory, CnHttpFactory ) {
@@ -222,15 +177,6 @@ cenozoApp.defineModule( 'mail', [ 'trace' ], ( module ) => {
           record.to_address = response.data.email;
         };
       };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnMailListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -297,4 +243,4 @@ cenozoApp.defineModule( 'mail', [ 'trace' ], ( module ) => {
     }
   ] );
 
-} );
+} } );

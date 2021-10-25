@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'alternate', null, ( module ) => {
+cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -348,36 +348,6 @@ cenozoApp.defineModule( 'alternate', null, ( module ) => {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateAdd', [
-    'CnAlternateModelFactory',
-    function( CnAlternateModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateList', [
-    'CnAlternateModelFactory',
-    function( CnAlternateModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAlternateNotes', [
     'CnAlternateNotesFactory',
     function( CnAlternateNotesFactory ) {
@@ -407,39 +377,6 @@ cenozoApp.defineModule( 'alternate', null, ( module ) => {
           await $scope.model.onView();
         }
       };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateView', [
-    'CnAlternateModelFactory',
-    function( CnAlternateModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAlternateAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAlternateListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -604,4 +541,4 @@ cenozoApp.defineModule( 'alternate', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

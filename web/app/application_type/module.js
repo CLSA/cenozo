@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'application_type', null, ( module ) => {
+cenozoApp.defineModule( { name: 'application_type', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -15,30 +15,6 @@ cenozoApp.defineModule( 'application_type', null, ( module ) => {
       reverse: false
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnApplicationTypeList', [
-    'CnApplicationTypeModelFactory',
-    function( CnApplicationTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnApplicationTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnApplicationTypeListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnApplicationTypeModelFactory', [
@@ -58,4 +34,4 @@ cenozoApp.defineModule( 'application_type', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

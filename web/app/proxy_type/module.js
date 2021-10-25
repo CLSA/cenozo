@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'proxy_type', null, ( module ) => {
+cenozoApp.defineModule( { name: 'proxy_type', models: ['list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: { column: 'name' },
@@ -38,45 +38,6 @@ cenozoApp.defineModule( 'proxy_type', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnProxyTypeList', [
-    'CnProxyTypeModelFactory',
-    function( CnProxyTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnProxyTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnProxyTypeView', [
-    'CnProxyTypeModelFactory',
-    function( CnProxyTypeModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnProxyTypeModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnProxyTypeListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnProxyTypeViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
@@ -97,21 +58,4 @@ cenozoApp.defineModule( 'proxy_type', null, ( module ) => {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnProxyTypeModelFactory', [
-    'CnBaseModelFactory', 'CnProxyTypeListFactory', 'CnProxyTypeViewFactory',
-    function( CnBaseModelFactory, CnProxyTypeListFactory, CnProxyTypeViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnProxyTypeListFactory.instance( this );
-        this.viewModel = CnProxyTypeViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

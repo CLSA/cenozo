@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'interview', null, ( module ) => {
+cenozoApp.defineModule( { name: 'interview', models: ['list', 'view'], defaultTab: 'assignment', create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -83,54 +83,6 @@ cenozoApp.defineModule( 'interview', null, ( module ) => {
   }
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnInterviewList', [
-    'CnInterviewModelFactory',
-    function( CnInterviewModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnInterviewModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnInterviewView', [
-    'CnInterviewModelFactory',
-    function( CnInterviewModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnInterviewModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnInterviewListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnInterviewViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root, 'assignment' ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewModelFactory', [
     'CnBaseModelFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
@@ -190,4 +142,4 @@ cenozoApp.defineModule( 'interview', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

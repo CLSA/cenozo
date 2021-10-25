@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'root', null, ( module ) => {
+cenozoApp.defineModule( { name: 'root', create: module => {
 
 
   /* ######################################################################################################## */
@@ -34,4 +34,4 @@ cenozoApp.defineModule( 'root', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

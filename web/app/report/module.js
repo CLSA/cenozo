@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'report', null, ( module ) => {
+cenozoApp.defineModule( { name: 'report', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -164,21 +164,6 @@ cenozoApp.defineModule( 'report', null, ( module ) => {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnReportList', [
-    'CnReportModelFactory',
-    function( CnReportModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnReportModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnReportView', [
     'CnReportModelFactory', 'CnHttpFactory', '$interval',
     function( CnReportModelFactory, CnHttpFactory, $interval ) {
@@ -261,15 +246,6 @@ cenozoApp.defineModule( 'report', null, ( module ) => {
           }
         } );
       };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnReportListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -428,4 +404,4 @@ cenozoApp.defineModule( 'report', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

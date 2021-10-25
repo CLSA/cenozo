@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'access', null, ( module ) => {
+cenozoApp.defineModule( { name: 'access', models: ['add', 'list'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -66,54 +66,6 @@ cenozoApp.defineModule( 'access', null, ( module ) => {
       type: 'enum'
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAccessAdd', [
-    'CnAccessModelFactory',
-    function( CnAccessModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAccessList', [
-    'CnAccessModelFactory',
-    function( CnAccessModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAccessModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAccessAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAccessListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAccessModelFactory', [
@@ -184,4 +136,4 @@ cenozoApp.defineModule( 'access', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

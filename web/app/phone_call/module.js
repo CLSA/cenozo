@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'phone_call', null, ( module ) => {
+cenozoApp.defineModule( { name: 'phone_call', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -42,30 +42,6 @@ cenozoApp.defineModule( 'phone_call', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnPhoneCallList', [
-    'CnPhoneCallModelFactory',
-    function( CnPhoneCallModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneCallModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnPhoneCallListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneCallModelFactory', [
     'CnBaseModelFactory', 'CnPhoneCallListFactory', 'CnSession',
     function( CnBaseModelFactory, CnPhoneCallListFactory, CnSession ) {
@@ -89,4 +65,4 @@ cenozoApp.defineModule( 'phone_call', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

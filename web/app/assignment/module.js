@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'assignment', null, ( module ) => {
+cenozoApp.defineModule( { name: 'assignment', models: ['list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -125,45 +125,6 @@ cenozoApp.defineModule( 'assignment', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentList', [
-    'CnAssignmentModelFactory',
-    function( CnAssignmentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentView', [
-    'CnAssignmentModelFactory',
-    function( CnAssignmentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAssignmentListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentViewFactory', [
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory ) {
@@ -235,4 +196,4 @@ cenozoApp.defineModule( 'assignment', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

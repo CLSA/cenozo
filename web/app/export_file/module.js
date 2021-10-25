@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'export_file', null, ( module ) => {
+cenozoApp.defineModule( { name: 'export_file', models: ['list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -83,21 +83,6 @@ cenozoApp.defineModule( 'export_file', null, ( module ) => {
       return 'completed' != model.viewModel.record.stage || angular.isUndefined( model.viewModel.downloadFile );
     }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnExportFileList', [
-    'CnExportFileModelFactory',
-    function( CnExportFileModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnExportFileModelFactory.root;
-        }
-      };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnExportFileView', [
@@ -210,4 +195,4 @@ cenozoApp.defineModule( 'export_file', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'error', null, ( module ) => {
+cenozoApp.defineModule( { name: 'error', create: module => {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnError', [
@@ -35,4 +35,4 @@ cenozoApp.defineModule( 'error', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

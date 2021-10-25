@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'form', null, ( module ) => {
+cenozoApp.defineModule( { name: 'form', models: ['list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -49,45 +49,6 @@ cenozoApp.defineModule( 'form', null, ( module ) => {
     isDisabled: function( $state, model ) { return angular.isUndefined( model.viewModel.downloadFile ); },
     operation: function( $state, model ) { model.viewModel.downloadFile(); }
   } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnFormList', [
-    'CnFormModelFactory',
-    function( CnFormModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnFormModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnFormView', [
-    'CnFormModelFactory',
-    function( CnFormModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnFormModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnFormListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnFormViewFactory', [
@@ -152,4 +113,4 @@ cenozoApp.defineModule( 'form', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

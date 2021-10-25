@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'role', null, ( module ) => {
+cenozoApp.defineModule( { name: 'role', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard
@@ -24,30 +24,6 @@ cenozoApp.defineModule( 'role', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnRoleList', [
-    'CnRoleModelFactory',
-    function( CnRoleModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnRoleModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnRoleListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnRoleModelFactory', [
     'CnBaseModelFactory', 'CnRoleListFactory', 'CnSession',
     function( CnBaseModelFactory, CnRoleListFactory, CnSession ) {
@@ -69,4 +45,4 @@ cenozoApp.defineModule( 'role', null, ( module ) => {
     }
   ] );
 
-} );
+} } );

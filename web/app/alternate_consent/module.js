@@ -1,4 +1,4 @@
-cenozoApp.defineModule( 'alternate_consent', null, ( module ) => {
+cenozoApp.defineModule( { name: 'alternate_consent', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
@@ -66,78 +66,6 @@ cenozoApp.defineModule( 'alternate_consent', null, ( module ) => {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateConsentAdd', [
-    'CnAlternateConsentModelFactory',
-    function( CnAlternateConsentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateConsentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateConsentList', [
-    'CnAlternateConsentModelFactory',
-    function( CnAlternateConsentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateConsentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAlternateConsentView', [
-    'CnAlternateConsentModelFactory',
-    function( CnAlternateConsentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAlternateConsentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAlternateConsentAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAlternateConsentListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAlternateConsentViewFactory', [
-    'CnBaseViewFactory', 'CnHttpFactory',
-    function( CnBaseViewFactory, CnHttpFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateConsentModelFactory', [
     'CnBaseModelFactory', 'CnAlternateConsentListFactory', 'CnAlternateConsentAddFactory', 'CnAlternateConsentViewFactory',
     'CnHttpFactory', 'CnSession',
@@ -186,4 +114,4 @@ cenozoApp.defineModule( 'alternate_consent', null, ( module ) => {
     }
   ] );
 
-} );
+} } );
