@@ -44,15 +44,14 @@ cenozoApp.defineModule( { name: 'proxy_type', models: ['list', 'view'], create: 
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           // allow administrators add/delete of roles and participants
-          await self.deferred.promise;
-          if( angular.isDefined( self.roleModel ) )
-            self.roleModel.getChooseEnabled = function() { return 2 < CnSession.role.tier; };
+          await object.deferred.promise;
+          if( angular.isDefined( object.roleModel ) )
+            object.roleModel.getChooseEnabled = function() { return 2 < CnSession.role.tier; };
         }
 
-        init();
+        init( this );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

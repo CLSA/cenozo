@@ -456,7 +456,7 @@ cenozoApp.defineModule( { name: 'user', models: ['add', 'list', 'view'], create:
 
       angular.extend( overviewModule.columnList, columnList );
 
-      async function init( object ) {
+      async function init() {
         // remove some columns based on the voip and role details
         await CnSession.promise;
 
@@ -467,7 +467,7 @@ cenozoApp.defineModule( { name: 'user', models: ['add', 'list', 'view'], create:
         if( !CnSession.role.allSites ) delete overviewModule.columnList.site;
       }
 
-      init( this );
+      init();
 
       var object = function() {
         CnBaseModelFactory.construct( this, overviewModule );

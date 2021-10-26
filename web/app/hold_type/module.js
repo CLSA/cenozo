@@ -46,16 +46,15 @@ cenozoApp.defineModule( { name: 'hold_type', models: ['add', 'list', 'view'], cr
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'participant' );
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           // allow add/delete of roles and participants
-          await self.deferred.promise;
+          await object.deferred.promise;
 
-          if( angular.isDefined( self.roleModel ) )
-            self.roleModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
+          if( angular.isDefined( object.roleModel ) )
+            object.roleModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
         }
 
-        init();
+        init( this );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

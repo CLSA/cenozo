@@ -66,22 +66,21 @@ cenozoApp.defineModule( { name: 'collection', models: ['add', 'list', 'view'], c
         angular.extend( this,{
           updateAccess: async function() {
             // private function used in the block below
-            var self = this;
-            function setAccess( enable ) {
-              self.parentModel.getEditEnabled = enable
-                                              ? function() { return self.parentModel.$$getEditEnabled(); }
+            const setAccess = enable => {
+              this.parentModel.getEditEnabled = enable
+                                              ? function() { return this.parentModel.$$getEditEnabled(); }
                                               : function() { return false; };
-              self.parentModel.getDeleteEnabled = enable
-                                                ? function() { return self.parentModel.$$getDeleteEnabled(); }
+              this.parentModel.getDeleteEnabled = enable
+                                                ? function() { return this.parentModel.$$getDeleteEnabled(); }
                                                 : function() { return false; };
-              if( angular.isDefined( self.participantModel ) )
-                self.participantModel.getChooseEnabled =
+              if( angular.isDefined( this.participantModel ) )
+                this.participantModel.getChooseEnabled =
                   enable ? function() { return true; } : function() { return false; };
-              if( angular.isDefined( self.userModel ) )
-                self.userModel.getChooseEnabled =
+              if( angular.isDefined( this.userModel ) )
+                this.userModel.getChooseEnabled =
                   enable ? function() { return true; } : function() { return false; };
-              if( angular.isDefined( self.applicationModel ) )
-                self.applicationModel.getChooseEnabled =
+              if( angular.isDefined( this.applicationModel ) )
+                this.applicationModel.getChooseEnabled =
                   enable ? function() { return true; } : function() { return false; };
             };
 
@@ -118,24 +117,23 @@ cenozoApp.defineModule( { name: 'collection', models: ['add', 'list', 'view'], c
           }
         } );
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           // can't use await here since this is a contructor
-          await self.deferred.promise;
+          await object.deferred.promise;
 
-          if( angular.isDefined( self.userModel ) ) self.userModel.listModel.heading = 'User Control List';
-          if( angular.isDefined( self.applicationModel ) ) {
-            var listModel = self.applicationModel.listModel;
+          if( angular.isDefined( object.userModel ) ) object.userModel.listModel.heading = 'User Control List';
+          if( angular.isDefined( object.applicationModel ) ) {
+            var listModel = object.applicationModel.listModel;
             listModel.heading = 'Application Restriction List';
 
             // when applying the application list redirect to collection list if we no longer have access
             listModel.toggleChooseMode = async function() {
               await CnHttpFactory.instance( {
-                path: self.parentModel.getServiceResourcePath(),
+                path: object.parentModel.getServiceResourcePath(),
                 onError: function( error ) {
                   if( 404 == error.status ) {
                     listModel.chooseMode = !listModel.chooseMode;
-                    return self.parentModel.transitionToListState();
+                    return object.parentModel.transitionToListState();
                   } else { CnModalMessageFactory.httpError( error ); }
                 }
               } ).get();
@@ -145,7 +143,7 @@ cenozoApp.defineModule( { name: 'collection', models: ['add', 'list', 'view'], c
           }
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
