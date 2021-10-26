@@ -393,15 +393,15 @@ cenozoApp.defineModule( { name: 'user', models: ['add', 'list', 'view'], create:
             language_id: { required: false, enumList: [] }
           } );
 
-          this.metadata.columnList.role_id.enumList = roleResponse.data.forEach( ( list, item ) => {
+          this.metadata.columnList.role_id.enumList = roleResponse.data.reduce( ( list, item ) => {
             list.push( { value: item.id, name: item.name } );
             return list;
           }, [] );
-          this.metadata.columnList.site_id.enumList = siteResponse.data.forEach( ( list, item ) => {
+          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( list, item ) => {
             list.push( { value: item.id, name: item.name } );
             return list;
           }, [] );
-          this.metadata.columnList.language_id.enumList = languageResponse.data.forEach( ( list, item ) => {
+          this.metadata.columnList.language_id.enumList = languageResponse.data.reduce( ( list, item ) => {
             list.push( { value: item.id, name: item.name } );
             return list;
           }, [] );

@@ -1,14 +1,10 @@
-define( [
-  'address', 'collection', 'consent', 'event', 'hold', 'hin', 'interview',
-  'participant', 'participant_identifier', 'phone', 'proxy', 'site', 'trace'
-].reduce( function( list, name ) {
-  // only require the interview module if it has been activated
-  return 'interview' == name && angular.isUndefined( cenozoApp.moduleList.interview ) ?
-    list : list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
-
-  try { var module = cenozoApp.module( 'export', true ); } catch( err ) { console.warn( err ); return; }
+cenozoApp.defineModule( { name: 'export',
+                          dependencies: [
+                            'address', 'collection', 'consent', 'event', 'hold', 'hin', 'interview',
+                            'participant', 'participant_identifier', 'phone', 'proxy', 'site', 'trace'
+                          ],
+                          models: ['add', 'list', 'view'],
+                          create: module => {
 
   angular.extend( module, {
     identifier: { column: 'title' },
@@ -79,50 +75,6 @@ define( [
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnExportAdd', [
-    'CnExportModelFactory',
-    function( CnExportModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnExportModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnExportList', [
-    'CnExportModelFactory',
-    function( CnExportModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnExportModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnExportView', [
-    'CnExportModelFactory',
-    function( CnExportModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnExportModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnExportAddFactory', [
     'CnBaseAddFactory', 'CnSession', '$state',
     function( CnBaseAddFactory, CnSession, $state ) {
@@ -136,15 +88,6 @@ define( [
           } );
         };
       };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnExportListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -1067,22 +1010,4 @@ define( [
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnExportModelFactory', [
-    'CnBaseModelFactory', 'CnExportAddFactory', 'CnExportListFactory', 'CnExportViewFactory',
-    function( CnBaseModelFactory, CnExportAddFactory, CnExportListFactory, CnExportViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.addModel = CnExportAddFactory.instance( this );
-        this.listModel = CnExportListFactory.instance( this );
-        this.viewModel = CnExportViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );

@@ -1,4 +1,4 @@
-cenozoApp.defineModule( { name: 'activity', models: ['list'], create: module => {
+cenozoApp.defineModule( { name: 'activity', models: 'list', create: module => {
 
   angular.extend( module, {
     identifier: {}, // standard

@@ -1,4 +1,7 @@
-cenozoApp.defineModule( { name: 'phone', dependencies: [ 'trace' ], models: ['add', 'list', 'view'], create: module => {
+cenozoApp.defineModule( { name: 'phone', optionalDependencies: 'trace', models: ['add', 'list', 'view'], create: module => {
+
+  var useTrace = true;
+  try { var traceModule = cenozoApp.module( 'trace' ); } catch( err ) { useTrace = false }
 
   angular.extend( module, {
     identifier: {
@@ -75,12 +78,26 @@ cenozoApp.defineModule( { name: 'phone', dependencies: [ 'trace' ], models: ['ad
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnPhoneAddFactory', [
-    'CnBaseAddFactory', 'CnTraceModelFactory',
+  var factoryArray = [ 'CnBaseAddFactory' ];
+  if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
+  factoryArray.push(
     function( CnBaseAddFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
         CnBaseAddFactory.construct( this, parentModel );
-        var traceModel = CnTraceModelFactory.root;
+        if( useTrace ) {
+          var traceModel = CnTraceModelFactory.root;
+
+          this.onAdd = async function( record ) {
+            var identifier = this.parentModel.getParentIdentifier();
+            var traceResponse = await traceModel.checkForTraceResolvedAfterPhoneAdded( identifier );
+            if( traceResponse ) {
+              await this.$$onAdd( record )
+              if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              throw 'Cancelled by user';
+            }
+          };
+        }
 
         // extend onNew
         this.onNew = async function( record ) {
@@ -88,54 +105,79 @@ cenozoApp.defineModule( { name: 'phone', dependencies: [ 'trace' ], models: ['ad
           await this.parentModel.updateAssociatedAddressList();
         };
 
-        this.onAdd = async function( record ) {
-          var identifier = this.parentModel.getParentIdentifier();
-          var traceResponse = await traceModel.checkForTraceResolvedAfterPhoneAdded( identifier );
-          if( traceResponse ) {
-            await this.$$onAdd( record )
-            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            throw 'Cancelled by user';
-          }
-        };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
-  ] );
+  );
+  cenozo.providers.factory( 'CnPhoneAddFactory', factoryArray );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnPhoneListFactory', [
-    'CnBaseListFactory', 'CnTraceModelFactory',
+  var factoryArray = [ 'CnBaseListFactory' ];
+  if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
+  factoryArray.push(
     function( CnBaseListFactory, CnTraceModelFactory ) {
       var object = function( parentModel ) {
         CnBaseListFactory.construct( this, parentModel );
-        var traceModel = CnTraceModelFactory.root;
+        if( useTrace ) {
+          var traceModel = CnTraceModelFactory.root;
 
-        this.onDelete = async function( record ) {
-          var identifier = {
-            subject: this.parentModel.getSubjectFromState(),
-            identifier: this.parentModel.getQueryParameter( 'identifier', true )
+          this.onDelete = async function( record ) {
+            var identifier = {
+              subject: this.parentModel.getSubjectFromState(),
+              identifier: this.parentModel.getQueryParameter( 'identifier', true )
+            };
+            var traceResponse = await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
+            if( traceResponse ) {
+              await this.$$onDelete( record );
+              if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              throw 'Cancelled by user';
+            }
           };
-          var traceResponse = await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
-          if( traceResponse ) {
-            await this.$$onDelete( record );
-            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            throw 'Cancelled by user';
-          }
-        };
+        }
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
-  ] );
+  );
+  cenozo.providers.factory( 'CnPhoneListFactory', factoryArray );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnPhoneViewFactory', [
-    'CnBaseViewFactory', 'CnTraceModelFactory',
+  var factoryArray = [ 'CnBaseViewFactory' ];
+  if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
+  factoryArray.push(
     function( CnBaseViewFactory, CnTraceModelFactory ) {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root );
-        var traceModel = CnTraceModelFactory.root;
+        if( useTrace ) {
+          var traceModel = CnTraceModelFactory.root;
+
+          this.onPatch = async function( data ) {
+            var identifier = this.parentModel.getParentIdentifier();
+            var traceResponse = !angular.isDefined( data.active )
+                              ? true
+                              : data.active
+                              ? await traceModel.checkForTraceResolvedAfterPhoneAdded( identifier )
+                              : await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
+
+            if( traceResponse ) {
+              await this.$$onPatch( data );
+              if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              this.record.active = this.backupRecord.active;
+            }
+          };
+
+          this.onDelete = async function() {
+            var identifier = this.parentModel.getParentIdentifier();
+            var traceResponse = await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
+            if( traceResponse ) {
+              await this.$$onDelete();
+              if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
+            } else {
+              throw 'Cancelled by user';
+            }
+          };
+        }
 
         // extend onView
         this.onView = async function( force ) {
@@ -143,36 +185,11 @@ cenozoApp.defineModule( { name: 'phone', dependencies: [ 'trace' ], models: ['ad
           await this.parentModel.updateAssociatedAddressList();
         };
 
-        this.onPatch = async function( data ) {
-          var identifier = this.parentModel.getParentIdentifier();
-          var traceResponse = !angular.isDefined( data.active )
-                            ? true
-                            : data.active
-                            ? await traceModel.checkForTraceResolvedAfterPhoneAdded( identifier )
-                            : await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
-
-          if( traceResponse ) {
-            await this.$$onPatch( data );
-            if( angular.isString( traceResponse ) ) await traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            this.record.active = this.backupRecord.active;
-          }
-        };
-
-        this.onDelete = async function() {
-          var identifier = this.parentModel.getParentIdentifier();
-          var traceResponse = await traceModel.checkForTraceRequiredAfterPhoneRemoved( identifier );
-          if( traceResponse ) {
-            await this.$$onDelete();
-            if( angular.isString( traceResponse ) ) return traceModel.setTraceReason( identifier, traceResponse );
-          } else {
-            throw 'Cancelled by user';
-          }
-        };
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
-  ] );
+  );
+  cenozo.providers.factory( 'CnPhoneViewFactory', factoryArray );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhoneModelFactory', [

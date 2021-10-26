@@ -99,7 +99,7 @@ cenozoApp.defineModule( { name: 'trace', models: ['add', 'list'], create: module
             }
           } ).query();
 
-          this.metadata.columnList.trace_type_id.enumList = response.data.forEach( ( list, item ) => {
+          this.metadata.columnList.trace_type_id.enumList = response.data.reduce( ( list, item ) => {
             // only allow all-site roles to use the "unreachable" trace type
             if( 'unreachable' != item.name || CnSession.role.allSites )
               list.push( { value: item.id, name: item.name, disabled: false } );

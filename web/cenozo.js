@@ -191,6 +191,7 @@ angular.extend( cenozoApp, {
    * @param object: {
    *   name: [string] the name of the  module in snake_case
    *   dependencies: [array] an array of all modules (in snake_case) this module depends on
+   *   optionalDependencies: [array] an array of optional modules (in snake case)
    *   models: [array] an array of all models this module will use (any of 'add', 'list', and/or 'view')
    *   create: [function] the function to run when creating the module (the module object will be passed as the only argument)
    *   defaultTab: [string] The default tab to show in the view state (only necessary when the list model has multiple children)
@@ -203,6 +204,12 @@ angular.extend( cenozoApp, {
       if( angular.isUndefined( object.dependencies ) ) object.dependencies = [];
       else if( angular.isString( object.dependencies ) ) object.dependencies = [ object.dependencies ];
       else throw  new Error( 'Tried to define module "' + object.name + '"with invalid dependencies property.' );
+    }
+
+    if( !angular.isArray( object.optionalDependencies ) ) {
+      if( angular.isUndefined( object.optionalDependencies ) ) object.optionalDependencies = [];
+      else if( angular.isString( object.optionalDependencies ) ) object.optionalDependencies = [ object.optionalDependencies ];
+      else throw  new Error( 'Tried to define module "' + object.name + '"with invalid optionalDependencies property.' );
     }
 
     if( !angular.isArray( object.models ) ) {
@@ -218,16 +225,37 @@ angular.extend( cenozoApp, {
       else throw new Error( 'Tried to define module with invalid defaultTab parameter.' );
     }
 
-    define(
-      angular.isDefined( object.dependencies ) ?
-        object.dependencies.reduce( ( l, m ) => l.concat( this.module( m ).getRequiredFiles() ), [] ) : [],
-      () => {
-        'use strict';
-        try { object.module = cenozoApp.module( object.name, true ); } catch( err ) { console.warn( err ); return; }
-        object.create( object.module );
-        cenozo.defineModuleModel( object );
-      }
-    );
+    var dependencyList = [];
+    if( angular.isArray( object.dependencies ) ) {
+      dependencyList = dependencyList.concat(
+        object.dependencies.reduce( ( list, module ) => {
+          // if the module doesn't exist then ignore
+          if( angular.isDefined( cenozoApp.moduleList[module] ) ) list = list.concat( this.module( module ).getRequiredFiles() );
+          return list;
+        }, [] )
+      );
+    }
+    if( angular.isArray( object.optionalDependencies ) ) {
+      dependencyList = dependencyList.concat(
+        object.optionalDependencies.reduce( ( list, module ) => {
+          try {
+            // if the module doesn't exist then ignore
+            if( angular.isDefined( cenozoApp.moduleList[module] ) ) list.concat( this.module( module ).getRequiredFiles() );
+          } catch( err ) {
+            // ignore if module doesn't exist
+            if( null == err.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) throw err;
+          }
+          return list;
+        }, [] )
+      );
+    }
+
+    define( dependencyList, () => {
+      'use strict';
+      try { object.module = cenozoApp.module( object.name, true ); } catch( err ) { console.warn( err ); return; }
+      object.create( object.module );
+      cenozo.defineModuleModel( object );
+    } );
   },
 
   // Defines all modules belonging to the Application
@@ -718,7 +746,8 @@ angular.extend( cenozo, {
                               : [ module.identifier.parent.subject ];
             var requiredParentFiles = [];
             parentModules.forEach( parentModuleName => {
-              requiredParentFiles = requiredParentFiles.concat( cenozoApp.module( parentModuleName ).getRequiredFiles() );
+              if( angular.isDefined( cenozoApp.moduleList[parentModuleName] ) )
+                requiredParentFiles = requiredParentFiles.concat( cenozoApp.module( parentModuleName ).getRequiredFiles() );
             } );
             require( requiredParentFiles, function() { module.deferred.resolve(); } );
           } else {

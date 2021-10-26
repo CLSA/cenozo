@@ -1,4 +1,4 @@
-cenozoApp.defineModule( { name: 'mail', dependencies: [ 'trace' ], models: ['add', 'list', 'view'], create: module => {
+cenozoApp.defineModule( { name: 'mail', optionalDependencies: 'trace', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {

@@ -1,16 +1,7 @@
-define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].reduce( ( list, name ) => {
-  // this module can be used without needing any of the above requirements so we need to ignore missing module errors
-  var files = [];
-  try {
-    files = list.concat( cenozoApp.module( name ).getRequiredFiles() );
-  } catch( e ) {
-    if( null == e.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) throw e;
-  }
-  return files;
-}, [] ), function() {
-  'use strict';
-
-  try { var module = cenozoApp.module( 'participant', true ); } catch( err ) { console.warn( err ); return; }
+cenozoApp.defineModule( { name: 'participant',
+                          optionalDependencies: ['address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace'],
+                          models: ['list', 'view'],
+                          create: module => {
 
   angular.extend( module, {
     identifier: { column: 'uid' },
@@ -885,21 +876,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantList', [
-    'CnParticipantModelFactory',
-    function( CnParticipantModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnParticipantImport', [
     'CnParticipantImportFactory', 'CnSession', '$state', '$timeout',
     function( CnParticipantImportFactory, CnSession, $state, $timeout ) {
@@ -975,30 +951,6 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
           await $scope.model.onView();
         }
       };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnParticipantView', [
-    'CnParticipantModelFactory',
-    function( CnParticipantModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnParticipantModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnParticipantListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -1881,4 +1833,4 @@ define( [ 'address', 'consent', 'event', 'hold', 'phone', 'proxy', 'trace' ].red
     }
   ] );
 
-} );
+} } );

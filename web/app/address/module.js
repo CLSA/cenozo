@@ -1,21 +1,8 @@
-var useTrace = true;
-define( [ 'trace' ].reduce( ( list, name ) => {
-  // this module can be used without needing any of the above requirements so we need to ignore missing module errors
-  var files = [];
-  try {
-    files = list.concat( cenozoApp.module( name ).getRequiredFiles() );
-  } catch( e ) {
-    if( null == e.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) {
-      throw e;
-    } else {
-      useTrace = false;
-    }
-  }
-  return files;
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'address', optionalDependencies: 'trace', models: ['add', 'list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'address', true ); } catch( err ) { console.warn( err ); return; }
+  var useTrace = true;
+  try { var traceModule = cenozoApp.module( 'trace' ); } catch( err ) { useTrace = false }
+
   angular.extend( module, {
     identifier: {
       parent: [ {
@@ -181,36 +168,6 @@ define( [ 'trace' ].reduce( ( list, name ) => {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAddressList', [
-    'CnAddressModelFactory',
-    function( CnAddressModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAddressModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAddressView', [
-    'CnAddressModelFactory',
-    function( CnAddressModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAddressModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   var factoryArray = [ 'CnBaseAddFactory' ];
   if( useTrace ) factoryArray.push( 'CnTraceModelFactory' );
   factoryArray.push(
@@ -368,4 +325,4 @@ define( [ 'trace' ].reduce( ( list, name ) => {
     }
   ] );
 
-} );
+} } );
