@@ -1,7 +1,7 @@
 cenozoApp.defineModule( { name: 'address', optionalDependencies: 'trace', models: ['add', 'list', 'view'], create: module => {
 
   var useTrace = true;
-  try { var traceModule = cenozoApp.module( 'trace' ); } catch( err ) { useTrace = false }
+  try { cenozoApp.module( 'trace' ); } catch( err ) { useTrace = false }
 
   angular.extend( module, {
     identifier: {

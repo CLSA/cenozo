@@ -240,7 +240,7 @@ angular.extend( cenozoApp, {
         object.optionalDependencies.reduce( ( list, module ) => {
           try {
             // if the module doesn't exist then ignore
-            if( angular.isDefined( cenozoApp.moduleList[module] ) ) list.concat( this.module( module ).getRequiredFiles() );
+            if( angular.isDefined( cenozoApp.moduleList[module] ) ) list = list.concat( this.module( module ).getRequiredFiles() );
           } catch( err ) {
             // ignore if module doesn't exist
             if( null == err.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) throw err;
@@ -255,6 +255,66 @@ angular.extend( cenozoApp, {
       try { object.module = cenozoApp.module( object.name, true ); } catch( err ) { console.warn( err ); return; }
       object.create( object.module );
       cenozo.defineModuleModel( object );
+    } );
+  },
+
+  /**
+   * Used to extend an existing module
+   * @param object: {
+   *   name: [string] the name of the  module in snake_case
+   *   dependencies: [array] an array of all modules (in snake_case) this module depends on
+   *   optionalDependencies: [array] an array of optional modules (in snake case)
+   *   create: [function] the function to run when creating the module (the module object will be passed as the only argument)
+   * }
+   */
+  extendModule: function( object ) {
+    if( angular.isUndefined( object.name ) ) throw new Error( 'Tried to define module without a name.' );
+
+    if( !angular.isArray( object.dependencies ) ) {
+      if( angular.isUndefined( object.dependencies ) ) object.dependencies = [];
+      else if( angular.isString( object.dependencies ) ) object.dependencies = [ object.dependencies ];
+      else throw  new Error( 'Tried to define module "' + object.name + '"with invalid dependencies property.' );
+    }
+
+    // always add the extended module as a dependency
+    object.dependencies.push( object.name );
+
+    if( !angular.isArray( object.optionalDependencies ) ) {
+      if( angular.isUndefined( object.optionalDependencies ) ) object.optionalDependencies = [];
+      else if( angular.isString( object.optionalDependencies ) ) object.optionalDependencies = [ object.optionalDependencies ];
+      else throw  new Error( 'Tried to define module "' + object.name + '"with invalid optionalDependencies property.' );
+    }
+
+    if( !angular.isFunction( object.create ) ) throw new Error( 'Tried to define module with invalid create parameter.' );
+
+    var dependencyList = [];
+    if( angular.isArray( object.dependencies ) ) {
+      dependencyList = dependencyList.concat(
+        object.dependencies.reduce( ( list, module ) => {
+          // if the module doesn't exist then ignore
+          if( angular.isDefined( cenozoApp.moduleList[module] ) ) list = list.concat( this.module( module ).getRequiredFiles() );
+          return list;
+        }, [] )
+      );
+    }
+    if( angular.isArray( object.optionalDependencies ) ) {
+      dependencyList = dependencyList.concat(
+        object.optionalDependencies.reduce( ( list, module ) => {
+          try {
+            // if the module doesn't exist then ignore
+            if( angular.isDefined( cenozoApp.moduleList[module] ) ) list.concat( this.module( module ).getRequiredFiles() );
+          } catch( err ) {
+            // ignore if module doesn't exist
+            if( null == err.message.match( /Tried to load module "[^"]+" which doesn't exist./ ) ) throw err;
+          }
+          return list;
+        }, [] )
+      );
+    }
+
+    define( dependencyList, () => {
+      'use strict';
+      object.create( cenozoApp.module( object.name ) );
     } );
   },
 
