@@ -62,7 +62,7 @@ class address extends has_rank
       $db_country = lib::create( 'business\session' )->get_application()->get_country();
       $message = sprintf(
         $this->international ?
-        'international addresses may not have a region in %s.' :
+        'international addresses may not be in %s.' :
         'local (non-international) addresses must have a region in %s and a valid postcode '.
         'belonging to the address\' region.',
         $db_country->name
@@ -192,11 +192,14 @@ class address extends has_rank
    */
   public function is_valid()
   {
-    $session = lib::create( 'business\session' );
+    $application_country_id = lib::create( 'business\session' )->get_application()->country_id;
 
     // if international then make sure the region doesn't belong to the application's country
     if( $this->international )
-      return is_null( $this->region_id ) || $this->get_region()->country_id != $session->get_application()->country_id;
+    {
+      return $this->international_country_id != $application_country_id &&
+             ( is_null( $this->region_id ) || $this->get_region()->country_id != $application_country_id );
+    }
 
     // not international, make sure the region and postcode are set
     if( is_null( $this->region_id ) || is_null( $this->postcode ) ) return false;
