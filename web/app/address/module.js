@@ -157,7 +157,7 @@ cenozoApp.defineModule( { name: 'address', optionalDependencies: 'trace', models
                 !cnRecordAddScope.record.international :
                 angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
             };
-            mainInputGroup.inputList.international_country.isExcluded = function( $state, model ) {
+            mainInputGroup.inputList.international_country_id.isExcluded = function( $state, model ) {
               return 'add_address' == model.getActionFromState() ?
                 !cnRecordAddScope.record.international :
                 angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
