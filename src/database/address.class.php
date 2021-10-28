@@ -150,7 +150,7 @@ class address extends has_rank
       if( !is_null( $this->city ) ) $string .= sprintf( ', %s', $this->city );
       if( !is_null( $this->international_region ) ) $string .= sprintf( ', %s', $this->international_region );
       if( !is_null( $this->postcode ) ) $string .= sprintf( ', %s', $this->postcode );
-      if( !is_null( $this->international_country ) ) $string .= sprintf( ', %s', $this->international_country );
+      if( !is_null( $this->international_country_id ) ) $string .= sprintf( ', %s', $this->get_international_country()->name );
     }
     else
     {

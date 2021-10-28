@@ -91,9 +91,10 @@ cenozoApp.defineModule( { name: 'address', optionalDependencies: 'trace', models
       },
       help: 'International regions are unrestricted and are not automatically set by the postcode.'
     },
-    international_country: {
+    international_country_id: {
       title: 'Country',
-      type: 'string',
+      type: 'lookup-typeahead',
+      typeahead: { table: 'country' },
       isExcluded: function( $state, model ) {
         return angular.isUndefined( model.viewModel.record.international ) || !model.viewModel.record.international;
       }

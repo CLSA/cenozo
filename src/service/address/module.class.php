@@ -47,6 +47,7 @@ class module extends \cenozo\service\module
 
     $modifier->left_join( 'region', 'address.region_id', 'region.id' );
     $modifier->left_join( 'country', 'region.country_id', 'country.id' );
+    $modifier->left_join( 'country', 'address.international_country_id', 'international_country.id', 'international_country' );
 
     // add the "participant_uid" column if needed
     if( $select->has_table_alias( 'participant', 'participant_uid' ) )
@@ -68,9 +69,17 @@ class module extends \cenozo\service\module
           'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )', 'summary', false );
       if( $select->has_column( 'region' ) )
         $select->add_column(
-          'IF( international, IFNULL( international_country, "(international)" ), region.name )',
+          'IF( '.
+            'international, '.
+            'IFNULL( CONCAT_WS( ", ", international_region, international_country.name ), "(international)" ), '.
+            'region.name '.
+          ')',
           'region',
           false );
     }
+
+    // include supplemental data
+    if( !is_null( $this->get_resource() ) )
+      $select->add_table_column( 'international_country', 'name', 'formatted_international_country_id' );
   }
 }
