@@ -4874,6 +4874,10 @@ cenozo.factory( 'CnBaseViewFactory', [
             // make sure to put the data back
             var property = Object.keys( response.config.data )[0];
             this.record[property] = this.backupRecord[property];
+            if( angular.isDefined( this.backupRecord['formatted_'+property] ) ) {
+              this.formattedRecord[property] =
+                this.backupRecord['formatted_'+property];
+            }
             CnModalMessageFactory.httpError( response );
           }
         } );
