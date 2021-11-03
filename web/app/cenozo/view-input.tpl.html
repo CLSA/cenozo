@@ -190,6 +190,13 @@
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"
             ng-required="model.metadata.columnList[input.key].required"></textarea>
+          <div ng-switch-when="base64_image"
+               ng-attr-id="{{ input.key }}"
+               name="name"
+               class="vertical-spacer">
+            <img ng-src="data:{{ model.viewModel.record[input.key].mime_type }};base64,{{ model.viewModel.record[input.key].data }}"
+                 style="width: 100%" />
+          </div>
           <div ng-switch-when="file"
                ng-attr-id="{{ input.key }}"
                name="name"
@@ -518,9 +525,9 @@
         </span>
       </div>
       <div ng-if="model.getEditEnabled() &&
+                  !['file', 'base64_image'].includes( input.type ) &&
                   true !== input.isConstant( state, model ) &&
                   'view' != input.isConstant( state, model ) &&
-                  'file' != input.type &&
                   !changed &&
                   model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
                   !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"

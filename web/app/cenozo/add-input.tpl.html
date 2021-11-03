@@ -9,7 +9,7 @@
            ng-bind-html="getTitle()"></label>
     <div ng-class="{ 'col-sm-9': !noCols }">
       <div class="input-group"
-           ng-switch="input.type|cnViewType"
+           ng-switch="input.type|cnAddType"
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
         <input ng-switch-when="string"
           ng-attr-id="{{ input.key }}"

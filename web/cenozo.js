@@ -402,6 +402,7 @@ angular.extend( cenozoApp, {
            *     size: A filesize selector (KB, MB, GB, etc)
            *     percent: A percentage from 0% to 100%
            *     file: A file which can be attached to the record
+           *     base64_image: An image encoded/decoded as base64 data
            *   format: one of the following
            *     integer: will only accept integers
            *     float: will only accept float and integers
@@ -1343,6 +1344,20 @@ cenozo.service( 'CnRecursionHelper', [
     };
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * Filters views into view types
+ */
+cenozo.filter( 'cnAddType', function() {
+  return function( input ) {
+    if( 'boolean' == input || 'enum' == input || 'rank' == input ) input = 'select';
+    else if( cenozo.isDatetimeType( input ) ) input = 'datetime';
+    else if( 'base64_image' == input ) input = 'file';
+    return input;
+  };
+} );
 
 /* ######################################################################################################## */
 
