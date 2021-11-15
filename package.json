@@ -26,7 +26,8 @@
     "angular-bootstrap-colorpicker": "latest",
     "angular-chart.js": "latest",
     "fullcalendar": "latest",
-    "file-saver": "latest"
+    "file-saver": "latest",
+    "web-audio-recorder-js": "latest"
   },
   "scripts": {
     "preinstall": "node preinstall.js",

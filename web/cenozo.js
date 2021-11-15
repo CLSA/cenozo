@@ -790,6 +790,16 @@ angular.extend( cenozo, {
     return columnMetadata.type.replace( /^enum\(['"]/i, '' ).replace( /['"]\)$/, '' ).split( "','" );
   },
 
+  convertBlobToBase64: async function( blob ) {
+    const blobToBase64 = blob => new Promise( ( resolve, reject ) => {
+      const reader = new FileReader();
+      reader.readAsDataURL( blob );
+      reader.onload = () => resolve( reader.result );
+      reader.onerror = error => reject( error );
+    } );
+    return await blobToBase64( blob );
+  },
+
   // Sets up the routing for a module
   routeModule: function( stateProvider, name, module ) {
     if( angular.isUndefined( stateProvider ) ) throw new Error( 'routeModule requires exactly 3 parameters.' );
@@ -3718,6 +3728,85 @@ cenozo.factory( 'CnSession', [
     } );
   }
 ] );
+
+/* ######################################################################################################## */
+
+/**
+ * Creates objects which can be used to make audio recordings
+ * @param function onComplete The function (with arguments recorder and encoding) to run after a recording has completed.
+ */
+cenozo.factory( 'CnAudioRecordingFactory',
+  function() {
+    var object = function( params ) {
+      angular.extend( this, {
+        timeLimit: 60, // seconds
+        encodeAfterRecord: false,
+        progressInterval: 1000, // miliseconds (only used when encoding after recording
+        encoding: 'wav', // wav, ogg or mp3
+        bufferSize: undefined, // defaults to browser's default
+        onComplete: function( recorder, blob ) {}, // what to do after the recording is done (stored in blob)
+        onTimeout: function( recorder ) {}
+      } );
+      angular.extend( this, params );
+
+      angular.extend( this, {
+        audioContext: new AudioContext,
+        audioIn: null,
+        mixer: null,
+        audioRecorder: null,
+        start: async function() {
+          try {
+            var deviceResponse = await navigator.mediaDevices.enumerateDevices();
+            if( 0 == deviceResponse.length ) throw new Error( 'No audio media device found.' );
+            var stream = await navigator.mediaDevices.getUserMedia( {
+              audio: { deviceId: { exact: deviceResponse[0].deviceId } }
+            } );
+            this.audioIn = this.audioContext.createMediaStreamSource( stream );
+            this.audioIn.connect( this.mixer );
+            this.audioRecorder.startRecording();
+          } catch( err ) {
+            CnModalMessageFactory.instance( {
+              title: 'Unable to start recording',
+              message: err,
+              error: true
+            } ).show();
+          }
+        },
+        stop: function() {
+          this.audioRecorder.finishRecording();
+          this.audioIn.disconnect();
+        },
+        cancel: function() {
+          this.audioRecorder.cancelRecording();
+          this.audioIn.disconnect();
+        }
+      } );
+
+      this.mixer = this.audioContext.createGain();
+      this.mixer.connect( this.audioContext.destination );
+      this.audioRecorder = new WebAudioRecorder( this.mixer, {
+        workerDir: window.cenozo.libUrl + '/web-audio-recorder-js/lib-minified/',
+        onEncoderLoading: function( recorder, encoding ) {} // we have to define this
+      } );
+      this.audioRecorder.setOptions( {
+        timeLimit: this.timeLimit,
+        encodeAfterRecord: this.encodeAfterRecord,
+        progressInterval: this.progressInterval,
+        bufferSize: this.bufferSize
+      } );
+      this.audioRecorder.setEncoding( this.encoding );
+      angular.extend( this.audioRecorder, {
+        onComplete: ( recorder, blob ) => this.onComplete( recorder, blob ),
+        onTimeout: recorder => {
+          this.onTimeout( recorder );
+          this.stop();
+        }
+      } );
+    };
+
+    return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
+  }
+);
 
 /* ######################################################################################################## */
 
