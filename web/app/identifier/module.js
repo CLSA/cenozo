@@ -9,6 +9,7 @@ cenozoApp.defineModule( { name: 'identifier', models: ['add', 'list', 'view'], c
     },
     columnList: {
       name: { title: 'Name' },
+      locked: { title: 'Locked', type: 'boolean' },
       regex: { title: 'Format' },
       description: {
         title: 'Description',
@@ -26,6 +27,11 @@ cenozoApp.defineModule( { name: 'identifier', models: ['add', 'list', 'view'], c
       title: 'Name',
       type: 'string'
     },
+    locked: {
+      title: 'Locked',
+      type: 'boolean',
+      help: 'If locked then participant identifiers cannot be added, changed or removed.'
+    },
     regex: {
       title: 'Format',
       type: 'string',
@@ -39,6 +45,7 @@ cenozoApp.defineModule( { name: 'identifier', models: ['add', 'list', 'view'], c
 
   module.addExtraOperation( 'view', {
     title: 'Import Participant Identifiers',
+    isDisabled: function( $state, model ) { return model.viewModel.record.locked; },
     operation: async function( $state, model ) {
       await $state.go( 'identifier.import', { identifier: model.viewModel.record.getIdentifier() } );
     }
@@ -81,6 +88,19 @@ cenozoApp.defineModule( { name: 'identifier', models: ['add', 'list', 'view'], c
         CnBaseViewFactory.construct( this, parentModel, root );
 
         angular.extend( this, {
+          onView: async function( force ) {
+            await this.$$onView( force );
+
+            if( angular.isDefined( this.participantIdentifierModel ) ) {
+              var self = this;
+              this.participantIdentifierModel.getDeleteEnabled = function() {
+                var subject = this.getSubjectFromState();
+                return this.$$getDeleteEnabled() &&
+                       'identifier' == this.getSubjectFromState() ? !self.record.locked : !this.viewModel.record.locked;
+              };
+            }
+          },
+
           reset: function() {
             this.uploadReadReady = false;
             this.working = false;

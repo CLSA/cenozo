@@ -2,10 +2,13 @@ cenozoApp.defineModule( { name: 'participant_identifier', models: ['add', 'list'
 
   angular.extend( module, {
     identifier: {
-      parent: {
+      parent: [ {
         subject: 'identifier',
         column: 'identifier.name'
-      }
+      }, {
+        subject: 'participant',
+        column: 'participant.uid'
+      } ]
     },
     name: {
       singular: 'participant identifier',
@@ -34,7 +37,33 @@ cenozoApp.defineModule( { name: 'participant_identifier', models: ['add', 'list'
         where: [ 'participant.first_name', 'participant.last_name', 'uid' ]
       }
     },
-    value: { type: 'string', title: 'Value' }
+    value: { type: 'string', title: 'Value' },
+    locked: { column: 'identifier.locked', type: 'hidden' }
   } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnParticipantIdentifierModelFactory', [
+    'CnBaseModelFactory',
+    'CnParticipantIdentifierAddFactory', 'CnParticipantIdentifierListFactory', 'CnParticipantIdentifierViewFactory',
+    function( CnBaseModelFactory,
+              CnParticipantIdentifierAddFactory, CnParticipantIdentifierListFactory, CnParticipantIdentifierViewFactory ) {
+      var object = function( root ) {
+        CnBaseModelFactory.construct( this, module );
+
+        angular.extend( this, {
+          addModel: CnParticipantIdentifierAddFactory.instance( this ),
+          listModel: CnParticipantIdentifierListFactory.instance( this ),
+          viewModel: CnParticipantIdentifierViewFactory.instance( this, root ),
+          getEditEnabled: function() { return this.$$getEditEnabled() && !this.viewModel.record.locked; },
+          getDeleteEnabled: function() { return false; } // is overridden by identifier module
+        } );
+      };
+
+      return {
+        root: new object( true ),
+        instance: function() { return new object( false ); }
+      };
+    }
+  ] );
 
 } } );
