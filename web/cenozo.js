@@ -3735,8 +3735,9 @@ cenozo.factory( 'CnSession', [
  * Creates objects which can be used to make audio recordings
  * @param function onComplete The function (with arguments recorder and encoding) to run after a recording has completed.
  */
-cenozo.factory( 'CnAudioRecordingFactory',
-  function() {
+cenozo.factory( 'CnAudioRecordingFactory', [
+  'CnModalMessageFactory', '$interval',
+  function( CnModalMessageFactory, $interval ) {
     var object = function( params ) {
       angular.extend( this, {
         timeLimit: 60, // seconds
@@ -3745,7 +3746,8 @@ cenozo.factory( 'CnAudioRecordingFactory',
         encoding: 'wav', // wav, ogg or mp3
         bufferSize: undefined, // defaults to browser's default
         onComplete: function( recorder, blob ) {}, // what to do after the recording is done (stored in blob)
-        onTimeout: function( recorder ) {}
+        onTimeout: function( recorder ) {},
+        onInputVolumeUpdate: function( value ) {}
       } );
       angular.extend( this, params );
 
@@ -3753,9 +3755,14 @@ cenozo.factory( 'CnAudioRecordingFactory',
         audioContext: new AudioContext,
         audioIn: null,
         mixer: null,
+        analyser: null,
         audioRecorder: null,
+        inputVolume: 0,
+        inputVolumePromise: null,
+        recordingInProgress: false,
         start: async function() {
           try {
+            // connect to the first media device and start recording
             var deviceResponse = await navigator.mediaDevices.enumerateDevices();
             if( 0 == deviceResponse.length ) throw new Error( 'No audio media device found.' );
             var stream = await navigator.mediaDevices.getUserMedia( {
@@ -3763,7 +3770,24 @@ cenozo.factory( 'CnAudioRecordingFactory',
             } );
             this.audioIn = this.audioContext.createMediaStreamSource( stream );
             this.audioIn.connect( this.mixer );
+            this.audioIn.connect( this.analyser );
+            this.recordingInProgress = true;
             this.audioRecorder.startRecording();
+
+            // start recording the audio level
+            this.inputVolumePromise = $interval( () => {
+              if( this.analyser ) {
+                var bufferLength = this.analyser.frequencyBinCount;
+                var dataArray = new Uint8Array( bufferLength );
+                this.analyser.getByteFrequencyData( dataArray );
+                var total = 0
+                for( var i = 0; i < 255; i++ ) { total += dataArray[i] * dataArray[i]; }
+                this.inputVolume = Math.sqrt( total / bufferLength ) / 128;
+              } else {
+                this.inputVolume = 0;
+              }
+              this.onInputVolumeUpdate( this.inputVolume );
+            }, 20 );
           } catch( err ) {
             CnModalMessageFactory.instance( {
               title: 'Unable to start recording',
@@ -3773,15 +3797,24 @@ cenozo.factory( 'CnAudioRecordingFactory',
           }
         },
         stop: function() {
+          if( this.inputVolumePromise ) {
+            $interval.cancel( this.inputVolumePromise );
+            this.inputVolumePromise = null;
+          }
+          this.inputVolume = 0;
+          this.onInputVolumeUpdate( this.inputVolume ); // show that the mic is now off
           this.audioRecorder.finishRecording();
           this.audioIn.disconnect();
+          this.recordingInProgress = false;
         },
         cancel: function() {
           this.audioRecorder.cancelRecording();
           this.audioIn.disconnect();
+          this.recordingInProgress = false;
         }
       } );
 
+      this.analyser = this.audioContext.createAnalyser();
       this.mixer = this.audioContext.createGain();
       this.mixer.connect( this.audioContext.destination );
       this.audioRecorder = new WebAudioRecorder( this.mixer, {
@@ -3806,7 +3839,7 @@ cenozo.factory( 'CnAudioRecordingFactory',
 
     return { instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); } };
   }
-);
+] );
 
 /* ######################################################################################################## */
 
