@@ -402,7 +402,8 @@ angular.extend( cenozoApp, {
            *     size: A filesize selector (KB, MB, GB, etc)
            *     percent: A percentage from 0% to 100%
            *     file: A file which can be attached to the record
-           *     base64_image: An image encoded/decoded as base64 data
+           *     audio_url: An audio file where the src is provided as a URL
+           *     base64_image: An image file encoded/decoded as base64 data
            *   format: one of the following
            *     integer: will only accept integers
            *     float: will only accept float and integers
