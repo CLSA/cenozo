@@ -998,6 +998,7 @@ cenozoApp.defineModule( { name: 'participant',
             // only create launchers for each supporting script if the script module is activated
             if( CnSession.moduleList.includes( 'script' ) ) {
               // note: there's no need to wait for these calls so there's no "Promise.all" here
+              var self = this;
               CnSession.supportingScriptList.forEach( async script => {
                 if( null != script.name.match( /Decedent/ ) ) {
                   // only check for the decedent token if we're allowed to launch the script
@@ -1008,7 +1009,7 @@ cenozoApp.defineModule( { name: 'participant',
                       script: script,
                       identifier: this.parentModel.getQueryParameter( 'identifier' ),
                       onReady: function() {
-                        this.hasDecedent =
+                        self.hasDecedent =
                           null != this.token &&
                           null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
                       }
@@ -1016,7 +1017,6 @@ cenozoApp.defineModule( { name: 'participant',
                     try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                   }
                 } else if( null != script.name.match( /Proxy Initiation/ ) ) {
-                  var self = this;
                   var name = 'Proxy Initiation';
                   this.allowProxyInitiation = true;
                   this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
@@ -1030,7 +1030,6 @@ cenozoApp.defineModule( { name: 'participant',
                   } );
                   try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                 } else if( null != script.name.match( /Quality Control/ ) ) {
-                  var self = this;
                   var name = 'Quality Control';
                   this.allowQualityControl = true;
                   this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
@@ -1044,7 +1043,6 @@ cenozoApp.defineModule( { name: 'participant',
                   } );
                   try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
                 } else if( null != script.name.match( /Withdraw/ ) ) {
-                  var self = this;
                   var name = 'Withdraw';
                   this.allowWithdraw = true;
                   this.scriptLaunchers[name] = CnScriptLauncherFactory.instance( {
