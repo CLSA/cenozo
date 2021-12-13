@@ -71,11 +71,13 @@ cenozoApp.defineModule( { name: 'script', models: ['add', 'list', 'view'], creat
     },
     started_event_type_id: {
       title: 'Started Event Type',
-      type: 'enum'
+      type: 'enum',
+      isExcluded: 'add'
     },
     finished_event_type_id: {
       title: 'Finished Event Type',
-      type: 'enum'
+      type: 'enum',
+      isExcluded: 'add'
     },
     description: {
       title: 'Description',
