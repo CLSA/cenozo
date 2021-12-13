@@ -122,6 +122,13 @@ class select extends \cenozo\base_object
    */
   public function add_constant( $constant, $alias = NULL, $type = NULL, $format = true )
   {
+    // convert datetimes to strings
+    if( is_object( $constant ) && is_a( $constant, 'DateTime' ) )
+    {
+      if( 'date' == $type ) $constant = $constant->format( 'Y-m-d' );
+      else if( 'time' == $type ) $constant = $constant->format( 'H:i:s' );
+      else $constant = $constant->format( \DateTime::ATOM );
+    }
     $alias = $this->add_table_column( '', $constant, $alias, false, $type, $format );
     $this->column_list[''][$alias]['constant'] = true;
   }
@@ -503,15 +510,17 @@ class select extends \cenozo\base_object
         }
 
         // convert datetimes to ISO 8601 format
-        if( 'datetime' == $type ||
-            'datetime' === substr( $item['column'], -8 ) )
+        if( 'datetime' == $type || 'datetime' === substr( $item['column'], -8 ) )
+        {
           $column = sprintf( 'DATE_FORMAT( %s, "%s" )', $column, '%Y-%m-%dT%T+00:00' );
-        else if( 'timestamp' == $type ||
-                 'timestamp' === substr( $item['column'], -9 ) )
+        }
+        else if( 'timestamp' == $type || 'timestamp' === substr( $item['column'], -9 ) )
+        {
           $column = sprintf( 'DATE_FORMAT( CONVERT_TZ( %s, "%s", "UTC" ), "%s" )',
                              $column,
                              date_default_timezone_get(),
                              '%Y-%m-%dT%T+00:00' );
+        }
 
         // add the alias when it is different from the column (but not for *)
         $columns[] = '*' === $item['column'] || $column === $alias ? $column : sprintf( '%s AS `%s`', $column, $alias );
