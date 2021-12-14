@@ -1050,18 +1050,40 @@ class participant extends record
     if( false !== $preferred_site_id )
     {
       $db_application = lib::create( 'business\session' )->get_application();
-      $join_mod = lib::create( 'database\modifier' );
-      $application_has_participant_mod = lib::create( 'database\modifier' );
-      $application_has_participant_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
-      $application_has_participant_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
-      $join_mod->join_modifier( 'application_has_participant', $application_has_participant_mod );
+      if( $db_application->release_based )
+      {
+        // when the application is release based we only affect rows in the application_has_participant able which already exist
+        $join_mod = lib::create( 'database\modifier' );
+        $application_has_participant_mod = lib::create( 'database\modifier' );
+        $application_has_participant_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
+        $application_has_participant_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+        $join_mod->join_modifier( 'application_has_participant', $application_has_participant_mod );
 
-      $sql = sprintf( 'UPDATE participant %s %s'."\n".
-                      'SET preferred_site_id = %s %s',
-                      $modifier->get_join(),
-                      $join_mod->get_sql(),
-                      static::db()->format_string( $preferred_site_id ),
-                      $modifier->get_sql_without_joins() );
+        $sql = sprintf( 'UPDATE participant %s %s'."\n".
+                        'SET preferred_site_id = %s %s',
+                        $modifier->get_join(),
+                        $join_mod->get_sql(),
+                        static::db()->format_string( $preferred_site_id ),
+                        $modifier->get_sql_without_joins() );
+
+      }
+      else
+      {
+        // when the application is not release based then create rows in application_has_participant if they don't already exist
+        $select = lib::create( 'database\select' );
+        $select->from( 'participant' );
+        $select->add_constant( $db_application->id, 'application_id' );
+        $select->add_column( 'id' );
+        $select->add_constant( NULL, 'create_timestamp' );
+        $select->add_constant( $preferred_site_id, 'preferred_site_id' );
+        $sql = sprintf(
+          'INSERT INTO application_has_participant( application_id, participant_id, create_timestamp, preferred_site_id ) '.
+          '%s %s '.
+          'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
+          $select->get_sql(),
+          $modifier->get_sql()
+        );
+      }
 
       $success = static::db()->execute( $sql );
     }
