@@ -59,7 +59,7 @@ cenozoApp.defineModule( { name: 'export',
   module.addExtraOperation( 'view', {
     title: 'Generate',
     isDisabled: function( $state, model ) {
-      return 0 == model.viewModel.participantCount || 0 == model.viewModel.columnList.length;
+      return !model.viewModel.participantCount || 0 == model.viewModel.columnList.length;
     },
     operation: function( $state, model ) {
       model.viewModel.exportFileModel.listModel.transitionOnAdd();
@@ -153,7 +153,7 @@ cenozoApp.defineModule( { name: 'export',
             } ).query();
 
             this.columnList = [];
-            await Promise.all( response.data.map( async item => {
+            await Promise.all( response.data.map( item => {
               var columnObject = {
                 id: item.id,
                 table_name: item.table_name,
@@ -174,7 +174,7 @@ cenozoApp.defineModule( { name: 'export',
               }
 
               // load the restriction list
-              await this.loadRestrictionList( item.table_name );
+              return this.loadRestrictionList( item.table_name );
             } ) );
 
             this.columnListIsLoading = false;
@@ -218,11 +218,12 @@ cenozoApp.defineModule( { name: 'export',
               this.restrictionList.push( restriction );
             } );
             this.restrictionListIsLoading = false;
-            await this.updateParticipantCount();
+
+            this.updateParticipantCount(); // don't await the count, it takes a long time
           },
-          
+
           promise: null, // defined below
-          
+
           modelList: {
             participant: CnParticipantModelFactory.root,
             participant_identifier: CnParticipantIdentifierModelFactory.root,
@@ -237,13 +238,13 @@ cenozoApp.defineModule( { name: 'export',
             proxy: CnProxyModelFactory.root,
             trace: CnTraceModelFactory.root
           },
-          
+
           extendedSiteSelection: 'mastodon' == CnSession.application.type,
           columnListIsLoading: true,
           restrictionListIsLoading: true,
-          participantCount: 0,
+          participantCount: null,
           restrictionList: [],
-          
+
           tableRestrictionList: {
             auxiliary: {
               isLoading: false,
@@ -345,7 +346,7 @@ cenozoApp.defineModule( { name: 'export',
               list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
-          
+
           tableColumnList: {
             auxiliary: {
               isLoading: false,
@@ -407,10 +408,10 @@ cenozoApp.defineModule( { name: 'export',
               list: [ { key: undefined, title: 'Loading...' } ]
             }
           },
-          
+
           newColumn: {},
           columnList: [],
-          
+
           subtypeList: {
             participant_identifier: [],
             site: [
@@ -425,10 +426,6 @@ cenozoApp.defineModule( { name: 'export',
             collection: [],
             consent: [],
             event: []
-          },
-
-          getDataPointCount: function() {
-            return this.participantCount * this.columnList.filter( c => c.include ).length;
           },
 
           addRestriction: async function( tableName, key ) {
@@ -478,7 +475,7 @@ cenozoApp.defineModule( { name: 'export',
             item.id = response.data;
             this.restrictionList.push( item );
             this.newRestriction = undefined;
-            await this.updateParticipantCount();
+            this.updateParticipantCount();
           },
 
           updateRestriction: async function( restrictionId, key ) {
@@ -496,14 +493,14 @@ cenozoApp.defineModule( { name: 'export',
               await CnHttpFactory.instance( { path: 'export_restriction/' + restriction.id, data: data } ).patch();
             } finally {
               restriction.isUpdating = false;
-              await this.updateParticipantCount();
+              this.updateParticipantCount();
             }
           },
 
           removeRestriction: async function( index ) {
             await CnHttpFactory.instance( { path: 'export_restriction/' + this.restrictionList[index].id } ).delete();
             this.restrictionList.splice( index, 1 );
-            await this.updateParticipantCount();
+            this.updateParticipantCount();
           },
 
           selectRestrictionColumn: async function( index ) {
@@ -522,7 +519,7 @@ cenozoApp.defineModule( { name: 'export',
                 pickerType: item.restriction.type,
                 emptyAllowed: true
               } ).show();
-              
+
               if( false !== response ) {
                 var key = 'value';
                 item.value = null == response ? null : response.replace( /Z$/, '' ); // remove the Z at the end
@@ -533,21 +530,25 @@ cenozoApp.defineModule( { name: 'export',
                 await this.updateRestriction( item.id, key );
                 item.formattedValue = CnSession.formatValue( response, item.restriction.type, true );
               }
-              await this.updateParticipantCount();
+              this.updateParticipantCount();
             }
           },
 
           updateParticipantCount: async function() {
             // get a count of participants to be included in the export
-            try {
-              this.confirmInProgress = true;
-              var response = await CnHttpFactory.instance( {
-                path: 'export/' + this.record.getIdentifier() + '/participant'
-              } ).count();
-              this.participantCount = parseInt( response.headers( 'Total' ) );
-            } finally {
-              this.confirmInProgress = false;
-            }
+            angular.extend( this, {
+              participantCount: null,
+              dataPointCount: null
+            } );
+
+            var response = await CnHttpFactory.instance( {
+              path: 'export/' + this.record.getIdentifier() + '/participant'
+            } ).count();
+
+            angular.extend( this, {
+              participantCount: parseInt( response.headers( 'Total' ) ),
+              dataPointCount: this.participantCount * this.columnList.filter( c => c.include ).length
+            } );
           },
 
           addColumn: async function( tableName, key ) {
@@ -583,7 +584,7 @@ cenozoApp.defineModule( { name: 'export',
 
             // now make sure the table's restriction list is loaded
             await this.loadRestrictionList( tableName );
-            await this.updateParticipantCount();
+            this.updateParticipantCount();
           },
 
           moveColumn: async function( oldIndex, newIndex ) {
@@ -683,7 +684,7 @@ cenozoApp.defineModule( { name: 'export',
               await CnHttpFactory.instance( { path: 'export_column/' + this.columnList[index].id } ).delete();
               this.columnList.splice( index, 1 );
               this.columnList.forEach( ( item, index ) => { item.rank = index + 1; } ); // re-rank
-              await this.updateParticipantCount();
+              this.updateParticipantCount();
             }
           },
 
@@ -710,7 +711,7 @@ cenozoApp.defineModule( { name: 'export',
               }
               return list;
             }, [] );
-             
+
             return test;
           },
 
@@ -738,7 +739,7 @@ cenozoApp.defineModule( { name: 'export',
                           'varchar' ? 'string' : 'unknown',
                     required: item.required
                   };
-                  
+
                   // add additional details to certain restriction types
                   if( 'boolean' == restrictionItem.type || 'enum' == restrictionItem.type ) {
                     restrictionItem.enumList = 'boolean' == restrictionItem.type
@@ -875,114 +876,122 @@ cenozoApp.defineModule( { name: 'export',
         }
 
         async function init( object ) {
-          await object.processMetadata( 'participant' );
-          await object.processMetadata( 'participant_identifier' );
-          if( interviewModule ) await object.processMetadata( 'interview' );
-          await object.processMetadata( 'site' );
-          await object.processMetadata( 'address' );
-          await object.processMetadata( 'phone' );
-          await object.processMetadata( 'collection' );
-          await object.processMetadata( 'consent' );
-          await object.processMetadata( 'event' );
-          await object.processMetadata( 'hin' );
-          await object.processMetadata( 'hold' );
-          await object.processMetadata( 'proxy' );
-          await object.processMetadata( 'trace' );
+          var promiseList = [
+            object.processMetadata( 'participant' ),
+            object.processMetadata( 'participant_identifier' ),
+            object.processMetadata( 'site' ),
+            object.processMetadata( 'address' ),
+            object.processMetadata( 'phone' ),
+            object.processMetadata( 'collection' ),
+            object.processMetadata( 'consent' ),
+            object.processMetadata( 'event' ),
+            object.processMetadata( 'hin' ),
+            object.processMetadata( 'hold' ),
+            object.processMetadata( 'proxy' ),
+            object.processMetadata( 'trace' )
+          ];
+          if( interviewModule ) promiseList.push( object.processMetadata( 'interview' ) );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'identifier',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: ['name'], limit: 1000000 }
-            }
-          } ).query();
+          await Promise.all( promiseList );
 
-          response.data.forEach( item => {
+          var [identifierResponse, collectionResponse, consentTypeResponse,
+               eventTypeResponse, qnaireResponse, applicationResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'identifier',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: ['name'], limit: 1000000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'collection',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: ['name'], limit: 1000000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'consent_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: ['name'], limit: 1000000 }
+              }
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'event_type',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: ['name'], limit: 1000000 }
+              }
+            } ).query(),
+
+            interviewModule ?
+              CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  select: { column: [ 'id', 'rank', 'name' ] },
+                  modifier: { order: ['name'], limit: 1000000 }
+                }
+              } ).query() :
+              Promise.all( [] ), // return a promise that does nothing
+
+            object.extendedSiteSelection ?
+              CnHttpFactory.instance( {
+                path: 'application',
+                data: {
+                  select: {
+                    column: [
+                      'id', 'name', 'title', 'release_based',
+                      { table: 'application_type', column: 'name', alias: 'type' }
+                    ]
+                  },
+                  modifier: {
+                    join: [ {
+                      table: 'application_type',
+                      onleft: 'application_type.id',
+                      onright: 'application.application_type_id'
+                    } ],
+                    where: [ {
+                      column: 'application_type.name',
+                      operator: '!=',
+                      value: 'mastodon'
+                    } ],
+                    order: ['application.title']
+                  }
+                }
+              } ).query() :
+              Promise.all( [] ) // return a promise that does nothing
+          ] );
+
+          identifierResponse.data.forEach( item => {
             object.subtypeList.participant_identifier.push( { key: item.id.toString(), name: item.name } );
           } );
 
-          if( interviewModule ) {
-            var response = await CnHttpFactory.instance( {
-              path: 'qnaire',
-              data: {
-                select: { column: [ 'id', 'rank', 'name' ] },
-                modifier: { order: ['name'], limit: 1000000 }
-              }
-            } ).query();
+          collectionResponse.data.forEach( item => {
+            object.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
+          } );
 
-            response.data.forEach( item => {
+          consentTypeResponse.data.forEach( item => {
+            object.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
+          } );
+
+          eventTypeResponse.data.forEach( item => {
+            object.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
+          } );
+
+          if( interviewModule ) {
+            qnaireResponse.data.forEach( item => {
               object.subtypeList.interview.push( { key: item.id.toString(), name: item.rank + '. ' + item.name } );
             } );
           }
 
-          var response = await CnHttpFactory.instance( {
-            path: 'collection',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: ['name'], limit: 1000000 }
-            }
-          } ).query();
-
-          response.data.forEach( item => {
-            object.subtypeList.collection.push( { key: item.id.toString(), name: item.name } );
-          } );
-
-          var response = await CnHttpFactory.instance( {
-            path: 'consent_type',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: ['name'], limit: 1000000 }
-            }
-          } ).query();
-
-          response.data.forEach( item => {
-            object.subtypeList.consent.push( { key: item.id.toString(), name: item.name } );
-          } );
-
-          var response = await CnHttpFactory.instance( {
-            path: 'event_type',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: ['name'], limit: 1000000 }
-            }
-          } ).query();
-
-          response.data.forEach( item => {
-            object.subtypeList.event.push( { key: item.id.toString(), name: item.name } );
-          } );
-
           if( object.extendedSiteSelection ) {
-            var response = await CnHttpFactory.instance( {
-              path: 'application',
-              data: {
-                select: {
-                  column: [
-                    'id',
-                    'name',
-                    'title',
-                    'release_based',
-                    { table: 'application_type', column: 'name', alias: 'type' }
-                  ]
-                },
-                modifier: {
-                  join: [ {
-                    table: 'application_type',
-                    onleft: 'application_type.id',
-                    onright: 'application.application_type_id'
-                  } ],
-                  where: [ {
-                    column: 'application_type.name',
-                    operator: '!=',
-                    value: 'mastodon'
-                  } ],
-                  order: ['application.title']
-                }
-              }
-            } ).query();
-
             var siteSubtypeList = object.subtypeList.site;
             object.subtypeList.site = [];
-            response.data.forEach( application => {
+            applicationResponse.data.forEach( application => {
               // extend site subtype list when we have extended site selection
               object.subtypeList.site = object.subtypeList.site.concat(
                 siteSubtypeList.reduce( ( list, subtype ) => {

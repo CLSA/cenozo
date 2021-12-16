@@ -11,18 +11,19 @@
     <h4>
       Columns
       <span class="pull-right">
-        <span ng-if="model.viewModel.columnListIsLoading || model.viewModel.confirmInProgress">
+        <span ng-if="model.viewModel.columnListIsLoading">
           working, please wait...
         </span>
-        <span ng-if="!model.viewModel.columnListIsLoading && !model.viewModel.confirmInProgress">
+        <span ng-if="!model.viewModel.columnListIsLoading">
           {{
-            model.viewModel.getDataPointCount()
-              ? (model.viewModel.getDataPointCount()|cnCommaInteger) + ' data points total'
-              : 'no data points'
+            null == model.viewModel.dataPointCount ? 'counting number of data points...' :
+            0 == model.viewModel.dataPointCount ? 'no data points' :
+            (model.viewModel.dataPointCount|cnCommaInteger) + ' data points total'
           }}
-          <i class="glyphicon"
-             ng-class="model.viewModel.getDataPointCount() ?
-                       'glyphicon-ok' : 'glyphicon-remove'"></i>
+          <i class="glyphicon" ng-class="{
+            'glyphicon-ok': 0 < model.viewModel.dataPointCount,
+            'glyphicon-remove': 0 == model.viewModel.dataPointCount
+          }"></i>
         </span>
       </span>
     </h4>
@@ -97,15 +98,19 @@
     <h4>
       Restrictions
       <span class="pull-right">
-        <span ng-if="model.viewModel.restrictionListIsLoading || model.viewModel.confirmInProgress">
+        <span ng-if="model.viewModel.restrictionListIsLoading">
           working, please wait...
         </span>
-        <span ng-if="!model.viewModel.restrictionListIsLoading && !model.viewModel.confirmInProgress">
-          {{ model.viewModel.participantCount ?
-             (model.viewModel.participantCount|cnCommaInteger) + ' participants selected' :
-             'no participants selected' }}
-          <i class="glyphicon"
-             ng-class="model.viewModel.participantCount ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
+        <span ng-if="!model.viewModel.restrictionListIsLoading">
+          {{
+            null == model.viewModel.participantCount ? 'counting number of selected participants...' :
+            0 == model.viewModel.participantCount ? 'no participants selected' :
+            (model.viewModel.participantCount|cnCommaInteger) + ' participants selected'
+          }}
+          <i class="glyphicon" ng-class="{
+            'glyphicon-ok': 0 < model.viewModel.participantCount,
+            'glyphicon-remove': 0 == model.viewModel.participantCount
+          }"></i>
         </span>
       </span>
     </h4>
