@@ -161,29 +161,42 @@ class form extends record
   }
 
   /**
-   * Adds proxy data and associates it to this form
+   * Adds alternate data and associates it to this form
    * 
-   * @param string $type The type of proxy (see proxy_type.name)
-   * @param array $proxy An associative array containing all proxy data
-   * @return database\proxy The proxy record created by this method
+   * @param array $data An associative array containing all alternate data:
+   *          alternate_type_list (list of strings containing alternate type names)
+   *          first_name
+   *          last_name
+   *          global_note
+   *          apartment_number
+   *          street_number
+   *          street_name
+   *          box
+   *          rural_route
+   *          address_other
+   *          city
+   *          region_id
+   *          postcode
+   *          address_note
+   *          phone
+   *          phone_note
+   * @return database\alternate The alternate record created by this method
    * @access public
    */
-  public function add_proxy_alternate( $proxy )
+  public function add_alternate( $data )
   {
     $util_class_name = lib::get_class_name( 'util' );
     $alternate_class_name = lib::get_class_name( 'database\alternate' );
     $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
-    $db_informant_alternate_type = $alternate_type_class_name::get_unique_record( 'name', 'informant' );
-    $db_proxy_alternate_type = $alternate_type_class_name::get_unique_record( 'name', 'proxy' );
 
     // if this participant already has an alternate with the same first and last name then
     // overwrite instead of creating a new record
     $alternate_mod = lib::create( 'database\modifier' );
     $alternate_mod->where( 'participant_id', '=', $this->participant_id );
-    $alternate_mod->where( 'first_name', '=', $proxy['first_name'] );
-    $alternate_mod->where( 'last_name', '=', $proxy['last_name'] );
+    $alternate_mod->where( 'first_name', '=', $data['first_name'] );
+    $alternate_mod->where( 'last_name', '=', $data['last_name'] );
     $alternate_list = $alternate_class_name::select_objects( $alternate_mod );
     $db_alternate = current( $alternate_list );
 
@@ -199,115 +212,34 @@ class form extends record
     }
 
     $db_alternate->participant_id = $this->participant_id;
-    $db_alternate->first_name = $proxy['first_name'];
-    $db_alternate->last_name = $proxy['last_name'];
+    $db_alternate->first_name = $data['first_name'];
+    $db_alternate->last_name = $data['last_name'];
     $db_alternate->association = 'Unknown';
-    if( array_key_exists( 'global_note', $proxy ) && !is_null( $proxy['global_note'] ) )
-      $db_alternate->global_note = $proxy['global_note'];
+    if( array_key_exists( 'global_note', $data ) && !is_null( $data['global_note'] ) )
+      $db_alternate->global_note = $data['global_note'];
     $db_alternate->save();
 
-    // now add the appropriate alternate types to this alternate
-    $alternate_type_id_list = [$db_proxy_alternate_type->id];
-    if( $proxy['same_as_proxy'] && $proxy['informant'] ) $alternate_type_id_list[] = $db_informant_alternate_type->id;
-    $db_alternate->add_alternate_type( $alternate_type_id_list );
-
-    $this->add_association( 'alternate', $db_alternate->id );
-
-    // import data to the address table
-    $address = $util_class_name::parse_address(
-      $proxy['apartment_number'],
-      $proxy['street_number'],
-      $proxy['street_name'],
-      $proxy['box'],
-      $proxy['rural_route'],
-      $proxy['address_other']
-    );
-
-    $db_address = lib::create( 'database\address' );
-    $db_address->alternate_id = $db_alternate->id;
-    $db_address->active = true;
-    $db_address->rank = 1;
-    $db_address->address1 = $address[0];
-    $db_address->address2 = $address[1];
-    $db_address->city = $proxy['city'];
-    $db_address->region_id = $proxy['region_id'];
-    $postcode = 6 == strlen( $proxy['postcode'] )
-              ? sprintf( '%s %s', substr( $proxy['postcode'], 0, 3 ), substr( $proxy['postcode'], 3, 3 ) )
-              : $proxy['postcode'];
-    $db_address->postcode = $postcode;
-    $db_address->source_postcode();
-    $db_address->note = $proxy['address_note'];
-    $db_address->save();
-
-    // import data to the phone table
-    $db_phone = lib::create( 'database\phone' );
-    $db_phone->alternate_id = $db_alternate->id;
-    $db_phone->active = true;
-    $db_phone->rank = 1;
-    $db_phone->type = 'other';
-    $db_phone->number = $proxy['phone'];
-    $db_phone->note = $proxy['phone_note'];
-    $db_phone->save();
-
-    return $db_alternate;
-  }
-
-  /**
-   * Adds informant data and associates it to this form
-   * 
-   * @param string $type The type of informant (see informant_type.name)
-   * @param array $informant An associative array containing all informant data
-   * @return database\informant The informant record created by this method
-   * @access public
-   */
-  public function add_informant_alternate( $informant )
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-    $alternate_class_name = lib::get_class_name( 'database\alternate' );
-    $user_class_name = lib::get_class_name( 'database\user' );
-    $setting_manager = lib::create( 'business\setting_manager' );
-
-    // if this participant already has an alternate with the same first and last name then
-    // overwrite instead of creating a new record
-    $alternate_mod = lib::create( 'database\modifier' );
-    $alternate_mod->where( 'participant_id', '=', $this->participant_id );
-    $alternate_mod->where( 'first_name', '=', $informant['first_name'] );
-    $alternate_mod->where( 'last_name', '=', $informant['last_name'] );
-    $alternate_list = $alternate_class_name::select_objects( $alternate_mod );
-    $db_alternate = current( $alternate_list );
-
-    if( !$db_alternate )
-    { // create a new alternate if no match was found
-      $db_alternate = lib::create( 'database\alternate' );
-    }
-    else
+    // now add the requested alternate types
+    $alternate_type_id_list = array();
+    foreach( $data->alternate_type_list as $type )
     {
-      // replace any address and phone numbers
-      foreach( $db_alternate->get_address_object_list() as $db_address ) $db_address->delete();
-      foreach( $db_alternate->get_phone_object_list() as $db_phone ) $db_phone->delete();
+      $db_alternate_type = $alternate_type_class_name::get_unique_record( 'name', $type );
+      if( is_null( $db_alternate_type ) ) log::warning( sprintf( 'Tried to add invalid alternate type "%s" to form.', $type ) );
+      else $alternate_type_id_list[] = $db_alternate_type->id;
     }
 
-    $db_alternate->participant_id = $this->participant_id;
-    $db_alternate->first_name = $informant['first_name'];
-    $db_alternate->last_name = $informant['last_name'];
-    $db_alternate->association = 'Unknown';
-    if( array_key_exists( 'global_note', $informant ) && !is_null( $informant['global_note'] ) )
-      $db_alternate->global_note = $informant['global_note'];
-    $db_alternate->save();
-
-    // now add the informant type to this alternate
-    $db_alternate->add_alternate_type( $db_informant_alternate_type->id );
+    if( 0 < count( $laternate_type_id_list ) ) $db_alternate->add_alternate_type( $alternate_type_id_list );
 
     $this->add_association( 'alternate', $db_alternate->id );
 
     // import data to the address table
     $address = $util_class_name::parse_address(
-      $informant['apartment_number'],
-      $informant['street_number'],
-      $informant['street_name'],
-      $informant['box'],
-      $informant['rural_route'],
-      $informant['address_other']
+      $data['apartment_number'],
+      $data['street_number'],
+      $data['street_name'],
+      $data['box'],
+      $data['rural_route'],
+      $data['address_other']
     );
 
     $db_address = lib::create( 'database\address' );
@@ -316,14 +248,14 @@ class form extends record
     $db_address->rank = 1;
     $db_address->address1 = $address[0];
     $db_address->address2 = $address[1];
-    $db_address->city = $informant['city'];
-    $db_address->region_id = $informant['region_id'];
-    $postcode = 6 == strlen( $informant['postcode'] )
-              ? sprintf( '%s %s', substr( $informant['postcode'], 0, 3 ), substr( $informant['postcode'], 3, 3 ) )
-              : $informant['postcode'];
+    $db_address->city = $data['city'];
+    $db_address->region_id = $data['region_id'];
+    $postcode = 6 == strlen( $data['postcode'] )
+              ? sprintf( '%s %s', substr( $data['postcode'], 0, 3 ), substr( $data['postcode'], 3, 3 ) )
+              : $data['postcode'];
     $db_address->postcode = $postcode;
     $db_address->source_postcode();
-    $db_address->note = $informant['address_note'];
+    $db_address->note = $data['address_note'];
     $db_address->save();
 
     // import data to the phone table
@@ -332,8 +264,8 @@ class form extends record
     $db_phone->active = true;
     $db_phone->rank = 1;
     $db_phone->type = 'other';
-    $db_phone->number = $informant['phone'];
-    $db_phone->note = $informant['phone_note'];
+    $db_phone->number = $data['phone'];
+    $db_phone->note = $data['phone_note'];
     $db_phone->save();
 
     return $db_alternate;
