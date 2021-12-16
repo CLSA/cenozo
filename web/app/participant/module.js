@@ -461,33 +461,19 @@ cenozoApp.defineModule( { name: 'participant',
           path: 'participant/' + $state.params.identifier + '/alternate',
           data: {
             select: { column: [
-              'create_timestamp', 'association', 'alternate', 'decedent',
-              'emergency', 'informant', 'proxy', 'first_name', 'last_name'
+              'create_timestamp', 'association', 'types', 'first_name', 'last_name'
             ] }
           }
         } ).query();
 
         response.data.forEach( item => {
-          var description = ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n';
-          var list = [];
-          if( item.alternate ) list.push( 'alternate contact' );
-          if( item.decedent ) list.push( 'decedent responder' );
-          if( item.emergency ) list.push( 'emergency contact' );
-          if( item.informant ) list.push( 'information provider' );
-          if( item.proxy ) list.push( 'proxy decision maker' );
-          if( 0 == list.length ) {
-            description = '(not registiered for any role)';
-          } else {
-            list.forEach( ( name, index, array ) => {
-              if( 0 < index ) description += index == array.length - 1 ? ' and ' : ', ';
-              description += name;
-            } );
-          }
           historyList.push( {
             datetime: item.create_timestamp,
             category: 'Alternate',
             title: 'added ' + item.first_name + ' ' + item.last_name,
-            description: item.first_name + ' ' + item.last_name + description
+            description: item.first_name + ' ' + item.last_name +
+              ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n' +
+              'Current roles: ' + ( item.types ? item.types : '(none)' )
           } );
         } );
       }

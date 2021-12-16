@@ -20,6 +20,9 @@ class proxy extends \cenozo\business\report\base_report
   protected function build()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
+    $db_proxy_alternate_type = $alternate_type_class_name::get_unique_record( 'name', 'proxy' );
+    $db_informant_alternate_type = $alternate_type_class_name::get_unique_record( 'name', 'informant' );
 
     // create a list of the most recent "reminder" event for all participants
     $participant_sel = lib::create( 'database\select' );
@@ -80,8 +83,8 @@ class proxy extends \cenozo\business\report\base_report
       false
     );
     $select->add_column( 'TIMESTAMPDIFF( YEAR, date_of_birth, CURDATE() )', 'Age', false );
-    $select->add_column( 'SUM( CASE WHEN alternate.proxy THEN 1 ELSE 0 END )', 'DM Total', false );
-    $select->add_column( 'SUM( CASE WHEN alternate.informant THEN 1 ELSE 0 END )', 'IP Total', false );
+    $select->add_column( 'SUM( IF( alternate_has_proxy_alternate_type.alternate_id IS NULL, 0, 1 ) )', 'DM Total', false );
+    $select->add_column( 'SUM( IF( alternate_has_informant_alternate_type.alternate_id IS NULL, 0, 1 ) )', 'IP Total', false );
     $select->add_column(
       'IF( '.
       '  date_of_birth IS NULL OR reminder_event.datetime IS NULL, '.
@@ -105,6 +108,17 @@ class proxy extends \cenozo\business\report\base_report
     $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
     $modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
     $modifier->left_join( 'alternate', 'participant.id', 'alternate.participant_id' );
+    
+    $proxy_join_mod = lib::create( 'database\modifier' );
+    $proxy_join_mod->where( 'alternate.id', '=', 'alternate_has_proxy_alternate_type.alternate_id', false );
+    $proxy_join_mod->where( 'alternate_has_proxy_alternate_type.alternate_type_id', '=', $db_proxy_alternate_type->id );
+    $modifier->join_modifier( 'alternate_has_alternate_type', $proxy_join_mod, 'left', 'alternate_has_proxy_alternate_type' );
+
+    $informant_join_mod = lib::create( 'database\modifier' );
+    $informant_join_mod->where( 'alternate.id', '=', 'alternate_has_informant_alternate_type.alternate_id', false );
+    $informant_join_mod->where( 'alternate_has_informant_alternate_type.alternate_type_id', '=', $db_informant_alternate_type->id );
+    $modifier->join_modifier( 'alternate_has_alternate_type', $informant_join_mod, 'left', 'alternate_has_informant_alternate_type' );
+
     $modifier->where( 'participant.exclusion_id', '=', NULL );
     $modifier->group( 'participant.id' );
     $modifier->order( 'uid' );

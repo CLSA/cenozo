@@ -21,6 +21,8 @@ class export_restriction extends has_rank
    */
   public function apply_modifier( $modifier )
   {
+    $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
+
     $column = NULL;
     $table_name = $this->get_table_alias();
     if( 'auxiliary' == $this->table_name )
@@ -36,20 +38,36 @@ class export_restriction extends has_rank
         $alternate_table_name = $this->column_name;
         if( !$modifier->has_join( $alternate_table_name ) )
         {
+          $alternate_sel = lib::create( 'database\select' );
+          $alternate_sel->from( 'participant' );
+          $alternate_sel->add_column( 'id', 'participant_id' );
+          $alternate_sel->add_column( 'IF( alternate.id IS NULL, 0, COUNT(*) ) ', 'total', false );
+
+          $alternate_mod = lib::create( 'database\modifier' );
+          $alternate_mod->left_join( 'alternate', 'participant.id', 'alternate.participant_id' );
+
+          if( 'alternate' != $alternate_type )
+          {
+            $db_alternate_type = $alternate_type_class_name::get_unique_record( 'name', $alternate_type );
+            $alternate_type_table_name = sprintf( 'alternate_has_%s_alternate_type', $alternate_type );
+            $join_mod = lib::create( 'database\modifier' );
+            $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $alternate_type_table_name ), false );
+            $join_mod->where( sprintf( '%s.alternate_type_id', $alternate_type_table_name ), '=', $db_alternate_type->id );
+            $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', $alternate_type_table_name );
+          }
+          $alternate_mod->group( 'participant.id' );
+          $alternate_mod->order( 'participant.id' );
+
           $sql = sprintf(
             'CREATE TEMPORARY TABLE IF NOT EXISTS %s ('."\n".
             '  participant_id INT UNSIGNED NOT NULL,'."\n".
             '  total INT UNSIGNED NOT NULL,'."\n".
             '  PRIMARY KEY( participant_id )'."\n".
             ')'."\n".
-            'SELECT participant.id AS participant_id, IF( alternate.id IS NULL, 0, COUNT(*) ) AS total'."\n".
-            'FROM participant'."\n".
-            'LEFT JOIN alternate ON participant.id = alternate.participant_id'."\n".
-            '      AND alternate.%s = true'."\n".
-            'GROUP BY participant.id'."\n".
-            'ORDER BY participant.id',
+            '%s %s',
             $alternate_table_name,
-            $alternate_type
+            $alternate_sel->get_sql(),
+            $alternate_mod->get_sql()
           );
           static::db()->execute( $sql );
           $modifier->join( $alternate_table_name, 'participant.id', $alternate_table_name.'.participant_id' );

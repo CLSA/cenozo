@@ -6,6 +6,10 @@ SOURCE table_character_sets.sql
 
 SOURCE address.sql
 SOURCE identifier.sql
+SOURCE alternate_type.sql
+SOURCE alternate_has_alternate_type.sql
+SOURCE role_has_alternate_type.sql
+SOURCE alternate.sql
 
 SOURCE update_version_number.sql
 

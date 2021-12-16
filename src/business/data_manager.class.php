@@ -148,14 +148,16 @@ class data_manager extends \cenozo\singleton
         if( !is_null( $db_participant_identifier ) ) $value = $db_participant_identifier->value;
       }
     }
-    else if( 'alternate' == $subject ||
-        'informant' == $subject ||
-        'decedent' == $subject ||
-        'emergency' == $subject ||
-        'proxy' == $subject )
+    else if( 'alternate' == $subject || 'informant' == $subject || 'decedent' == $subject ||
+             'emergency' == $subject || 'proxy' == $subject )
     {
       $alternate_mod = lib::create( 'database\modifier' );
-      $alternate_mod->where( $subject, '=', true );
+      if( 'alternate' != $subject ) // restrict to a particular alternate type if necessary
+      {
+        $alternate_mod->join( 'alternate_has_alternate_type', 'alternate.id', 'alternate_has_alternate_type.alternate_id' );
+        $alternate_mod->join( 'alternate_type', 'alternate_has_alternate_type.alternate_type_id', 'alternate_type.id' );
+        $alternate_mod->where( 'alternate_type.name', '=', $subject );
+      }
 
       if( 'count()' == $parts[1] )
       {

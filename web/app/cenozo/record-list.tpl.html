@@ -137,7 +137,10 @@
             }">
             <td ng-repeat="column in dataArray"
                 ng-if="undefined === column.isIncluded || column.isIncluded( $state, model )"
-                ng-style="column.width && {'width': column.width}"
+                ng-style="{
+                  'width': column.width ? column.width : 'auto',
+                  'cursor': model.listModel.chooseMode && model.listModel.isChooseDisabled( record ) ? 'not-allowed' : 'inherit'
+                }"
                 ng-class="{'text-left':'left'==column.align,'text-right':'right'==column.align}">
               <span ng-bind-html="record[column.key] | cnMetaFilter:column.filter"></span>
             </td>
@@ -153,7 +156,7 @@
               </button>
             </td>
             <td class="tiny" ng-if="model.listModel.chooseMode">
-              <button ng-if="record.chosen"
+              <button ng-if="record.chosen && !model.listModel.isChooseDisabled( record )"
                       class="btn btn-xs btn-danger"
                       uib-tooltip="Remove {{ model.module.name.singular }}"
                       tooltip-placement="left">

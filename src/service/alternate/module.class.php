@@ -62,6 +62,7 @@ class module extends \cenozo\service\site_restricted_participant_module
     $modifier->join( 'participant', 'alternate.participant_id', 'participant.id' );
 
     // add empty values for address and phone number fields (they are only used when adding new alternates so they will be ignored)
+    if( $select->has_column( 'alternate_type_id' ) ) $select->add_constant( NULL, 'alternate_type_id' );
     if( $select->has_column( 'phone_international' ) ) $select->add_constant( NULL, 'phone_international' );
     if( $select->has_column( 'phone_type' ) ) $select->add_constant( NULL, 'phone_type' );
     if( $select->has_column( 'phone_number' ) ) $select->add_constant( NULL, 'phone_number' );
@@ -103,17 +104,7 @@ class module extends \cenozo\service\site_restricted_participant_module
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) ) $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
 
-    // add the "types" column if needed
-    if( $select->has_column( 'types' ) )
-    {
-      $column = sprintf( 'CONCAT_WS( ", ", %s, %s, %s, %s, %s )',
-                  'IF( alternate, "alternate", NULL )',
-                  'IF( decedent, "decedent", NULL )',
-                  'IF( emergency, "emergency", NULL )',
-                  'IF( informant, "proxy IP", NULL )',
-                  'IF( proxy, "proxy DM", NULL )' );
-      $select->add_column( $column, 'types', false );
-    }
+    $this->add_list_column( 'alternate_type_list', 'alternate_type', 'title', $select, $modifier );
   }
 
   /**
@@ -126,6 +117,10 @@ class module extends \cenozo\service\site_restricted_participant_module
     if( $record && 'POST' == $this->get_method() )
     {
       $post_array = $this->get_file_as_array();
+
+      // add the alternate_type association, if one was provided
+      if( array_key_exists( 'alternate_type_id', $post_array ) )
+        $record->add_alternate_type( $post_array['alternate_type_id'] );
 
       // add the phone record, if data has been provided
       $has_phone_data = false;

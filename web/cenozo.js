@@ -2102,7 +2102,7 @@ cenozo.directive( 'cnRecordList', [
 
           chooseRecord: function( record ) {
             if( $scope.model.getChooseEnabled() ) {
-              if( $scope.model.listModel.chooseMode ) {
+              if( $scope.model.listModel.chooseMode && !$scope.model.listModel.isChooseDisabled( record ) ) {
                 // record.chosen shows in the list which record is selected
                 record.chosen = record.chosen ? 0 : 1;
                 // record.chosenNow keeps track of which records to apply if the changes are committed
@@ -4374,24 +4374,25 @@ cenozo.factory( 'CnBaseListFactory', [
         if( angular.isUndefined( parentModel.module.defaultOrder ) )
           throw new Error( 'Cannot create list factory, module.defaultOrder is missing.' );
 
-        object.parentModel = parentModel;
-        object.heading = parentModel.module.name.singular.ucWords() + ' List';
-        object.order = object.parentModel.module.defaultOrder;
-        object.total = 0;
-        object.minOffset = null;
-        object.cache = [];
-        object.enableReports = 1 < CnSession.role.tier;
-        object.isReportLoading = false;
-        object.isReportAllowed = false;
-        object.isReportBig = false;
-        object.reportBlob = null;
-        object.reportFilename = null;
-        object.paginationModel = CnPaginationFactory.instance();
-        object.isLoading = false;
-        object.chooseMode = false;
-
-        // initialize the restrict lists
-        object.columnRestrictLists = {};
+        angular.extend( object, {
+          parentModel: parentModel,
+          heading: parentModel.module.name.singular.ucWords() + ' List',
+          order: parentModel.module.defaultOrder,
+          total: 0,
+          minOffset: null,
+          cache: [],
+          enableReports: 1 < CnSession.role.tier,
+          isReportLoading: false,
+          isReportAllowed: false,
+          isReportBig: false,
+          reportBlob: null,
+          reportFilename: null,
+          paginationModel: CnPaginationFactory.instance(),
+          isLoading: false,
+          chooseMode: false,
+          isChooseDisabled: function( record ) { return false; },
+          columnRestrictLists: {}
+        } );
 
         cenozo.addExtendableFunction( object, 'orderBy', async function( column, reverse ) {
           if( this.order.column != column || this.order.reverse != reverse ) {

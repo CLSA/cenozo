@@ -29,7 +29,7 @@ cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], cr
       association: {
         title: 'Association'
       },
-      types: {
+      alternate_type_list: {
         title: 'Types'
       },
       global_note: {
@@ -89,26 +89,11 @@ cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], cr
       format: 'email2',
       help: 'Must be in the format "account@domain.name".'
     },
-    alternate: {
-      title: 'Alternate Contact',
-      type: 'boolean'
-    },
-    decedent: {
-      title: 'Decedent Responder',
-      type: 'boolean',
-      isConstant: function( $state, model ) { return !model.isRole( 'administrator', 'curator' ); }
-    },
-    emergency: {
-      title: 'Emergency Contact',
-      type: 'boolean'
-    },
-    informant: {
-      title: 'Information Provider',
-      type: 'boolean'
-    },
-    proxy: {
-      title: 'Decision Maker',
-      type: 'boolean'
+    alternate_type_id: {
+      title: 'Specific Role',
+      type: 'enum',
+      help: 'You can add more than one role after the alternate has been created.',
+      isExcluded: 'view'
     },
     global_note: {
       column: 'alternate.global_note',
@@ -385,13 +370,18 @@ cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], cr
     'CnBaseViewFactory', 'CnHttpFactory',
     function( CnBaseViewFactory, CnHttpFactory ) {
       var object = function( parentModel, root ) {
-        CnBaseViewFactory.construct( this, parentModel, root, 'address' );
+        CnBaseViewFactory.construct( this, parentModel, root, 'alternate_type' );
         this.onViewPromise = null;
 
         // track the promise returned by the onView function
-        this.onView = function( force ) {
-          this.onViewPromise = this.$$onView( force );
-          return this.onViewPromise;
+        this.onView = async function( force ) {
+          this.onViewPromise = await this.$$onView( force );
+
+          if( this.alternateTypeModel ) {
+            this.alternateTypeModel.listModel.isChooseDisabled = function( record ) {
+              return 0 < record.role_count && !record.has_role;
+            };
+          }
         };
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
@@ -419,7 +409,18 @@ cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], cr
         this.getMetadata = async function() {
           await this.$$getMetadata();
 
-          var [languageResponse, phoneResponse, addressResponse] = await Promise.all( [
+          var [altTypeListResponse, languageResponse, altTypeResponse, phoneResponse, addressResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'alternate_type',
+              data: {
+                select: { column: [ 'id', 'title', 'role_count', 'has_role' ] },
+                modifier: {
+                  order: 'title',
+                  limit: 1000000
+                }
+              }
+            } ).query(),
+
             CnHttpFactory.instance( {
               path: 'language',
               data: {
@@ -427,16 +428,25 @@ cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], cr
                 modifier: {
                   where: { column: 'active', operator: '=', value: true },
                   order: 'name',
-                  limit: 1000
+                  limit: 1000000
                 }
               }
             } ).query(),
+            
+            CnHttpFactory.instance( { path: 'alternate_type' } ).head(),
             CnHttpFactory.instance( { path: 'phone' } ).head(),
             CnHttpFactory.instance( { path: 'address' } ).head()
           ] );
 
           this.metadata.columnList.language_id.enumList = languageResponse.data.reduce( ( list, item ) => {
             list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
+
+          var alternateTypeColumn = angular.fromJson( altTypeResponse.headers( 'Columns' ) );
+          alternateTypeColumn.required = false;
+          alternateTypeColumn.enumList = altTypeListResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.title, disabled: 0 < item.role_count && !item.has_role } );
             return list;
           }, [] );
 
@@ -460,6 +470,7 @@ cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], cr
           addressColumnList.international.default = null;
 
           angular.extend( this.metadata.columnList, {
+            alternate_type_id: alternateTypeColumn,
             phone_international: phoneColumnList.international,
             phone_type: phoneColumnList.type,
             phone_number: phoneColumnList.number,

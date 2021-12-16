@@ -172,8 +172,11 @@ class form extends record
   {
     $util_class_name = lib::get_class_name( 'util' );
     $alternate_class_name = lib::get_class_name( 'database\alternate' );
+    $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $db_informant_alternate_type = $alternate_type_class_name::get_unique_record( 'name', 'informant' );
+    $db_proxy_alternate_type = $alternate_type_class_name::get_unique_record( 'name', 'proxy' );
 
     // if this participant already has an alternate with the same first and last name then
     // overwrite instead of creating a new record
@@ -196,14 +199,17 @@ class form extends record
     }
 
     $db_alternate->participant_id = $this->participant_id;
-    $db_alternate->informant = $proxy['same_as_proxy'] && $proxy['informant'];
-    $db_alternate->proxy = true;
     $db_alternate->first_name = $proxy['first_name'];
     $db_alternate->last_name = $proxy['last_name'];
     $db_alternate->association = 'Unknown';
     if( array_key_exists( 'global_note', $proxy ) && !is_null( $proxy['global_note'] ) )
       $db_alternate->global_note = $proxy['global_note'];
     $db_alternate->save();
+
+    // now add the appropriate alternate types to this alternate
+    $alternate_type_id_list = [$db_proxy_alternate_type->id];
+    if( $proxy['same_as_proxy'] && $proxy['informant'] ) $alternate_type_id_list[] = $db_informant_alternate_type->id;
+    $db_alternate->add_alternate_type( $alternate_type_id_list );
 
     $this->add_association( 'alternate', $db_alternate->id );
 
@@ -214,7 +220,8 @@ class form extends record
       $proxy['street_name'],
       $proxy['box'],
       $proxy['rural_route'],
-      $proxy['address_other'] );
+      $proxy['address_other']
+    );
 
     $db_address = lib::create( 'database\address' );
     $db_address->alternate_id = $db_alternate->id;
@@ -225,9 +232,7 @@ class form extends record
     $db_address->city = $proxy['city'];
     $db_address->region_id = $proxy['region_id'];
     $postcode = 6 == strlen( $proxy['postcode'] )
-              ? sprintf( '%s %s',
-                         substr( $proxy['postcode'], 0, 3 ),
-                         substr( $proxy['postcode'], 3, 3 ) )
+              ? sprintf( '%s %s', substr( $proxy['postcode'], 0, 3 ), substr( $proxy['postcode'], 3, 3 ) )
               : $proxy['postcode'];
     $db_address->postcode = $postcode;
     $db_address->source_postcode();
@@ -283,13 +288,15 @@ class form extends record
     }
 
     $db_alternate->participant_id = $this->participant_id;
-    $db_alternate->informant = true;
     $db_alternate->first_name = $informant['first_name'];
     $db_alternate->last_name = $informant['last_name'];
     $db_alternate->association = 'Unknown';
     if( array_key_exists( 'global_note', $informant ) && !is_null( $informant['global_note'] ) )
       $db_alternate->global_note = $informant['global_note'];
     $db_alternate->save();
+
+    // now add the informant type to this alternate
+    $db_alternate->add_alternate_type( $db_informant_alternate_type->id );
 
     $this->add_association( 'alternate', $db_alternate->id );
 
@@ -300,7 +307,8 @@ class form extends record
       $informant['street_name'],
       $informant['box'],
       $informant['rural_route'],
-      $informant['address_other'] );
+      $informant['address_other']
+    );
 
     $db_address = lib::create( 'database\address' );
     $db_address->alternate_id = $db_alternate->id;
@@ -311,9 +319,7 @@ class form extends record
     $db_address->city = $informant['city'];
     $db_address->region_id = $informant['region_id'];
     $postcode = 6 == strlen( $informant['postcode'] )
-              ? sprintf( '%s %s',
-                         substr( $informant['postcode'], 0, 3 ),
-                         substr( $informant['postcode'], 3, 3 ) )
+              ? sprintf( '%s %s', substr( $informant['postcode'], 0, 3 ), substr( $informant['postcode'], 3, 3 ) )
               : $informant['postcode'];
     $db_address->postcode = $postcode;
     $db_address->source_postcode();
@@ -385,6 +391,7 @@ class form extends record
       '    record_id = %s',
       static::db()->format_string( $this->id ),
       static::db()->format_string( $subject ),
-      static::db()->format_string( $id ) ) );
+      static::db()->format_string( $id ) )
+    );
   }
 }
