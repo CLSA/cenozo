@@ -221,14 +221,14 @@ class form extends record
 
     // now add the requested alternate types
     $alternate_type_id_list = array();
-    foreach( $data->alternate_type_list as $type )
+    foreach( $data['alternate_type_list'] as $type )
     {
       $db_alternate_type = $alternate_type_class_name::get_unique_record( 'name', $type );
       if( is_null( $db_alternate_type ) ) log::warning( sprintf( 'Tried to add invalid alternate type "%s" to form.', $type ) );
       else $alternate_type_id_list[] = $db_alternate_type->id;
     }
 
-    if( 0 < count( $laternate_type_id_list ) ) $db_alternate->add_alternate_type( $alternate_type_id_list );
+    if( 0 < count( $alternate_type_id_list ) ) $db_alternate->add_alternate_type( $alternate_type_id_list );
 
     $this->add_association( 'alternate', $db_alternate->id );
 
