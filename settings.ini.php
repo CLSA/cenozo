@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.8';
-$settings['general']['cenozo_build'] = '2936d749';
+$settings['general']['cenozo_build'] = '5933710e';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
