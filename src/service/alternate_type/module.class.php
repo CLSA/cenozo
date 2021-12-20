@@ -22,6 +22,8 @@ class module extends \cenozo\service\module
 
     $this->add_count_column( 'alternate_count', 'alternate', $select, $modifier);
     $this->add_count_column( 'role_count', 'role', $select, $modifier );
+    $select->add_column( 'alternate_consent_type_id IS NOT NULL', 'has_alternate_consent_type', false, 'boolean' );
+    $modifier->left_join( 'alternate_consent_type', 'alternate_type.alternate_consent_type_id', 'alternate_consent_type.id' );
 
     if( $select->has_column( 'has_role' ) )
     {

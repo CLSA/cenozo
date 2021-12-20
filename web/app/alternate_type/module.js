@@ -10,6 +10,7 @@ cenozoApp.defineModule( { name: 'alternate_type', models: ['add', 'list', 'view'
     columnList: {
       name: { title: 'Name' },
       title: { title: 'Title' },
+      has_alternate_consent_type: { title: 'Has Consent Type', type: 'boolean' },
       alternate_count: { title: 'Alternates' },
       description: { title: 'Description', align: 'left' },
       // used by the alternate module to determine whether a type can be choosen
@@ -31,10 +32,53 @@ cenozoApp.defineModule( { name: 'alternate_type', models: ['add', 'list', 'view'
       title: 'Title',
       type: 'string'
     },
+    alternate_consent_type_id: {
+      title: 'Alternate Consent Type',
+      type: 'enum'
+    },
     description: {
       title: 'Description',
       type: 'text'
     }
   } );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateTypeModelFactory', [
+    'CnBaseModelFactory', 'CnAlternateTypeAddFactory', 'CnAlternateTypeListFactory', 'CnAlternateTypeViewFactory',
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnAlternateTypeAddFactory, CnAlternateTypeListFactory, CnAlternateTypeViewFactory,
+              CnHttpFactory ) {
+      var object = function( root ) {
+        CnBaseModelFactory.construct( this, module );
+        this.addModel = CnAlternateTypeAddFactory.instance( this );
+        this.listModel = CnAlternateTypeListFactory.instance( this );
+        this.viewModel = CnAlternateTypeViewFactory.instance( this, root );
+
+        // extend getMetadata
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'alternate_consent_type',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.alternate_consent_type_id.enumList = [];
+          response.data.forEach( item => {
+            this.metadata.columnList.alternate_consent_type_id.enumList.push( { value: item.id, name: item.name } );
+          } );
+        };
+      };
+
+      return {
+        root: new object( true ),
+        instance: function() { return new object( false ); }
+      };
+    }
+  ] );
+
 
 } } );
