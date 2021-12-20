@@ -20,7 +20,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $this->add_count_column( 'participant_count', 'participant', $select, $modifier);
+    $this->add_count_column( 'alternate_count', 'alternate', $select, $modifier);
     $this->add_count_column( 'role_count', 'role', $select, $modifier );
 
     if( $select->has_column( 'has_role' ) )

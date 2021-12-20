@@ -10,7 +10,7 @@ cenozoApp.defineModule( { name: 'alternate_type', models: ['add', 'list', 'view'
     columnList: {
       name: { title: 'Name' },
       title: { title: 'Title' },
-      participant_count: { title: 'Participants' },
+      alternate_count: { title: 'Alternates' },
       description: { title: 'Description', align: 'left' },
       // used by the alternate module to determine whether a type can be choosen
       has_role: { isIncluded: function() { return false; } },
