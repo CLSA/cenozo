@@ -1,4 +1,4 @@
-cenozoApp.defineModule( { name: 'alternate', models: ['add', 'list', 'view'], create: module => {
+cenozoApp.defineModule( { name: 'alternate', dependencies: [ 'participant' ], models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
     identifier: {
