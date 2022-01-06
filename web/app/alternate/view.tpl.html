@@ -2,6 +2,10 @@
 <cn-list-selector model="model"></cn-list-selector>
 <div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
      ng-repeat="child in model.viewModel.getChildList()"
+     ng-switch="child.subject.snake"
      class="vertical-spacer">
-  <cn-record-list model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
+  <cn-record-list ng-switch-when="alternate_type"
+                  remove-columns="has_alternate_consent_type alternate_count"
+                  model="model.viewModel.alternateTypeModel"></cn-record-list>
+  <cn-record-list ng-switch-default model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
