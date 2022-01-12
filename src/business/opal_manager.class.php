@@ -251,7 +251,11 @@ class opal_manager extends \cenozo\singleton
       {
         foreach( $category->attributes as $attribute )
         {
-          if( 'label' == $attribute->name && $db_language->code == $attribute->locale )
+          // we can't depend on Opal providing all of the required properties, so check before using them
+          if( property_exists( $attribute, 'name' ) &&
+              'label' == $attribute->name &&
+              property_exists( $attribute, 'locale' ) &&
+              $db_language->code == $attribute->locale )
             $label = utf8_decode( $attribute->value );
 
           if( !is_null( $label ) ) break;
