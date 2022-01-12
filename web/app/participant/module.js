@@ -461,7 +461,7 @@ cenozoApp.defineModule( { name: 'participant',
           path: 'participant/' + $state.params.identifier + '/alternate',
           data: {
             select: { column: [
-              'create_timestamp', 'association', 'types', 'first_name', 'last_name'
+              'create_timestamp', 'association', 'alternate_type_list', 'first_name', 'last_name'
             ] }
           }
         } ).query();
@@ -473,7 +473,7 @@ cenozoApp.defineModule( { name: 'participant',
             title: 'added ' + item.first_name + ' ' + item.last_name,
             description: item.first_name + ' ' + item.last_name +
               ' (' + ( item.association ? item.association : 'unknown association' ) + ')\n' +
-              'Current roles: ' + ( item.types ? item.types : '(none)' )
+              'Current roles: ' + ( item.alternate_type_list ? item.alternate_type_list : '(none)' )
           } );
         } );
       }
