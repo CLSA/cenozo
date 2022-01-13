@@ -13,7 +13,8 @@ cenozoApp.defineModule( { name: 'identifier', models: ['add', 'list', 'view'], c
       regex: { title: 'Format' },
       description: {
         title: 'Description',
-        type: 'text'
+        type: 'text',
+        limit: 500
       }
     },
     defaultOrder: {
