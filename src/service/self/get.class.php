@@ -57,9 +57,14 @@ class get extends \cenozo\service\service
     $application_sel->add_column( 'title' );
     $application_sel->add_column( 'version' );
     $application_sel->add_table_column( 'country', 'name', 'country' );
+    $application_sel->add_table_column( 'study', 'name', 'study_name' );
+    $application_sel->add_table_column( 'study', 'consent_type_id' );
+    $application_sel->add_table_column( 'study_phase', 'name', 'study_phase_name' );
 
     $application_mod = lib::create( 'database\modifier' );
     $application_mod->join( 'country', 'application.country_id', 'country.id' );
+    $application_mod->left_join( 'study_phase', 'application.study_phase_id', 'study_phase.id' );
+    $application_mod->left_join( 'study', 'study_phase.study_id', 'study.id' );
 
     $user_sel = lib::create( 'database\select' );
     $user_sel->from( 'user' );

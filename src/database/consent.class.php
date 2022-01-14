@@ -76,6 +76,48 @@ class consent extends record
   }
 
   /**
+   * Override parent method if identifier uses type=last or type=last_written
+   */
+  public static function get_record_from_identifier( $identifier )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // convert type=last|last_written, participant_id and consent_type_id to consent id
+    if( !$util_class_name::string_matches_int( $identifier ) && null != preg_match( '/type=(last|last_written)/', $identifier ) )
+    {
+      $regex = '/consent_type_id=([0-9]+)/';
+      $matches = array();
+      if( preg_match( $regex, $identifier, $matches ) )
+      {
+        $db_consent_type = lib::create( 'database\consent_type', $matches[1] );
+        if( !is_null( $db_consent_type ) )
+        {
+          $regex = '/participant_id=([0-9]+)/';
+          $matches = array();
+          if( preg_match( $regex, $identifier, $matches ) )
+          {
+            $db_participant = lib::create( 'database\participant', $matches[1] );
+            if( !is_null( $db_participant ) )
+            {
+              $regex = '/type=(last|last_written)/';
+              $matches = array();
+              if( preg_match( $regex, $identifier, $matches ) )
+              {
+                $db_consent = 'last' == $matches[1]
+                            ? $db_participant->get_last_consent( $db_consent_type )
+                            : $db_participant->get_last_written_consent( $db_consent_type );
+                $identifier = is_null( $db_consent ) ? NULL : $db_consent->id;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return parent::get_record_from_identifier( $identifier );
+  }
+
+  /**
    * Used by save() and delete() to notify other applications of the change of consent
    * 
    * @param database\participant $db_participant
