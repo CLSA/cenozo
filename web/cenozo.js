@@ -69,7 +69,7 @@ angular.extend( Array.prototype, {
       return list;
     }, [] );
   },
-  
+
   pushIfMissing: function( newItem ) {
     if( 'function' === typeof newItem ) {
       if( !this.some( item => newItem === item || ( 'function' === typeof item && item.toString() == newItem.toString() ) ) )
@@ -7894,10 +7894,12 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           }
         },
 
-        launch: async function() {
+        launch: async function( urlParams ) {
+          if( !angular.isObject( urlParams ) ) urlParams = {};
+
+          var baseUrl = this.script.url;
           if( 'Pine' == this.script.application ) {
-            // launch the script
-            CnSession.scriptWindowHandler = $window.open( this.script.url + this.token.token + '?show_hidden=1', 'cenozoScript' );
+            baseUrl += this.token.token;
           } else {
             if( null == this.token ) {
               // the token doesn't exist so create it
@@ -7948,11 +7950,18 @@ cenozo.factory( 'CnScriptLauncherFactory', [
               } ).get();
             }
 
-            // launch the script
-            CnSession.scriptWindowHandler = $window.open(
-              this.script.url + '?lang=' + this.lang + '&newtest=Y' + '&token=' + this.token.token, 'cenozoScript'
-            );
+            // add parameters required by limesurvey and launch
+            urlParams.lang = this.lang;
+            urlParams.newtest = 'Y';
+            urlParams.token = this.token.token;
+
           }
+
+          // launch the script
+          CnSession.scriptWindowHandler = $window.open(
+            baseUrl + '?' + new URLSearchParams( urlParams ).toString(),
+            'cenozoScript'
+          );
         }
       } );
     };
