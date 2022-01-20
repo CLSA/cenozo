@@ -7958,10 +7958,22 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           }
 
           // launch the script
+          /* 
+           * Note: we'd like to use URLSearchParams but it doesn't work for older browsers.  The following is fine for now
+           * however it does not encode the url parameters so it should be replaced with the following block once old versions
+           * of FF are no longer required (due to Java for Webphone):
+
           CnSession.scriptWindowHandler = $window.open(
             baseUrl + '?' + new URLSearchParams( urlParams ).toString(),
             'cenozoScript'
           );
+          */
+          var queryArray = [];
+          for( var property in urlParams )
+            if( Object.prototype.hasOwnProperty.call( urlParams, property ) )
+              queryArray.push( property + '=' + urlParams[property] );
+          if( 0 < queryArray.length ) baseUrl += '?' + queryArray.join( '&' );
+          CnSession.scriptWindowHander = $window.open( baseUrl, 'cenozoScript' );
         }
       } );
     };
