@@ -553,8 +553,11 @@ angular.extend( cenozoApp, {
             if( !['add','calendar','list','view'].includes( type ) )
               throw new Error( 'Adding extra operation with invalid type "' + type + '".' );
             if( angular.isUndefined( extraObject.id ) ) extraObject.id = extraObject.title;
-            extraObject.isIncluded = this.processInputFunction( extraObject.isIncluded, true );
-            extraObject.isDisabled = this.processInputFunction( extraObject.isDisabled, false );
+            angular.extend( extraObject, {
+              type: type,
+              isIncluded: this.processInputFunction( extraObject.isIncluded, true ),
+              isDisabled: this.processInputFunction( extraObject.isDisabled, false )
+            } );
             this.removeExtraOperation( type, extraObject.title ); // remove first, so we replace
             this.extraOperationList[type].push( extraObject );
           },

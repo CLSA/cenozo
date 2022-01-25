@@ -7,7 +7,7 @@
             ng-disabled="op.isDisabled( state, model )"
             ng-class="op.classes"
             uib-tooltip="{{ op.help }}"
-            tooltip-placement="right"
+            tooltip-placement="{{ 'list' == op.type ? 'left' : 'right' }}"
             data-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
