@@ -772,7 +772,7 @@ angular.extend( cenozo, {
   isDatetimeType: function( type, subtype ) {
     var typeList = [];
     if( 'date' == subtype ) {
-      typeList = [ 'datetimesecond', 'datetime', 'date', 'dob', 'dod' ];
+      typeList = [ 'datetimesecond', 'datetime', 'date', 'yearmonth', 'dob', 'dod' ];
     } else if( 'time' == subtype ) {
       typeList = [ 'timesecond', 'timesecond_notz', 'time', 'time_notz' ];
     } else if( 'second' == subtype ) {
@@ -781,7 +781,7 @@ angular.extend( cenozo, {
       typeList = [ 'datetimesecond', 'datetime', 'timesecond', 'time' ];
     } else {
       typeList = [
-        'datetimesecond', 'datetime', 'date', 'dob', 'dod',
+        'datetimesecond', 'datetime', 'date', 'yearmonth', 'dob', 'dod',
         'timesecond', 'timesecond_notz', 'time', 'time_notz'
       ];
     }
@@ -3634,7 +3634,9 @@ cenozo.factory( 'CnSession', [
         getDatetimeFormat: function( format, longForm ) {
           if( angular.isUndefined( longForm ) ) longForm = false;
           var resolvedFormat = format;
-          if( 'dob' == format || 'dod' == format ) {
+          if( 'yearmonth' == format ) {
+            resolvedFormat = 'MMMM, YYYY';
+          } else if( 'dob' == format || 'dod' == format ) {
             resolvedFormat = 'MMM D, YYYY';
           } else if( cenozo.isDatetimeType( format, 'date' ) ) {
             resolvedFormat = ( longForm ? 'dddd, MMMM Do' : 'MMM D' ) + ', YYYY';
@@ -6028,6 +6030,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          *     boolean: yes/no
          *     currency: can be used in the format currency:<symbol>:<digits> (default is currency:$:2)
          *     date: date (with no time)
+         *     yearmonth: date expressed as Month, Year
          *     datetime: date and time (with no seconds)
          *     datetimesecond: date, time and seconds
          *     rank: a ranked value (1st, 2nd, 3rd, etc)
@@ -6040,6 +6043,7 @@ cenozo.factory( 'CnBaseModelFactory', [
          *   align: a CSS style alignment to set on the column
          *   isIncluded: function( $state, model ) a function which returns whether to include the column
          *   help: help text that pops up when mousing over an input
+         *   limit: For text type columns, the maximum number of characters to show (null will remove the limit)
          * }
          */
         cenozo.addExtendableFunction( object, 'addColumn', function( key, column, index ) {
