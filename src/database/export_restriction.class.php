@@ -41,7 +41,7 @@ class export_restriction extends has_rank
           $alternate_sel = lib::create( 'database\select' );
           $alternate_sel->from( 'participant' );
           $alternate_sel->add_column( 'id', 'participant_id' );
-          $alternate_sel->add_column( 'IF( alternate.id IS NULL, 0, COUNT(*) ) ', 'total', false );
+          $alternate_sel->add_column( 'SUM( IF( alternate.id IS NULL, 0, 1 ) )', 'total', false );
 
           $alternate_mod = lib::create( 'database\modifier' );
           $alternate_mod->left_join( 'alternate', 'participant.id', 'alternate.participant_id' );

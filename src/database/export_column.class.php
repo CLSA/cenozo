@@ -141,14 +141,14 @@ class export_column extends has_rank
             $join_mod->where( sprintf( '%s.alternate_type_id', $alternate_type_table_name ), '=', $db_alternate_type->id );
             $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', $alternate_type_table_name );
             $alternate_sel->add_column(
-              sprintf( 'IF( %s.alternate_id IS NULL, 0, COUNT(*) ) ', $alternate_type_table_name ),
+              sprintf( 'SUM( IF( %s.alternate_id IS NULL, 0, 1 ) )', $alternate_type_table_name ),
               'total',
               false
             );
           }
           else
           {
-            $alternate_sel->add_column( 'IF( alternate.id IS NULL, 0, COUNT(*) ) ', 'total', false );
+            $alternate_sel->add_column( 'SUM( IF( alternate.id IS NULL, 0, 1 ) )', 'total', false );
           }
 
           $alternate_mod->group( 'participant.id' );
