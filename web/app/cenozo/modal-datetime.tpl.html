@@ -5,6 +5,7 @@
   <div class="modal-body">
     <div>
       <div ng-if="'date' == model.pickerType ||
+                  'yearmonth' == model.pickerType ||
                   'dob' == model.pickerType ||
                   'dod' == model.pickerType ||
                   'datetime' == model.pickerType ||
@@ -48,7 +49,8 @@
       </div>
       <div ng-if="'datetime' == model.pickerType || 'datetimesecond' == model.pickerType"
            class="vertical-spacer"></div>
-      <div ng-if="'dob' != model.pickerType &&
+      <div ng-if="'yearmonth' != model.pickerType &&
+                  'dob' != model.pickerType &&
                   'dod' != model.pickerType &&
                   'date' != model.pickerType" class="container-fluid timepicker">
         <div class="row timepicker-row">
@@ -93,7 +95,8 @@
   </div>
   <div class="modal-footer bg-info">
     <div class="btn-group pull-left">
-      <button ng-if="'dob' != model.pickerType &&
+      <button ng-if="'yearmonth' != model.pickerType &&
+                     'dob' != model.pickerType &&
                      'dod' != model.pickerType &&
                      'date' != model.pickerType"
               type="button"

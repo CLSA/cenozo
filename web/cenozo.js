@@ -6034,7 +6034,8 @@ cenozo.factory( 'CnBaseModelFactory', [
          *     datetime: date and time (with no seconds)
          *     datetimesecond: date, time and seconds
          *     rank: a ranked value (1st, 2nd, 3rd, etc)
-         *     string: any string (use format for numbers, etc)
+         *     string: any string
+         *     number: an integer or float
          *     text: any long string
          *     size: a data size (will be formated as KB, MB, GB, etc)
          *     seconds: takes input in number of seconds and displays as 0d 0:00:00 format
@@ -6769,6 +6770,8 @@ cenozo.service( 'CnModalDatetimeFactory', [
       } );
       angular.extend( this, params );
 
+      if( 'yearmonth' == this.pickerType ) this.mode = 'month';
+
       moment.locale( this.locale );
 
       // service vars/functions which cannot be defined by the constructor's params
@@ -6832,7 +6835,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
           this.updateSlidersFromDate( this.date );
         },
         prevMode: function() {
-          this.mode = 'year' == this.mode ? 'month' : 'day';
+          this.mode = 'year' == this.mode ? 'month' : 'yearmonth' == this.pickerType ? 'month' : 'day';
           this.update();
         },
         nextMode: function() {
@@ -7002,6 +7005,7 @@ cenozo.service( 'CnModalDatetimeFactory', [
                   var response = null;
                   if( null !== $scope.model.date ) {
                     var format =
+                      'yearmonth' == self.pickerType ? 'YYYY-MM' :
                       'time' == self.pickerType || 'time_notz' == self.pickerType ? 'HH:mm' :
                       'timesecond' == self.pickerType || 'timesecond_notz' == self.pickerType ? 'HH:mm:ss' :
                       undefined;
