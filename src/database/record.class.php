@@ -847,14 +847,14 @@ abstract class record extends \cenozo\base_object
    * @param string $record_type The type of record.
    * @param database\select $select Which columns to select
    * @param database\modifier $modifier A modifier to apply to the list
-   * @param boolean $return_alternate One of "object" or "count" to return objects or a count total
+   * @param boolean $return_alt One of "object" or "count" to return objects or a count total
    * @param bool $distinct Whether to count only distinct primary keys for the joining table (only used when
-   *                       return_alternate is 'count')
+   *                       return_alt is 'count')
    * @return array( associative or array ) | int
    * @access protected
    */
   protected function get_record_list(
-    $record_type, $select = NULL, $modifier = NULL, $return_alternate = '', $distinct = false )
+    $record_type, $select = NULL, $modifier = NULL, $return_alt = '', $distinct = false )
   {
     if( !is_string( $record_type ) || 0 == strlen( $record_type ) )
       throw lib::create( 'exception\argument', 'record_type', $record_type, __METHOD__ );
@@ -862,8 +862,8 @@ abstract class record extends \cenozo\base_object
       throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
-    if( !is_string( $return_alternate ) )
-      throw lib::create( 'exception\argument', 'return_alternate', $return_alternate, __METHOD__ );
+    if( !is_string( $return_alt ) )
+      throw lib::create( 'exception\argument', 'return_alt', $return_alt, __METHOD__ );
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
@@ -879,7 +879,7 @@ abstract class record extends \cenozo\base_object
       return array();
     }
 
-    $return_value = 'count' == $return_alternate ? 0 : array();
+    $return_value = 'count' == $return_alt ? 0 : array();
 
     // this method varies depending on the relationship type
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
@@ -927,13 +927,13 @@ abstract class record extends \cenozo\base_object
         $modifier->where( $full_primary_key_name, '=', $primary_key_value );
       }
 
-      if( 'count' == $return_alternate )
+      if( 'count' == $return_alt )
       {
         $return_value = $foreign_class_name::count( $modifier, $distinct );
       }
       else
       {
-        $return_value = 'object' == $return_alternate
+        $return_value = 'object' == $return_alt
                       ? $foreign_class_name::select_objects( $modifier )
                       : $foreign_class_name::select( $select, $modifier );
       }
@@ -948,7 +948,7 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Convenience method for get_record_list with return_alternate set to 'object'
+   * Convenience method for get_record_list with return_alt set to 'object'
    * 
    * @param string $record_type The type of record.
    * @param database\modifier $modifier A modifier to apply to the list
@@ -961,7 +961,7 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
-   * Convenience method for get_record_list with return_alternate set to 'count'
+   * Convenience method for get_record_list with return_alt set to 'count'
    * 
    * @param string $record_type The type of record.
    * @param database\modifier $modifier A modifier to apply to the list or count.
@@ -1221,7 +1221,7 @@ abstract class record extends \cenozo\base_object
    * @static
    * @access public
    */
-  public static function select( $select = NULL, $modifier = NULL, $return_alternate = '' )
+  public static function select( $select = NULL, $modifier = NULL, $return_alt = '' )
   {
     if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
       throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
@@ -1229,17 +1229,17 @@ abstract class record extends \cenozo\base_object
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
 
     $table_name = static::get_table_name();
-    $return_value = 'count' == $return_alternate ? 0 : array();
+    $return_value = 'count' == $return_alt ? 0 : array();
 
     // create the select statement one isn't provided
     if( is_null( $select ) )
     {
       $select = lib::create( 'database\select' );
-      if( 'count' == $return_alternate )
+      if( 'count' == $return_alt )
       {
         $select->add_column( 'COUNT(*)', 'total', false );
       }
-      else if( 'object' == $return_alternate )
+      else if( 'object' == $return_alt )
       {
         $select->add_column( static::$primary_key_name );
       }
@@ -1252,7 +1252,7 @@ abstract class record extends \cenozo\base_object
     // select this table if one hasn't been selected yet
     if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
 
-    if( 'count' == $return_alternate )
+    if( 'count' == $return_alt )
     {
       $sql = sprintf( '%s %s',
                       $select->get_sql(),
@@ -1270,7 +1270,7 @@ abstract class record extends \cenozo\base_object
                       $select->get_sql(),
                       is_null( $modifier ) ? '' : $modifier->get_sql() );
       $return_value = static::db()->get_all( $sql );
-      if( 'object' == $return_alternate )
+      if( 'object' == $return_alt )
       { // convert ids to records
         $records = array();
         foreach( $return_value as $row ) $records[] = new static( $row[static::$primary_key_name] );
