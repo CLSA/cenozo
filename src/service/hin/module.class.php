@@ -31,7 +31,6 @@ class module extends \cenozo\service\module
       if( $db_application->release_based && !is_null( $db_hin ) )
       {
         $participant_id = $db_hin->participant_id;
-        if( is_null( $participant_id ) ) $participant_id = $db_hin->get_alternate()->participant_id;
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'participant_id', '=', $participant_id );
         if( 0 == $db_application->get_participant_count( $modifier ) )
