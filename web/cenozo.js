@@ -1767,9 +1767,13 @@ cenozo.directive( 'cnRecordAdd', [
                 } );
 
                 if( !meta.required || 1 < enumList.length ) {
-                  var name = meta.required ? '(Select ' + input.title + ')' : '(empty)';
-                  if( null == enumList.findByProperty( 'name', name ) )
-                    enumList.unshift( { value: undefined, name: name } );
+                  // only add the empty value if one doesn't already exist
+                  if( null == enumList.findByProperty( 'value', undefined ) ) {
+                    var name = meta.required ? '(Select ' + input.title + ')' : '(empty)';
+                    if( null == enumList.findByProperty( 'name', name ) ) {
+                      enumList.unshift( { value: undefined, name: name } );
+                    }
+                  }
                 }
 
                 if( 1 == enumList.length ) $scope.record[input.key] = enumList[0].value;
