@@ -1,7 +1,7 @@
 cenozoApp.defineModule( { name: 'report_type', models: ['add', 'list', 'view'], create: module => {
 
   angular.extend( module, {
-    identifier: { column: 'title' },
+    identifier: { column: 'name' },
     name: {
       singular: 'report type',
       plural: 'report types',
