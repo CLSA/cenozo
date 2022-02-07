@@ -5618,29 +5618,55 @@ cenozo.factory( 'CnBaseModelFactory', [
                 var value = item.value;
                 var unit = item.unit;
 
-                // simple search
-                if( ( 'like' == test || 'not like' == test ) ) {
-                  // LIKE "" is meaningless, so search for <=> "" instead
-                  if( 0 == value.length ) test = '<=>';
-                  // LIKE without % is meaningless, so add % at each end of the string
-                  else if( !value.includes( '%' ) ) value = '%' + value + '%';
+                // convert yearmonth to appropriate searches involving values in YYYY-MM format
+                if( 'yearmonth' == this.module.columnList[key].type ) {
+                  // start by adding the first of the month to the YYYY-MM value
+                  value = value + '-01';
+                  if( '<=>' == test || '<>' == test ) {
+                    // convert this to "1st of month" <= date && date < "1st of next month"
+                    var upperValue = moment( value ).add( 1, 'month' ).format( 'YYYY-MM-DD' );
+                    whereList = whereList.concat( [
+                      { bracket: true, open: true, or: 'or' == item.logic },
+                      { column: key, operator: '<=>' ? '>=' : '<', value: value },
+                      { column: key, operator: '<=>' ? '<' : '>=', value: upperValue },
+                      { bracket: true, open: false }
+                    ] );
+                  } else if( '<' == test || '>=' == test ) {
+                    // nothing special has to be done for these tests
+                    whereList.push( { column: key, operator: test, value: value } );
+                  } else if( '<=' == test || '>' == test ) {
+                    // for either what comes before or on this month, or what comes after this month, we just
+                    // need to change to the next month and change the operation
+                    whereList.push( {
+                      column: key,
+                      operator: '<=' == test ? '<' : '>=',
+                      value: moment( value ).add( 1, 'month' ).format( 'YYYY-MM-DD' )
+                    } );
+                  }
+                } else {
+                  // simple search
+                  if( ( 'like' == test || 'not like' == test ) ) {
+                    // LIKE "" is meaningless, so search for <=> "" instead
+                    if( 0 == value.length ) test = '<=>';
+                    // LIKE without % is meaningless, so add % at each end of the string
+                    else if( !value.includes( '%' ) ) value = '%' + value + '%';
+                  }
+
+                  // convert units
+                  if( angular.isDefined( unit ) ) value = $filter( 'cnSize' )( value + ' ' + unit, true );
+
+                  // determine the column name
+                  if( angular.isDefined( list[key].column ) ) {
+                    var columnParts = list[key].column.split( '.' );
+                    var len = columnParts.length;
+                    column = list[key].column;
+                    if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
+                  }
+
+                  var where = { column: key, operator: test, value: value };
+                  if( 'or' == item.logic ) where.or = true;
+                  whereList.push( where );
                 }
-
-                // convert units
-                if( angular.isDefined( unit ) ) value = $filter( 'cnSize' )( value + ' ' + unit, true );
-
-                // determine the column name
-                var column = key;
-                if( angular.isDefined( list[key].column ) ) {
-                  var columnParts = list[key].column.split( '.' );
-                  var len = columnParts.length;
-                  column = list[key].column;
-                  if( 2 < len ) column = columnParts[len-2] + '.' + columnParts[len-1];
-                }
-
-                var where = { column: column, operator: test, value: value };
-                if( 'or' == item.logic ) where.or = true;
-                whereList.push( where );
               } );
 
               // add brackets around columns with multiple restrictions
