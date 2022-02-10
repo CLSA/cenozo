@@ -43,6 +43,29 @@ cenozoApp.defineModule( { name: 'alternate_type', models: ['add', 'list', 'view'
   } );
 
   /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnAlternateTypeViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
+      var object = function( parentModel, root ) {
+        CnBaseViewFactory.construct( this, parentModel, root, 'alternate' );
+
+        async function init( object ) {
+          // allow add/delete of roles and alternates
+          await object.deferred.promise;
+
+          if( angular.isDefined( object.alternateModel ) )
+            object.alternateModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
+          if( angular.isDefined( object.roleModel ) )
+            object.roleModel.getChooseEnabled = function() { return parentModel.getEditEnabled(); };
+        }
+
+        init( this );
+      };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAlternateTypeModelFactory', [
     'CnBaseModelFactory', 'CnAlternateTypeAddFactory', 'CnAlternateTypeListFactory', 'CnAlternateTypeViewFactory',
     'CnHttpFactory',
