@@ -130,7 +130,10 @@ class export_column extends has_rank
           $alternate_sel->from( 'participant' );
           $alternate_sel->add_column( 'id', 'participant_id' );
           $alternate_mod = lib::create( 'database\modifier' );
-          $alternate_mod->left_join( 'alternate', 'participant.id', 'alternate.participant_id' );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', 'alternate.participant_id', false );
+          $join_mod->where( 'alternate.active', '=', true );
+          $alternate_mod->join_modifier( 'alternate', $join_mod, 'left' );
 
           if( 'alternate' != $alternate_type )
           {

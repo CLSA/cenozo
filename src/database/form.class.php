@@ -211,6 +211,7 @@ class form extends record
       foreach( $db_alternate->get_phone_object_list() as $db_phone ) $db_phone->delete();
     }
 
+    $db_alternate->active = true;
     $db_alternate->participant_id = $this->participant_id;
     $db_alternate->first_name = $data['first_name'];
     $db_alternate->last_name = $data['last_name'];

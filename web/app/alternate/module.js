@@ -18,6 +18,10 @@ cenozoApp.defineModule( { name: 'alternate', dependencies: [ 'participant' ], mo
         column: 'participant.uid',
         title: 'Participant'
       },
+      active: {
+        title: 'Active',
+        type: 'boolean'
+      },
       first_name: {
         column: 'alternate.first_name',
         title: 'First Name'
@@ -55,6 +59,10 @@ cenozoApp.defineModule( { name: 'alternate', dependencies: [ 'participant' ], mo
         select: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
         where: [ 'participant.first_name', 'participant.last_name', 'uid' ]
       }
+    },
+    active: {
+      title: 'Active',
+      type: 'boolean'
     },
     first_name: {
       column: 'alternate.first_name',

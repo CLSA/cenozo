@@ -152,6 +152,7 @@ class data_manager extends \cenozo\singleton
              'emergency' == $subject || 'proxy' == $subject )
     {
       $alternate_mod = lib::create( 'database\modifier' );
+      $alternate_mod->where( 'alternate.active', '=', true );
       if( 'alternate' != $subject ) // restrict to a particular alternate type if necessary
       {
         $alternate_mod->join( 'alternate_has_alternate_type', 'alternate.id', 'alternate_has_alternate_type.alternate_id' );

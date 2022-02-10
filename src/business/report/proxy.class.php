@@ -107,7 +107,10 @@ class proxy extends \cenozo\business\report\base_report
     $modifier->join( 'participant_last_trace', 'participant.id', 'participant_last_trace.participant_id' );
     $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
     $modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
-    $modifier->left_join( 'alternate', 'participant.id', 'alternate.participant_id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'alternate.participant_id', false );
+    $join_mod->where( 'alternate.active', '=', true );
+    $modifier->join_modifier( 'alternate', $join_mod, 'left' );
     
     $proxy_join_mod = lib::create( 'database\modifier' );
     $proxy_join_mod->where( 'alternate.id', '=', 'alternate_has_proxy_alternate_type.alternate_id', false );
