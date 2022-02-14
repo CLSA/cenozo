@@ -68,10 +68,10 @@ cenozoApp.defineModule( { name: 'collection', models: ['add', 'list', 'view'], c
             // private function used in the block below
             const setAccess = enable => {
               this.parentModel.getEditEnabled = enable
-                                              ? function() { return this.parentModel.$$getEditEnabled(); }
+                                              ? function() { return this.$$getEditEnabled(); }
                                               : function() { return false; };
               this.parentModel.getDeleteEnabled = enable
-                                                ? function() { return this.parentModel.$$getDeleteEnabled(); }
+                                                ? function() { return this.$$getDeleteEnabled(); }
                                                 : function() { return false; };
               if( angular.isDefined( this.participantModel ) )
                 this.participantModel.getChooseEnabled =
