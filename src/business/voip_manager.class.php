@@ -34,7 +34,8 @@ class voip_manager extends \cenozo\singleton
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
     $this->url = sprintf(
       'http://%s:%d/mxml',
-      $setting_manager->get_setting( 'voip', 'domain' ),
+      // remove the port from the voip domain
+      preg_replace( '/:[0-9]+$/', '', $setting_manager->get_setting( 'voip', 'domain' ) ),
       $setting_manager->get_setting( 'voip', 'mxml_port' )
     );
     $this->username = $setting_manager->get_setting( 'voip', 'username' );
