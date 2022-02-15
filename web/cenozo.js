@@ -8000,7 +8000,6 @@ cenozo.factory( 'CnScriptLauncherFactory', [
             urlParams.lang = this.lang;
             urlParams.newtest = 'Y';
             urlParams.token = this.token.token;
-
           }
 
           // launch the script
@@ -8019,7 +8018,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
             if( Object.prototype.hasOwnProperty.call( urlParams, property ) )
               queryArray.push( property + '=' + urlParams[property] );
           if( 0 < queryArray.length ) baseUrl += '?' + queryArray.join( '&' );
-          CnSession.scriptWindowHander = $window.open( baseUrl, 'cenozoScript' );
+          CnSession.scriptWindowHandler = $window.open( baseUrl, 'cenozoScript' );
         }
       } );
     };
