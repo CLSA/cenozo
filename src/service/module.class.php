@@ -267,10 +267,13 @@ abstract class module extends \cenozo\base_object
    * @param database\modifier The modifier used by the read service
    * @param string $joining_table Used to force a many-to-many relationship with the provided table name
    * @param string $order Which column to sort the list by (defaults to the $column value)
+   * @param string $separator What separator to use between list items
+   * @param boolean $table_prefix Whether to prefix the column with the table name
    * @access public
    */
   protected function add_list_column(
-    $column_name, $table, $column, $select, $modifier, $joining_table = NULL, $join_mod = NULL, $order = NULL )
+    $column_name, $table, $column, $select, $modifier, $joining_table = NULL, $join_mod = NULL,
+    $order = NULL, $separator = ', ', $table_prefix = true )
   {
     $db = lib::create( 'business\session' )->get_database();
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
@@ -281,12 +284,12 @@ abstract class module extends \cenozo\base_object
     $join_table_name = sprintf( '%s_join_%s', $subject, $table );
     $table_primary_key = sprintf( '%s.id', $table );
     $subject_primary_key = sprintf( '%s.id', $subject );
+    $order_column = is_null( $order ) ? $column : $order;
     $column_sql = sprintf(
-      'GROUP_CONCAT( %s.%s ORDER BY %s.%s SEPARATOR ", " )',
-      $table,
-      $column,
-      $table,
-      is_null( $order ) ? $column : $order
+      'GROUP_CONCAT( %s ORDER BY %s SEPARATOR "%s" )',
+      $table_prefix ? sprintf( '%s.%s', $table, $column ) : $column,
+      $table_prefix ? sprintf( '%s.%s', $table, $order_column ) : $order_column,
+      $separator
     );
 
     $relationship = $record_class_name::get_relationship( $table );
