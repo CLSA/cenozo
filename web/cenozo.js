@@ -7896,11 +7896,21 @@ cenozo.factory( 'CnScriptLauncherFactory', [
         token: undefined,
 
         initialize: async function() {
-          if( 'Pine' == this.script.application ) {
+          var self = this;
+          if( 'pine' == this.script.application ) {
             if( !this.initialized ) {
               this.initialized = true;
               var response = await CnHttpFactory.instance( {
-                path: 'script/' + this.script.id + '/pine_response/' + this.identifier
+                path: 'script/' + this.script.id + '/pine_response/' + this.identifier,
+                onError: function( error ) {
+                  // ignore 404
+                  if( 404 == error.status ) {
+                    self.token = null;
+                    if( angular.isDefined( self.onReady ) ) self.onReady();
+                  } else {
+                    CnModalMessageFactory.httpError( error );
+                  }
+                }
               } ).get();
 
               this.token = response.data;
@@ -7914,7 +7924,6 @@ cenozo.factory( 'CnScriptLauncherFactory', [
               if( this.script.repeated ) {
                 if( angular.isDefined( this.onReady ) ) this.onReady();
               } else {
-                var self = this;
                 try {
                   var response = await CnHttpFactory.instance( {
                     path: 'script/' + this.script.id + '/token/' + this.identifier,
@@ -7944,7 +7953,29 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           if( !angular.isObject( urlParams ) ) urlParams = {};
 
           var baseUrl = this.script.url;
-          if( 'Pine' == this.script.application ) {
+          if( 'pine' == this.script.application ) {
+            if( null == this.token ) {
+              // the token doesn't exist so create it
+              var modal = CnModalMessageFactory.instance( {
+                title: 'Please Wait',
+                message: 'Please wait while the participant\'s data is retrieved.',
+                block: true
+              } );
+              modal.show();
+
+              var response = await CnHttpFactory.instance( {
+                path: 'script/' + this.script.id + '/pine_response',
+                data: { identifier: this.identifier },
+                onError: function( error ) {
+                  modal.close();
+                  CnModalMessageFactory.httpError( error );
+                }
+              } ).post();
+
+              this.token = response.data;
+              if( angular.isDefined( this.onReady ) ) this.onReady();
+            }
+
             baseUrl += this.token.token;
           } else {
             if( null == this.token ) {

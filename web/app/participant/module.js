@@ -1035,9 +1035,7 @@ cenozoApp.defineModule( { name: 'participant',
                     script: script,
                     identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
-                      self.hasWithdraw =
-                        null != this.token &&
-                        null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ );
+                      self.hasWithdraw = null != this.token && null != this.token.end_datetime;
                     }
                   } );
                   try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}

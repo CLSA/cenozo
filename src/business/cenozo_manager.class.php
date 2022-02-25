@@ -53,6 +53,18 @@ class cenozo_manager extends \cenozo\base_object
   }
 
   /**
+   * Sends a curl DELETE request to the cenozo application
+   * 
+   * @param string $api_path The internal cenozo path (not including base url)
+   * @return curl resource
+   * @access public
+   */
+  public function delete( $api_path )
+  {
+    return $this->send( $api_path, 'DELETE' );
+  }
+
+  /**
    * Sends a curl POST request to the cenozo application
    * 
    * @param string $api_path The internal cenozo path (not including base url)
@@ -113,9 +125,9 @@ class cenozo_manager extends \cenozo\base_object
     {
       curl_setopt( $curl, CURLOPT_POST, true );
     }
-    else if( 'PATCH' == $method )
+    else if( in_array( $method, [ 'DELETE', 'PATCH' ] ) )
     {
-      curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PATCH' );
+      curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, $method );
     }
 
     if( !is_null( $data ) )

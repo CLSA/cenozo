@@ -69,6 +69,12 @@ cenozoApp.defineModule( { name: 'script', models: ['add', 'list', 'view'], creat
       isExcluded: 'add',
       help: 'Updated nightly from Pine.'
     },
+    create_event_types: {
+      title: 'Create Start/Finish Event Types',
+      type: 'boolean',
+      isExcluded: 'view',
+      help: 'Only used when creating a non-repeating script.'
+    },
     started_event_type_id: {
       title: 'Started Event Type',
       type: 'enum',

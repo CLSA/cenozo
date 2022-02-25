@@ -30,7 +30,7 @@ class get extends \cenozo\service\get
         $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
         try
         {
-          $select_obj = array( 'column' => array( 'token' ) );
+          $select_obj = array( 'column' => array( 'token', 'end_datetime' ) );
           $service = sprintf(
             'qnaire/%d/respondent/participant_id=%d?no_activity=1&select=%s',
             $db_script->pine_qnaire_id,
@@ -38,28 +38,11 @@ class get extends \cenozo\service\get
             $util_class_name::json_encode( $select_obj )
           );
           $response = $cenozo_manager->get( $service );
-          $record = array( 'token' => $response->token );
+          $record = array( 'token' => $response->token, 'end_datetime' => $response->end_datetime );
         }
         catch( \cenozo\exception\runtime $e )
         {
           if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
-
-          // 404 means the respondent doesn't exist yet, so create it
-          $cenozo_manager->post(
-            sprintf( 'qnaire/%d/respondent?no_mail=1', $db_script->pine_qnaire_id ),
-            array( 'participant_id' => $db_participant->id )
-          );
-
-          // now get the token which was just created
-          $select_obj = array( 'column' => array( 'token' ) );
-          $service = sprintf(
-            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select=%s',
-            $db_script->pine_qnaire_id,
-            $db_participant->id,
-            $util_class_name::json_encode( $select_obj )
-          );
-          $response = $cenozo_manager->get( $service );
-          $record = array( 'token' => $response->token );
         }
       }
     }
@@ -83,7 +66,10 @@ class get extends \cenozo\service\get
   /**
    * Override parent method
    */
-  protected function prepare() {}
+  protected function prepare()
+  {
+    if( is_null( $this->get_leaf_record() ) ) $this->status->set_code( 404 );
+  }
 
   /**
    * Override parent method
