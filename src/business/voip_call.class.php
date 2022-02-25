@@ -8,8 +8,6 @@
 namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
-require_once SHIFT8_PATH.'/library/Shift8.php';
-
 /**
  * The details of a voip call.
  */
@@ -18,10 +16,11 @@ class voip_call extends \cenozo\base_object
   /**
    * Constructor.
    * 
-   * @param Shift8_Event $event The event from a Shift8::getStatus() call
+   * @param array $call_object The call object returned by the asterisk server's Status call
+   * @param array $bridge_object The bridge object returned by the asterisk server's Status call
    * @access public
    */
-  public function __construct( $s8_event, $manager )
+  public function __construct( $call_object, $bridge_object )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'voip' ) )
@@ -31,62 +30,47 @@ class voip_call extends \cenozo\base_object
         __METHOD__ );
     }
 
-    // check that the shift8 event is valid
-    if( is_null( $s8_event ) ||
-        !is_object( $s8_event ) ||
-        'Shift8_Event' != get_class( $s8_event ) )
-      throw lib::create( 'exception\argument', 's8_event', $s8_event, __METHOD__ );
+    $this->channel = $call_object['Channel'];
+    $this->bridge = $bridge_object['Channel'];
+    $this->state = $call_object['ChannelStateDesc'];
+    $this->number = $call_object['EffectiveConnectedLineNum'];
+    $this->time = $call_object['Seconds'];
 
-    $this->manager = $manager;
-    $this->channel = $s8_event->get( 'channel' );
-    $this->bridge = $s8_event->get( 'bridgedchannel' );
-    $this->state = $s8_event->get( 'channelstatedesc' );
-    $this->time = intval( $s8_event->get( 'seconds' ) );
-
-    // get the dialed number by striping the dialing prefix from the extension
-    if( !is_null( $s8_event->get( 'extension' ) ) )
-    {
-      $prefix = lib::create( 'business\voip_manager' )->get_prefix();
-      $this->number = preg_replace( "/^$prefix/", '', $s8_event->get( 'extension' ) );
-    }
-
-    // get the peer from the channel which is in the form: SIP/<peer>-HHHHHHHH
+    // get the peer from the channel which is in the form: PJSIP/<peer>-HHHHHHHH
     // (where <peer> is the peer (without < and >) and H is a hexidecimal number)
-    $slash = strpos( $this->channel, '/' );
-    $dash = strrpos( $this->channel, '-' );
-    $this->peer = false === $slash || false === $dash || $slash >= $dash
-                ? 'unknown'
-                : substr( $this->channel, $slash + 1, $dash - $slash - 1 );
+    $matches = array();
+    $this->peer = preg_match( '#SIP/([0-9]+)-[0-9]+#', $this->channel, $matches ) ? $matches[1] : 'unknown';
   }
 
   /**
    * Play a DTMF tone (ie: dial a number)
    * 
-   * @param string $tone Which tone to play (one of 0123456789abcdgs)
+   * @param string $dtmf Which tone to play (one of 0123456789abcdgs)
    * @throws exception\voip
    * @access public
    */
-  public function dtmf( $tone )
+  public function dtmf( $dtmf )
   {
-    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$voip_manager->get_enabled() ) return;
 
     // make sure the tone is valid
-    if( !preg_match( '/^[0-9a-dgs]$/', $tone ) )
+    if( !preg_match( '/^[0-9a-dgs]$/', $dtmf ) )
     {
       log::warning( 'Attempting to play an invalid DTMF tone.' );
       return;
     }
 
+
     // play the dtmf sound locally as audible feedback
-    $this->play_sound( 'custom/dtmf'.$tone, 0, false );
+    $this->play_sound( 'custom/dtmf'.$dtmf, 0, false );
 
     // convert g to # and s to * before sending to asterisk
-    if( 'g' == $tone ) $tone = '#';
-    else if( 's' == $tone ) $tone = '*';
+    if( 'g' == $dtmf ) $dtmf = '#';
+    else if( 's' == $dtmf ) $dtmf = '*';
 
     // now send the DTMF tone itself (which is not heard locally)
-    if( !$this->manager->playDTMF( $tone, $this->get_bridge() ) )
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
+    $voip_manager->play_dtmf( $this->bridge, $dtmf );
   }
 
   /**
@@ -100,8 +84,8 @@ class voip_call extends \cenozo\base_object
     if( !$voip_manager->get_enabled() ) return;
 
     // hang up the call, if successful then rebuild the call list
-    if( $this->manager->hangup( $this->get_channel() ) )
-      $voip_manager->rebuild_call_list();
+    $voip_manager->hang_up( $this->channel );
+    $voip_manager->rebuild_call_list();
   }
 
   /**
@@ -118,7 +102,8 @@ class voip_call extends \cenozo\base_object
    */
   public function play_sound( $sound, $volume = 0, $bridge = true )
   {
-    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$voip_manager->get_enabled() ) return;
 
     // constrain the volume to be between -4 and 4
     $volume = intval( $volume );
@@ -126,47 +111,8 @@ class voip_call extends \cenozo\base_object
     else if( 4 < $volume ) $volume = 4;
 
     // play sound in local channel
-    if( !$this->manager->originate(
-      'Local/playback@cenozo',  // channel
-      'cenozo',                 // context
-      'playbackspy',            // extension
-      1,                        // priority
-      false,                    // application
-      false,                    // data
-      30000,                    // timeout
-      false,                    // callerID
-      'ActionID=PlayBack,'.     // variables
-      'Sound='.$sound.','.
-      'Volume='.$volume.','.
-      'ToChannel='.$this->get_channel() ) )
-    {
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
-    }
-
-    if( $bridge )
-    {
-      // Sleep for 5 miliseconds to try and fix asterisk bug caused by playing two sounds
-      // in quick succession
-      time_nanosleep( 0, 500000000 );
-
-      // play sound in bridged channel
-      if( !$this->manager->originate(
-        'Local/playback@cenozo',  // channel
-        'cenozo',                 // context
-        'playbackspy',            // extension
-        1,                        // priority
-        false,                    // application
-        false,                    // data
-        30000,                    // timeout
-        false,                    // callerID
-        'ActionID=PlayBack,'.     // variables
-        'Sound='.$sound.','.
-        'Volume='.$volume.','.
-        'ToChannel='.$this->get_bridge() ) )
-      {
-        throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
-      }
-    }
+    $voip_manager->play_sound( $this->channel, $sound, $volume );
+    if( $bridge ) $voip_manager->play_sound( $this->bridge, $sound, $volume );
   }
 
   /**
@@ -175,21 +121,21 @@ class voip_call extends \cenozo\base_object
    * @param string $filename The file name the recorded call is to be saved under.
    * @access public
    */
-  public function start_monitoring( $filename )
+  public function start_recording( $filename )
   {
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$voip_manager->get_enabled() ) return;
+
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'recording' ) )
     {
-      log::warning( 'Called start_monitoring but recording module is not installed.' );
+      log::warning( 'Called start_recording but recording module is not installed.' );
       return;
     }
     else if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
 
-    $setting_manager = lib::create( 'business\setting_manager' );
     $filename = sprintf( '%s/%s', $setting_manager->get_setting( 'voip', 'monitor' ), $filename );
-
-    if( false == $this->manager->monitor( $this->get_channel(), $filename, 'wav' ) )
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
+    $voip_manager->start_recording( $this->channel, $filename, 'wav' );
   }
 
   /**
@@ -197,18 +143,30 @@ class voip_call extends \cenozo\base_object
    * 
    * @access public
    */
-  public function stop_monitoring()
+  public function stop_recording()
   {
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$voip_manager->get_enabled() ) return;
+
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'recording' ) )
     {
-      log::warning( 'Called stop_monitoring but recording module is not installed.' );
+      log::warning( 'Called stop_recording but recording module is not installed.' );
       return;
     }
     else if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
 
-    if( false == $this->manager->stopMonitor( $this->get_channel() ) )
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
+    $voip_manager->stop_recording( $this->channel );
+  }
+
+  /**
+   * TODO: document
+   */
+  public function spy()
+  {
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$voip_manager->get_enabled() ) return;
+    $voip_manager->spy( $this->channel );
   }
 
   /**
@@ -311,11 +269,4 @@ class voip_call extends \cenozo\base_object
    * @access private
    */
   private $time = NULL;
-
-  /**
-   * The asterisk manager object (reference to the voip_manager's object)
-   * @var Shift8 object
-   * @access private
-   */
-  private $manager = NULL;
 }

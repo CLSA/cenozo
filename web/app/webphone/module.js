@@ -11,8 +11,8 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnWebphoneStatus', [
-    'CnWebphoneStatusFactory', 'CnSession',
-    function( CnWebphoneStatusFactory, CnSession ) {
+    'CnWebphoneStatusFactory', 'CnSession', '$interval',
+    function( CnWebphoneStatusFactory, CnSession, $interval ) {
       return {
         templateUrl: module.getFileUrl( 'status.tpl.html' ),
         restrict: 'E',
@@ -22,6 +22,12 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
 
           $scope.tab = 'server';
           $scope.webphoneHelp = 'If the box above doesn\'t display the webphone interface then please contact support.';
+        },
+        link: function( scope, element ) {
+          // update the information once a minute
+          scope.model.updateInformation();
+          var promise = $interval( () => scope.model.updateInformation(), 60000 );
+          element.on( '$destroy', function() { $interval.cancel( promise ); } );
         }
       };
     }
@@ -29,8 +35,8 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnWebphoneStatusFactory', [
-    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http', '$interval', '$timeout',
-    function( CnSession, CnHttpFactory, CnModalMessageFactory, $http, $interval, $timeout ) {
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$http', '$interval',
+    function( CnSession, CnHttpFactory, CnModalMessageFactory, $http, $interval ) {
       var object = function( root ) {
         angular.extend( this, {
           updating: false,
@@ -72,9 +78,9 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
             activeRecordingFile: null,
 
             startRecording: async function() {
-              this.voipOperation = null == this.activeRecordingFile ? 'monitoring' : 'playing';
+              this.voipOperation = null == this.activeRecordingFile ? 'recording' : 'playing';
               var data = {
-                operation: null == this.activeRecordingFile ? 'start_monitoring' : 'play_sound',
+                operation: null == this.activeRecordingFile ? 'start_recording' : 'play_sound',
                 recording_id: this.activeRecording.id,
                 volume: parseInt( this.playbackVolume )
               };
@@ -170,7 +176,7 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
               try {
                 await CnHttpFactory.instance( {
                   path: 'voip/0',
-                  data: { operation: 'stop_monitoring' },
+                  data: { operation: 'stop_recording' },
                   onError: function() { this.voipOperation = null; }
                 } ).patch();
               } catch( error ) {
@@ -227,10 +233,6 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
 
           init( this );
         }
-
-        // update the information now and again in 10 seconds (to give the webphone applet time to load)
-        this.updateInformation();
-        $timeout( () => this.updateInformation(), 10000 );
       };
 
       return { instance: function() { return new object( false ); } };

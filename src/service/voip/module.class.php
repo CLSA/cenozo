@@ -23,15 +23,11 @@ class module extends \cenozo\service\site_restricted_module
     if( 300 > $this->get_status()->get_code() )
     {
       // make sure we can connect to the voip server
-      try
-      {
-        $voip_manager = lib::create( 'business\voip_manager' );
-        $voip_manager->initialize();
-      }
-      catch( \cenozo\exception\base_exception $e )
+      $voip_manager = lib::create( 'business\voip_manager' );
+      if( !$voip_manager->test_connection() )
       {
         $this->get_status()->set_code( 503 );
-        $this->set_data( sprintf( '"%s"', $e->get_raw_message() ) );
+        $this->set_data( 'Unable to connect to Asterisk server.' );
       }
     }
   }

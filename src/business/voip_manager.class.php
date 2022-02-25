@@ -8,8 +8,6 @@
 namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
-require_once SHIFT8_PATH.'/library/Shift8.php';
-
 /**
  * Manages VoIP communications.
  */
@@ -32,50 +30,27 @@ class voip_manager extends \cenozo\singleton
 
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
-    $this->url = sprintf(
-      'http://%s:%d/mxml',
-      // remove the port from the voip domain
-      preg_replace( '/:[0-9]+$/', '', $setting_manager->get_setting( 'voip', 'domain' ) ),
-      $setting_manager->get_setting( 'voip', 'mxml_port' )
-    );
+    $this->domain = $setting_manager->get_setting( 'voip', 'domain' );
+    $this->ami_port = $setting_manager->get_setting( 'voip', 'ami_port' );
     $this->username = $setting_manager->get_setting( 'voip', 'username' );
     $this->password = $setting_manager->get_setting( 'voip', 'password' );
     $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
   }
 
   /**
-   * Initializes the voip manager.
-   * 
-   * This method should be called immediately after initial construction of the manager
-   * @throws exception\runtime, exception\voip
+   * Tests to see if the AMI connection is available
+   * @return boolean
    * @access public
    */
-  public function initialize()
+  public function test_connection()
   {
-    if( !$this->enabled || !is_null( $this->manager ) ) return;
+    if( !$this->enabled ) return false;
 
-    try
-    {
-      // create and connect to the shift8 AJAM interface
-      $this->manager = new \Shift8( $this->url, $this->username, $this->password );
-      if( !$this->manager->login() )
-        throw lib::create( 'exception\runtime',
-          'Unable to connect to the Asterisk server.', __METHOD__ );
-    }
-    catch( \Shift8_Exception $e )
-    {
-      throw lib::create( 'exception\voip',
-        'Failed to initialize Asterisk AJAM interface.', __METHOD__, $e );
-    }
-  }
+    $success = true;
+    try { $this->command( [ 'action' => 'Status' ] ); }
+    catch( \Exception $e ) { $success = false; }
 
-  /**
-   * Performs all shutdown actions
-   * @access public
-   */
-  public function shutdown()
-  {
-    if( $this->enabled && $this->manager ) $this->manager->logoff();
+    return $success;
   }
 
   /**
@@ -87,25 +62,24 @@ class voip_manager extends \cenozo\singleton
   public function get_sip_info( $user = NULL )
   {
     if( !$this->enabled ) return;
-    $this->initialize();
 
     // get the current SIP info
     $peer = static::get_peer_from_user( $user );
-    $s8_event = $this->manager->getSipPeer( $peer );
 
     $sip_info = NULL;
-    if( !is_null( $s8_event ) )
+    foreach( $this->command( [ 'action' => 'PJSIPShowEndpoint', 'endpoint' => $peer ] ) as $object )
     {
-      $peer = $s8_event->get( 'objectname' );
-      $sip_info = array(
-        'peer' => $peer,
-        'user' => static::get_user_from_peer( $peer ),
-        'status' => $s8_event->get( 'status' ),
-        'type' => $s8_event->get( 'channeltype' ),
-        'agent' => $s8_event->get( 'sip_useragent' ),
-        'ip' => $s8_event->get( 'address_ip' ),
-        'port' => $s8_event->get( 'address_port' )
-      );
+      if( array_key_exists( 'Event', $object ) && 'ContactStatusDetail' == $object['Event'] )
+      {
+        $peer = $object['EndpointName'];
+        $sip_info = array(
+          'peer' => $peer,
+          'status' => $object['Status'],
+          'agent' => $object['UserAgent'],
+          'uri' => $object['URI']
+        );
+        break;
+      }
     }
 
     return $sip_info;
@@ -119,24 +93,21 @@ class voip_manager extends \cenozo\singleton
   public function get_sip_info_list()
   {
     if( !$this->enabled ) return;
-    $this->initialize();
 
-    // get the current SIP info
-    $s8_event_list = $this->manager->getSipPeers();
-
+    $util_class_name = lib::get_class_name( 'util' );
     $sip_info_list = array();
-    if( is_array( $s8_event_list ) ) foreach( $s8_event_list as $s8_event )
+    foreach( $this->command( [ 'action' => 'PJSIPShowEndpoints' ] ) as $object )
     {
-      $peer = $s8_event->get( 'objectname' );
-      array_push( $sip_info_list, array(
-        'peer' => $peer,
-        'user' => static::get_user_from_peer( $peer ),
-        'status' => $s8_event->get( 'status' ),
-        'type' => $s8_event->get( 'channeltype' ),
-        'agent' => $s8_event->get( 'sip_useragent' ),
-        'ip' => $s8_event->get( 'address_ip' ),
-        'port' => $s8_event->get( 'address_port' )
-      ) );
+      if( array_key_exists( 'Event', $object ) && 'EndpointList' == $object['Event'] &&
+          array_key_exists( 'DeviceState', $object ) && 'Unavailable' != $object['DeviceState'] )
+      {
+        $peer = $object['ObjectName'];
+        $sip_info_list[] = array(
+          'peer' => $peer,
+          'user_id' => $util_class_name::string_matches_int( $peer ) ? $peer - 10000000 : NULL,
+          'status' => $object['DeviceState']
+        );
+      }
     }
 
     return $sip_info_list;
@@ -151,57 +122,40 @@ class voip_manager extends \cenozo\singleton
   public function rebuild_call_list()
   {
     if( !$this->enabled ) return;
-    $this->initialize();
+
+  $paired_list = array();
+    foreach( $this->command( [ 'action' => 'Status' ] ) as $object )
+    {
+      // go through the status events matching channels with bridged channels and create call objects
+      if( array_key_exists( 'Event', $object ) && 'Status' == $object['Event'] )
+      {
+        $id = $object['BridgeID'];
+        if( !array_key_exists( $id, $paired_list ) ) $paired_list[$id] = array( 'call' => NULL, 'bridge' => NULL );
+        $paired_list[$id][ 'from-trunk-sip' == substr( $object['Context'], 0, 14 ) ? 'bridge' : 'call'] = $object;
+      }
+    }
 
     $this->call_list = array();
-    $events = $this->manager->getStatus();
-
-    if( is_null( $events ) )
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
-
-    foreach( $events as $s8_event )
-      if( 'Status' == $s8_event->get( 'event' ) )
-        $this->call_list[] = lib::create( 'business\voip_call', $s8_event, $this->manager );
-  }
-
-  /**
-   * Returns an array of all SIP calls
-   * 
-   * @return array
-   * @access public
-   */
-  public function get_call_list()
-  {
-    return is_array( $this->call_list ) ?
-      array_filter(
-        $this->call_list,
-        function( $voip_call ) { return 'SIP' == substr( $voip_call->get_channel(), 0, 3 ); }
-      ) :
-      array();
+    foreach( $paired_list as $pair )
+      $this->call_list[] = lib::create( 'business\voip_call', $pair['call'], $pair['bridge'] );
   }
 
   /**
    * Gets a user's active call.  If the user isn't currently on a call then null is returned.
    * 
-   * @param database\user or integer $user Which user's call to retrieve.
-   *        If this parameter is null then the current user's call is returned.
+   * @param database\user or integer $user Which user's call to retrieve (default is the current user)
    * @return voip_call
    * @access public
    */
   public function get_call( $user = NULL )
   {
     if( !$this->enabled ) return NULL;
-    $this->initialize();
 
     if( is_null( $this->call_list ) ) $this->rebuild_call_list();
-
     $peer = static::get_peer_from_user( $user );
 
-    // build the call list
-    $calls = array();
-    foreach( $this->call_list as $voip_call )
-      if( $peer == $voip_call->get_peer() ) return $voip_call;
-
+    // search the call list for the requested user
+    foreach( $this->call_list as $voip_call ) if( $peer == $voip_call->get_peer() ) return $voip_call;
     return NULL;
   }
 
@@ -216,7 +170,6 @@ class voip_manager extends \cenozo\singleton
   public function call( $phone )
   {
     if( !$this->enabled ) return NULL;
-    $this->initialize();
 
     // validate the input
     if( !is_object( $phone ) )
@@ -248,46 +201,131 @@ class voip_manager extends \cenozo\singleton
 
     // originate call (careful, the online API has the arguments in the wrong order)
     $peer = static::get_peer_from_user();
-    $channel = 'SIP/'.$peer;
-    $context = 'from-internal';
-    $extension = $this->prefix.$digits;
-    $priority = 1;
-    if( !$this->manager->originate( $channel, $context, $extension, $priority ) )
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
+    $this->command( [
+      'action' => 'Originate',
+      'Channel' => 'PJSIP/'.$peer,
+      'Context' => 'from-internal',
+      'Exten' => sprintf( '%s%s', $this->prefix, $digits ),
+      'Priority' => 1,
+      'Timeout' => 30000,
+      'Async' => 'true'
+    ] );
 
     // rebuild the call list and return (what should be) the peer's only call
     $this->rebuild_call_list();
     return $this->get_call();
   }
 
+  /** 
+   * Hangs up the call for the given channel
+   * 
+   * @param string $channel The channel (usually from a voip_call object)
+   * @access public
+   */
+  public function hang_up( $channel )
+  {
+    if( !$this->enabled ) return;
+    $this->command( [
+      'action' => 'Hangup',
+      'Channel' => $channel
+    ] );
+  }
+
+  /**
+   * Plays a sound in the given channel
+   * 
+   * @param string $channel The channel (usually from a voip_call object)
+   * @param string $filename The filename of the sound to play (on the Asterisk server)
+   * @param integer $volume A gain value between -4 and +4 (default 0)
+   * @access public
+   */
+  public function play_sound( $channel, $filename, $volume = 0 )
+  {
+    if( !$this->enabled ) return;
+    $this->command( [
+      'action' => 'Originate',
+      'Channel' => 'Local/playback@cenozo',
+      'Context' => 'cenozo',
+      'Exten' => 'playbackspy',
+      'Priority' => 1,
+      'Timeout' => 30000,
+      'Async' => 'true',
+      'Variable' => sprintf( 'ActionID=PlayBack,Sound=%s,Volume=%s,ToChannel=%s', $filename, $volume, $channel )
+    ] );
+  }
+
+  /**
+   * Plays a DTMF tone to the given channel
+   * 
+   * @param string $channel The channel (usually from a voip_call object)
+   * @param string $dtmf The tone to play [0-9aabcdgs]
+   * @access public
+   */
+  public function play_dtmf( $channel, $dtmf )
+  {
+    if( !$this->enabled ) return;
+    $this->command( [
+      'action' => 'PlayDTMF',
+      'Channel' => $channel,
+      'Digit' => $dtmf
+    ] );
+  }
+
+  /**
+   * Starts recording the channel
+   * 
+   * @param string $channel The channel (usually from a voip_call object)
+   * @param string $filename The name fo the destination file to be stored on the asterisk server
+   * @param string $format The type of file to write (default is wav)
+   * @access public
+   */
+  public function start_recording( $channel, $filename, $format = 'wav' )
+  {
+    if( !$this->enabled ) return;
+    $this->command( [
+      'action' => 'Monitor',
+      'Channel' => $channel,
+      'File' => $filename,
+      'Format' => $format
+    ] );
+  }
+
+  /**
+   * Stops recording the channel
+   * 
+   * @param string $channel The channel (usually from a voip_call object)
+   * @access public
+   */
+  public function stop_recording( $channel )
+  {
+    if( !$this->enabled ) return;
+    $this->command( [
+      'action' => 'StopMonitor',
+      'Channel' => $channel
+    ] );
+  }
+
   /**
    * Opens a listen-only connection to an existing call
    * 
-   * @param voip_call $voip_call The call to spy on
+   * @param string $channel The channel (usually from a voip_call object)
    * @access public
    */
-  public function spy( $voip_call )
+  public function spy( $channel )
   {
     if( !$this->enabled ) return;
-    $this->initialize();
 
     $peer = static::get_peer_from_user();
-    $channel = 'SIP/'.$peer;
-    // play sound in local channel
-    if( !$this->manager->originate(
-      $channel,        // channel
-      'cenozo',        // context
-      'chanspy',       // extension
-      1,               // priority
-      false,           // application
-      false,           // data
-      30000,           // timeout
-      false,           // callerID
-      'ActionID=Spy,'. // variables
-      'ToChannel='.$voip_call->get_channel() ) )
-    {
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
-    }
+    $this->command( [
+      'action' => 'Originate',
+      'Channel' => 'PJSIP/'.$peer,
+      'Context' => 'cenozo',
+      'Exten' => 'chanspy',
+      'Priority' => 1,
+      'Timeout' => 30000,
+      'Async' => 'true',
+      'Variable' => sprintf( 'ActionID=Spy,ToChannel=%s', $channel )
+    ] );
 
     // rebuild the call list and return (what should be) the peer's only call
     $this->rebuild_call_list();
@@ -338,15 +376,68 @@ class voip_manager extends \cenozo\singleton
   public static function get_user_from_peer( $peer )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    return $util_class_name::string_matches_int( $peer ) ? $peer - 10000000 : NULL;
+    $user_id = $util_class_name::string_matches_int( $peer ) ? $peer - 10000000 : NULL;
+    return is_null( $user_id ) ? NULL : lib::create( 'database\user', $user_id );
   }
 
   /**
-   * The asterisk manager object
-   * @var Shift8 object
-   * @access private
+   * Sends a command to the asterisk server
+   * 
+   * @param array $command A list of parameters that make up the command
+   * @return array( array) An array of associative arrays with all of the server's response to the command
+   * @access protected
    */
-  private $manager = NULL;
+  protected function command( $command )
+  {
+    // open a socket to the server
+    $socket = fsockopen( $this->domain, $this->ami_port, $error_code, $error_message, 5 );
+    if( !$socket ) throw lib::create( 'exception\voip', $error_message, __METHOD__ );
+
+    // login, send the command, then logout
+    $this->send( $socket, [ 'action' => 'login', 'username' => $this->username, 'secret' => $this->password ] );
+    $this->send( $socket, $command );
+    $this->send( $socket, [ 'action' => 'logoff' ] );
+
+    // now read and return the server's response
+    $output = '';
+    while( !feof( $socket ) ) $output .= fread( $socket, 8192 );
+    fclose( $socket );
+
+    $data = array();
+    $item = array();
+    foreach( explode( "\r\n", $output ) as $line )
+    {
+      if( 0 == strlen( $line ) ) 
+      {  
+        if( 0 < count( $item ) ) 
+        {   
+          $data[] = $item;
+          $item = array();
+        }   
+      }   
+      else if( preg_match( '/([^:]+): (.*)/', $line, $matches ) ) 
+      {   
+        $item[$matches[1]] = $matches[2];
+      }  
+    }
+
+    return $data;
+  }
+
+  /**
+   * Sends an operation to the server (only to be used by the command() method)
+   * 
+   * @param resource $socket An open socket connection to the Asterisk server
+   * @param array $command An associative array of command parameters to send
+   */
+  private function send( $socket, $command )
+  {
+    // build and send the message to the server
+    $message = '';
+    foreach( $command as $key => $value ) $message .= sprintf( "%s: %s\r\n", $key, $value );
+    $message .= "\r\n";
+    fputs( $socket, $message );
+  }
 
   /**
    * An array of all currently active calls.
@@ -364,11 +455,18 @@ class voip_manager extends \cenozo\singleton
   private $enabled = false;
 
   /**
-   * The url that asterisk's AJAM is running on
+   * The domain of the Asterisk server
    * @var string
    * @access private
    */
-  private $url = '';
+  private $domain = 'localhost';
+
+  /**
+   * The port that asterisk's AMI interface is running on
+   * @var integer
+   * @access private
+   */
+  private $ami_port = 5038;
 
   /**
    * Which username to use when connecting to the manager
