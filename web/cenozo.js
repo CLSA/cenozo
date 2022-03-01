@@ -2204,6 +2204,7 @@ cenozo.directive( 'cnRecordView', [
       restrict: 'E',
       scope: {
         model: '=',
+        simple: '@',
         footerAtTop: '@',
         removeInputs: '@',
         initCollapsed: '=',
@@ -7493,6 +7494,49 @@ cenozo.service( 'CnModalPasswordFactory', [
     return {
       instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); },
       isOpen: function() { return isOpen; }
+    };
+  }
+] );
+
+/* ######################################################################################################## */
+
+/**
+ * A factory for viewing a record in a modal window
+ */
+cenozo.service( 'CnModalRecordViewFactory', [
+  '$uibModal', '$state', '$window', '$filter',
+  function( $uibModal, $state, $window, $filter ) {
+    var object = function( params ) {
+      angular.extend( this, {
+        title: 'Title',
+        closeText: 'Close',
+        size: null // can be null (normal), "sm" or "lg"
+      } );
+      angular.extend( this, params );
+
+      var self = this;
+      this.show = function() {
+        this.modal = $uibModal.open( {
+          backdrop: 'static',
+          size: this.size,
+          modalFade: true,
+          templateUrl: cenozo.getFileUrl( 'cenozo', 'modal-record-view.tpl.html' ),
+          controller: [ '$scope', '$uibModalInstance', function( $scope, $uibModalInstance ) {
+            angular.extend( $scope, {
+              model: self,
+              close: function() { $uibModalInstance.close( false ); }
+            } );
+            $scope.model.model.viewModel.onView( true );
+          } ]
+        } );
+        return this.modal.result;
+      };
+
+      this.close = function() { if( angular.isDefined( this.modal ) ) this.modal.close( false ); };
+    };
+
+    return {
+      instance: function( params ) { return new object( angular.isUndefined( params ) ? {} : params ); }
     };
   }
 ] );
