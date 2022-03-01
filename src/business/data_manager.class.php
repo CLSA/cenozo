@@ -49,6 +49,8 @@ class data_manager extends \cenozo\singleton
    */
   public function get_value( $key )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     // parse the key
     $parts = $this->parse_key( $key );
     $subject = $parts[0];
@@ -56,9 +58,42 @@ class data_manager extends \cenozo\singleton
     $value = NULL;
     if( 'constant' == $subject )
     {
-      if( 2 != count( $parts ) )
-        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-      $value = $parts[1];
+      if( 1 == preg_match( '/date\(([^)]*)\)(.(add|sub)\((.+)\))?.format\(([^)]+)\)/', $key, $matches ) )
+      {
+        // constant.date(format) with optional .add(interval) or .sub(interval)
+        // for possible interval values see https://www.php.net/manual/en/dateinterval.construct.php
+        $date = NULL;
+        $date_string = trim( $matches[1], ' \'"' );
+        try
+        {
+          $date = $util_class_name::get_datetime_object( $date_string );
+        }
+        catch( \Exception $e )
+        {
+          throw lib::create( 'exception\argument', 'date', $date_string, __METHOD__, $e );
+        }
+
+        if( 0 < strlen( $matches[2] ) )
+        {
+          $interval_operation = $matches[3];
+          $interval_string = trim( $matches[4], ' \'"' );
+          try
+          {
+            $date->$interval_operation( new \DateInterval( $interval_string ) );
+          }
+          catch( \Exception $e )
+          {
+            throw lib::create( 'exception\argument', 'interval', $interval_string, __METHOD__, $e );
+          }
+        }
+
+        $format = trim( $matches[5], ' \'"' );
+        $value = $date->format( $format );
+      }
+      else
+      {
+        $value = $parts[1];
+      }
     }
     else if( 'cookie' == $subject )
     {
