@@ -35,6 +35,7 @@ class get extends \cenozo\service\service
     $script_class_name = lib::get_class_name( 'database\script' );
     $webphone_class_name = lib::get_class_name( 'database\webphone' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
+    $application_class_name = lib::get_class_name( 'database\application' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
@@ -150,6 +151,8 @@ class get extends \cenozo\service\service
 
       if( $setting_manager->get_setting( 'module', 'script' ) )
       {
+        $db_pine_application = $application_class_name::get_unique_record( 'name', 'pine' );
+
         // get a list of all special scripts
         $script_sel = lib::create( 'database\select' );
         $script_sel->from( 'script' );
@@ -157,8 +160,16 @@ class get extends \cenozo\service\service
         $script_sel->add_column( 'name' );
         $script_sel->add_column( 'repeated' );
         $script_sel->add_column( 'supporting' );
+        $script_sel->add_column( 'IF( pine_qnaire_id IS NULL, "limesurvey", "pine" )', 'application', false );
         $script_sel->add_column(
-          sprintf( 'CONCAT( "%s/index.php/", script.sid )', LIMESURVEY_URL ), 'url', false );
+          sprintf(
+            'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", CONCAT( "%s/index.php/", script.sid ) )',
+            is_object( $db_pine_application ) ? $db_pine_application->url : '',
+            LIMESURVEY_URL
+          ),
+          'url',
+          false
+        );
         $script_mod = lib::create( 'database\modifier' );
         $script_mod->join( 'application_has_script', 'script.id', 'application_has_script.script_id' );
         $script_mod->where( 'application_id', '=', $db_application->id );

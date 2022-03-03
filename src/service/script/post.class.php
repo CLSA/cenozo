@@ -37,10 +37,11 @@ class post extends \cenozo\service\post
   {
     parent::setup();
 
+    $post_object = $this->get_file_as_object();
     $db_script = $this->get_leaf_record();
 
     // create a tracking event types for the new non-repeating scripts
-    if( false == $db_script->repeated )
+    if( false == $db_script->repeated && $post_object->create_event_types )
     {
       $event_type_class_name = lib::get_class_name( 'database\event_type' );
 
