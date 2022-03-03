@@ -200,7 +200,6 @@ abstract class service extends \cenozo\base_object
         // make sure the service exists, is allowed and the module validates
         if( is_null( $db_service ) )
         {
-          log::debug( $method, $subject, $has_resource );
           $this->status->set_code( 404 );
           break;
         }
