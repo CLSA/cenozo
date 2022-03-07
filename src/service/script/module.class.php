@@ -27,7 +27,7 @@ class module extends \cenozo\service\module
     $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
 
     $select->add_column(
-      'IF( script.sid IS NOT NULL, "Limesurvey", IF( script.pine_qnaire_id IS NOT NULL, "Pine", NULL ) )',
+      'IF( script.sid IS NOT NULL, "limesurvey", IF( script.pine_qnaire_id IS NOT NULL, "pine", NULL ) )',
       'application',
       false
     );

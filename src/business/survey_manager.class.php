@@ -148,7 +148,7 @@ class survey_manager extends \cenozo\singleton
       $db_last_consent = $db_participant->get_last_consent( $db_consent_type );
       if( !is_null( $db_last_consent ) &&
           !$db_last_consent->accept &&
-          false !== strpos( $db_last_consent->note, 'Created by Pine after questionnaire "Withdrawal" was completed' ) )
+          false !== strpos( $db_last_consent->note, 'Created by Pine after questionnaire "Withdraw" was completed' ) )
       {
         $db_consent = lib::create( 'database\consent' );
         $db_consent->participant_id = $db_participant->id;

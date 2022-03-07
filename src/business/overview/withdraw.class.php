@@ -18,6 +18,7 @@ class withdraw extends \cenozo\business\overview\base_overview
    */
   protected function build()
   {
+    // NOTE: this overview has been disabled since it only supports the old Limesurvey Withdraw script
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $survey_manager_class_name = lib::get_class_name( 'business\survey_manager' );
 

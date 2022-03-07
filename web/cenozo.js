@@ -7997,52 +7997,31 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           if( !angular.isObject( urlParams ) ) urlParams = {};
 
           var baseUrl = this.script.url;
-          if( 'pine' == this.script.application ) {
-            if( null == this.token ) {
-              // the token doesn't exist so create it
-              var modal = CnModalMessageFactory.instance( {
-                title: 'Please Wait',
-                message: 'Please wait while the participant\'s data is retrieved.',
-                block: true
-              } );
-              modal.show();
+          if( null == this.token ) {
+            // the token doesn't exist so create it
+            var modal = CnModalMessageFactory.instance( {
+              title: 'Please Wait',
+              message: 'Please wait while the participant\'s data is retrieved.',
+              block: true
+            } );
+            modal.show();
 
-              var response = await CnHttpFactory.instance( {
-                path: 'script/' + this.script.id + '/pine_response',
-                data: { identifier: this.identifier },
-                onError: function( error ) {
-                  modal.close();
-                  CnModalMessageFactory.httpError( error );
-                }
-              } ).post();
+            var response = await CnHttpFactory.instance( {
+              path: ['script', this.script.id, 'pine' == this.script.application ? 'pine_response' : 'token' ].join( '/' ),
+              data: { identifier: this.identifier },
+              onError: function( error ) {
+                modal.close();
+                CnModalMessageFactory.httpError( error );
+              }
+            } ).post();
 
+            // close the wait message
+            modal.close();
+
+            if( 'pine' == this.script.application ) {
               this.token = response.data;
               if( angular.isDefined( this.onReady ) ) this.onReady();
-            }
-
-            baseUrl += this.token.token;
-          } else {
-            if( null == this.token ) {
-              // the token doesn't exist so create it
-              var modal = CnModalMessageFactory.instance( {
-                title: 'Please Wait',
-                message: 'Please wait while the participant\'s data is retrieved.',
-                block: true
-              } );
-              modal.show();
-
-              var response = await CnHttpFactory.instance( {
-                path: 'script/' + this.script.id + '/token',
-                data: { identifier: this.identifier },
-                onError: function( error ) {
-                  modal.close();
-                  CnModalMessageFactory.httpError( error );
-                }
-              } ).post();
-
-              // close the wait message
-              modal.close();
-
+            } else {
               // now get the new token string we just created and use it to open the script window
               var subResponse = await CnHttpFactory.instance( {
                 path: ['script', this.script.id, 'token', response.data].join( '/' )
@@ -8050,8 +8029,12 @@ cenozo.factory( 'CnScriptLauncherFactory', [
 
               this.token = { token: subResponse.data.token, completed: 'N' };
             }
+          }
 
-            // add a check to supporting scripts
+          if( 'pine' == this.script.application ) {
+            baseUrl += this.token.token;
+          } else {
+            // add a check to limesurvey supporting scripts
             if( this.script.supporting && !this.script.repeated ) {
               var self = this;
               await CnHttpFactory.instance ( {
@@ -8078,7 +8061,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           }
 
           // launch the script
-          /* 
+          /* TODO: for the future
            * Note: we'd like to use URLSearchParams but it doesn't work for older browsers.  The following is fine for now
            * however it does not encode the url parameters so it should be replaced with the following block once old versions
            * of FF are no longer required (due to Java for Webphone):
