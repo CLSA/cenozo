@@ -27,7 +27,7 @@ class get extends \cenozo\service\get
       $db_participant = $participant_class_name::get_record_from_identifier( $this->get_resource_value( 1 ) );
       if( !is_null( $db_participant ) )
       {
-        $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+        $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
         try
         {
           $select_obj = array( 'column' => array( 'token', 'end_datetime' ) );

@@ -25,6 +25,7 @@ class module extends \cenozo\service\module
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $script_class_name = lib::get_class_name( 'database\script' );
     $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+    $session = lib::create( 'business\session' );
 
     $select->add_column(
       'IF( script.sid IS NOT NULL, "limesurvey", IF( script.pine_qnaire_id IS NOT NULL, "pine", NULL ) )',
@@ -45,7 +46,7 @@ class module extends \cenozo\service\module
       // link to pine qnaire list
       $select->add_column( 'survey.title', 'qnaire_title', false ); // the default if the following doesn't work
 
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', $session->get_pine_application() );
       if( $cenozo_manager->exists() )
       {
         $select_obj = array( 'column' => array( 'id', 'name' ) );
@@ -109,19 +110,18 @@ class module extends \cenozo\service\module
       // add whether the current application has access to this script
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'script.id', '=', 'application_has_script.script_id', false );
-      $join_mod->where( 'application_has_script.application_id', '=',
-        lib::create( 'business\session' )->get_application()->id );
+      $join_mod->where( 'application_has_script.application_id', '=', $session->get_application()->id );
       $modifier->join_modifier( 'application_has_script', $join_mod, 'left' );
       $select->add_column( 'application_has_script.application_id IS NOT NULL', 'access', false );
     }
 
     if( $select->has_column( 'url' ) )
     {
-      $db_pine_application = $application_class_name::get_unique_record( 'name', 'pine' );
+      $db_pine_application = $session->get_pine_application();
       $select->add_column(
         sprintf(
           'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", CONCAT( "%s/index.php/", script.sid ) )',
-          is_object( $db_pine_application ) ? $db_pine_application->url : '',
+          is_null( $db_pine_application ) ? '' : $db_pine_application->url,
           LIMESURVEY_URL
         ),
         'url',

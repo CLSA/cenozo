@@ -294,7 +294,7 @@ class script extends record
   public static function update_data()
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
     if( $cenozo_manager->exists() )
     {
       // get a list of all pine qnaire ids

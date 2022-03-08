@@ -7997,7 +7997,7 @@ cenozo.factory( 'CnScriptLauncherFactory', [
           if( !angular.isObject( urlParams ) ) urlParams = {};
 
           var baseUrl = this.script.url;
-          if( null == this.token ) {
+          if( !this.token ) {
             // the token doesn't exist so create it
             var modal = CnModalMessageFactory.instance( {
               title: 'Please Wait',

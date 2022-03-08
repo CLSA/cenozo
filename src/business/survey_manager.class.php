@@ -119,7 +119,7 @@ class survey_manager extends \cenozo\singleton
     $db_script = $script_class_name::get_unique_record( 'name', 'Withdraw' );
     if( is_null( $db_script ) ) throw lib::create( 'exception\runtime', 'Withdraw script not found.', __METHOD__ );
 
-    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
     $cenozo_manager->delete( sprintf(
       'qnaire/%d/response/participant_id=%d',
       $db_script->pine_qnaire_id,

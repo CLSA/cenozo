@@ -26,23 +26,27 @@ class query extends \cenozo\service\query
    */
   protected function execute()
   {
+    $application_class_name = lib::get_class_name( 'database\application' );
+
+    $data = array();
     $sel_string = $this->get_argument( 'select', NULL );
     $mod_string = $this->get_argument( 'modifier', NULL );
 
-    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
-    if( $cenozo_manager->exists() )
+    $db_pine_application = lib::create( 'business\session' )->get_pine_application();
+    if( !is_null( $db_pine_application ) )
     {
-      $url = 'qnaire?no_activity=1';
-      if( !is_null( $sel_string ) ) $url .= '&'.$sel_string;
-      if( !is_null( $mod_string ) ) $url .= '&'.$mod_string;
+      $cenozo_manager = lib::create( 'business\cenozo_manager', $db_pine_application );
+      if( $cenozo_manager->exists() )
+      {
+        $url = 'qnaire?no_activity=1';
+        if( !is_null( $sel_string ) ) $url .= '&'.$sel_string;
+        if( !is_null( $mod_string ) ) $url .= '&'.$mod_string;
 
-      // get data from pine and pass it along
-      $data = $cenozo_manager->get( $url );
-      $this->set_data( $data );
+        // get data from pine and pass it along
+        $data = $cenozo_manager->get( $url );
+      }
     }
-    else
-    {
-      $this->set_data( array() );
-    }
+
+    $this->set_data( $data );
   }
 }

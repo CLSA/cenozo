@@ -209,6 +209,20 @@ class session extends \cenozo\singleton
   public function get_setting() { return $this->db_setting; }
 
   /**
+   * Gets the pine application object (if one exists)
+   */
+  public function get_pine_application()
+  {
+    $application_class_name = lib::get_class_name( 'database\application' );
+    $application_mod = lib::create( 'database\modifier' );
+    $application_mod->join( 'application_type', 'application.application_type_id', 'application_type.id' );
+    $application_mod->where( 'application_type.name', '=', 'pine' );
+    $application_mod->limit( 1 );
+    $application_list = $application_class_name::select_objects( $application_mod );
+    return 0 < count( $application_list ) ? current( $application_list ) : NULL;
+  }
+
+  /**
    * Returns a list of all active sessions belonging to the current user
    * 
    * @return array
