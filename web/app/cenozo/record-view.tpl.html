@@ -1,15 +1,16 @@
-<div class="record-view rounded">
+<div ng-class="{ 'record-view':!simple, 'rounded':!simple }">
   <div class="container-fluid bg-primary rounded-top"
-           data-toggle="collapse"
-           data-target="#{{ model.module.subject.camel }}View"
-           ng-click="collapsed = !collapsed"
-           uib-tooltip-html="
-             '<div>Created on ' +
-             ( model.viewModel.record.create_timestamp | cnDatetime:'datetimesecond' ) + '<br/>' +
-             'Last edit on ' +
-             ( model.viewModel.record.update_timestamp | cnDatetime:'datetimesecond' ) + '</div>'"
-           tooltip-enable="{{ showTimestamps }}"
-           style="cursor:pointer;">
+       ng-if="!simple"
+       data-toggle="collapse"
+       data-target="#{{ model.module.subject.camel }}View"
+       ng-click="collapsed = !collapsed"
+       uib-tooltip-html="
+         '<div>Created on ' +
+         ( model.viewModel.record.create_timestamp | cnDatetime:'datetimesecond' ) + '<br/>' +
+         'Last edit on ' +
+         ( model.viewModel.record.update_timestamp | cnDatetime:'datetimesecond' ) + '</div>'"
+       tooltip-enable="{{ showTimestamps }}"
+       style="cursor:pointer;">
     <h4>
       <div class="pull-right">
         <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
@@ -55,7 +56,7 @@
         </button>
       </div>
     </div>
-    <div class="form-body collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
+    <div ng-class="{'form-body':!simple, 'collapse':!simple, 'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
       <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}" ng-if="groupHasVisibleInputs( group )">
         <div ng-if="0 < group.title.length"
              class="container-fluid bg-info"
@@ -85,7 +86,7 @@
         </div>
       </div>
     </div>
-    <div class="form-footer text-right rounded-bottom bg-info">
+    <div class="form-footer text-right rounded-bottom bg-info" ng-if="!simple">
       <cn-extra-operation-button-group class="pull-left" model="model" type="view">
       </cn-extra-operation-button-group>
       <div class="btn-group">

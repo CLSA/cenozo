@@ -1,0 +1,11 @@
+<form class="noselect">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title">{{ model.title }}</h4>
+  </div>
+  <div class="modal-body allow-select">
+    <cn-record-view simple="true" model="model.model"></cn-record-view>
+  </div>
+  <div class="modal-footer bg-info">
+    <button type="button" cn-autofocus class="btn btn-primary" ng-click="close()">{{ model.closeText }}</button>
+  </div>
+</form>
