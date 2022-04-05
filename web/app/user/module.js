@@ -292,7 +292,7 @@ cenozoApp.defineModule( { name: 'user', models: ['add', 'list', 'view'], create:
           self.listenToCallDisabled =
             !CnSession.voip.info ||
             !CnSession.voip.info.status ||
-            'OK' != CnSession.voip.info.status.substr( 0, 2 ) ||
+            'Reachable' != CnSession.voip.info.status ||
             !self.record.in_call;
 
           try {

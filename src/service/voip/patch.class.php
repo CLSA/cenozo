@@ -32,7 +32,6 @@ class patch extends \cenozo\service\service
   protected function create_resource( $index )
   {
     $id = $this->get_resource_value( $index );
-    $voip_call = lib::create( 'business\voip_manager' )->get_call( $id ? $id : NULL );
     return lib::create( 'business\voip_manager' )->get_call( $id ? $id : NULL );
   }
 
@@ -50,7 +49,7 @@ class patch extends \cenozo\service\service
 
     $setting_manager = lib::create( 'business\setting_manager' );
     if( !$setting_manager->get_setting( 'module', 'recording' ) &&
-        in_array( $operation, array( 'play_sound', 'start_monitoring', 'stop_monitoring' ) ) )
+        in_array( $operation, array( 'play_sound', 'start_recording', 'stop_recording' ) ) )
     {
       log::warning( sprintf( 'Sending %s command to voip but recording module is not installed.', $operation ) );
       $error_code = 500;
@@ -66,13 +65,13 @@ class patch extends \cenozo\service\service
       if( !( array_key_exists( 'recording_file_id', $data ) ||
              array_key_exists( 'filename', $data ) ) ) $error_code = 412;
     }
-    else if( 'start_monitoring' == $operation )
+    else if( 'start_recording' == $operation )
     {
       // make sure we have a recording or a filename
       if( !( array_key_exists( 'recording_id', $data ) ||
              array_key_exists( 'filename', $data ) ) ) $error_code = 412;
     }
-    else if( 'stop_monitoring' == $operation )
+    else if( 'stop_recording' == $operation )
     {
       // no other arguments required
     }
@@ -102,38 +101,31 @@ class patch extends \cenozo\service\service
       }
       else if( 'play_sound' == $data['operation'] )
       {
-        if( array_key_exists( 'recording_file_id', $data ) )
-        {
-          $filename = lib::create( 'database\recording_file', $data['recording_file_id'] )->filename;
-        }
-        else // filename is provided
-        {
-          $filename = $data['filename'];
-        }
-
-        // volume isn't required
-        $volume = array_key_exists( 'volume', $data ) ? intval( $data['volume'] ) : 0;
-        $voip_call->play_sound( $filename, $volume );
+        $voip_call->play_sound(
+          // sound file
+          array_key_exists( 'recording_file_id', $data ) ?
+            lib::create( 'database\recording_file', $data['recording_file_id'] )->filename :
+            $data['filename'],
+          // volume
+          array_key_exists( 'volume', $data ) ? intval( $data['volume'] ) : 0
+        );
       }
-      else if( 'start_monitoring' == $data['operation'] )
+      else if( 'start_recording' == $data['operation'] )
       {
-        if( array_key_exists( 'recording_id', $data ) )
-        {
-          $filename = lib::create( 'database\recording', $data['recording_id'] )->name;
-        }
-        else // filename is provided
-        {
-          $filename = $data['filename'];
-        }
-        $voip_call->start_monitoring( $filename );
+        $voip_call->start_recording( 
+          // destination file
+          array_key_exists( 'recording_id', $data ) ?
+            lib::create( 'database\recording', $data['recording_id'] )->name :
+            $data['filename']
+        );
       }
-      else if( 'stop_monitoring' == $data['operation'] )
+      else if( 'stop_recording' == $data['operation'] )
       {
-        $voip_call->stop_monitoring();
+        $voip_call->stop_recording();
       }
       else if( 'spy' )
       {
-        lib::create( 'business\voip_manager' )->spy( $voip_call );
+        $voip_call->spy();
       }
     }
 

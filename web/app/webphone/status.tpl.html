@@ -42,14 +42,8 @@
             <div class="row">
               <label class="col-sm-6 control-label">Webphone Status</label>
               <div class="col-sm-6 form-text"
-                   ng-class="{ 'text-success': model.voip.info && 'OK' == model.voip.info.status.substr( 0, 2 ) }">
+                   ng-class="{ 'text-success': model.voip.info && 'Reachable' == model.voip.info.status }">
                 {{ model.voip.info ? model.voip.info.status : 'Offline' }}
-              </div>
-            </div>
-            <div class="row">
-              <label class="col-sm-6 control-label">Webphone Type</label>
-              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
-                {{ model.voip.info ? model.voip.info.type : 'N/A' }}
               </div>
             </div>
             <div class="row">
@@ -59,21 +53,21 @@
               </div>
             </div>
             <div class="row">
-              <label class="col-sm-6 control-label">Webphone IP</label>
+              <label class="col-sm-6 control-label">Webphone URI</label>
               <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
-                {{ model.voip.info ? model.voip.info.ip : 'N/A' }}
+                {{ model.voip.info ? model.voip.info.uri : 'N/A' }}
               </div>
             </div>
             <div class="row">
-              <label class="col-sm-6 control-label">Webphone Port</label>
-              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.info }">
-                {{ model.voip.info ? model.voip.info.port : 'N/A' }}
-              </div>
-            </div>
-            <div class="row">
-              <label class="col-sm-6 control-label">Active Call Information</label>
+              <label class="col-sm-6 control-label">Active Call Number</label>
               <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.call }">
-                {{ model.voip.call ? model.voip.call : 'No Connection' }}
+                {{ model.voip.call ? model.voip.call.number : 'Not Connected' }}
+              </div>
+            </div>
+            <div class="row">
+              <label class="col-sm-6 control-label">Active Call Time</label>
+              <div class="col-sm-6 form-text" ng-class="{ 'text-success': model.voip.call }">
+                {{ model.voip.call ? (model.voip.call.time|cnSeconds) : 'N/A' }}
               </div>
             </div>
             <hr />
@@ -94,7 +88,7 @@
                   <select ng-model="model.activeRecording"
                           ng-options="item as item.name for item in model.recordingList"
                           ng-change="model.selectRecording()"
-                          ng-disabled="'monitoring' == model.voipOperation"
+                          ng-disabled="'recording' == model.voipOperation"
                           class="form-control">
                   </select>
                 </div>
@@ -106,8 +100,7 @@
                   <select ng-model="model.activeRecordingFile"
                           ng-options="item as item.name for item in model.activeRecording.fileList"
                           ng-change="model.selectRecordingFile()"
-                          ng-disabled="'monitoring' == model.voipOperation ||
-                                       0 == model.activeRecording.fileList.length"
+                          ng-disabled="'recording' == model.voipOperation || 0 == model.activeRecording.fileList.length"
                           class="form-control"></select>
                 </div>
               </div>
@@ -116,8 +109,7 @@
                 <div class="col-sm-6">
                   <select ng-model="model.playbackVolume"
                           ng-options="volume for volume in ['+4','+3','+2','+1','0','-1','-2','-3','-4']"
-                          ng-disabled="'monitoring' == model.voipOperation ||
-                                       0 == model.activeRecording.fileList.length"
+                          ng-disabled="'recording' == model.voipOperation || 0 == model.activeRecording.fileList.length"
                           class="form-control"></select>
                 </div>
               </div>
@@ -137,7 +129,7 @@
                   <button type="button"
                           class="btn btn-primary full-width"
                           ng-click="model.startRecording()"
-                          ng-disabled="'monitoring' == model.voipOperation || null == model.activeRecording">
+                          ng-disabled="'recording' == model.voipOperation || null == model.activeRecording">
                     <span ng-if="model.activeRecording.record">
                       Record <i class="glyphicon glyphicon-record"></i>
                     </span>
@@ -156,7 +148,7 @@
                   <button type="button"
                           class="btn btn-danger full-width"
                           ng-click="model.stopRecording()"
-                          ng-disabled="'monitoring' != model.voipOperation">
+                          ng-disabled="'recording' != model.voipOperation">
                     Stop <i class="glyphicon glyphicon-stop"></i>
                   </button>
                 </div>
@@ -166,7 +158,13 @@
         </div>
         <div class="col-sm-6">
           <h4 class="text-center">Client</h4>
-          <div class="form-body well text-center" uib-tooltip="{{ webphoneHelp }}" tooltip-placement="bottom">
+          <button class="btn btn-primary full-width"
+                  ng-click="model.showWebphone = true"
+                  ng-if="!model.showWebphone">Launch Webphone</button>
+          <div class="form-body well text-center"
+               ng-if="model.showWebphone"
+               uib-tooltip="{{ webphoneHelp }}"
+               tooltip-placement="bottom">
             <iframe width="100%" height="400" ng-src="{{ model.webphoneUrl }}">
               Your browser does not support the Java-based webphone, please use another browser
               if you wish to use the webphone.
