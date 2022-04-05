@@ -43,6 +43,7 @@ class get extends \cenozo\service\service
     $this->set_data( array(
       'enabled' => $voip_manager->get_enabled(),
       'info' => $voip_manager->get_sip_info(),
-      'call' => !is_null( $voip_call ) ? $voip_call->get_channel() : null ) );
+      'call' => !is_null( $voip_call ) ? array( 'number' => $voip_call->get_number(), 'time' => $voip_call->get_time() ) : NULL
+    ) );
   }
 }

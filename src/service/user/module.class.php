@@ -194,41 +194,11 @@ class module extends \cenozo\service\site_restricted_module
       $select->add_column( 'IFNULL( participant.uid, "none" )', 'assignment_uid', false );
     }
 
-    if( $select->has_column( 'in_call' ) )
+    if( $select->has_column( 'in_call' ) || $select->has_column( 'webphone' ) )
     {
       if( !$setting_manager->get_setting( 'module', 'voip' ) )
       {
         $select->add_constant( NULL, 'in_call' );
-      }
-      else
-      {
-        try
-        {
-          $voip_manager = lib::create( 'business\voip_manager' );
-          $voip_manager->rebuild_call_list();
-          $user_list = array_reduce( $voip_manager->get_call_list(), function( $list, $voip_call ) {
-            if( 'Up' == $voip_call->get_state() )
-            {
-              $user = $voip_call->get_user();
-              if( !is_null( $user ) ) array_push( $list, $user );
-            }
-            return $list;
-          }, array() );
-          sort( $user_list );
-          $in_call_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
-          $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_list ), 'in_call', false );
-        }
-        catch( \cenozo\exception\runtime $e )
-        {
-          $select->add_constant( NULL, 'in_call' );
-        }
-      }
-    }
-
-    if( $select->has_column( 'webphone' ) )
-    {
-      if( !$setting_manager->get_setting( 'module', 'voip' ) )
-      {
         $select->add_constant( NULL, 'webphone' );
       }
       else
@@ -236,16 +206,28 @@ class module extends \cenozo\service\site_restricted_module
         try
         {
           $voip_manager = lib::create( 'business\voip_manager' );
-          $user_list = array_reduce( $voip_manager->get_sip_info_list(), function( $list, $sip_info ) {
-            if( 'OK' == substr( $sip_info['status'], 0, 2 ) ) array_push( $list, $sip_info['user'] );
+          $sip_info_list = $voip_manager->get_sip_info_list();
+
+          $webphone_list = array_reduce( $sip_info_list, function( $list, $sip_info ) {
+            $list[] = $sip_info['user_id'];
             return $list;
           }, array() );
-          sort( $user_list );
-          $webphone_list = 0 < count( $user_list ) ? implode( ',', $user_list ) : '0';
-          $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_list ), 'webphone', false );
+          sort( $webphone_list );
+          $webphone_string = 0 < count( $webphone_list ) ? implode( ',', $webphone_list ) : '0';
+          
+          $in_call_list = array_reduce( $sip_info_list, function( $list, $sip_info ) {
+            if( 'In use' == $sip_info['status'] ) $list[] = $sip_info['user_id'];
+            return $list;
+          }, array() );
+          sort( $in_call_list );
+          $in_call_string = 0 < count( $in_call_list ) ? implode( ',', $in_call_list ) : '0';
+          
+          $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_string ), 'webphone', false );
+          $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_string ), 'in_call', false );
         }
         catch( \cenozo\exception\runtime $e )
         {
+          $select->add_constant( NULL, 'in_call' );
           $select->add_constant( NULL, 'webphone' );
         }
       }
