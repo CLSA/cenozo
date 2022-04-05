@@ -319,14 +319,21 @@ class export_column extends has_rank
         $column = 'default' == $subtype ? 'default_site_id' : 'site_id';
         if( !$modifier->has_join( $table_name ) )
         {
-          if( !$modifier->has_join( 'participant_site' ) )
+          $participant_site_table_name = sprintf( 'participant_site_%s', $application_id );
+          if( !$modifier->has_join( $participant_site_table_name ) )
           {
             $join_mod = lib::create( 'database\modifier' );
-            $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-            $join_mod->where( 'participant_site.application_id', '=', $application_id );
-            $modifier->join_modifier( 'participant_site', $join_mod );
+            $join_mod->where( 'participant.id', '=', sprintf( '%s.participant_id', $participant_site_table_name ), false );
+            $join_mod->where( sprintf( '%s.application_id', $participant_site_table_name ), '=', $application_id );
+            $modifier->join_modifier( 'participant_site', $join_mod, '', $participant_site_table_name );
           }
-          $modifier->join( 'site', 'participant_site.'.$column, $table_name.'.id', 'left', $table_name );
+          $modifier->join(
+            'site',
+            sprintf( '%s.%s', $participant_site_table_name, $column ),
+            $table_name.'.id',
+            'left',
+            $table_name
+          );
         }
       }
       else if( 'preferred' == $subtype )
