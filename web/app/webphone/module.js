@@ -43,6 +43,7 @@ cenozoApp.defineModule( { name: 'webphone', create: module => {
           lastUpdate: null,
           webphone: '(disabled)',
           voip: CnSession.voip,
+          showWebphone: false,
           webphoneUrl: CnSession.application.webphoneUrl,
           useRecording: CnSession.moduleList.includes( 'recording' ),
           lastLanguageId: null,
