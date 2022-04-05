@@ -131,7 +131,7 @@ class voip_manager extends \cenozo\singleton
       {
         $id = $object['BridgeID'];
         if( !array_key_exists( $id, $paired_list ) ) $paired_list[$id] = array( 'call' => NULL, 'bridge' => NULL );
-        $paired_list[$id][ 'from-trunk-sip' == substr( $object['Context'], 0, 14 ) ? 'bridge' : 'call'] = $object;
+        $paired_list[$id][ 'from-trunk-' == substr( $object['Context'], 0, 11 ) ? 'bridge' : 'call'] = $object;
       }
     }
 

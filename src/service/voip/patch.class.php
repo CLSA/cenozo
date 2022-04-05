@@ -32,7 +32,6 @@ class patch extends \cenozo\service\service
   protected function create_resource( $index )
   {
     $id = $this->get_resource_value( $index );
-    $voip_call = lib::create( 'business\voip_manager' )->get_call( $id ? $id : NULL );
     return lib::create( 'business\voip_manager' )->get_call( $id ? $id : NULL );
   }
 
