@@ -166,7 +166,13 @@
         </div>
         <div class="col-sm-6">
           <h4 class="text-center">Client</h4>
-          <div class="form-body well text-center" uib-tooltip="{{ webphoneHelp }}" tooltip-placement="bottom">
+          <button class="btn btn-primary full-width"
+                  ng-click="model.showWebphone = true"
+                  ng-if="!model.showWebphone">Launch Webphone</button>
+          <div class="form-body well text-center"
+               ng-if="model.showWebphone"
+               uib-tooltip="{{ webphoneHelp }}"
+               tooltip-placement="bottom">
             <iframe width="100%" height="400" ng-src="{{ model.webphoneUrl }}">
               Your browser does not support the Java-based webphone, please use another browser
               if you wish to use the webphone.
