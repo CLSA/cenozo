@@ -84,5 +84,18 @@ class module extends \cenozo\service\site_restricted_module
         'proxy_type_join_participant.proxy_type_id' );
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
     }
+
+    // add the list of roles
+    if( $select->has_column( 'role_list' ) )
+    {
+      // restrict to roles belonging to this application
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join(
+        'application_type_has_role', 'role_has_proxy_type.role_id', 'application_type_has_role.role_id' );
+      $join_mod->where(
+        'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
+
+      $this->add_list_column( 'role_list', 'role', 'name', $select, $modifier, NULL, $join_mod );
+    }
   }
 }
