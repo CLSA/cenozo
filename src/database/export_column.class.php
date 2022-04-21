@@ -325,7 +325,7 @@ class export_column extends has_rank
             $join_mod = lib::create( 'database\modifier' );
             $join_mod->where( 'participant.id', '=', sprintf( '%s.participant_id', $participant_site_table_name ), false );
             $join_mod->where( sprintf( '%s.application_id', $participant_site_table_name ), '=', $application_id );
-            $modifier->join_modifier( 'participant_site', $join_mod, '', $participant_site_table_name );
+            $modifier->join_modifier( 'participant_site', $join_mod, 'left', $participant_site_table_name );
           }
           $modifier->join(
             'site',
