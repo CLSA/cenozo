@@ -174,55 +174,38 @@ class survey_manager extends \cenozo\singleton
   public function reverse_proxy_initiation( $db_participant )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $participant_class_name = lib::get_class_name( 'database\participant' );
-    $proxy_type_class_name = lib::get_class_name( 'database\proxy_type' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $setting_manager = lib::create( 'business\setting_manager' );
+    $script_class_name = lib::get_class_name( 'database\script' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
     $db_site = $session->get_site();
     $db_role = $session->get_role();
     $db_application = $session->get_application();
+    $db_pine_application = $session->get_pine_application();
 
-    $proxy_initiation_sid = $this->get_proxy_initiation_sid();
-    if( $proxy_initiation_sid )
+    $db_script = $script_class_name::get_unique_record( 'name', 'Proxy Initiation' );
+    if( is_null( $db_script ) ) throw lib::create( 'exception\runtime', 'Proxy Initiation script not found.', __METHOD__ );
+
+    $cenozo_manager = lib::create( 'business\cenozo_manager', $db_pine_application );
+    $cenozo_manager->delete( sprintf(
+      'qnaire/%d/response/participant_id=%d',
+      $db_script->pine_qnaire_id,
+      $db_participant->id
+    ) );
+
+    // make sure to set the most recent proxy to empty (no proxy status)
+    $db_last_proxy = $db_participant->get_last_proxy();
+    if( !is_null( $db_last_proxy ) )
     {
-      $proxy_initiation_mod = lib::create( 'database\modifier' );
-      $proxy_initiation_mod->where( 'participant.id', '=', $db_participant->id );
-      static::join_survey_and_token_tables( $proxy_initiation_sid, $proxy_initiation_mod );
-
-      if( 0 < $participant_class_name::count( $proxy_initiation_mod ) )
-      {
-        $old_tokens_sid = $tokens_class_name::get_sid();
-        $tokens_class_name::set_sid( $proxy_initiation_sid );
-
-        // delete the token and survey
-        $tokens_mod = lib::create( 'database\modifier' );
-        $tokens_mod->where( 'token', '=', $db_participant->uid );
-        foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
-        {
-          foreach( $db_tokens->get_survey_list() as $db_survey ) $db_survey->delete();
-          $db_tokens->delete();
-        }
-
-        $tokens_class_name::set_sid( $old_tokens_sid );
-
-        // make sure to set the most recent proxy to empty (no proxy status)
-        $db_last_proxy = $db_participant->get_last_proxy();
-        if( !is_null( $db_last_proxy ) )
-        {
-          $db_proxy = lib::create( 'database\proxy' );
-          $db_proxy->participant_id = $db_participant->id;
-          $db_proxy->proxy_type_id = NULL;
-          $db_proxy->datetime = $util_class_name::get_datetime_object();
-          $db_proxy->user_id = $db_user->id;
-          $db_proxy->site_id = $db_site->id;
-          $db_proxy->role_id = $db_role->id;
-          $db_proxy->application_id = $db_application->id;
-          $db_proxy->note = 'Added as part of reversing the proxy initiation process.';
-          $db_proxy->save();
-        }
-      }
+      $db_proxy = lib::create( 'database\proxy' );
+      $db_proxy->participant_id = $db_participant->id;
+      $db_proxy->proxy_type_id = NULL;
+      $db_proxy->datetime = $util_class_name::get_datetime_object();
+      $db_proxy->user_id = $db_user->id;
+      $db_proxy->site_id = $db_site->id;
+      $db_proxy->role_id = $db_role->id;
+      $db_proxy->application_id = $db_application->id;
+      $db_proxy->note = 'Added as part of reversing the proxy initiation process.';
+      $db_proxy->save();
     }
   }
 
@@ -304,7 +287,7 @@ class survey_manager extends \cenozo\singleton
    * Processes a participant's supporting script
    * Note that this method does nothing if the participant has not completed the supporting script
    * Note that this method is used for Limesurvey scripts only (not used for Pine)
-   * 
+   *
    * @param database\participant $db_participant
    * @param database\script $db_script
    * @access public
@@ -352,336 +335,4 @@ class survey_manager extends \cenozo\singleton
       }
     }
   }
-
-  /**
-   * Processes the proxy intiation script
-   * Note that this method does nothing if the participant has not completed the proxy initiation script
-   * @param database\participant $db_participant
-   * @access public
-   */
-  public function process_proxy_initiation( $db_participant )
-  {
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $participant_class_name = lib::get_class_name( 'database\participant' );
-    $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
-    $proxy_type_class_name = lib::get_class_name( 'database\proxy_type' );
-    $proxy_class_name = lib::get_class_name( 'database\proxy' );
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $proxy_initiation_use_proxy = $setting_manager->get_setting( 'general', 'proxy_initiation_use_proxy' );
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
-    $db_site = $session->get_site();
-    $db_role = $session->get_role();
-    $db_application = $session->get_application();
-
-    $proxy_initiation_sid = $this->get_proxy_initiation_sid();
-    if( $proxy_initiation_sid )
-    {
-      $proxy_initiation_sel = lib::create( 'database\select' );
-      $proxy_initiation_sel->from( 'participant' );
-      $proxy_initiation_sel->add_column( 'CONVERT_TZ( survey.submitdate, "Canada/Eastern", "UTC" )', 'datetime', false );
-      $proxy_initiation_mod = lib::create( 'database\modifier' );
-      $proxy_initiation_mod->where( 'participant.id', '=', $db_participant->id );
-      $proxy_initiation_mod->where( 'survey.submitdate', '!=', NULL );
-      if( $proxy_initiation_use_proxy )
-      {
-        $this->add_proxy_initiation_use_proxy_column( $proxy_initiation_sel, $proxy_initiation_mod );
-        $this->add_proxy_initiation_consent_column( $proxy_initiation_sel, $proxy_initiation_mod );
-      }
-      else static::join_survey_and_token_tables( $proxy_initiation_sid, $proxy_initiation_mod );
-      
-      $list = $participant_class_name::select( $proxy_initiation_sel, $proxy_initiation_mod );
-      if( 0 < count( $list ) )
-      {
-        $proxy_initiation = current( $list );
-
-        if( !is_null( $proxy_initiation_use_proxy ) )
-        {
-          if( 'REFUSED' != $proxy_initiation['consent'] && 'NO' != $proxy_initiation['consent'] )
-          {
-            // set the proxy type based on the consent column
-            $db_proxy_type = $proxy_type_class_name::get_unique_record(
-              'name', $proxy_initiation['consent'] ? 'ready for proxy system' : 'consent form required' );
-
-            $db_proxy = $proxy_class_name::get_unique_record(
-              array( 'participant_id', 'datetime' ),
-              array( $db_participant->id, $proxy_initiation['datetime'] )
-            );
-            if( is_null( $db_proxy ) )
-            {
-              $db_proxy = lib::create( 'database\proxy' );
-              $db_proxy->participant_id = $db_participant->id;
-              $db_proxy->proxy_type_id = $db_proxy_type->id;
-              $db_proxy->datetime = $proxy_initiation['datetime'];
-              $db_proxy->user_id = $db_user->id;
-              $db_proxy->site_id = $db_site->id;
-              $db_proxy->role_id = $db_role->id;
-              $db_proxy->application_id = $db_application->id;
-              $db_proxy->note = 'Added as part of the proxy initiation process.';
-              $db_proxy->save();
-            }
-
-            if( !is_null( $proxy_initiation['use_proxy'] ) )
-            {
-              // set whether to use a decision maker based on the use_proxy column
-              $db_consent_type = $consent_type_class_name::get_unique_record( 'name', 'Use Decision Maker' );
-
-              $consent_mod = lib::create( 'database\modifier' );
-              $consent_mod->where( 'consent_type_id', '=', $db_consent_type->id );
-              $consent_mod->where( 'accept', '=', $proxy_initiation['use_proxy'] );
-              $consent_mod->where( 'written', '=', false );
-              $consent_mod->where( 'datetime', '=', $proxy_initiation['datetime'] );
-              if( 0 == $db_participant->get_consent_count( $consent_mod ) )
-              {
-                $db_consent = lib::create( 'database\consent' );
-                $db_consent->participant_id = $db_participant->id;
-                $db_consent->consent_type_id = $db_consent_type->id;
-                $db_consent->accept = $proxy_initiation['use_proxy'];
-                $db_consent->written = false;
-                $db_consent->datetime = $proxy_initiation['datetime'];
-                $db_consent->note = 'Added as part of the proxy initiation process.';
-                $db_consent->save();
-              }
-            }
-          }
-          else
-          {
-            // if proxy is not accepted then delete the proxy survey
-            $old_tokens_sid = $tokens_class_name::get_sid();
-            $tokens_class_name::set_sid( $proxy_initiation_sid );
-
-            // delete the token and survey
-            $tokens_mod = lib::create( 'database\modifier' );
-            $tokens_mod->where( 'token', '=', $db_participant->uid );
-            foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
-            {
-              foreach( $db_tokens->get_survey_list() as $db_survey ) $db_survey->delete();
-              $db_tokens->delete();
-            }
-
-            $tokens_class_name::set_sid( $old_tokens_sid );
-
-            // now add a note to the participant's file
-            $db_note = lib::create( 'database\note' );
-            $db_note->participant_id = $db_participant->id;
-            $db_note->user_id = $db_user->id;
-            $db_note->datetime = $proxy_initiation['datetime'];
-            $db_note->note = 'REFUSED' == $proxy_initiation['consent']
-                           ? 'Proxy script launched - Participant refused to continue with the proxy script.'
-                           : 'Proxy script launched - Participant wants to continue on their own.';
-            $db_note->save();
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Returns the proxy_initiation script
-   * @access public
-   */
-  public function get_proxy_initiation_script()
-  {
-    $script_class_name = lib::get_class_name( 'database\script' );
-
-    if( is_null( $this->db_proxy_initiation_script ) )
-    {
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'name', 'LIKE', '%proxy initiation%' );
-      $script_list = $script_class_name::select_objects( $modifier );
-      $this->db_proxy_initiation_script = current( $script_list );
-    }
-
-    return $this->db_proxy_initiation_script;
-  }
-
-  /**
-   * Returns the survey id of the proxy_initiation script
-   * Note that this method is used for Limesurvey scripts only (not used for Pine)
-   * @access public
-   */
-  public function get_proxy_initiation_sid()
-  {
-    $db_proxy_initiation_script = $this->get_proxy_initiation_script();
-    return $db_proxy_initiation_script ? $db_proxy_initiation_script->sid : 0;
-  }
-
-  /**
-   * Adds the needed changes to a select and modifier object to get a participant's proxy_initiation details
-   * 
-   * This method assumes that the participant table has already been made part of the select/modifier pair
-   * @param database\select $select
-   * @param database\modifier $modifier
-   * @param string $alias What alias to use for the column
-   * @access public
-   */
-  public function add_proxy_initiation_use_proxy_column( $select, $modifier, $alias = 'use_proxy', $group = false )
-  {
-    $proxy_initiation_sid = $this->get_proxy_initiation_sid();
-    if( $proxy_initiation_sid )
-    {
-      static::join_survey_and_token_tables( $proxy_initiation_sid, $modifier );
-      $column_name_list = $this->get_proxy_initiation_column_name_list();
-
-      $column = sprintf(
-        'IF('."\n".
-        '  "YES" = survey.%s,'."\n".
-        '  "YES" = IF('."\n".
-        '    "Y" = IFNULL( survey.%s, survey.%s ),'."\n".
-        '    "YES",'."\n".
-        '    IF('."\n".
-        '      "N" = IFNULL( survey.%s, survey.%s ),'."\n".
-        '      "NO",'."\n".
-        '      IFNULL( survey.%s, survey.%s )'."\n".
-        '    )'."\n".
-        '  ),'."\n".
-        '  NULL'."\n".
-        ')',
-        $column_name_list['use_proxy'],
-
-        $column_name_list['proxy_yes_2'],
-        $column_name_list['proxy_yes'],
-
-        $column_name_list['proxy_yes_2'],
-        $column_name_list['proxy_yes'],
-
-        $column_name_list['proxy_yes_2'],
-        $column_name_list['proxy_yes']
-      );
-
-      $select->add_column( $column, $alias, false );
-      if( $group ) $modifier->group( $column );
-    }
-  }
-
-  /**
-   * Adds the needed changes to a select and modifier object to get a participant's proxy_initiation details
-   * 
-   * This method assumes that the participant table has already been made part of the select/modifier pair
-   * @param database\select $select
-   * @param database\modifier $modifier
-   * @param string $alias What alias to use for the column
-   * @access public
-   */
-  public function add_proxy_initiation_consent_column( $select, $modifier, $alias = 'consent', $group = false )
-  {
-    $proxy_initiation_sid = $this->get_proxy_initiation_sid();
-    if( $proxy_initiation_sid )
-    {
-      static::join_survey_and_token_tables( $proxy_initiation_sid, $modifier );
-      $column_name_list = $this->get_proxy_initiation_column_name_list();
-
-      $column = sprintf(
-        'IF('."\n".
-        '  survey.%s IS NOT NULL,'."\n".
-        '  "REFUSED",'."\n".
-        '  IF('."\n".
-        '    "YES" = survey.%s,'."\n".
-        '    0 < ( tokens.attribute_2 + tokens.attribute_3 ),'."\n".
-        '    "NO"'."\n".
-        '  )'.
-        ')',
-        $column_name_list['proxy_refuse'],
-        $column_name_list['use_proxy']
-      );
-
-      $select->add_column( $column, $alias, false );
-      if( $group ) $modifier->group( $column );
-    }
-  }
-
-  /**
-   * Returns a list of proxy_initiation column names
-   * @access public
-   */
-  protected function get_proxy_initiation_column_name_list()
-  {
-    // create the list if it doesn't already exist
-    if( is_null( $this->proxy_initiation_column_name_list ) )
-    {
-      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-      $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-
-      $proxy_initiation_sid = $this->get_proxy_initiation_sid();
-      if( $proxy_initiation_sid )
-      {
-        $old_tokens_sid = $tokens_class_name::get_sid();
-        $old_survey_sid = $survey_class_name::get_sid();
-        $tokens_class_name::set_sid( $proxy_initiation_sid );
-        $survey_class_name::set_sid( $proxy_initiation_sid );
-
-        // get the survey column names for various question codes
-        $this->proxy_initiation_column_name_list = array(
-          'use_proxy' => $survey_class_name::get_column_name_for_question_code( 'USE_PRXY' ),
-          'proxy_refuse' => $survey_class_name::get_column_name_for_question_code( 'PRXY_REFUSE' ),
-          'proxy_yes' => $survey_class_name::get_column_name_for_question_code( 'PRXY_YES' ),
-          'proxy_yes_2' => $survey_class_name::get_column_name_for_question_code( 'PRXY_YES_2' )
-        );
-
-        $tokens_class_name::set_sid( $old_tokens_sid );
-        $survey_class_name::set_sid( $old_survey_sid );
-      }
-    }
-
-    return $this->proxy_initiation_column_name_list;
-  }
-
-  /**
-   * Joins the given modifier to survey and token tables
-   * 
-   * @param integer $sid The limesurvey SID (survey ID) of the survey to link to
-   * @param database\modifier $modifier
-   * @param boolean $left Whether to left join to the Limesurvey tables
-   * @access public
-   */
-  public static function join_survey_and_token_tables( $sid, $modifier, $left = false )
-  {
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-
-    $old_tokens_sid = $tokens_class_name::get_sid();
-    $old_survey_sid = $survey_class_name::get_sid();
-    $tokens_class_name::set_sid( $sid );
-    $survey_class_name::set_sid( $sid );
-    $database_name = lib::create( 'business\session' )->get_survey_database()->get_name();
-
-    if( !$modifier->has_join( 'tokens' ) )
-    {
-      $modifier->join(
-        sprintf( '%s.%s', $database_name, $tokens_class_name::get_table_name() ),
-        'participant.uid',
-        'tokens.token',
-        $left ? 'left' : '',
-        'tokens'
-      );
-    }
-
-    if( !$modifier->has_join( 'survey' ) )
-    {
-      $modifier->join(
-        sprintf( '%s.%s', $database_name, $survey_class_name::get_table_name() ),
-        'tokens.token',
-        'survey.token',
-        $left ? 'left' : '',
-        'survey'
-      );
-    }
-
-    $tokens_class_name::set_sid( $old_tokens_sid );
-    $survey_class_name::set_sid( $old_survey_sid );
-  }
-
-  /**
-   * A cache of the proxy-initiation script
-   * @var database\script
-   * @access private
-   */
-  private $db_proxy_initiation_script = NULL;
-
-  /**
-   * A cache of proxy-initiation survey column names
-   * @var array( code => name )
-   * @access private
-   */
-  private $proxy_initiation_column_name_list = NULL;
 }

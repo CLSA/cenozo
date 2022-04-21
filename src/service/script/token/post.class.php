@@ -81,7 +81,6 @@ class post extends \cenozo\service\post
     parent::finish();
 
     $util_class_name = lib::get_class_name( 'util' );
-    $supporting_script_check_class_name = lib::get_class_name( 'database\supporting_script_check' );
 
     // if the script doesn't repeat and the participant doesn't have its start event yet, then create it
     if( !$this->db_script->repeated )
