@@ -962,7 +962,7 @@ cenozoApp.defineModule( { name: 'participant',
           allowQualityControl: false,
           allowWithdraw: false,
           allowReverseWithdraw: 3 <= CnSession.role.tier,
-          allowReverseProxyInitiation: 3 <= CnSession.role.tier,
+          allowReverseProxyInitiation: true,
 
           useTimezone: async function() {
             await CnSession.setTimezone( { 'participant_id': this.record.id } );
