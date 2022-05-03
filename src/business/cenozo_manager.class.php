@@ -154,10 +154,11 @@ class cenozo_manager extends \cenozo\base_object
     if( 300 <= $code )
     {
       throw lib::create( 'exception\runtime',
-        sprintf( 'Got response code %s when trying %s request to %s.',
+        sprintf( 'Got response code %s when trying %s request to %s.  Response %s',
                  $code,
                  $method,
-                 $this->db_application->title ),
+                 $this->db_application->title,
+                 $response ),
         __METHOD__ );
     }
 
