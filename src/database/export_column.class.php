@@ -352,6 +352,21 @@ class export_column extends has_rank
         }
       }
     }
+    else if( 'study' == $this->table_name )
+    {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        $joining_table_name = 'study_has_participant_'.$this->subtype;
+        if( !$modifier->has_join( $joining_table_name ) )
+        {
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', $joining_table_name.'.participant_id', false );
+          $join_mod->where( $joining_table_name.'.study_id', '=', $this->subtype );
+          $modifier->join_modifier( 'study_has_participant', $join_mod, 'left', $joining_table_name );
+        }
+        $modifier->left_join( 'study', $joining_table_name.'.study_id', $table_name.'.id', $table_name );
+      }
+    }
 
     if( $this->include )
     {
@@ -455,6 +470,11 @@ class export_column extends has_rank
       if( preg_match( '/^([a-z]+)_([0-9]+)$/', $this->subtype, $matches ) )
         $subtype = lib::create( 'database\application', $matches[2] )->title.': '.$matches[1];
       array_unshift( $alias_parts, $subtype );
+    }
+    else if( 'study' == $this->table_name )
+    {
+      // get the study name
+      array_unshift( $alias_parts, lib::create( 'database\study', $this->subtype )->name );
     }
 
     return ucWords( str_replace( '_', ' ', implode( ' ', $alias_parts ) ) );

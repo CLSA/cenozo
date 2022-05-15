@@ -13,6 +13,7 @@ cenozoApp.defineModule({
     "phone",
     "proxy",
     "site",
+    "study",
     "trace",
   ],
   models: ["add", "list", "view"],
@@ -129,6 +130,7 @@ cenozoApp.defineModule({
       "CnHinModelFactory",
       "CnHoldModelFactory",
       "CnProxyModelFactory",
+      "CnStudyModelFactory",
       "CnTraceModelFactory",
       "CnSession",
       "CnHttpFactory",
@@ -148,6 +150,7 @@ cenozoApp.defineModule({
         CnHinModelFactory,
         CnHoldModelFactory,
         CnProxyModelFactory,
+        CnStudyModelFactory,
         CnTraceModelFactory,
         CnSession,
         CnHttpFactory,
@@ -349,6 +352,7 @@ cenozoApp.defineModule({
               hin: CnHinModelFactory.root,
               hold: CnHoldModelFactory.root,
               proxy: CnProxyModelFactory.root,
+              study: CnStudyModelFactory.root,
               trace: CnTraceModelFactory.root,
             },
 
@@ -474,6 +478,11 @@ cenozoApp.defineModule({
                 promise: null,
                 list: [{ key: undefined, title: "Loading..." }],
               },
+              study: {
+                isLoading: true,
+                promise: null,
+                list: [{ key: undefined, title: "Loading..." }],
+              },
               trace: {
                 isLoading: true,
                 promise: null,
@@ -537,6 +546,10 @@ cenozoApp.defineModule({
                 isLoading: true,
                 list: [{ key: undefined, title: "Loading..." }],
               },
+              study: {
+                isLoading: true,
+                list: [{ key: undefined, title: "Loading..." }],
+              },
               trace: {
                 isLoading: true,
                 list: [{ key: undefined, title: "Loading..." }],
@@ -560,6 +573,7 @@ cenozoApp.defineModule({
               collection: [],
               consent: [],
               event: [],
+              study: [],
             },
 
             addRestriction: async function (tableName, key) {
@@ -1186,6 +1200,7 @@ cenozoApp.defineModule({
               object.processMetadata("hin"),
               object.processMetadata("hold"),
               object.processMetadata("proxy"),
+              object.processMetadata("study"),
               object.processMetadata("trace"),
             ];
             if (interviewModule)
@@ -1198,6 +1213,7 @@ cenozoApp.defineModule({
               collectionResponse,
               consentTypeResponse,
               eventTypeResponse,
+              studyResponse,
               qnaireResponse,
               applicationResponse,
             ] = await Promise.all([
@@ -1227,6 +1243,14 @@ cenozoApp.defineModule({
 
               CnHttpFactory.instance({
                 path: "event_type",
+                data: {
+                  select: { column: ["id", "name"] },
+                  modifier: { order: ["name"], limit: 1000000 },
+                },
+              }).query(),
+
+              CnHttpFactory.instance({
+                path: "study",
                 data: {
                   select: { column: ["id", "name"] },
                   modifier: { order: ["name"], limit: 1000000 },
@@ -1305,6 +1329,13 @@ cenozoApp.defineModule({
 
             eventTypeResponse.data.forEach((item) => {
               object.subtypeList.event.push({
+                key: item.id.toString(),
+                name: item.name,
+              });
+            });
+
+            studyResponse.data.forEach((item) => {
+              object.subtypeList.study.push({
                 key: item.id.toString(),
                 name: item.name,
               });

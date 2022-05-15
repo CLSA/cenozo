@@ -1630,6 +1630,12 @@ cenozoApp.defineModule({
                 };
               }
             }
+
+            if (angular.isDefined(object.studyModel)) {
+              object.studyModel.getChooseEnabled = function () {
+                return 3 <= CnSession.role.tier && parentModel.getEditEnabled();
+              };
+            }
           }
 
           init(this);
@@ -2031,6 +2037,9 @@ cenozoApp.defineModule({
             holdInputList: null,
             proxyInputList: null,
             note: { sticky: 0, note: "" },
+            studyList: null,
+            studyOperation: "add",
+            studyId: undefined,
 
             selectDatetime: async function (input) {
               var response = await CnModalDatetimeFactory.instance({
@@ -2139,6 +2148,23 @@ cenozoApp.defineModule({
                 messageObj.title = "Proxy Records Added";
                 messageObj.message =
                   "The proxy record has been successfully added to <TOTAL> participant(s).";
+              } else if ("study" == type) {
+                // handle the study id specially
+                var element =
+                  cenozo.getScopeByQuerySelector("#studyId").innerForm.name;
+                element.$error.format = false;
+                cenozo.updateFormElement(element, true);
+                error = error || element.$invalid;
+                messageObj.title = "Study Eligibility Updated";
+                messageObj.message =
+                  "The participant list has been " +
+                  ("add" == this.studyOperation
+                    ? "added to "
+                    : "removed from ") +
+                  'the "' +
+                  this.studyList.findByProperty("id", this.studyId).name +
+                  '" ' +
+                  "study";
               } else
                 throw new Error(
                   'Called addRecords() with invalid type "' + type + '".'
@@ -2173,6 +2199,11 @@ cenozoApp.defineModule({
                   inputList.forEach(
                     (input) => (data.input_list[input.column] = input.value)
                   );
+                } else if ("study" == type) {
+                  data.study = {
+                    id: this.studyId,
+                    operation: this.studyOperation,
+                  };
                 } else {
                   data[type] = inputList.reduce((record, input) => {
                     record[input.column] = input.value;
@@ -2336,6 +2367,20 @@ cenozoApp.defineModule({
               cenozoApp.module("proxy"),
               CnProxyModelFactory.root.metadata.columnList
             );
+
+            // populate the study input list right away
+            var response = await CnHttpFactory.instance({
+              path: "study",
+              data: {
+                select: { column: ["id", "name"] },
+              },
+            }).query();
+
+            object.studyList = response.data;
+            object.studyList.unshift({
+              id: undefined,
+              name: "(Select Study)",
+            });
           }
 
           // this is a contructor function so don't await the init() function

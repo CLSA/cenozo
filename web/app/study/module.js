@@ -60,6 +60,35 @@ cenozoApp.defineModule({
     });
 
     /* ############################################################################################## */
+    cenozo.providers.factory("CnStudyViewFactory", [
+      "CnBaseViewFactory",
+      "CnSession",
+      function (CnBaseViewFactory, CnSession) {
+        var object = function (parentModel, root) {
+          CnBaseViewFactory.construct(this, parentModel, root, "address");
+
+          async function init(object) {
+            await object.deferred.promise;
+
+            if (angular.isDefined(object.participantModel)) {
+              object.participantModel.getChooseEnabled = function () {
+                return parentModel.getEditEnabled();
+              };
+            }
+          }
+
+          init(this);
+        };
+
+        return {
+          instance: function (parentModel, root) {
+            return new object(parentModel, root);
+          },
+        };
+      },
+    ]);
+
+    /* ############################################################################################## */
     cenozo.providers.factory("CnStudyModelFactory", [
       "CnBaseModelFactory",
       "CnStudyListFactory",
