@@ -721,12 +721,10 @@ cenozoApp.defineModule({
                 path: "export/" + this.record.getIdentifier() + "/participant",
               }).count();
 
-              angular.extend(this, {
-                participantCount: parseInt(response.headers("Total")),
-                dataPointCount:
-                  this.participantCount *
-                  this.columnList.filter((c) => c.include).length,
-              });
+              this.participantCount = parseInt(response.headers("Total"));
+              this.dataPointCount =
+                this.participantCount *
+                this.columnList.filter((c) => c.include).length;
             },
 
             addColumn: async function (tableName, key) {
