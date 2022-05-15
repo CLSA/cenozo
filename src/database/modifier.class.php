@@ -1161,13 +1161,13 @@ class modifier extends \cenozo\base_object
 
           foreach( $value as $join )
           {
-            if( array_key_exists( 'table', $join ) &&
-                array_key_exists( 'onleft', $join ) &&
-                array_key_exists( 'onright', $join ) )
+            if( property_exists( $join, 'table' ) &&
+                property_exists( $join, 'onleft' ) &&
+                property_exists( $join, 'onright' ) )
             {
-              if( !array_key_exists( 'type', $join ) ) $join->type = 'cross';
-              if( !array_key_exists( 'alias', $join ) ) $join->alias = NULL;
-              if( !array_key_exists( 'prepend', $join ) ) $join->prepend = false;
+              if( !property_exists( $join, 'type' ) ) $join->type = 'cross';
+              if( !property_exists( $join, 'alias' ) ) $join->alias = NULL;
+              if( !property_exists( $join, 'prepend' ) ) $join->prepend = false;
               $modifier->join(
                 $join->table,
                 $join->onleft,
@@ -1187,15 +1187,15 @@ class modifier extends \cenozo\base_object
 
           foreach( $value as $condition )
           {
-            if( array_key_exists( 'bracket', $condition ) )
+            if( property_exists( $condition, 'bracket' ) )
             {
-              $or = array_key_exists( 'or', $condition ) ? $condition->or : false;
+              $or = property_exists( $condition, 'or' ) ? $condition->or : false;
               $method = sprintf( '%s_bracket', $key );
               $modifier->$method( $condition->open, $or );
             }
-            else if( array_key_exists( 'column', $condition ) &&
-                     array_key_exists( 'operator', $condition ) &&
-                     array_key_exists( 'value', $condition ) )
+            else if( property_exists( $condition, 'column' ) &&
+                     property_exists( $condition, 'operator' ) &&
+                     property_exists( $condition, 'value' ) )
             {
               // sanitize the operator value
               $operator = strtoupper( $condition->operator );
@@ -1207,7 +1207,7 @@ class modifier extends \cenozo\base_object
                 'LIKE', 'NOT LIKE' );
               if( in_array( $operator, $valid_operator_list ) )
               {
-                $or = array_key_exists( 'or', $condition ) ? $condition->or : false;
+                $or = property_exists( $condition, 'or' ) ? $condition->or : false;
                 // here $key is either where or having (using it as a method call)
                 $modifier->$key( $condition->column, $condition->operator, $condition->value, true, $or );
               }

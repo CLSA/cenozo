@@ -632,6 +632,17 @@ class data_manager extends \cenozo\singleton
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
       $value = $db_source->$column;
     }
+    else if( 'study' == $subject )
+    {
+      // participant.study.<name> or study.<name>
+      if( 2 != count( $parts ) )
+        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      $study_name = $parts[1];
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'study.name', '=', $study_name );
+      $value = 0 < $db_participant->get_study_count( $modifier ) ? 1 : 0;
+    }
 
     return $value;
   }

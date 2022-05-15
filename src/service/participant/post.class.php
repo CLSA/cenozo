@@ -183,6 +183,41 @@ class post extends \cenozo\service\service
           $db_note->datetime = $util_class_name::get_datetime_object();
           $this->set_data( $db_note->save_list( $select, $modifier ) );
         }
+        else if( property_exists( $file, 'study' ) )
+        { // add/remove participants from the given study
+          try
+          {
+            // validate the data
+            if( !property_exists( $file->study, 'id' ) ||
+                !property_exists( $file->study, 'operation' ) ||
+                !in_array( $file->study->operation, array( 'add', 'remove' ) ) )
+            {
+              $this->status->set_code( 400 ); // must provide a identifier_list
+            }
+            else
+            {
+              // get the study
+              $db_study = lib::create( 'database\study', $file->study->id );
+
+              // get the list of participant ids
+              $id_list = array_reduce(
+                $participant_class_name::select( $select, $modifier ),
+                function( $id_list, $row ) { $id_list[] = $row['participant_id']; return $id_list; },
+                array()
+              );
+
+              if( 0 < count( $id_list ) )
+              {
+                if( 'add' == $file->study->operation ) $db_study->add_participant( $id_list );
+                else $db_study->remove_participant( $id_list );
+              }
+            }
+          }
+          catch( \cenozo\exception\runtime $e )
+          {
+            $this->status->set_code( 404 ); // study doesn't exist
+          }
+        }
         else // return a list of all valid identifiers
         {
           $this->set_data( $identifier_list );

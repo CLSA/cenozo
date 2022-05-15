@@ -26,6 +26,7 @@
           <li ng-class="{'active':'event'==tab}"><a ng-click="tab='event'">Event</a></li>
           <li ng-class="{'active':'hold'==tab}"><a ng-click="tab='hold'">Hold</a></li>
           <li ng-class="{'active':'note'==tab}"><a ng-click="tab='note'">Note</a></li>
+          <li ng-class="{'active':'study'==tab}"><a ng-click="tab='study'">Study Eligibility</a></li>
         </ul>
         <div ng-if="'participant'==tab" class="panel panel-default" style="border-top-left-radius: 0px;">
           <div class="panel-body">
@@ -439,6 +440,62 @@
                     class="btn btn-primary"
                     ng-disabled="!model.participantSelection.confirmedCount || 0 == model.note.note.length"
                     ng-click="model.applyMultiedit( 'note' )">Add Notes</button>
+          </div>
+        </div>
+        <div ng-if="'study'==tab" class="panel panel-default">
+          <div class="panel-body">
+            <form name="studyForm" class="form-horizontal" novalidate>
+              <div class="col-sm-12 vertical-spacer text-info">
+                Select whether to add or remove participants and to/from which study:
+                <hr />
+              </div>
+              <ng-form name="innerForm">
+                <div class="form-group">
+                  <label for="studyOperation" class="col-sm-3 control-label">Operation</label>
+                  <div class="col-sm-9">
+                    <div class="input-group">
+                      <select id="studyOperation"
+                              name="name"
+                              class="form-control"
+                              ng-model="model.studyOperation">
+                        <option value="add">Add To Study Eligibility</option>
+                        <option value="remove">Remove From Study Eligibility</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </ng-form>
+              <ng-form name="innerForm">
+                <div class="form-group">
+                  <label for="studyId" class="col-sm-3 control-label">Study Eligibility</label>
+                  <div class="col-sm-9">
+                    <div class="input-group"
+                         ng-class="{ 'has-feedback has-error': innerForm.name.$dirty &&
+                                                               innerForm.name.$invalid }">
+                      <select id="studyId"
+                              name="name"
+                              ng-options="item.id as item.name for item in model.studyList"
+                              ng-model="model.studyId"
+                              class="form-control"
+                              required></select>
+                      <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
+                        <span class="help-block" ng-if="innerForm.name.$error.required">
+                          Cannot be blank
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </ng-form>
+            </form>
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="!model.participantSelection.confirmedCount"
+                    ng-click="model.applyMultiedit( 'study' )">
+              {{ 'add' == model.studyOperation ? 'Add To Study Eligibility' : 'Remove From Study Eligibility' }}
+            </button>
           </div>
         </div>
       </div>

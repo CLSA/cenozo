@@ -336,6 +336,7 @@ class ui extends \cenozo\base_object
         if( $use_interview_module ) $module->add_child( 'interview' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
+        $module->add_choose( 'study' );
         $module->add_child( 'participant_identifier' );
         $module->add_child( 'mail' );
         $module->add_child( 'hold' );
@@ -396,6 +397,7 @@ class ui extends \cenozo\base_object
       {
         $module->add_child( 'study_phase' );
         $module->add_child( 'stratum' );
+        $module->add_choose( 'participant' );
       }
       else if( 'trace_type' == $module->get_subject() )
       {
