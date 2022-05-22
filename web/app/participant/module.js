@@ -1552,7 +1552,9 @@ cenozoApp.defineModule({
                 );
               if (language)
                 this.scriptLaunchers[scriptName].lang = language.code;
-              this.scriptLaunchers[scriptName].launch();
+
+              var urlParams = { show_hidden: 1 };
+              this.scriptLaunchers[scriptName].launch( urlParams );
 
               // check for when the window gets focus back and update the participant details
               var win = angular.element($window).on("focus", async () => {
