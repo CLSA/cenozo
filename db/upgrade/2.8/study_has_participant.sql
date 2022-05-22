@@ -30,16 +30,16 @@ CREATE PROCEDURE patch_study_has_participant()
           ON DELETE CASCADE
           ON UPDATE NO ACTION
       );
-    END IF;
 
-    -- now populate all sub-study participants based on participants released to applications
-    INSERT INTO study_has_participant( study_id, participant_id )
-    SELECT DISTINCT study.id, application_has_participant.participant_id
-    FROM application
-    JOIN study_phase ON application.study_phase_id = study_phase.id
-    JOIN study ON study_phase.study_id = study.id
-    JOIN application_has_participant ON application.id = application_has_participant.application_id
-    WHERE application_has_participant.datetime IS NOT NULL;
+      -- now populate all sub-study participants based on participants released to applications
+      INSERT INTO study_has_participant( study_id, participant_id )
+      SELECT DISTINCT study.id, application_has_participant.participant_id
+      FROM application
+      JOIN study_phase ON application.study_phase_id = study_phase.id
+      JOIN study ON study_phase.study_id = study.id
+      JOIN application_has_participant ON application.id = application_has_participant.application_id
+      WHERE application_has_participant.datetime IS NOT NULL;
+    END IF;
 
   END //
 DELIMITER ;
