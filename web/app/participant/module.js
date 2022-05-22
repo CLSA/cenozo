@@ -1313,10 +1313,8 @@ cenozoApp.defineModule({
                           onReady: function () {
                             self.hasDecedent =
                               null != this.token &&
-                              null !=
-                                this.token.completed.match(
-                                  /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
-                                );
+                              null != this.token &&
+                              null != this.token.end_datetime;
                           },
                         });
                       try {
