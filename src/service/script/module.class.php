@@ -40,7 +40,7 @@ class module extends \cenozo\service\module
       $survey_table_array = array();
       foreach( $surveys_class_name::get_titles() as $sid => $title )
         $survey_table_array[] = sprintf( 'SELECT %s sid, "%s" title', $sid, $title );
-      $survey_table = sprintf( '( %s ) AS survey', implode( $survey_table_array, ' UNION ' ) );
+      $survey_table = sprintf( '( %s ) AS survey', implode( ' UNION ', $survey_table_array ) );
       $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
 
       // link to pine qnaire list
@@ -58,7 +58,7 @@ class module extends \cenozo\service\module
 
         if( 0 < count( $qnaire_table_array ) )
         {
-          $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( $qnaire_table_array, ' UNION ' ) );
+          $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( ' UNION ', $qnaire_table_array ) );
           $modifier->left_join( $qnaire_table, 'script.pine_qnaire_id', 'pine_qnaire.id' );
           $select->add_column( 'IFNULL( survey.title, pine_qnaire.name )', 'qnaire_title', false );
         }
