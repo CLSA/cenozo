@@ -46,6 +46,7 @@ class withdraw extends \cenozo\business\overview\base_overview
     $modifier->where( 'consent_type.name', '=', 'participation' );
     $modifier->where( 'consent.accept', '=', false );
     $modifier->group( 'DATE_FORMAT( consent.datetime, "%Y%m" )' );
+    if( $withdraw_option_and_delink ) $modifier->group( 'option_and_delink.option' );
     $modifier->group( 'participant.first_name = "(censored)"' );
 
     if( 'mastodon' != $db_application->get_application_type()->name )
