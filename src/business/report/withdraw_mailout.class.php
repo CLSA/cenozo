@@ -24,7 +24,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $survey_manager = lib::create( 'business\survey_manager' );
     $setting_manager = lib::create( 'business\setting_manager' );
-    $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
     $db_participation_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
     $db_withdrawn_3rd_party_hold_type = $hold_type_class_name::get_unique_record(
@@ -46,7 +45,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'region.abbreviation', 'Province/State', false );
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'country.name', 'Country', false );
-    $select->add_column( 'IF( survey.submitdate IS NULL, "no", "yes" )', 'Script', false );
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'IF( hold.id IS NULL, "no", "yes" )' );
@@ -131,12 +129,55 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->where_bracket( false );
 
     // add the special withdraw option column using a left join
-    if( $withdraw_option_and_delink )
-      $survey_manager->add_withdraw_option_column( $select, $modifier, 'Option', false, true );
+    if( $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' ) )
+    {
+      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
+      $data = $cenozo_manager->get( 'qnaire/name=Withdraw/response?export=1' );
 
-    // add the hin and samples withdraw option columns
-    $select->add_column( '0 < tokens.attribute_1', 'hin', false );
-    $select->add_column( '0 < tokens.attribute_2', 'sample', false );
+      // loop through the data and create a temporary table containing the option and delink details
+      $participant_class_name::db()->execute(
+        'CREATE TEMPORARY TABLE option_and_delink( '.
+          'uid VARCHAR(45) NOT NULL, '.
+          'option INT UNSIGNED NOT NULL, '.
+          'delink TINYINT(1) NOT NULL '.
+        ')'
+      );
+
+      if( 0 < count( $data ) )
+      {
+        $insert_records = [];
+        foreach( $data as $obj )
+        {
+          $delink = false;
+          $option = 'default';
+          if( 'YES' == $obj->SHOW_OPTIONS )
+          {
+            if( preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
+            {
+              $delink_options = array(
+                'OPTION3_HIN_COMP', 'OPTION3_HIN_TRACK', 'OPTION2_NO_HIN_COMP', 'OPTION2_NO_HIN_TRACK'
+              );
+              if( in_array( $obj->SELECT_OPTION, $delink_options ) ) $delink = true;
+              $option = $matches[1];
+            }
+          }
+          $insert_record[] = sprintf( '( "%s", %d, %d )', $obj->uid, $option, $delink );
+        }
+        
+        $participant_class_name::db()->execute( sprintf(
+          'INSERT INTO option_and_delink VALUES %s',
+          implode( ',', $insert_record )
+        ) );
+      }
+
+      $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
+      $select->add_column( 'IFNULL( option_and_delink.option, "no data" )', 'Option', false );
+      $select->add_column(
+        'IF( option_and_delink.delink IS NULL, "no data", IF( option_and_delink.delink, "Yes", "No" ) )',
+        'Delink',
+        false
+      );
+    }
 
     // set up requirements
     $this->apply_restrictions( $modifier );
