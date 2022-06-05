@@ -19,6 +19,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
    */
   protected function build()
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
@@ -132,13 +133,17 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     if( $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' ) )
     {
       $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
-      $data = $cenozo_manager->get( 'qnaire/name=Withdraw/response?export=1' );
+      $modifier_obj = array( 'limit' => 1000000 );
+      $data = $cenozo_manager->get( sprintf(
+        'qnaire/name=Withdraw/response?modifier=%s&export=1',
+        $util_class_name::json_encode( $modifier_obj )
+      ) );
 
       // loop through the data and create a temporary table containing the option and delink details
       $participant_class_name::db()->execute(
         'CREATE TEMPORARY TABLE option_and_delink( '.
           'uid VARCHAR(45) NOT NULL, '.
-          'option INT UNSIGNED NOT NULL, '.
+          'option CHAR(6) NOT NULL, '.
           'delink TINYINT(1) NOT NULL '.
         ')'
       );
@@ -161,7 +166,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
               $option = $matches[1];
             }
           }
-          $insert_record[] = sprintf( '( "%s", %d, %d )', $obj->uid, $option, $delink );
+          $insert_record[] = sprintf( '( "%s", "%s", %d )', $obj->uid, $option, $delink );
         }
         
         $participant_class_name::db()->execute( sprintf(
