@@ -335,4 +335,58 @@ class survey_manager extends \cenozo\singleton
       }
     }
   }
+
+  /**
+   * Creates a temporary table with all withdraw option and delink values
+   */
+  public function create_option_and_delink_table()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+
+    $db_pine_app = lib::create( 'business\session' )->get_pine_application();
+    $cenozo_manager = lib::create( 'business\cenozo_manager', $db_pine_app );
+    $modifier_obj = array( 'limit' => 1000000 );
+    $data = $cenozo_manager->get( sprintf(
+      'qnaire/name=Withdraw/response?modifier=%s&export=1',
+      $util_class_name::json_encode( $modifier_obj )
+    ) );
+
+    // loop through the data and create a temporary table containing the option and delink details
+    $participant_class_name::db()->execute(
+      'CREATE TEMPORARY TABLE option_and_delink( '.
+        'uid VARCHAR(45) NOT NULL, '.
+        'option CHAR(6) NOT NULL, '.
+        'delink TINYINT(1) NOT NULL, '.
+        'PRIMARY KEY (uid) '.
+      ')'
+    );
+
+    if( 0 < count( $data ) )
+    {
+      $insert_records = [];
+      foreach( $data as $obj )
+      {
+        $delink = false;
+        $option = 'default';
+        if( 'YES' == $obj->SHOW_OPTIONS )
+        {
+          if( preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
+          {
+            $delink_options = array(
+              'OPTION3_HIN_COMP', 'OPTION3_HIN_TRACK', 'OPTION2_NO_HIN_COMP', 'OPTION2_NO_HIN_TRACK'
+            );
+            if( in_array( $obj->SELECT_OPTION, $delink_options ) ) $delink = true;
+            $option = $matches[1];
+          }
+        }
+        $insert_record[] = sprintf( '( "%s", "%s", %d )', $obj->uid, $option, $delink );
+      }
+      
+      $participant_class_name::db()->execute( sprintf(
+        'INSERT INTO option_and_delink VALUES %s',
+        implode( ',', $insert_record )
+      ) );
+    }
+  }
 }

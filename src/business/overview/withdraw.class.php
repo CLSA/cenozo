@@ -18,7 +18,6 @@ class withdraw extends \cenozo\business\overview\base_overview
    */
   protected function build()
   {
-    // NOTE: this overview has been disabled since it only supports the old Limesurvey Withdraw script
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $survey_manager_class_name = lib::get_class_name( 'business\survey_manager' );
 
@@ -36,7 +35,7 @@ class withdraw extends \cenozo\business\overview\base_overview
     $select = lib::create( 'database\select' );
     $select->add_column( 'COUNT(*)', 'total', false );
     $select->add_column(
-      'CONCAT( MONTHNAME( survey.submitdate ), ", ", YEAR( survey.submitdate ) )', 'month', false );
+      'CONCAT( MONTHNAME( consent.datetime ), ", ", YEAR( consent.datetime ) )', 'month', false );
     $select->add_column( 'participant.first_name = "(censored)"', 'delinked', false );
 
     $modifier = lib::create( 'database\modifier' );
@@ -45,7 +44,7 @@ class withdraw extends \cenozo\business\overview\base_overview
     $modifier->join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
     $modifier->where( 'consent_type.name', '=', 'participation' );
     $modifier->where( 'consent.accept', '=', false );
-    $modifier->group( 'DATE_FORMAT( survey.submitdate, "%Y%m" )' );
+    $modifier->group( 'DATE_FORMAT( consent.datetime, "%Y%m" )' );
     $modifier->group( 'participant.first_name', '=', '(censored)' );
 
     if( 'mastodon' != $db_application->get_application_type()->name )
@@ -72,10 +71,15 @@ class withdraw extends \cenozo\business\overview\base_overview
 
     if( $withdraw_option_and_delink )
     {
-      $survey_manager->add_withdraw_option_column( $select, $modifier, 'option', true );
-      $survey_manager->add_withdraw_delink_column( $select, $modifier, 'delink', true );
+      $survey_manager->create_option_and_delink_table();
+      $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
+      $select->add_column( 'IFNULL( option_and_delink.option, "no data" )', 'option', false );
+      $select->add_column(
+        'IF( option_and_delink.delink IS NULL, "no data", IF( option_and_delink.delink, "Yes", "No" ) )',
+        'delink',
+        false
+      );
     }
-    else $survey_manager_class_name::join_survey_and_token_tables( $survey_manager->get_withdraw_sid(), $modifier );
 
     $node = NULL;
     foreach( $participant_class_name::select( $select, $modifier ) as $row )
@@ -94,6 +98,7 @@ class withdraw extends \cenozo\business\overview\base_overview
           $this->add_item( $option_node, 'Option #2', 0 );
           $this->add_item( $option_node, 'Option #3', 0 );
           $this->add_item( $option_node, 'Default (no option selected)', 0 );
+          $this->add_item( $option_node, 'No Data', 0 );
         }
         $total = 0;
       }
@@ -111,7 +116,11 @@ class withdraw extends \cenozo\business\overview\base_overview
           }
         }
 
-        $name = 'default' == $row['option'] ? 'Default (no option selected)' : 'Option #'.$row['option'];
+        $name = '';
+        if( 'default' == $row['option'] ) $name = 'Default (no option selected)';
+        else if( 'no data' == $row['option'] ) $name = 'No Data';
+        else $name = 'Option #'.$row['option'];
+
         $child_node = $node->find_node( 'Withdraw Option' )->find_node( $name );
         $child_node->set_value( $child_node->get_value() + $row['total'] );
       }

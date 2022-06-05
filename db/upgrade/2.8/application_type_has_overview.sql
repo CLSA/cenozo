@@ -1,4 +1,7 @@
-SELECT "Disabling withdraw overview (Pine script not supported)" AS "";
+SELECT "Re-enabling withdraw overview" AS "";
 
-DELETE FROM application_type_has_overview
-WHERE overview_id = ( SELECT id FROM overview WHERE name = "withdraw" );
+INSERT INTO application_type_has_overview( application_type_id, overview_id )
+SELECT application_type.id, overview.id
+FROM application_type, overview
+WHERE application_type.name IN ( "beartooth", "mastodon", "sabretooth" )
+AND overview.name = "withdraw";

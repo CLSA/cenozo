@@ -19,7 +19,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
    */
   protected function build()
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
@@ -131,50 +130,8 @@ class withdraw_mailout extends \cenozo\business\report\base_report
 
     // add the special withdraw option column using a left join
     if( $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' ) )
-    {
-      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
-      $modifier_obj = array( 'limit' => 1000000 );
-      $data = $cenozo_manager->get( sprintf(
-        'qnaire/name=Withdraw/response?modifier=%s&export=1',
-        $util_class_name::json_encode( $modifier_obj )
-      ) );
-
-      // loop through the data and create a temporary table containing the option and delink details
-      $participant_class_name::db()->execute(
-        'CREATE TEMPORARY TABLE option_and_delink( '.
-          'uid VARCHAR(45) NOT NULL, '.
-          'option CHAR(6) NOT NULL, '.
-          'delink TINYINT(1) NOT NULL '.
-        ')'
-      );
-
-      if( 0 < count( $data ) )
-      {
-        $insert_records = [];
-        foreach( $data as $obj )
-        {
-          $delink = false;
-          $option = 'default';
-          if( 'YES' == $obj->SHOW_OPTIONS )
-          {
-            if( preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
-            {
-              $delink_options = array(
-                'OPTION3_HIN_COMP', 'OPTION3_HIN_TRACK', 'OPTION2_NO_HIN_COMP', 'OPTION2_NO_HIN_TRACK'
-              );
-              if( in_array( $obj->SELECT_OPTION, $delink_options ) ) $delink = true;
-              $option = $matches[1];
-            }
-          }
-          $insert_record[] = sprintf( '( "%s", "%s", %d )', $obj->uid, $option, $delink );
-        }
-        
-        $participant_class_name::db()->execute( sprintf(
-          'INSERT INTO option_and_delink VALUES %s',
-          implode( ',', $insert_record )
-        ) );
-      }
-
+    { 
+      $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
       $select->add_column( 'IFNULL( option_and_delink.option, "no data" )', 'Option', false );
       $select->add_column(
