@@ -13,6 +13,7 @@ cenozoApp.defineModule({
     "phone",
     "proxy",
     "site",
+    "stratum",
     "study",
     "trace",
   ],
@@ -130,6 +131,7 @@ cenozoApp.defineModule({
       "CnHinModelFactory",
       "CnHoldModelFactory",
       "CnProxyModelFactory",
+      "CnStratumModelFactory",
       "CnStudyModelFactory",
       "CnTraceModelFactory",
       "CnSession",
@@ -150,6 +152,7 @@ cenozoApp.defineModule({
         CnHinModelFactory,
         CnHoldModelFactory,
         CnProxyModelFactory,
+        CnStratumModelFactory,
         CnStudyModelFactory,
         CnTraceModelFactory,
         CnSession,
@@ -352,6 +355,7 @@ cenozoApp.defineModule({
               hin: CnHinModelFactory.root,
               hold: CnHoldModelFactory.root,
               proxy: CnProxyModelFactory.root,
+              stratum: CnStratumModelFactory.root,
               study: CnStudyModelFactory.root,
               trace: CnTraceModelFactory.root,
             },
@@ -478,6 +482,11 @@ cenozoApp.defineModule({
                 promise: null,
                 list: [{ key: undefined, title: "Loading..." }],
               },
+              stratum: {
+                isLoading: true,
+                promise: null,
+                list: [{ key: undefined, title: "Loading..." }],
+              },
               study: {
                 isLoading: true,
                 promise: null,
@@ -546,6 +555,10 @@ cenozoApp.defineModule({
                 isLoading: true,
                 list: [{ key: undefined, title: "Loading..." }],
               },
+              stratum: {
+                isLoading: true,
+                list: [{ key: undefined, title: "Loading..." }],
+              },
               study: {
                 isLoading: true,
                 list: [{ key: undefined, title: "Loading..." }],
@@ -573,6 +586,7 @@ cenozoApp.defineModule({
               collection: [],
               consent: [],
               event: [],
+              stratum: [],
               study: [],
             },
 
@@ -1200,6 +1214,7 @@ cenozoApp.defineModule({
               object.processMetadata("hin"),
               object.processMetadata("hold"),
               object.processMetadata("proxy"),
+              object.processMetadata("stratum"),
               object.processMetadata("study"),
               object.processMetadata("trace"),
             ];
@@ -1339,6 +1354,7 @@ cenozoApp.defineModule({
                 key: item.id.toString(),
                 name: item.name,
               });
+              object.subtypeList.stratum = angular.copy( object.subtypeList.study );
             });
 
             if (interviewModule) {

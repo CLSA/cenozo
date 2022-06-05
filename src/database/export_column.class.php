@@ -303,6 +303,39 @@ class export_column extends has_rank
         $modifier->join_modifier( 'phone', $join_mod, 'left' );
       }
     }
+    else if( 'stratum' == $this->table_name )
+    {
+      if( !$modifier->has_join( $table_name ) )
+      {
+        // create a temporary table with participant/stratum pairs
+        $join_table_name = 'participant_stratum_'.$this->subtype;
+        $stratum_sel = lib::create( 'database\select' );
+        $stratum_sel->from( 'participant' );
+        $stratum_sel->add_column( 'id', 'participant_id' );
+        $stratum_sel->add_column( 'stratum.id', 'stratum_id', false );
+        $stratum_mod = lib::create( 'database\modifier' );
+        $stratum_mod->join( 'stratum_has_participant', 'participant.id', 'stratum_has_participant.participant_id' );
+        $stratum_mod->join( 'stratum', 'stratum_has_participant.stratum_id', 'stratum.id' );
+        $stratum_mod->where( 'stratum.study_id', '=', $this->subtype );
+
+        $sql = sprintf(
+          'CREATE TEMPORARY TABLE IF NOT EXISTS %s ('."\n".
+          '  participant_id INT UNSIGNED NOT NULL,'."\n".
+          '  stratum_id INT UNSIGNED NOT NULL,'."\n".
+          '  PRIMARY KEY (participant_id, stratum_id),'."\n".
+          '  INDEX fk_participant_id (participant_id),'."\n".
+          '  INDEX fk_stratum_id (stratum_id)'."\n".
+          ')'."\n".
+          '%s %s',
+          $join_table_name,
+          $stratum_sel->get_sql(),
+          $stratum_mod->get_sql()
+        );
+        static::db()->execute( $sql );
+        $modifier->join( $join_table_name, 'participant.id', $join_table_name.'.participant_id', 'left' );
+        $modifier->join( 'stratum', $join_table_name.'.stratum_id', $table_name.'.id', 'left', $table_name );
+      }
+    }
     else if( 'site' == $this->table_name )
     {
       // there may be an application id in the subtype
@@ -461,6 +494,11 @@ class export_column extends has_rank
     {
       // get the identifier name
       array_unshift( $alias_parts, lib::create( 'database\identifier', $this->subtype )->name );
+    }
+    else if( 'stratum' == $this->table_name )
+    {
+      // get the stratum's study name
+      array_unshift( $alias_parts, lib::create( 'database\study', $this->subtype )->name );
     }
     else if( 'site' == $this->table_name )
     {
