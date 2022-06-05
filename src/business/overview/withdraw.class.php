@@ -39,13 +39,14 @@ class withdraw extends \cenozo\business\overview\base_overview
     $select->add_column( 'participant.first_name = "(censored)"', 'delinked', false );
 
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant.exclusion_id', '=', NULL );
     $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
     $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
     $modifier->join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
     $modifier->where( 'consent_type.name', '=', 'participation' );
     $modifier->where( 'consent.accept', '=', false );
     $modifier->group( 'DATE_FORMAT( consent.datetime, "%Y%m" )' );
-    $modifier->group( 'participant.first_name', '=', '(censored)' );
+    $modifier->group( 'participant.first_name = "(censored)"' );
 
     if( 'mastodon' != $db_application->get_application_type()->name )
     { // special consideration for non-mastodon applications

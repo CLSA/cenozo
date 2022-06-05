@@ -356,7 +356,7 @@ class survey_manager extends \cenozo\singleton
     $participant_class_name::db()->execute(
       'CREATE TEMPORARY TABLE option_and_delink( '.
         'uid VARCHAR(45) NOT NULL, '.
-        'option CHAR(6) NOT NULL, '.
+        'option CHAR(7) NOT NULL, '.
         'delink TINYINT(1) NOT NULL, '.
         'PRIMARY KEY (uid) '.
       ')'
