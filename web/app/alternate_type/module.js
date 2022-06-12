@@ -41,6 +41,8 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "alpha_num",
+        help: "May only contain letters, numbers and underscores.",
       },
       title: {
         title: "Title",
