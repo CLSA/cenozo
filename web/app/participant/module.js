@@ -996,9 +996,11 @@ cenozoApp.defineModule( { name: 'participant',
                       identifier: this.parentModel.getQueryParameter( 'identifier' ),
                       onReady: function() {
                         self.hasDecedent =
-                          'limesurvey' == script.application ?
-                            null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                            null != this.token && null != this.token.end_datetime;
+                          null != this.token && (
+                            'limesurvey' == script.application ?
+                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                              null != this.token && null != this.token.end_datetime
+                        );
                       }
                     } );
                     try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
@@ -1011,9 +1013,11 @@ cenozoApp.defineModule( { name: 'participant',
                     identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasProxyInitiation =
-                        'limesurvey' == script.application ?
-                          null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                          null != this.token && null != this.token.end_datetime;
+                        null != this.token && (
+                          'limesurvey' == script.application ?
+                            null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                            null != this.token && null != this.token.end_datetime
+                      );
                     }
                   } );
                   try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
@@ -1025,9 +1029,11 @@ cenozoApp.defineModule( { name: 'participant',
                     identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasQualityControl =
-                        'limesurvey' == script.application ?
-                          null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                          null != this.token && null != this.token.end_datetime;
+                        null != this.token && (
+                          'limesurvey' == script.application ?
+                            null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                            null != this.token && null != this.token.end_datetime
+                      );
                     }
                   } );
                   try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
@@ -1039,9 +1045,11 @@ cenozoApp.defineModule( { name: 'participant',
                     identifier: this.parentModel.getQueryParameter( 'identifier' ),
                     onReady: function() {
                       self.hasWithdraw = null != this.token &&
-                        'limesurvey' == script.application ?
-                          null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                          null != this.token && null != this.token.end_datetime;
+                        null != this.token && (
+                          'limesurvey' == script.application ?
+                            null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                            null != this.token && null != this.token.end_datetime
+                      );
                     }
                   } );
                   try { await this.scriptLaunchers[name].initialize(); } catch( error ) {}
