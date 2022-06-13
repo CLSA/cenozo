@@ -76,11 +76,7 @@ class withdraw extends \cenozo\business\overview\base_overview
       $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
       $select->add_column( 'IFNULL( option_and_delink.option, "no data" )', 'option', false );
-      $select->add_column(
-        'IF( option_and_delink.delink IS NULL, "no data", IF( option_and_delink.delink, "Yes", "No" ) )',
-        'delink',
-        false
-      );
+      $select->add_column( 'option_and_delink.delink', 'delink', false );
     }
 
     $node = NULL;
