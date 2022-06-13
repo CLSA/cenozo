@@ -1312,9 +1312,11 @@ cenozoApp.defineModule({
                             this.parentModel.getQueryParameter("identifier"),
                           onReady: function () {
                             self.hasDecedent =
-                              null != this.token &&
-                              null != this.token &&
-                              null != this.token.end_datetime;
+                              null != this.token && (
+                              'limesurvey' == script.application ?
+                                null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                                null != this.token.end_datetime
+                            );
                           },
                         });
                       try {
@@ -1331,9 +1333,11 @@ cenozoApp.defineModule({
                           this.parentModel.getQueryParameter("identifier"),
                         onReady: function () {
                           self.hasProxyInitiation =
-                            null != this.token &&
-                            null != this.token &&
-                            null != this.token.end_datetime;
+                            null != this.token && (
+                            'limesurvey' == script.application ?
+                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                              null != this.token.end_datetime
+                          );
                         },
                       });
                     try {
@@ -1349,11 +1353,11 @@ cenozoApp.defineModule({
                           this.parentModel.getQueryParameter("identifier"),
                         onReady: function () {
                           self.hasQualityControl =
-                            null != this.token &&
-                            null !=
-                              this.token.completed.match(
-                                /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/
-                              );
+                            null != this.token && (
+                            'limesurvey' == script.application ?
+                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                              null != this.token.end_datetime
+                          );
                         },
                       });
                     try {
@@ -1369,9 +1373,11 @@ cenozoApp.defineModule({
                           this.parentModel.getQueryParameter("identifier"),
                         onReady: function () {
                           self.hasWithdraw =
-                            null != this.token &&
-                            null != this.token &&
-                            null != this.token.end_datetime;
+                            null != this.token && (
+                            'limesurvey' == script.application ?
+                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
+                              null != this.token.end_datetime
+                          );
                         },
                       });
                     try {
