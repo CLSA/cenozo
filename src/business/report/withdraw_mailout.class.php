@@ -74,6 +74,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->or_where( 'hold.id', '!=', NULL );
     $modifier->where_bracket( false );
 
+    // join to the participant's last mailed event
     $modifier->join(
       'participant_last_event',
       'participant.id',
@@ -96,6 +97,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     );
     $modifier->where( 'mailed_event_type.name', '=', 'withdraw mailed' );
 
+    // join to the participant's last not-mailed event
     $modifier->join(
       'participant_last_event',
       'participant.id',
@@ -133,12 +135,9 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     { 
       $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
-      $select->add_column( 'IFNULL( option_and_delink.option, "no data" )', 'Option', false );
-      $select->add_column(
-        'IF( option_and_delink.delink IS NULL, "no data", IF( option_and_delink.delink, "Yes", "No" ) )',
-        'Delink',
-        false
-      );
+      $select->add_column( 'IF( option_and_delink.uid IS NULL, "no", "yes" )', 'Script', false );
+      $select->add_column( 'IFNULL( option_and_delink.option, "" )', 'Option', false );
+      $select->add_column( 'IFNULL( option_and_delink.hin, "" )', 'HIN', false );
     }
 
     // set up requirements

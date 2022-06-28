@@ -348,7 +348,7 @@ class survey_manager extends \cenozo\singleton
     $cenozo_manager = lib::create( 'business\cenozo_manager', $db_pine_app );
     $modifier_obj = array( 'limit' => 1000000 );
     $data = $cenozo_manager->get( sprintf(
-      'qnaire/name=Withdraw/response?modifier=%s&export=1',
+      'qnaire/name=Withdraw/response?modifier=%s&export=1&attributes=1',
       $util_class_name::json_encode( $modifier_obj )
     ) );
 
@@ -357,6 +357,7 @@ class survey_manager extends \cenozo\singleton
       'CREATE TEMPORARY TABLE option_and_delink( '.
         'uid VARCHAR(45) NOT NULL, '.
         'option CHAR(7) NOT NULL, '.
+        'hin TINYINT(1) NOT NULL, '.
         'delink TINYINT(1) NOT NULL, '.
         'PRIMARY KEY (uid) '.
       ')'
@@ -364,6 +365,7 @@ class survey_manager extends \cenozo\singleton
 
     if( 0 < count( $data ) )
     {
+      $hin_name = 'attribute:HIN_consent';
       $insert_records = [];
       foreach( $data as $obj )
       {
@@ -380,7 +382,8 @@ class survey_manager extends \cenozo\singleton
             $option = $matches[1];
           }
         }
-        $insert_record[] = sprintf( '( "%s", "%s", %d )', $obj->uid, $option, $delink );
+
+        $insert_record[] = sprintf( '( "%s", "%s", %d, %d )', $obj->uid, $option, $obj->$hin_name, $delink );
       }
       
       $participant_class_name::db()->execute( sprintf(
