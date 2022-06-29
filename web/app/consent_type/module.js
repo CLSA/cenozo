@@ -10,7 +10,10 @@ cenozoApp.defineModule({
         possessive: "consent type's",
       },
       columnList: {
-        name: { title: "Name" },
+        name: {
+          title: "Name",
+          column: "consent_type.name",
+        },
         accept_count: {
           title: "Accepts",
           type: "number",
