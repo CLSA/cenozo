@@ -16,6 +16,8 @@ SOURCE application_type_has_overview.sql
 SOURCE report_has_report_restriction.sql
 SOURCE search.sql
 SOURCE study_has_participant.sql
+SOURCE study_phase.sql
+SOURCE study.sql
 
 SOURCE update_version_number.sql
 

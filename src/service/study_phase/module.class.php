@@ -23,6 +23,7 @@ class module extends \cenozo\service\module
     $db_application = lib::create( 'business\session' )->get_application();
 
     $modifier->join( 'study', 'study_phase.study_id', 'study.id' );
+    $modifier->left_join( 'identifier', 'study_phase.identifier_id', 'identifier.id' );
 
     // if the application has a study-phase then only show the parent study's phases
     $db_study_phase = $db_application->get_study_phase();

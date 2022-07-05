@@ -19,6 +19,7 @@ cenozoApp.defineModule({
         rank: { title: "Rank", type: "rank" },
         name: { title: "Name" },
         code: { title: "Code" },
+        identifier: { column: "identifier.name", title: "Identifier" },
       },
       defaultOrder: {
         column: "study.name",
@@ -39,6 +40,42 @@ cenozoApp.defineModule({
         title: "Rank",
         type: "rank",
       },
+      identifier_id: {
+        title: "Special Identifier",
+        type: "enum",
+        isExcluded: function ($state, model) {
+          return !model.isRole("administrator");
+        },
+        help: "The special identifier used by this study-phase.",
+      },
     });
+
+    /* ############################################################################################## */
+    cenozo.providers.factory("CnStudyPhaseModelFactory", [
+      "CnBaseModelFactory",
+      function (
+        CnBaseModelFactory,
+      ) {
+        this.getMetadata = async function () {
+          await this.$$getMetadata();
+
+          if (this.isRole("administrator")) {
+            var response = await CnHttpFactory.instance({
+              path: "identifier",
+              data: {
+                select: { column: ["id", "name"] },
+                modifier: { order: "name", limit: 1000 },
+              },
+            }).query();
+
+            this.metadata.columnList.identifier_id.enumList =
+              identifierResponse.data.reduce((list, item) => {
+                list.push({ value: item.id, name: item.name });
+                return list;
+              }, []);
+          }
+        };
+      },
+    ]);
   },
 });

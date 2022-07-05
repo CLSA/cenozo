@@ -268,14 +268,12 @@ class application extends record
   /**
    * Returns the special identifier used by this application
    * 
-   * Note, this will return NULL if the application isn't liked to a study phase or the parent study isn't linked
-   * to a special identifier.
+   * Note, this will return NULL if the application isn't linked to a study phase linked to a special identifier.
    */
   public function get_identifier()
   {
     $db_study_phase = $this->get_study_phase();
-    $db_study = is_null( $db_study_phase ) ? NULL : $db_study_phase->get_study();
-    return is_null( $db_study ) ? NULL : $db_study->get_identifier();
+    return is_null( $db_study_phase ) ? NULL : $db_study_phase->get_identifier();
   }
 
   /**

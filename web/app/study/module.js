@@ -12,7 +12,6 @@ cenozoApp.defineModule({
       },
       columnList: {
         name: { title: "Name" },
-        identifier: { column: "identifier.name", title: "Identifier" },
         consent_type: { column: "consent_type.name", title: "Consent Type" },
         completed_event_type: {
           column: "event_type.name",
@@ -34,14 +33,6 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
-      },
-      identifier_id: {
-        title: "Special Identifier",
-        type: "enum",
-        isExcluded: function ($state, model) {
-          return !model.isRole("administrator");
-        },
-        help: "Whether a special identifier is used by the study.",
       },
       consent_type_id: {
         title: "Extra Consent Type",
@@ -130,19 +121,7 @@ cenozoApp.defineModule({
               }).query(),
             ];
 
-            if (this.isRole("administrator")) {
-              promiseList.push(
-                CnHttpFactory.instance({
-                  path: "identifier",
-                  data: {
-                    select: { column: ["id", "name"] },
-                    modifier: { order: "name", limit: 1000 },
-                  },
-                }).query()
-              );
-            }
-
-            var [consentTypeResponse, eventTypeResponse, identifierResponse] =
+            var [consentTypeResponse, eventTypeResponse] =
               await Promise.all(promiseList);
 
             this.metadata.columnList.consent_type_id.enumList =
@@ -156,14 +135,6 @@ cenozoApp.defineModule({
                 list.push({ value: item.id, name: item.name });
                 return list;
               }, []);
-
-            if (this.isRole("administrator")) {
-              this.metadata.columnList.identifier_id.enumList =
-                identifierResponse.data.reduce((list, item) => {
-                  list.push({ value: item.id, name: item.name });
-                  return list;
-                }, []);
-            }
           };
         };
 
