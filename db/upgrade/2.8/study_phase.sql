@@ -8,7 +8,7 @@ CREATE PROCEDURE patch_study_phase()
     SELECT COUNT(*) INTO @total
     FROM information_schema.COLUMNS
     WHERE table_schema = DATABASE()
-    AND table_name = "study_phase`"
+    AND table_name = "study_phase"
     AND column_name = "identifier_id";
 
     IF 0 = @total THEN
