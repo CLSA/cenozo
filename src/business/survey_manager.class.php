@@ -357,7 +357,7 @@ class survey_manager extends \cenozo\singleton
       'CREATE TEMPORARY TABLE option_and_delink( '.
         'uid VARCHAR(45) NOT NULL, '.
         'option CHAR(7) NOT NULL, '.
-        'hin TINYINT(1) NOT NULL, '.
+        'hin TINYINT(1) NULL DEFAULT NULL, '.
         'delink TINYINT(1) NOT NULL, '.
         'PRIMARY KEY (uid) '.
       ')'
@@ -383,7 +383,13 @@ class survey_manager extends \cenozo\singleton
           }
         }
 
-        $insert_record[] = sprintf( '( "%s", "%s", %d, %d )', $obj->uid, $option, $obj->$hin_name, $delink );
+        $insert_record[] = sprintf(
+          '( "%s", "%s", %s, %d )',
+          $obj->uid,
+          $option,
+          property_exists( $obj, $hin_name ) ? sprintf( '%d', $obj->$hin_name ) : 'NULL',
+          $delink
+        );
       }
       
       $participant_class_name::db()->execute( sprintf(
