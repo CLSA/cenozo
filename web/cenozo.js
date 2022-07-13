@@ -2931,6 +2931,7 @@
                         console.warn(
                           "Invalid call to cnRecordView.patch() detected and ignored."
                         );
+                        resolve();
                         return;
                       }
                     }
@@ -2966,31 +2967,35 @@
                       var identifier =
                         $scope.model.viewModel.record.getIdentifier();
 
-                      await $scope.model.viewModel.onPatch(data);
+                      try {
+                        await $scope.model.viewModel.onPatch(data);
 
-                      // if the data in the identifier was patched then reload with the new url
-                      if (identifier.split(/[;=]/).includes(property)) {
-                        $scope.model.setQueryParameter(
-                          "identifier",
-                          identifier
-                        );
-                        await $scope.model.reloadState();
-                      } else {
-                        var currentElement = cenozo.getFormElement(property);
-                        if (currentElement) {
-                          if (currentElement.$error.conflict) {
-                            cenozo.forEachFormElement(
-                              "form",
-                              function (element) {
-                                element.$error.conflict = false;
-                                cenozo.updateFormElement(element, true);
-                              }
-                            );
+                        // if the data in the identifier was patched then reload with the new url
+                        if (identifier.split(/[;=]/).includes(property)) {
+                          $scope.model.setQueryParameter(
+                            "identifier",
+                            identifier
+                          );
+                          await $scope.model.reloadState();
+                        } else {
+                          var currentElement = cenozo.getFormElement(property);
+                          if (currentElement) {
+                            if (currentElement.$error.conflict) {
+                              cenozo.forEachFormElement(
+                                "form",
+                                function (element) {
+                                  element.$error.conflict = false;
+                                  cenozo.updateFormElement(element, true);
+                                }
+                              );
+                            }
                           }
-                        }
 
-                        // update the formatted value
-                        $scope.model.viewModel.updateFormattedRecord(property);
+                          // update the formatted value
+                          $scope.model.viewModel.updateFormattedRecord(property);
+                        }
+                      } catch (err) {
+                        // if onPatch fails it will be handled in onPatchError, so do nothing here
                       }
                     }
                   }
