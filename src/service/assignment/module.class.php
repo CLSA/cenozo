@@ -250,15 +250,6 @@ class module extends \cenozo\service\site_restricted_participant_module
           // mark the interview as complete if the survey is complete
           if( $this->is_survey_complete ) $record->get_interview()->complete();
         }
-
-        // Process any pending supporting scripts
-        // Note: if a user launches a supporting script and goes back to the web application before completing
-        // the script then the web app's triggers will not have processed the script check (so do it now just in case)
-        if( is_null( $this->db_participant ) )
-          throw lib::create( 'exception\argument', 'db_participant', $this->db_participant, __METHOD__ );
-
-        foreach( $this->db_participant->get_supporting_script_check_object_list() as $db_supporting_script_check )
-          $db_supporting_script_check->process();
       }
     }
   }
