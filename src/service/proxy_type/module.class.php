@@ -14,25 +14,22 @@ use cenozo\lib, cenozo\log;
 class module extends \cenozo\service\site_restricted_module
 {
   /**
+   * Extend parent constructor
+   */
+  public function __construct( $index, $service )
+  {
+    // enable the role_has feature
+    parent::__construct( $index, $service, true );
+  }
+
+  /**
    * Extend parent method
    */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-    $db_role = $session->get_role();
-    $db_application = $session->get_application();
-
-    // add the access column (whether the role has access)
-    if( $select->has_column( 'access' ) )
-    {
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'proxy_type.id', '=', 'role_has_proxy_type.proxy_type_id', false );
-      $join_mod->where( 'role_has_proxy_type.role_id', '=', $db_role->id );
-      $modifier->join_modifier( 'role_has_proxy_type', $join_mod, 'left' );
-      $select->add_column( 'role_has_proxy_type.proxy_type_id IS NOT NULL', 'access', false, 'boolean' );
-    }
+    $db_application = lib::create( 'business\session' )->get_application();
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
@@ -83,19 +80,6 @@ class module extends \cenozo\service\site_restricted_module
         'proxy_type.id',
         'proxy_type_join_participant.proxy_type_id' );
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
-    }
-
-    // add the list of roles
-    if( $select->has_column( 'role_list' ) )
-    {
-      // restrict to roles belonging to this application
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->join(
-        'application_type_has_role', 'role_has_proxy_type.role_id', 'application_type_has_role.role_id' );
-      $join_mod->where(
-        'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
-
-      $this->add_list_column( 'role_list', 'role', 'name', $select, $modifier, NULL, $join_mod );
     }
   }
 }

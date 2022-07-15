@@ -13,6 +13,9 @@ cenozoApp.defineModule({
       columnList: {
         name: { title: "Name" },
         title: { title: "Title" },
+        role_list: {
+          title: "Roles",
+        },
         has_alternate_consent_type: {
           title: "Has Consent Type",
           type: "boolean",
@@ -20,7 +23,7 @@ cenozoApp.defineModule({
         alternate_count: { title: "Alternates" },
         description: { title: "Description", align: "left" },
         // used by the alternate module to determine whether a type can be choosen
-        has_role: {
+        access: {
           isIncluded: function () {
             return false;
           },
@@ -66,17 +69,21 @@ cenozoApp.defineModule({
           CnBaseViewFactory.construct(this, parentModel, root, "alternate");
 
           async function init(object) {
-            // allow add/delete of roles and alternates
             await object.deferred.promise;
 
-            if (angular.isDefined(object.alternateModel))
+            // allow alternates to be added/removed
+            if (angular.isDefined(object.alternateModel)) {
               object.alternateModel.getChooseEnabled = function () {
                 return parentModel.getEditEnabled();
               };
-            if (angular.isDefined(object.roleModel))
+            }
+            
+            // allow roles to be added/removed
+            if (angular.isDefined(object.roleModel)) {
               object.roleModel.getChooseEnabled = function () {
                 return parentModel.getEditEnabled();
               };
+            }
           }
 
           init(this);

@@ -67,7 +67,6 @@ class module extends \cenozo\service\module
     $modifier->join( 'application', 'application_type.id', 'application.application_type_id' );
     $modifier->where( 'application.id', '=', lib::create( 'business\session' )->get_application()->id );
 
-
     // restrict by role
     $modifier->join( 'role_has_report_type', 'report_type.id', 'role_has_report_type.report_type_id', false );
     $modifier->where( 'role_has_report_type.role_id', '=', $session->get_role()->id );

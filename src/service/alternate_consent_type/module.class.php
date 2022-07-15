@@ -14,26 +14,23 @@ use cenozo\lib, cenozo\log;
 class module extends \cenozo\service\site_restricted_module
 {
   /**
+   * Extend parent constructor
+   */
+  public function __construct( $index, $service )
+  {
+    // enable the role_has feature
+    parent::__construct( $index, $service, true );
+  }
+
+  /**
    * Extend parent method
    */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-    $db_application = $session->get_application();
-    $db_role = $session->get_role();
+    $db_application = lib::create( 'business\session' )->get_application();
     $db_restrict_site = $this->get_restricted_site();
-
-    // add the access column (whether the role has access)
-    if( $select->has_column( 'access' ) )
-    {
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'alternate_consent_type.id', '=', 'role_has_alternate_consent_type.alternate_consent_type_id', false );
-      $join_mod->where( 'role_has_alternate_consent_type.role_id', '=', $db_role->id );
-      $modifier->join_modifier( 'role_has_alternate_consent_type', $join_mod, 'left' );
-      $select->add_column( 'role_has_alternate_consent_type.alternate_consent_type_id IS NOT NULL', 'access', false, 'boolean' );
-    }
 
     // add the total number of accepts
     if( $select->has_column( 'accept_count' ) )
@@ -98,7 +95,7 @@ class module extends \cenozo\service\site_restricted_module
         $join_mod->join_modifier( 'application_has_participant', $sub_mod );
       }
 
-      // restrict to participants in this site (for some roles)
+      // restrict to participants in this site
       if( !is_null( $db_restrict_site ) )
       {
         $sub_mod = lib::create( 'database\modifier' );
@@ -113,19 +110,6 @@ class module extends \cenozo\service\site_restricted_module
         'alternate_consent_type.id',
         'alternate_consent_type_join_deny.alternate_consent_type_id' );
       $select->add_column( 'IFNULL( deny_count, 0 )', 'deny_count', false );
-    }
-
-    // add the list of roles
-    if( $select->has_column( 'role_list' ) )
-    {
-      // restrict to roles belonging to this application
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->join(
-        'application_type_has_role', 'role_has_alternate_consent_type.role_id', 'application_type_has_role.role_id' );
-      $join_mod->where(
-        'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
-
-      $this->add_list_column( 'role_list', 'role', 'name', $select, $modifier, NULL, $join_mod );
     }
   }
 }

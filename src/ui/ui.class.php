@@ -338,6 +338,7 @@ class ui extends \cenozo\base_object
       }
       else if( 'event_type' == $module->get_subject() )
       {
+        $module->add_child( 'role' );
         $module->add_child( 'participant' );
       }
       else if( 'export' == $module->get_subject() )

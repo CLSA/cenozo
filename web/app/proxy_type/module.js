@@ -15,6 +15,9 @@ cenozoApp.defineModule({
           title: "Participants",
           type: "number",
         },
+        role_list: {
+          title: "Roles",
+        },
       },
       defaultOrder: {
         column: "name",

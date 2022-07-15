@@ -55,13 +55,14 @@ cenozoApp.defineModule({
           CnBaseViewFactory.construct(this, parentModel, root, "participant");
 
           async function init(object) {
-            // allow add/delete of roles and participants
             await object.deferred.promise;
 
-            if (angular.isDefined(object.roleModel))
+            // allow roles to be added/removed
+            if (angular.isDefined(object.roleModel)) {
               object.roleModel.getChooseEnabled = function () {
                 return parentModel.getEditEnabled();
               };
+            }
           }
 
           init(this);

@@ -452,10 +452,8 @@ cenozoApp.defineModule({
             this.onViewPromise = await this.$$onView(force);
 
             if (this.alternateTypeModel) {
-              this.alternateTypeModel.listModel.isChooseDisabled = function (
-                record
-              ) {
-                return 0 < record.role_count && !record.has_role;
+              this.alternateTypeModel.listModel.isChooseDisabled = function (record) {
+                return 0 < record.role_count && !record.access;
               };
             }
           };
@@ -513,7 +511,7 @@ cenozoApp.defineModule({
               CnHttpFactory.instance({
                 path: "alternate_type",
                 data: {
-                  select: { column: ["id", "title", "role_count", "has_role"] },
+                  select: { column: ["id", "title", "role_count", "access"] },
                   modifier: {
                     order: "title",
                     limit: 1000000,
@@ -553,7 +551,7 @@ cenozoApp.defineModule({
                 list.push({
                   value: item.id,
                   name: item.title,
-                  disabled: 0 < item.role_count && !item.has_role,
+                  disabled: 0 < item.role_count && !item.access,
                 });
                 return list;
               },

@@ -14,6 +14,15 @@ use cenozo\lib, cenozo\log;
 class module extends \cenozo\service\site_restricted_module
 {
   /**
+   * Extend parent constructor
+   */
+  public function __construct( $index, $service )
+  {
+    // enable the role_has feature
+    parent::__construct( $index, $service, true );
+  }
+
+  /**
    * Extend parent method
    */
   public function prepare_read( $select, $modifier )

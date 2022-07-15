@@ -174,14 +174,18 @@ cenozoApp.defineModule({
               var response = await CnHttpFactory.instance({
                 path: "event_type",
                 data: {
-                  select: { column: ["id", "name"] },
+                  select: { column: ["id", "name", "access"] },
                   modifier: { order: "name", limit: 1000 },
                 },
               }).query();
 
               this.metadata.columnList.event_type_id.enumList =
                 response.data.reduce((list, item) => {
-                  list.push({ value: item.id, name: item.name });
+                  list.push({
+                    value: item.id,
+                    name: item.name,
+                    disabled: !item.access,
+                  });
                   return list;
                 }, []);
             },

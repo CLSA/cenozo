@@ -14,13 +14,20 @@ use cenozo\lib, cenozo\log;
 class module extends \cenozo\service\site_restricted_module
 {
   /**
+   * Extend parent constructor
+   */
+  public function __construct( $index, $service )
+  {
+    // enable the role_has feature
+    parent::__construct( $index, $service, true );
+  }
+
+  /**
    * Extend parent method
    */
   public function prepare_read( $select, $modifier )
   {
-    $session = lib::create( 'business\session' );
-    $db_application = $session->get_application();
-    $db_role = $session->get_role();
+    $db_application = lib::create( 'business\session' )->get_application();
 
     parent::prepare_read( $select, $modifier );
 
@@ -64,18 +71,7 @@ class module extends \cenozo\service\site_restricted_module
       $select->add_column( 'IFNULL( alternate_count, 0 )', 'alternate_count', false );
     }
 
-    $this->add_count_column( 'role_count', 'role', $select, $modifier );
     $select->add_column( 'alternate_consent_type_id IS NOT NULL', 'has_alternate_consent_type', false, 'boolean' );
     $modifier->left_join( 'alternate_consent_type', 'alternate_type.alternate_consent_type_id', 'alternate_consent_type.id' );
-
-    if( $select->has_column( 'has_role' ) )
-    {
-      $db_role = lib::create( 'business\session' )->get_role();
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'alternate_type.id', '=', 'current_role_has_alternate_type.alternate_type_id', false );
-      $join_mod->where( 'current_role_has_alternate_type.role_id', '=', $db_role->id );
-      $modifier->join_modifier( 'role_has_alternate_type', $join_mod, 'left', 'current_role_has_alternate_type' );
-      $select->add_column( 'current_role_has_alternate_type.role_id IS NOT NULL', 'has_role', false, 'boolean' );
-    }
   }
 }
