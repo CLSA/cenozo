@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.8';
-$settings['general']['cenozo_build'] = '871f9157';
+$settings['general']['cenozo_build'] = 'a93d5ef6';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -66,6 +66,7 @@ $settings['general']['uid_regex'] = '^[A-Z][0-9]{6}$';
 $settings['general']['admin_email'] = NULL;
 
 // list of all optional modules (off by default)
+$settings['module']['equipment'] = false;
 $settings['module']['interview'] = false;
 $settings['module']['pdf'] = false;
 $settings['module']['recording'] = false;

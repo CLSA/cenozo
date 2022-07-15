@@ -130,6 +130,9 @@ class ui extends \cenozo\base_object
       'stratum', 'study', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
 
+    if( $setting_manager->get_setting( 'module', 'equipment' ) )
+      $list = array_merge( $list, array( 'equipment', 'equipment_loan', 'equipment_type' ) );
+
     if( $setting_manager->get_setting( 'module', 'interview' ) )
       $list = array_merge( $list, array( 'assignment', 'interview', 'phone_call' ) );
 
@@ -155,6 +158,7 @@ class ui extends \cenozo\base_object
   {
     $service_class_name = lib::get_class_name( 'database\service' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $use_equipment_module = $setting_manager->get_setting( 'module', 'equipment' );
     $use_interview_module = $setting_manager->get_setting( 'module', 'interview' );
     $use_recording_module = $setting_manager->get_setting( 'module', 'recording' );
     $use_script_module = $setting_manager->get_setting( 'module', 'script' );
@@ -184,31 +188,54 @@ class ui extends \cenozo\base_object
       $module = $this->assert_module( $service['subject'] );
 
       // Check that modules are activated before using them
+      if( in_array( $module->get_subject(), array( 'equipment', 'equipment_loan', 'equipment_type' ) ) )
+      {
+        if( !$use_equipment_module )
+        {
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Application has %s service but it\'s parent module, equipment, is not activated.',
+                     $module->get_subject() ),
+            __METHOD__
+          );
+        }
+      }
+
       // Note that we ignore the subject "interview" since it is a common enough term that it may be used
       // distinct from the interview module.
       if( in_array( $module->get_subject(), array( 'assignment', 'phone_call' ) ) )
       {
         if( !$use_interview_module )
+        {
           throw lib::create( 'exception\runtime',
             sprintf( 'Application has %s service but it\'s parent module, interview, is not activated.',
                      $module->get_subject() ),
-            __METHOD__ );
+            __METHOD__
+          );
+        }
       }
+      
       if( in_array( $module->get_subject(), array( 'recording', 'recording_file' ) ) )
       {
         if( !$use_recording_module )
+        {
           throw lib::create( 'exception\runtime',
             sprintf( 'Application has %s service but it\'s parent module, recording, is not activated.',
                      $module->get_subject() ),
-            __METHOD__ );
+            __METHOD__
+          );
+        }
       }
+      
       if( in_array( $module->get_subject(), array( 'script' ) ) )
       {
         if( !$use_script_module )
+        {
           throw lib::create( 'exception\runtime',
             sprintf( 'Application has %s service but it\'s parent module, script, is not activated.',
                      $module->get_subject() ),
-            __METHOD__ );
+            __METHOD__
+          );
+        }
       }
 
       // add delete, view, list, edit and add actions
@@ -297,6 +324,14 @@ class ui extends \cenozo\base_object
         $module->add_child( 'role' );
         $module->add_child( 'participant' );
       }
+      else if( 'equipment' == $module->get_subject() )
+      {
+        $module->add_child( 'equipment_loan' );
+      }
+      else if( 'equipment_type' == $module->get_subject() )
+      {
+        $module->add_child( 'equipment' );
+      }
       else if( 'event' == $module->get_subject() )
       {
         $module->add_child( 'form' );
@@ -345,6 +380,7 @@ class ui extends \cenozo\base_object
         $module->add_child( 'consent' );
         $module->add_child( 'hin' );
         $module->add_child( 'alternate' );
+        if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
         $module->add_child( 'event' );
         $module->add_child( 'form' );
         $module->add_choose( 'collection' );
@@ -438,6 +474,10 @@ class ui extends \cenozo\base_object
     $this->add_listitem( 'Availability Types', 'availability_type' );
     $this->add_listitem( 'Collections', 'collection' );
     $this->add_listitem( 'Consent Types', 'consent_type' );
+    if( $setting_manager->get_setting( 'module', 'equipment' ) )
+    {
+      $this->add_listitem( 'Equipment Types', 'equipment_type' );
+    }
     $this->add_listitem( 'Event Types', 'event_type' );
     if( $extended ) $this->add_listitem( 'Form Types', 'form_type' );
     $this->add_listitem( 'Hold Types', 'hold_type' );
