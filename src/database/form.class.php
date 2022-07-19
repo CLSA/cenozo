@@ -102,8 +102,18 @@ class form extends record
     $datetime = array_key_exists( 'datetime', $alternate_consent ) ? $alternate_consent['datetime'] : $this->date;
     if( '00:00:00' == $datetime->format( 'H:i:s' ) ) $datetime->setTime( 12, 0 );
 
-    $db_alternate = lib::create( 'database\alternate', $alternate_id );
     $db_alternate_consent_type = $alternate_consent_type_class_name::get_unique_record( 'name', $type );
+    if( is_null( $db_alternate_consent_type ) )
+    {
+      throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
+    }
+
+    $db_alternate = lib::create( 'database\alternate', $alternate_id );
+    if( is_null( $db_alternate ) )
+    {
+      throw lib::create( 'exception\argument', 'alternate_id', $alternate_id, __METHOD__ );
+    }
+
     $alternate_consent_mod = lib::create( 'database\modifier' );
     $alternate_consent_mod->where( 'alternate_consent_type_id', '=', $db_alternate_consent_type->id );
     $alternate_consent_mod->where( 'accept', '=', $alternate_consent['accept'] );
