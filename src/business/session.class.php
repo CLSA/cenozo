@@ -8,6 +8,12 @@
 namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
+require_once '/usr/local/lib/php-jwt/src/JWT.php';
+require_once '/usr/local/lib/php-jwt/src/Key.php';
+require_once '/usr/local/lib/php-jwt/src/BeforeValidException.php';
+require_once '/usr/local/lib/php-jwt/src/ExpiredException.php';
+require_once '/usr/local/lib/php-jwt/src/SignatureInvalidException.php';
+
 /**
  * session: handles all session-based information
  *
@@ -316,27 +322,55 @@ class session extends \cenozo\singleton
       if( !is_null( $db_role ) && !is_a( $db_role, $role_class_name ) )
         throw lib::create( 'exception\argument', 'db_role', $db_role, __METHOD__ );
 
-      // try loading the access record
       $db_access = NULL;
-      if( array_key_exists( 'access.id', $_SESSION ) )
-      {
-        try { $db_access = lib::create( 'database\access', $_SESSION['access.id'] ); }
-        catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
 
-        // don't use the access if it has lapsed
-        if( !is_null( $db_access ) && $db_access->has_expired() )
+      // see if there is a JWT authorization header
+      $jwt = NULL;
+
+      $headers = apache_request_headers();
+      if( false === $headers )
+        throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
+      if( array_key_exists( 'Authorization', $headers ) )
+      {
+        $parts = explode( ' ', $headers['Authorization'] );
+        if( 'JWT' == $parts[0] ) $jwt = $parts[1];
+      }
+
+      // if not, then see if there is a JWT cookie
+      if( is_null( $jwt ) && array_key_exists( 'JWT', $_COOKIE ) )
+      {
+        $jwt = $_COOKIE['JWT'];
+      }
+
+      $jwt_valid = false;
+      if( !is_null( $jwt ) )
+      {
+        // try loading the access record from the JWT
+        $data = $this->validate_jwt( $jwt );
+        if( !is_null( $data ) )
         {
-          // we'll need the user to close the activity, so set it before making db_access NULL
-          $this->db_user = $db_access->get_user();
-          $db_access = NULL;
+          $jwt_valid = true;
+          try { $db_access = lib::create( 'database\access', $data->access_id ); }
+          catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
+
+          // don't use the access if it has lapsed
+          if( !is_null( $db_access ) && $db_access->has_expired() )
+          {
+            // we'll need the user to close the activity, so set it before making db_access NULL
+            $this->db_user = $db_access->get_user();
+            $db_access = NULL;
+          }
         }
       }
 
-      // if the session has an access.id but the remote address doesn't match the session's address or the
+      // if the JWT is valid but the remote address doesn't match the session's address or the
       // access doesn't exist then immediately logout
-      if( array_key_exists( 'access.id', $_SESSION ) &&
-          ( is_null( $db_access ) || $_SESSION['address'] != $_SERVER['REMOTE_ADDR'] ) )
-      {
+      if( $jwt_valid && (
+            is_null( $db_access ) || (
+              array_key_exists( 'address', $_SESSION ) && $_SESSION['address'] != $_SERVER['REMOTE_ADDR']
+            )
+          )
+      ) {
         $this->logout();
       }
       else
@@ -402,7 +436,6 @@ class session extends \cenozo\singleton
               $this->db_site = $this->db_access->get_site();
               $this->db_setting = current( $this->db_site->get_setting_object_list() );
               $this->db_role = $this->db_access->get_role();
-              $_SESSION['access.id'] = $db_access->id;
               $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
 
               // update the access with the current time
@@ -433,6 +466,7 @@ class session extends \cenozo\singleton
     $this->db_site = NULL;
     $this->db_setting = NULL;
     $this->db_role = NULL;
+    setcookie( 'JWT', '' );
     session_destroy();
   }
 
@@ -474,6 +508,65 @@ class session extends \cenozo\singleton
     }
 
     return $success;
+  }
+
+  /**
+   * Generates a JSON web token for authentication
+   */
+  public function generate_jwt()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+
+    // encode a JWT for authentication
+    $now = $util_class_name::get_datetime_object();
+    $key = $setting_manager->get_setting( 'general', 'jwt_key' );
+    $timeout = $setting_manager->get_setting( 'general', 'activity_timeout' );
+    $expiry = clone $now;
+    $expiry->add( new \DateInterval( sprintf( 'PT%dM', $timeout ) ) );
+
+    return \Firebase\JWT\JWT::encode(
+      array(
+        'iss' => $this->db_application->url,
+        'iat' => $now->getTimestamp(),
+        'nbf' => $now->getTimestamp(),
+        'exp' => $expiry->getTimestamp(),
+        'data' => array( 'access_id' => $this->db_access->id )
+      ),
+      $key,
+      'HS256'
+    );
+  }
+
+  /**
+   * Validates a JSON web token
+   */
+  public function validate_jwt( $jwt )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+
+    $validated_data = NULL;
+    try
+    {
+      // encode a JWT for authentication
+      $now = $util_class_name::get_datetime_object();
+      $key = $setting_manager->get_setting( 'general', 'jwt_key' );
+      $decoded_jwt = \Firebase\JWT\JWT::decode( $jwt, new \Firebase\JWT\Key( $key, 'HS256' ) );
+
+      if( $decoded_jwt->iss == $this->db_application->url &&
+          $decoded_jwt->nbf <= $now->getTimestamp() &&
+          $decoded_jwt->exp > $now->getTimestamp() )
+      {
+        $validated_data = $decoded_jwt->data;
+      }
+    }
+    catch( \UnexpectedValueException $e )
+    {
+      // the jwt couldn't be decoded, so it is considered invalid but no other error handling is necessary
+    }
+
+    return $validated_data;
   }
 
   /**

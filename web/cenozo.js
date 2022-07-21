@@ -8504,7 +8504,7 @@
             if (angular.isUndefined(cancelOnTransition))
               cancelOnTransition = false;
             var self = this;
-            var object = {
+            var httpObject = {
               url: cenozoApp.baseUrl + "/api/" + this.path,
               method: method,
               // broadcast when http requests start/finish
@@ -8582,12 +8582,12 @@
             // Set this http request's timeout to the transition's canceller.
             // We do this so that we can cancel requests should the user transition away from this state.
             if (cancelOnTransition && transitionCanceller)
-              object.timeout = transitionCanceller.promise;
+              httpObject.timeout = transitionCanceller.promise;
 
             if (null !== this.data) {
               if ("POST" == method || "PATCH" == method)
-                object.data = this.data;
-              else object.params = this.data;
+                httpObject.data = this.data;
+              else httpObject.params = this.data;
             }
 
             if (
@@ -8618,20 +8618,26 @@
               else if ("zip" == this.format) format = "application/zip";
 
               if ("PATCH" == method) {
-                object.headers = { "Content-Type": format };
+                httpObject.headers = { "Content-Type": format };
               } else if ("GET" == method) {
-                object.headers = { Accept: format };
-                object.responseType = "arraybuffer";
+                httpObject.headers = { Accept: format };
+                httpObject.responseType = "arraybuffer";
               }
             } else {
-              object.headers = {};
+              httpObject.headers = {};
             }
 
-            if ("GET" == method || "HEAD" == method)
-              object.headers["No-Activity"] = this.noActivity;
+            const jwt = localStorage.getItem("jwt");
+            if( jwt ) {
+              httpObject.headers["Authorization"] = "JWT " + jwt;
+            }
+
+            if ("GET" == method || "HEAD" == method) {
+              httpObject.headers["No-Activity"] = this.noActivity;
+            }
 
             try {
-              return await $http(object);
+              return await $http(httpObject);
             } catch (error) {
               if (error instanceof Error) {
                 // blank content
