@@ -66,7 +66,7 @@
                 headers: { Authorization: 'Basic ' + auth }
               } ).then( function( response ) {
                 if( 201 == response.status ) {
-                  // login successful, store the jwt and reload the page
+                  // login successful, reloald the page
                   $window.location.reload();
                 } else {
                   // login unsuccessful
