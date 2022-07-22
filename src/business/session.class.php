@@ -262,6 +262,8 @@ class session extends \cenozo\singleton
    */
   public function login( $username = NULL, $db_site = NULL, $db_role = NULL )
   {
+    if( $this->is_shutdown() ) return false;
+
     $util_class_name = lib::get_class_name( 'util' );
     $access_class_name = lib::get_class_name( 'database\access' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
@@ -273,118 +275,114 @@ class session extends \cenozo\singleton
 
     $success = false;
 
-    // only perform if not shut down and user record is set
-    if( !$this->is_shutdown() )
+    if( !is_null( $username ) && !is_string( $username ) )
+      throw lib::create( 'exception\argument', 'username', $username, __METHOD__ );
+    if( !is_null( $db_site ) && !is_a( $db_site, $site_class_name ) )
+      throw lib::create( 'exception\argument', 'db_site', $db_site, __METHOD__ );
+    if( !is_null( $db_role ) && !is_a( $db_role, $role_class_name ) )
+      throw lib::create( 'exception\argument', 'db_role', $db_role, __METHOD__ );
+
+    $db_access = NULL;
+
+    // see if there is a JWT cookie
+    $jwt_string = $this->get_cookie( 'JWT' );
+
+    $logged_out = false;
+    if( !is_null( $jwt_string ) )
     {
-      if( !is_null( $username ) && !is_string( $username ) )
-        throw lib::create( 'exception\argument', 'username', $username, __METHOD__ );
-      if( !is_null( $db_site ) && !is_a( $db_site, $site_class_name ) )
-        throw lib::create( 'exception\argument', 'db_site', $db_site, __METHOD__ );
-      if( !is_null( $db_role ) && !is_a( $db_role, $role_class_name ) )
-        throw lib::create( 'exception\argument', 'db_role', $db_role, __METHOD__ );
-
-      $db_access = NULL;
-
-      // see if there is a JWT cookie
-      $jwt_string = $this->get_cookie( 'JWT' );
-
-      $logged_out = false;
-      if( !is_null( $jwt_string ) )
+      // try loading the access record from the JWT
+      $this->jwt = lib::create( 'business\jwt' );
+      if( $this->jwt->decode( $jwt_string ) && $this->jwt->is_valid() )
       {
-        // try loading the access record from the JWT
-        $this->jwt = lib::create( 'business\jwt' );
-        if( $this->jwt->decode( $jwt_string ) && $this->jwt->is_valid() )
+        try { $db_access = lib::create( 'database\access', $this->jwt->get_data( 'access_id' ) ); }
+        catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
+
+        // don't use the access if it has lapsed
+        if( !is_null( $db_access ) && $db_access->has_expired() )
         {
-          try { $db_access = lib::create( 'database\access', $this->jwt->get_data( 'access_id' ) ); }
-          catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
+          // we'll need the user to close the activity, so set it before making db_access NULL
+          $this->db_user = $db_access->get_user();
+          $db_access = NULL;
+        }
 
-          // don't use the access if it has lapsed
-          if( !is_null( $db_access ) && $db_access->has_expired() )
-          {
-            // we'll need the user to close the activity, so set it before making db_access NULL
-            $this->db_user = $db_access->get_user();
-            $db_access = NULL;
-          }
+        // If the remote address doesn't match the JWT's address or the access doesn't exist then
+        // immediately logout
+        if( is_null( $db_access ) || $_SERVER['REMOTE_ADDR'] != $this->jwt->get_data( 'address' ) )
+        {
+          $logged_out = true;
+          $this->logout();
+        }
+      }
+    }
 
-          // If the remote address doesn't match the JWT's address or the access doesn't exist then
-          // immediately logout
-          if( is_null( $db_access ) || $_SERVER['REMOTE_ADDR'] != $this->jwt->get_data( 'address' ) )
-          {
-            $logged_out = true;
-            $this->logout();
-          }
+    if( !$logged_out )
+    {
+      if( !is_null( $db_access ) ) $this->db_user = $db_access->get_user();
+
+      // resolve the user
+      if( !is_null( $username ) )
+      {
+        if( is_null( $this->db_user ) )
+        {
+          $this->db_user = $user_class_name::get_unique_record( 'name', $username );
+        }
+        else
+        {
+          if( $username != $this->db_user->name )
+            throw lib::create( 'exception\runtime',
+              'Tried to login with different user while already logged in.',
+              __METHOD__ );
         }
       }
 
-      if( !$logged_out )
+      if( !is_null( $this->db_user ) )
       {
-        if( !is_null( $db_access ) ) $this->db_user = $db_access->get_user();
-
-        // resolve the user
-        if( !is_null( $username ) )
+        if( !$this->db_user->active )
         {
-          if( is_null( $this->db_user ) )
+          $utility = $setting_manager->get_setting( 'utility', 'username' );
+          if( $utility == $this->db_user->name )
           {
-            $this->db_user = $user_class_name::get_unique_record( 'name', $username );
+            // show a warning in the log if the utility account has been disabled
+            log::warning( sprintf(
+              'The utility account, "%s", is not active.  Until it has been reactivated the application\'s reports, '.
+              'cron jobs, and other utility functions will not work correctly.',
+              $utility
+            ) );
           }
-          else
-          {
-            if( $username != $this->db_user->name )
-              throw lib::create( 'exception\runtime',
-                'Tried to login with different user while already logged in.',
-                __METHOD__ );
-          }
+          $this->logout();
         }
-
-        if( !is_null( $this->db_user ) )
+        else
         {
-          if( !$this->db_user->active )
+          if( !is_null( $db_site ) && !is_null( $db_role ) )
           {
-            $utility = $setting_manager->get_setting( 'utility', 'username' );
-            if( $utility == $this->db_user->name )
-            {
-              // show a warning in the log if the utility account has been disabled
-              log::warning( sprintf(
-                'The utility account, "%s", is not active.  Until it has been reactivated the application\'s reports, '.
-                'cron jobs, and other utility functions will not work correctly.',
-                $utility
-              ) );
-            }
-            $this->logout();
+            $db_access = $access_class_name::get_unique_record(
+              array( 'user_id', 'role_id', 'site_id' ),
+              array( $this->db_user->id, $db_role->id, $db_site->id ) );
           }
-          else
+          else if( is_null( $db_access ) )
           {
-            if( !is_null( $db_site ) && !is_null( $db_role ) )
-            {
-              $db_access = $access_class_name::get_unique_record(
-                array( 'user_id', 'role_id', 'site_id' ),
-                array( $this->db_user->id, $db_role->id, $db_site->id ) );
-            }
-            else if( is_null( $db_access ) )
-            {
-              // find the most recent access restricted to the given site/role (if any)
-              $access_mod = lib::create( 'database\modifier' );
-              $access_mod->order_desc( 'datetime' );
-              $access_mod->order_desc( 'microtime' );
-              $access_mod->limit( 1 );
-              if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
-              if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
-              $access_list = $this->db_user->get_access_object_list( $access_mod );
-              if( 0 < count( $access_list ) ) $db_access = current( $access_list );
-            }
+            // find the most recent access restricted to the given site/role (if any)
+            $access_mod = lib::create( 'database\modifier' );
+            $access_mod->order_desc( 'datetime' );
+            $access_mod->order_desc( 'microtime' );
+            $access_mod->limit( 1 );
+            if( !is_null( $db_site ) ) $access_mod->where( 'access.site_id', '=', $db_site->id );
+            if( !is_null( $db_role ) ) $access_mod->where( 'access.role_id', '=', $db_role->id );
+            $access_list = $this->db_user->get_access_object_list( $access_mod );
+            if( 0 < count( $access_list ) ) $db_access = current( $access_list );
+          }
 
-            if( !is_null( $db_access ) )
-            {
-              $this->db_access = $db_access;
-              $this->db_site = $this->db_access->get_site();
-              $this->db_setting = current( $this->db_site->get_setting_object_list() );
-              $this->db_role = $this->db_access->get_role();
+          if( !is_null( $db_access ) )
+          {
+            $this->db_access = $db_access;
+            $this->db_site = $this->db_access->get_site();
+            $this->db_setting = current( $this->db_site->get_setting_object_list() );
+            $this->db_role = $this->db_access->get_role();
 
-              // update the access with the current time
-              $this->mark_access_time();
+            // update the access with the current time
+            $this->mark_access_time();
 
-              $success = true;
-            }
+            $success = true;
           }
         }
       }
@@ -456,7 +454,7 @@ class session extends \cenozo\singleton
    * Generates a JSON web token for authentication and stores it as a cookie
    * @param string $password Only used to determine if the password must be reset
    */
-  public function generate_new_jwt( $password )
+  public function generate_new_jwt( $password = NULL )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
 
@@ -465,7 +463,9 @@ class session extends \cenozo\singleton
     $this->jwt->set_data( 'address', $_SERVER['REMOTE_ADDR'] );
     $this->jwt->set_data(
       'no_password',
-      !is_null( $this->db_user ) && $setting_manager->get_setting( 'general', 'default_password' ) == $password
+      !is_null( $this->db_user ) &&
+      !is_null( $password ) &&
+      $setting_manager->get_setting( 'general', 'default_password' ) == $password
     );
     $this->set_cookie( 'JWT', $this->jwt->get_encoded_value() );
   }
@@ -633,7 +633,7 @@ class session extends \cenozo\singleton
    * @var business\jwt
    * @access private
    */
-  private $jwt = NULL;
+  protected $jwt = NULL;
 
   /**
    * Whether the user must immediately reset their password
