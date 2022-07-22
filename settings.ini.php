@@ -14,13 +14,16 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.8';
-$settings['general']['cenozo_build'] = '9ad1a4b2';
+$settings['general']['cenozo_build'] = '2cd013fa';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
 
 // always leave as false when running as production server
 $settings['general']['development_mode'] = false;
+
+// this must be set in the local settings file (otherwise a fatal error will occur)
+$settings['general']['jwt_key'] = '';
 
 // whether to show all API requests in the log (VERY verbose)
 $settings['general']['show_api_calls'] = false;

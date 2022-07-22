@@ -144,8 +144,7 @@ class get extends \cenozo\service\service
           'module_list' => $module_list,
           'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
           'final_hold_type_list' => $final_hold_type_list,
-          'session_list' => $session->get_session_list(),
-          'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false
+          'no_password' => $session->get_no_password()
         )
       );
 

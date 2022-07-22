@@ -102,7 +102,7 @@ class data_manager extends \cenozo\singleton
       $variable = $parts[1];
 
       // cookie.<name>
-      if( array_key_exists( $variable, $_COOKIE ) ) $value = $_COOKIE[$variable];
+      $value = lib::create( 'business\session' )->get_cookie( $variable );
     }
     else if( 'role' == $subject )
     {

@@ -49,13 +49,10 @@ class post extends \cenozo\service\service
     $pass = NULL;
     if( $session->check_authorization_header( $user, $pass ) )
     {
-      $result = $session->login( $user );
-      if( $result )
+      if( $session->login( $user ) )
       {
-        $session->set_no_password( $pass );
-        $jwt = $session->generate_jwt();
-        $this->set_data( $jwt );
-        setcookie( 'JWT', $jwt, 0, '/' );
+        $session->generate_new_jwt( $pass );
+        $result = true;
       }
     }
 

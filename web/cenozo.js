@@ -1060,6 +1060,13 @@
       return await blobToBase64(blob);
     },
 
+    getCookie: function(name) {
+      return document.cookie.split("; ").reduce((r, v) => {
+        const parts = v.split("=");
+        return parts[0] === name ? decodeURIComponent(parts[1]).replace(/\+/g," ") : r;
+      }, null);
+    },
+
     // Sets up the routing for a module
     routeModule: function (stateProvider, name, module) {
       if (angular.isUndefined(stateProvider))
@@ -4412,7 +4419,6 @@
           siteList: [],
           finalHoldTypeList: [],
           moduleList: [],
-          sessionList: [],
           messageList: [],
           unreadMessageCount: 0,
           breadcrumbTrail: [],
@@ -4533,9 +4539,6 @@
               // add the supporting script list
               this.supportingScriptList = response.data.supporting_script_list;
             }
-
-            // process session records
-            this.sessionList = response.data.session_list;
 
             // if the user's password isn't set then open the password dialog
             if (response.data.no_password && !CnModalPasswordFactory.isOpen()) {
@@ -8625,11 +8628,6 @@
               }
             } else {
               httpObject.headers = {};
-            }
-
-            const jwt = localStorage.getItem("jwt");
-            if( jwt ) {
-              httpObject.headers["Authorization"] = "JWT " + jwt;
             }
 
             if ("GET" == method || "HEAD" == method) {

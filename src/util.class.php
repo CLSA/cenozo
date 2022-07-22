@@ -593,26 +593,30 @@ class util
   /**
    * Encodes any variable/object/array into a json string
    * @param mixed $arg
-   * @params bitmask $options See PHP's json_encode docs for more details
+   * @param bitmask $options See PHP's json_encode docs for more details
+   * @param integer $depth See PHP's json_encode docs for more details
    * @return string
    * @static
    * @access public
    */
-  public static function json_encode( $arg, $options = 0 )
+  public static function json_encode( $arg, $flags = 0, $depth = 512 )
   {
-    return json_encode( self::utf8_encode( $arg ), $options );
+    return json_encode( self::utf8_encode( $arg ), $flags, $depth );
   }
 
   /**
    * Decodes a json string and converts it into the corresponding variable/object/array
    * @param string $arg
+   * @param boolean $associative See PHP's json_decode docs for more details
+   * @param bitmask $options See PHP's json_decode docs for more details
+   * @param integer $depth See PHP's json_decode docs for more details
    * @return mixed
    * @static
    * @access public
    */
-  public static function json_decode( $arg )
+  public static function json_decode( $arg, $associative = NULL, $depth = 512, $flags = 0 )
   {
-    return json_decode( self::utf8_encode( $arg ) );
+    return json_decode( self::utf8_encode( $arg ), $associative, $depth, $flags );
   }
 
   /**

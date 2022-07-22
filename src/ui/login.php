@@ -67,8 +67,6 @@
               } ).then( function( response ) {
                 if( 201 == response.status ) {
                   // login successful, store the jwt and reload the page
-                  localStorage.setItem( 'jwt', response.data );
-//                  document.cookie = "JWT=" + response.data + ";path=/";
                   $window.location.reload();
                 } else {
                   // login unsuccessful

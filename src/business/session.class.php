@@ -8,12 +8,6 @@
 namespace cenozo\business;
 use cenozo\lib, cenozo\log;
 
-require_once '/usr/local/lib/php-jwt/src/JWT.php';
-require_once '/usr/local/lib/php-jwt/src/Key.php';
-require_once '/usr/local/lib/php-jwt/src/BeforeValidException.php';
-require_once '/usr/local/lib/php-jwt/src/ExpiredException.php';
-require_once '/usr/local/lib/php-jwt/src/SignatureInvalidException.php';
-
 /**
  * session: handles all session-based information
  *
@@ -55,10 +49,6 @@ class session extends \cenozo\singleton
   {
     // only initialize once and after construction only
     if( 'created' != $this->state ) return;
-
-    // make sure the session was successfully started
-    if( 0 == strlen( session_id() ) )
-      throw lib::create( 'exception\runtime', 'Session failed to start.', __METHOD__ );
 
     $application_class_name = lib::get_class_name( 'database\application' );
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
@@ -123,8 +113,6 @@ class session extends \cenozo\singleton
   {
     // only shutdown after initialization
     if( 'initialized' != $this->state ) return;
-
-    session_write_close();
 
     $this->state = 'shutdown';
   }
@@ -225,69 +213,42 @@ class session extends \cenozo\singleton
   }
 
   /**
-   * Returns a list of all active sessions belonging to the current user
-   * 
-   * @return array
+   * Gets a cookie, or returns NULL if no cookie exists
+   * @param string $name
+   * @return string
    * @access public
    */
-  public function get_session_list()
+  public function get_cookie( $name )
   {
-    $session_list = array();
+    return array_key_exists( $name, $_COOKIE ) ? $_COOKIE[$name] : NULL;
+  }
 
-    if( !is_null( $this->db_user ) )
-    {
-      $access_class_name = lib::get_class_name( 'database\access' );
+  /**
+   * Sets a cookie's value, creating it if it doesn't already exist
+   * @param string $name
+   * @param string $value
+   * @access public
+   */
+  public function set_cookie( $name, $value )
+  {
+    // string $name,
+    // string $value = "",
+    // int $expires_or_options = 0,
+    // string $path = "",
+    // string $domain = "",
+    // bool $secure = false,
+    // bool $httponly = false
+    setcookie( $name, $value, 0, '/;SameSite=strict', $_SERVER['SERVER_NAME'], true, true );
+  }
 
-      $address_list = array();
-      $path = session_save_path();
-      foreach( scandir( $path ) as $file )
-      {
-        if( 'sess_' == substr( $file, 0, 5 ) )
-        {
-          $contents = file_get_contents( sprintf( '%s/%s', $path, $file ) );
-
-          $matches = array();
-          preg_match( '/access\.id\|i:([0-9]+);/', $contents, $matches );
-          if( array_key_exists( 1, $matches ) )
-          {
-            $access_id = $matches[1];
-            if( !array_key_exists( $access_id, $address_list ) ) $address_list[$access_id] = array();
-            $address = 'unknown';
-            $matches = array();
-            preg_match( '/address\|s:[0-9]+:"([^"]+)";/', $contents, $matches );
-            if( array_key_exists( 1, $matches ) ) $address = $matches[1];
-            $address_list[$access_id][] = $address;
-          }
-        }
-      }
-
-      // get all access records
-      $access_sel = lib::create( 'database\select' );
-      $access_sel->add_column( 'id' );
-      $access_sel->add_table_column( 'site', 'name', 'site' );
-      $access_sel->add_table_column( 'role', 'name', 'role' );
-      $access_sel->add_column( 'datetime' );
-      $access_mod = lib::create( 'database\modifier' );
-      $access_mod->where( 'access.id', 'in', array_keys( $address_list ) );
-      $access_mod->where( 'access.user_id', '=', $this->db_user->id );
-      $access_mod->join( 'site', 'access.site_id', 'site.id' );
-      $access_mod->join( 'role', 'access.role_id', 'role.id' );
-      $access_mod->order_desc( 'datetime' );
-      foreach( $access_class_name::select( $access_sel, $access_mod ) as $access )
-      {
-        foreach( $address_list[$access['id']] as $address )
-        {
-          $session_list[] = array(
-            'address' => $address,
-            'site' => $access['site'],
-            'role' => $access['role'],
-            'datetime' => $access['datetime']
-          );
-        }
-      }
-    }
-
-    return $session_list;
+  /**
+   * Removes a cookie by immediately expiring it
+   * @param string $name
+   * @access public
+   */
+  public function remove_cookie( $name )
+  {
+    setcookie( $name, '', time()-60, "/;SameSite=strict", $_SERVER['SERVER_NAME'], true, true );
   }
 
   /**
@@ -324,33 +285,17 @@ class session extends \cenozo\singleton
 
       $db_access = NULL;
 
-      // see if there is a JWT authorization header
-      $jwt = NULL;
+      // see if there is a JWT cookie
+      $jwt_string = $this->get_cookie( 'JWT' );
 
-      $headers = apache_request_headers();
-      if( false === $headers )
-        throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
-      if( array_key_exists( 'Authorization', $headers ) )
-      {
-        $parts = explode( ' ', $headers['Authorization'] );
-        if( 'JWT' == $parts[0] ) $jwt = $parts[1];
-      }
-
-      // if not, then see if there is a JWT cookie
-      if( is_null( $jwt ) && array_key_exists( 'JWT', $_COOKIE ) )
-      {
-        $jwt = $_COOKIE['JWT'];
-      }
-
-      $jwt_valid = false;
-      if( !is_null( $jwt ) )
+      $logged_out = false;
+      if( !is_null( $jwt_string ) )
       {
         // try loading the access record from the JWT
-        $data = $this->validate_jwt( $jwt );
-        if( !is_null( $data ) )
+        $this->jwt = lib::create( 'business\jwt' );
+        if( $this->jwt->decode( $jwt_string ) && $this->jwt->is_valid() )
         {
-          $jwt_valid = true;
-          try { $db_access = lib::create( 'database\access', $data->access_id ); }
+          try { $db_access = lib::create( 'database\access', $this->jwt->get_data( 'access_id' ) ); }
           catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
 
           // don't use the access if it has lapsed
@@ -360,20 +305,18 @@ class session extends \cenozo\singleton
             $this->db_user = $db_access->get_user();
             $db_access = NULL;
           }
+
+          // If the remote address doesn't match the JWT's address or the access doesn't exist then
+          // immediately logout
+          if( is_null( $db_access ) || $_SERVER['REMOTE_ADDR'] != $this->jwt->get_data( 'address' ) )
+          {
+            $logged_out = true;
+            $this->logout();
+          }
         }
       }
 
-      // if the JWT is valid but the remote address doesn't match the session's address or the
-      // access doesn't exist then immediately logout
-      if( $jwt_valid && (
-            is_null( $db_access ) || (
-              array_key_exists( 'address', $_SESSION ) && $_SESSION['address'] != $_SERVER['REMOTE_ADDR']
-            )
-          )
-      ) {
-        $this->logout();
-      }
-      else
+      if( !$logged_out )
       {
         if( !is_null( $db_access ) ) $this->db_user = $db_access->get_user();
 
@@ -436,7 +379,6 @@ class session extends \cenozo\singleton
               $this->db_site = $this->db_access->get_site();
               $this->db_setting = current( $this->db_site->get_setting_object_list() );
               $this->db_role = $this->db_access->get_role();
-              $_SESSION['address'] = $_SERVER['REMOTE_ADDR'];
 
               // update the access with the current time
               $this->mark_access_time();
@@ -466,12 +408,12 @@ class session extends \cenozo\singleton
     $this->db_site = NULL;
     $this->db_setting = NULL;
     $this->db_role = NULL;
-    setcookie( 'JWT', '' );
-    session_destroy();
+    $this->remove_cookie( 'JWT' );
   }
 
   /**
    * Check request headers for authorization
+   * TODO: return an array with the user/pass isntead of using referenced arguments
    * 
    * @param string &$username Will be set to the auth header's username, if successful
    * @param string &$password Will be set tot he auth header's password, if successful
@@ -511,62 +453,30 @@ class session extends \cenozo\singleton
   }
 
   /**
-   * Generates a JSON web token for authentication
+   * Generates a JSON web token for authentication and stores it as a cookie
+   * @param string $password Only used to determine if the password must be reset
    */
-  public function generate_jwt()
+  public function generate_new_jwt( $password )
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    // encode a JWT for authentication
-    $now = $util_class_name::get_datetime_object();
-    $key = $setting_manager->get_setting( 'general', 'jwt_key' );
-    $timeout = $setting_manager->get_setting( 'general', 'activity_timeout' );
-    $expiry = clone $now;
-    $expiry->add( new \DateInterval( sprintf( 'PT%dM', $timeout ) ) );
-
-    return \Firebase\JWT\JWT::encode(
-      array(
-        'iss' => $this->db_application->url,
-        'iat' => $now->getTimestamp(),
-        'nbf' => $now->getTimestamp(),
-        'exp' => $expiry->getTimestamp(),
-        'data' => array( 'access_id' => $this->db_access->id )
-      ),
-      $key,
-      'HS256'
+    $this->jwt = lib::create( 'business\jwt' );
+    $this->jwt->set_data( 'access_id', $this->db_access->id );
+    $this->jwt->set_data( 'address', $_SERVER['REMOTE_ADDR'] );
+    $this->jwt->set_data(
+      'no_password',
+      !is_null( $this->db_user ) && $setting_manager->get_setting( 'general', 'default_password' ) == $password
     );
+    $this->set_cookie( 'JWT', $this->jwt->get_encoded_value() );
   }
 
-  /**
-   * Validates a JSON web token
+  /** 
+   * Determines whether the user must immediately change their password
+   * @access public
    */
-  public function validate_jwt( $jwt )
+  public function get_no_password()
   {
-    $util_class_name = lib::get_class_name( 'util' );
-    $setting_manager = lib::create( 'business\setting_manager' );
-
-    $validated_data = NULL;
-    try
-    {
-      // encode a JWT for authentication
-      $now = $util_class_name::get_datetime_object();
-      $key = $setting_manager->get_setting( 'general', 'jwt_key' );
-      $decoded_jwt = \Firebase\JWT\JWT::decode( $jwt, new \Firebase\JWT\Key( $key, 'HS256' ) );
-
-      if( $decoded_jwt->iss == $this->db_application->url &&
-          $decoded_jwt->nbf <= $now->getTimestamp() &&
-          $decoded_jwt->exp > $now->getTimestamp() )
-      {
-        $validated_data = $decoded_jwt->data;
-      }
-    }
-    catch( \UnexpectedValueException $e )
-    {
-      // the jwt couldn't be decoded, so it is considered invalid but no other error handling is necessary
-    }
-
-    return $validated_data;
+    return $this->jwt->get_data( 'no_password' );
   }
 
   /**
@@ -578,8 +488,11 @@ class session extends \cenozo\singleton
   public function set_no_password( $password )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
-    if( !is_null( $this->db_user ) )
-      $_SESSION['no_password'] = $setting_manager->get_setting( 'general', 'default_password' ) == $password;
+    $this->jwt->set_data(
+      'no_password',
+      !is_null( $this->db_user ) && $setting_manager->get_setting( 'general', 'default_password' ) == $password
+    );
+    $this->set_cookie( 'JWT', $this->jwt->get_encoded_value() );
   }
 
   /**
@@ -674,13 +587,6 @@ class session extends \cenozo\singleton
   private $survey_database = NULL;
 
   /**
-   * Data generated by the service (if any).
-   * @var mixed
-   * @access protected
-   */
-  protected $data = NULL;
-
-  /**
    * The record of the current user.
    * @var database\user
    * @access private
@@ -721,6 +627,20 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $db_application = NULL;
+
+  /**
+   * The Javascript Web Token responsible for authentiation
+   * @var business\jwt
+   * @access private
+   */
+  private $jwt = NULL;
+
+  /**
+   * Whether the user must immediately reset their password
+   * @var boolean
+   * @access private
+   */
+  private $no_password = false;
 
   /**
    * Whether or not to mark user access time

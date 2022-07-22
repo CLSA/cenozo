@@ -68,14 +68,11 @@ final class bootstrap
     $initial = new initial;
     $this->settings = $initial->get_settings();
 
-    ini_set( 'session.save_path', TEMPORARY_FILES_PATH );
-    ini_set( 'session.gc_probability', 1 );
-    ini_set( 'session.gc_divisor', 100 );
-    ini_set( 'session.cookie_secure', false );
-    ini_set( 'session.use_only_cookies', true );
-
-    session_name( 'CENOZO_SESSID' );
-    session_start();
+    // if the JWT key isn't set then immeidately fail
+    if( !$this->settings['general']['jwt_key'] )
+    {
+      die( 'FATAL ERROR: The JWT key MUST be set in Cenozo\'s local settings file.');
+    }
 
     // include the autoloader and error code files (search for app_path::util first)
     require_once CENOZO_SRC_PATH.'/lib.class.php';

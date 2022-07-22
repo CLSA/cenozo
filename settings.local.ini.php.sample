@@ -17,6 +17,9 @@ $settings['general']['maintenance_mode'] = false;
 // we need to declare the framework's working name
 $settings['general']['framework_name'] = 'cenozo';
 
+// The JWT secret key used to encrypt JWTs for authorization (use something long and hard to reproduce)
+$settings['general']['jwt_key'] = 'put your JWT key here';
+
 // the web url of the cenozo framework
 $host = NULL;
 if( array_key_exists( 'HTTP_X_FORWARDED_HOST', $_SERVER ) ) 
