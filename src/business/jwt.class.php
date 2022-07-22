@@ -41,6 +41,10 @@ class jwt extends \cenozo\base_object
     $this->exp = $expiry->getTimestamp();
   }
 
+  /**
+   * Decodes and loads an encoded JWT token
+   * @param string $encoded_jst
+   */
   public function decode( $encoded_jwt )
   {
     $util_class_name = lib::get_class_name( 'util' );
@@ -80,6 +84,12 @@ class jwt extends \cenozo\base_object
     return $success;
   }
 
+  /**
+   * Determines whether this JWT is valid.
+   * 
+   * This is done by testing the token's URL, not-before and expiry timestamps
+   * @return boolean
+   */
   public function is_valid()
   {
     $util_class_name = lib::get_class_name( 'util' );
@@ -92,6 +102,10 @@ class jwt extends \cenozo\base_object
            $this->exp > $now->getTimestamp();
   }
 
+  /**
+   * Returns the JWT as an encoded string
+   * @return string
+   */
   public function get_encoded_value()
   {
     // make sure the JWT has been encoded before returning it
@@ -99,11 +113,21 @@ class jwt extends \cenozo\base_object
     return $this->encoded_value;
   }
 
+  /**
+   * Gets data stored in to the JWT
+   * @param string $name
+   * @return string
+   */
   public function get_data( $name )
   {
     return $this->data[$name];
   }
 
+  /**
+   * Sets data into the JWT
+   * @param string $name
+   * @param string $value
+   */
   public function set_data( $name, $value )
   {
     $this->data[$name] = $value;
@@ -112,6 +136,10 @@ class jwt extends \cenozo\base_object
     if( !is_null( $this->encoded_value ) ) $this->reencode();
   }
 
+  /**
+   * Removes data from the JWT
+   * @param string $name
+   */
   public function remove_data( $name )
   {
     unset( $this->data[$name] );
@@ -119,25 +147,10 @@ class jwt extends \cenozo\base_object
     // if the JWT is already encoded then re-encode it to make sure the change is included
     if( !is_null( $this->encoded_value ) ) $this->reencode();
   }
-  
-  public function validate()
-  {
-    $util_class_name = lib::get_class_name( 'util' );
-    $setting_manager = lib::create( 'business\setting_manager' );
 
-    $valid = false;
-    
-    try
-    {
-    }
-    catch( \UnexpectedValueException $e )
-    {
-      // the jwt couldn't be decoded, so it is considered invalid but no other error handling is necessary
-    }
-
-    return $valid;
-  }
-
+  /**
+   * Used internally to reencode the JWT into an encrypted string
+   */
   private function reencode()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -155,10 +168,39 @@ class jwt extends \cenozo\base_object
     );
   }
 
+  /**
+   * The issuer of the JWT (represented by the application URL)
+   * @var string
+   */
   private $iss = NULL;
+
+  /**
+   * The UNIX timestamp of when the JWT was issued
+   * @var integer
+   */
   private $iat = NULL;
+
+  /**
+   * The UNIX timestamp of the earliest time the JWT is valid
+   * @var integer
+   */
   private $nbf = NULL;
+
+  /**
+   * The UNIX timestamp of when the JWT expires
+   * @var integer
+   */
   private $exp = NULL;
+
+  /**
+   * An array of all data belonging to the JWT
+   * @var array
+   */
   private $data = array();
+
+  /**
+   * The encoded string representation of the JWT
+   * @var string
+   */
   private $encoded_value = NULL;
 }
