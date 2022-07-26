@@ -205,7 +205,6 @@ class patch extends \cenozo\service\service
         }
 
         $success = $session->login( NULL, $db_requested_site, $db_requested_role );
-        $session->mark_access_time();
         $this->status->set_code( $success ? 204 : 403 );
       }
       else

@@ -51,7 +51,7 @@ class post extends \cenozo\service\service
     {
       if( $session->login( $user ) )
       {
-        $session->generate_new_jwt( $pass );
+        $session->set_no_password( $pass );
         $result = true;
       }
     }

@@ -40,21 +40,6 @@ class access extends record
     parent::delete();
   }
 
-  /**
-   * Determines whether the access has expired (timed-out)
-   * 
-   * @return boolean
-   * @access public
-   */
-  public function has_expired()
-  {
-    $activity_class_name = lib::get_class_name( 'database\activity' );
-    $modifier = $activity_class_name::get_expired_modifier();
-    $modifier->where( 'id', '=', $this->id );
-
-    return 0 < static::count( $modifier );
-  }
-
   /* 
    * Determines if the current role can add/remove this access
    * @return boolean

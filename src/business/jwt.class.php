@@ -120,7 +120,7 @@ class jwt extends \cenozo\base_object
    */
   public function get_data( $name )
   {
-    return $this->data[$name];
+    return array_key_exists( $name, $this->data ) ? $this->data[$name] : NULL;
   }
 
   /**
