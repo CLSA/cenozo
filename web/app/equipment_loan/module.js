@@ -57,17 +57,15 @@ cenozoApp.defineModule({
         },
         isConstant: "view",
       },
-      equipment_type: {
-        column: "equipment_type.name",
-        title: "Equipment Type",
-        type: "string",
-        isExcluded: "add",
-      },
-      serial_number: {
-        column: "equipment.serial_number",
+      equipment_id: {
         title: "Serial Number",
-        type: "string",
-        isExcluded: "add",
+        type: "lookup-typeahead",
+        typeahead: {
+          table: "equipment",
+          select: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )',
+          where: "equipment.serial_number",
+        },
+        help: "Type in the serial number of the device (do not include the device type",
       },
       start_datetime: {
         title: "Loan Date & Time",
@@ -85,57 +83,5 @@ cenozoApp.defineModule({
         type: "text",
       },
     });
-
-    /* ############################################################################################## */
-    /*
-    cenozo.providers.factory("CnEquipmentLoanViewFactory", [
-      "CnBaseViewFactory",
-      function (CnBaseViewFactory) {
-        var object = function (parentModel, root) {
-          CnBaseViewFactory.construct(this, parentModel, root);
-          this.onView = async function (force) {
-            await this.$$onView(force);
-            this.heading = this.record.equipment_loan_type.ucWords() + " Details";
-          };
-        };
-        return {
-          instance: function (parentModel, root) {
-            return new object(parentModel, root);
-          },
-        };
-      },
-    ]);
-    */
-
-    /* ############################################################################################## */
-    /*
-    cenozo.providers.factory("CnEquipmentLoanAddFactory", [
-      "CnBaseAddFactory",
-      "CnHttpFactory",
-      function (
-        CnBaseAddFactory,
-        CnHttpFactory
-      ) {
-        var object = function (parentModel) {
-          CnBaseAddFactory.construct(this, parentModel);
-          this.onNew = async function (record) {
-            this.heading = "Create " + parentModel.module.name.singular.ucWords();
-            await this.$$onNew(record);
-            const response = await CnHttpFactory.instance({
-              path: "equipment_loan_type/" + parentModel.getParentIdentifier().identifier,
-              data: { select: { column: "name" } }
-            }).get();
-
-            this.heading = "Create " + response.data.name;
-          };
-        };
-        return {
-          instance: function (parentModel) {
-            return new object(parentModel);
-          },
-        };
-      },
-    ]);
-    */
   },
 });
