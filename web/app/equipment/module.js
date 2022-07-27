@@ -94,12 +94,18 @@ cenozoApp.defineModule({
           this.onNew = async function (record) {
             this.heading = "Create " + parentModel.module.name.singular.ucWords();
             await this.$$onNew(record);
-            const response = await CnHttpFactory.instance({
-              path: "equipment_type/" + parentModel.getParentIdentifier().identifier,
-              data: { select: { column: "name" } }
-            }).get();
+            console.log( parentModel.getParentIdentifier() );
+            const parentIdentifier = parentModel.getParentIdentifier();
+            if( angular.isDefined( parentIdentifier.identifier ) ) {
+              const response = await CnHttpFactory.instance({
+                path: "equipment_type/" + parentModel.getParentIdentifier().identifier,
+                data: { select: { column: "name" } }
+              }).get();
 
-            this.heading = "Create " + response.data.name;
+              this.heading = "Create " + response.data.name;
+            } else {
+              this.heading = "Create Equipment";
+            }
           };
         };
         return {
