@@ -3,6 +3,7 @@ cenozoApp.defineModule({
   optionalDependencies: [
     "address",
     "consent",
+    "equipment",
     "event",
     "hold",
     "phone",
