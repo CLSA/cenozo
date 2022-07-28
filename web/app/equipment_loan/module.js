@@ -83,5 +83,41 @@ cenozoApp.defineModule({
         type: "text",
       },
     });
+
+    /* ############################################################################################## */
+    cenozo.providers.factory("CnEquipmentLoanModelFactory", [
+      "CnBaseModelFactory",
+      "CnEquipmentAddFactory",
+      "CnEquipmentListFactory",
+      "CnEquipmentViewFactory",
+      function (
+        CnBaseModelFactory,
+        CnEquipmentAddFactory,
+        CnEquipmentListFactory,
+        CnEquipmentViewFactory
+      ) {
+        var object = function (root) {
+          CnBaseModelFactory.construct(this, module);
+          angular.extend(this, {
+            addModel: CnEquipmentAddFactory.instance(this),
+            listModel: CnEquipmentListFactory.instance(this),
+            viewModel: CnEquipmentViewFactory.instance(this, root),
+
+            getAddEnabled: function() {
+              // Need to override parent method since we don't care if the role doesn't have edit access
+              // on the parent model
+              return angular.isDefined(this.module.actions.add);
+            },
+          });
+        };
+
+        return {
+          root: new object(true),
+          instance: function () {
+            return new object(false);
+          },
+        };
+      },
+    ]);
   },
 });
