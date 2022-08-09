@@ -420,6 +420,7 @@ class ui extends \cenozo\base_object
       {
         $module->add_child( 'access' );
         $module->add_child( 'activity' );
+        $module->add_child( 'equipment' );
       }
       else if( 'source' == $module->get_subject() )
       {

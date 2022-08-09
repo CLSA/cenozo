@@ -57,17 +57,15 @@ cenozoApp.defineModule({
         },
         isConstant: "view",
       },
-      equipment_type: {
-        column: "equipment_type.name",
-        title: "Equipment Type",
-        type: "string",
-        isExcluded: "add",
-      },
-      serial_number: {
-        column: "equipment.serial_number",
+      equipment_id: {
         title: "Serial Number",
-        type: "string",
-        isExcluded: "add",
+        type: "lookup-typeahead",
+        typeahead: {
+          table: "equipment",
+          select: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )',
+          where: "equipment.serial_number",
+        },
+        help: "Type in the serial number of the device (do not include the device type",
       },
       start_datetime: {
         title: "Loan Date & Time",
@@ -87,55 +85,39 @@ cenozoApp.defineModule({
     });
 
     /* ############################################################################################## */
-    /*
-    cenozo.providers.factory("CnEquipmentLoanViewFactory", [
-      "CnBaseViewFactory",
-      function (CnBaseViewFactory) {
-        var object = function (parentModel, root) {
-          CnBaseViewFactory.construct(this, parentModel, root);
-          this.onView = async function (force) {
-            await this.$$onView(force);
-            this.heading = this.record.equipment_loan_type.ucWords() + " Details";
-          };
-        };
-        return {
-          instance: function (parentModel, root) {
-            return new object(parentModel, root);
-          },
-        };
-      },
-    ]);
-    */
-
-    /* ############################################################################################## */
-    /*
-    cenozo.providers.factory("CnEquipmentLoanAddFactory", [
-      "CnBaseAddFactory",
-      "CnHttpFactory",
+    cenozo.providers.factory("CnEquipmentLoanModelFactory", [
+      "CnBaseModelFactory",
+      "CnEquipmentAddFactory",
+      "CnEquipmentListFactory",
+      "CnEquipmentViewFactory",
       function (
-        CnBaseAddFactory,
-        CnHttpFactory
+        CnBaseModelFactory,
+        CnEquipmentAddFactory,
+        CnEquipmentListFactory,
+        CnEquipmentViewFactory
       ) {
-        var object = function (parentModel) {
-          CnBaseAddFactory.construct(this, parentModel);
-          this.onNew = async function (record) {
-            this.heading = "Create " + parentModel.module.name.singular.ucWords();
-            await this.$$onNew(record);
-            const response = await CnHttpFactory.instance({
-              path: "equipment_loan_type/" + parentModel.getParentIdentifier().identifier,
-              data: { select: { column: "name" } }
-            }).get();
+        var object = function (root) {
+          CnBaseModelFactory.construct(this, module);
+          angular.extend(this, {
+            addModel: CnEquipmentAddFactory.instance(this),
+            listModel: CnEquipmentListFactory.instance(this),
+            viewModel: CnEquipmentViewFactory.instance(this, root),
 
-            this.heading = "Create " + response.data.name;
-          };
+            getAddEnabled: function() {
+              // Need to override parent method since we don't care if the role doesn't have edit access
+              // on the parent model
+              return angular.isDefined(this.module.actions.add);
+            },
+          });
         };
+
         return {
-          instance: function (parentModel) {
-            return new object(parentModel);
+          root: new object(true),
+          instance: function () {
+            return new object(false);
           },
         };
       },
     ]);
-    */
   },
 });

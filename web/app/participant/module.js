@@ -3,6 +3,7 @@ cenozoApp.defineModule({
   optionalDependencies: [
     "address",
     "consent",
+    "equipment",
     "event",
     "hold",
     "phone",
@@ -1053,6 +1054,61 @@ cenozoApp.defineModule({
               });
             })
           );
+        },
+      };
+    } catch (err) {}
+
+    // add the equipment_loan category if the module exists
+    try {
+      cenozoApp.module("equipment");
+      module.historyCategoryList.Equipment = {
+        active: true,
+        promise: async function (historyList, $state, CnHttpFactory) {
+          var response = await CnHttpFactory.instance({
+            path: "participant/" + $state.params.identifier + "/equipment_loan",
+            data: {
+              select: {
+                column: [
+                  "note",
+                  "start_datetime",
+                  "end_datetime",
+                  { table: "equipment", column: "serial_number" },
+                  { table: "equipment_type", column: "name" },
+                ],
+              },
+            },
+          }).query();
+
+          response.data.forEach((item) => {
+            historyList.push({
+              datetime: item.start_datetime,
+              category: "Equipment",
+              title: "loaned " + item.name,
+              description:
+                "Loaned " +
+                item.name +
+                ' with serial number "' +
+                item.serial_number +
+                '"' +
+                ( item.end_datetime ? "" : " (not yet returned)" ) +
+                ( item.note ? '\n' + item.note : "" ),
+            });
+
+            if( item.end_datetime ) {
+              historyList.push({
+                datetime: item.end_datetime,
+                category: "Equipment",
+                title: "returned " + item.name,
+                description:
+                  "Returned " +
+                  item.name +
+                  ' with serial number "' +
+                  item.serial_number +
+                  '"' +
+                  ( item.note ? '\n' + item.note : "" ),
+              });
+            }
+          });
         },
       };
     } catch (err) {}

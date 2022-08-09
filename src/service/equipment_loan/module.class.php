@@ -23,5 +23,15 @@ class module extends \cenozo\service\module
     $modifier->join( 'participant', 'equipment_loan.participant_id', 'participant.id' );
     $modifier->join( 'equipment', 'equipment_loan.equipment_id', 'equipment.id' );
     $modifier->join( 'equipment_type', 'equipment.equipment_type_id', 'equipment_type.id' );
+
+    if( !is_null( $this->get_resource() ) )
+    {
+      // include the equipment serial number as supplemental data
+      $select->add_column(
+        'CONCAT( equipment_type.name, ": ", equipment.serial_number )',
+        'formatted_equipment_id',
+        false
+      );
+    }
   }
 }
