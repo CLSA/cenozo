@@ -17,7 +17,7 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // make sure that only administrators can change which roles have access to an event_type
       $post_object = $this->get_file_as_object();

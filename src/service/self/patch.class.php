@@ -49,7 +49,7 @@ class patch extends \cenozo\service\service
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // check that a first address exists when trying to change to a participant's timezone
       if( 'PATCH' == $this->get_method() )
@@ -206,7 +206,7 @@ class patch extends \cenozo\service\service
 
         $success = $session->login( NULL, $db_requested_site, $db_requested_role );
         $session->mark_access_time();
-        $this->status->set_code( $success ? 204 : 403 );
+        $this->status->set_code( $success ? 202 : 403 );
       }
       else
       {

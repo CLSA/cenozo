@@ -20,7 +20,7 @@ class module extends \cenozo\service\site_restricted_participant_module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $service_class_name = lib::get_class_name( 'service\service' );
 

@@ -20,7 +20,7 @@ class module extends \cenozo\service\module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $session = lib::create( 'business\session' );
       $record = $this->get_resource();

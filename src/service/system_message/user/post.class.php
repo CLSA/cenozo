@@ -23,7 +23,7 @@ class post extends \cenozo\service\post
     $user_id = $this->get_file_as_raw();
     $self = $user_id == lib::create( 'business\session' )->get_user()->id;
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // don't allow users to mark other user's messages as read
       if( !$self ) $this->status->set_code( 403 );

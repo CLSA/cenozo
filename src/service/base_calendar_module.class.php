@@ -20,7 +20,7 @@ abstract class base_calendar_module extends site_restricted_module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       if( !is_null( $this->get_argument( 'min_date', NULL ) ) && is_null( $this->lower_date ) )
       {

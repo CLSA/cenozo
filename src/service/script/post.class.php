@@ -17,7 +17,7 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // We must check for duplicate names here, otherwise an exception will be thrown when
       // creating the associated events in the setup() method

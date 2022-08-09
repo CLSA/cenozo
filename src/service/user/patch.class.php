@@ -36,7 +36,7 @@ class patch extends \cenozo\service\patch
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       $session = lib::create( 'business\session' );
       $db_site = $session->get_site();

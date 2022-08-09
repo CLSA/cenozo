@@ -20,7 +20,7 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       // make sure we can connect to the voip server
       $voip_manager = lib::create( 'business\voip_manager' );

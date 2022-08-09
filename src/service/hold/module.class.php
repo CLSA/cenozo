@@ -22,7 +22,7 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $session = lib::create( 'business\session' );
       $db_application = $session->get_application();

@@ -20,7 +20,7 @@ class module extends \cenozo\service\site_restricted_participant_module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       // make sure to only respond if the parent is a participant or alternate
       if( !in_array( $this->get_parent_subject(), array( 'alternate', 'participant' ) ) )

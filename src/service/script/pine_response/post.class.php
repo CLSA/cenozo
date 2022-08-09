@@ -26,7 +26,7 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // don't allow this service for limesurvey scripts
       if( 'limesurvey' == $this->get_parent_record()->get_type() )
