@@ -60,7 +60,7 @@ class post extends write
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       $relationship_class_name = lib::get_class_name( 'database\relationship' );
       if( $relationship_class_name::MANY_TO_MANY !== $this->get_leaf_parent_relationship() )

@@ -21,7 +21,7 @@ class module extends \cenozo\service\module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $method = $this->get_method();
       if( 'POST' == $method )

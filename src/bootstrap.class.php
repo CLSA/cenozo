@@ -222,9 +222,7 @@ final class bootstrap
     catch( exception\base_exception $e )
     {
       $status = NULL;
-      if( !is_null( $service ) &&
-          !is_null( $service->get_status() ) &&
-          300 <= $service->get_status()->get_code() )
+      if( !is_null( $service ) && !$service->may_continue() )
       {
         $status = $service->get_status();
       }
@@ -263,7 +261,7 @@ final class bootstrap
     // fail transactions on error
     if( !is_null( $db ) )
     {
-      if( 300 <= $status->get_code() ) $db->fail_transaction();
+      if( !$service->may_continue() ) $db->fail_transaction();
       else $db->complete_transaction();
     }
 

@@ -20,7 +20,7 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
@@ -45,6 +45,6 @@ class module extends \cenozo\service\site_restricted_module
       $modifier->where( 'writelog.site_id', '=', $db_restrict_site->id );
 
     // add the completed column based on the status
-    if( $select->has_column( 'elapsed' ) ) $select->add_column( 'status < 300', 'completed' );
+    if( $select->has_column( 'elapsed' ) ) $select->add_column( '204 != status && status < 300', 'completed' );
   }
 }

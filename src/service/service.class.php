@@ -59,23 +59,23 @@ abstract class service extends \cenozo\base_object
     {
       if( self::$debug ) $time['begin'] = $util_class_name::get_elapsed_time();
 
-      if( 300 <= $this->status->get_code() ) return;
+      if( !$this->may_continue() ) return;
       $this->prepare();
       if( self::$debug ) $time['prepare'] = $util_class_name::get_elapsed_time();
 
-      if( 300 <= $this->status->get_code() ) return;
+      if( !$this->may_continue() ) return;
       $this->validate();
       if( self::$debug ) $time['validate'] = $util_class_name::get_elapsed_time();
 
-      if( 300 <= $this->status->get_code() ) return;
+      if( !$this->may_continue() ) return;
       $this->setup();
       if( self::$debug ) $time['setup'] = $util_class_name::get_elapsed_time();
 
-      if( 300 <= $this->status->get_code() ) return;
+      if( !$this->may_continue() ) return;
       $this->execute();
       if( self::$debug ) $time['execute'] = $util_class_name::get_elapsed_time();
 
-      if( 300 <= $this->status->get_code() ) return;
+      if( !$this->may_continue() ) return;
       $this->finish();
       if( self::$debug ) $time['finish'] = $util_class_name::get_elapsed_time();
 
@@ -177,7 +177,7 @@ abstract class service extends \cenozo\base_object
     if( is_null( $session->get_user() ) &&
         !( 'self' == $this->get_subject( 0 ) && in_array( $this->method, array( 'DELETE', 'POST' ) ) ) )
     {
-      $this->status->set_code( 401 );
+      $this->status->set_code( 204 );
     }
     else if( $this->validate_access )
     {
@@ -210,7 +210,7 @@ abstract class service extends \cenozo\base_object
         }
 
         // don't bother continuing if we've got an error
-        if( 300 <= $this->status->get_code() ) break;
+        if( !$this->may_continue() ) break;
 
         $parent_subject = $subject;
       }
@@ -322,7 +322,7 @@ abstract class service extends \cenozo\base_object
           ( is_null( $session->get_role() ) && 'GET' != $this->method ) ) $code = 401;
     }
 
-    if( 300 > $code && 0 < strlen( $path ) )
+    if( $this->may_continue() && 0 < strlen( $path ) )
     {
       $module_index = 0;
       foreach( explode( '/', $path ) as $index => $part )
@@ -351,7 +351,7 @@ abstract class service extends \cenozo\base_object
       }
     }
 
-    if( 300 <= $code )
+    if( !$this->may_continue() )
     {
       $this->collection_name_list = array();
       $this->resource_value_list = array();
@@ -842,6 +842,20 @@ abstract class service extends \cenozo\base_object
   {
     $this->data = $data;
     $this->encoded_data = NULL;
+  }
+
+  /**
+   * Returns whether the request is still valid (IE: its code is < 300 and not 204 (logged out))
+   * @return boolean
+   */
+  public function may_continue()
+  {
+    // if there is no status yet then we can continue
+    if( is_null( $this->status ) ) return true;
+
+    // the request will not continue if the status is 204 (since the user isn't logged in) or >= 300
+    $code = $this->status->get_code();
+    return 204 != $code && 300 > $code;
   }
 
   /**

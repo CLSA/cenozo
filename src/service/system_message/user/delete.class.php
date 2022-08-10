@@ -23,7 +23,7 @@ class delete extends \cenozo\service\delete
     $db_user = $this->get_resource( 1 );
     $self = $db_user->id == lib::create( 'business\session' )->get_user()->id;
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // don't allow users to mark other user's messages as unread
       if( !$self ) $this->status->set_code( 403 );

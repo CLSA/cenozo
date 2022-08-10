@@ -151,7 +151,7 @@ class cenozo_manager extends \cenozo\base_object
     }
     
     $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-    if( 300 <= $code )
+    if( 204 == $code || 300 <= $code )
     {
       throw lib::create( 'exception\runtime',
         sprintf( 'Got response code %s when trying %s request to %s.  Response %s',

@@ -22,7 +22,7 @@ class post extends \cenozo\service\post
 
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       $db_user = $this->get_leaf_record();
 

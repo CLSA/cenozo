@@ -17,7 +17,7 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // make sure the role has access to adding the alternate type
       $post_object = $this->get_file_as_object();
