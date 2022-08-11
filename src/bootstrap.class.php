@@ -264,7 +264,7 @@ final class bootstrap
     // fail transactions on error
     if( !is_null( $db ) )
     {
-      if( !$service->may_continue() ) $db->fail_transaction();
+      if( is_null( $service ) || !$service->may_continue() ) $db->fail_transaction();
       else $db->complete_transaction();
     }
 
