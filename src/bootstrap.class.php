@@ -141,7 +141,13 @@ final class bootstrap
 
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
-        log::error( sprintf( "When loading main UI:\n%s %s", ucwords( $e->get_type() ), $e ) );
+      {
+        log::error( sprintf(
+          "When loading main UI:\n%s %s",
+          ucwords( $e->get_type() ),
+          $e->to_string( false )
+        ) );
+      }
     }
     catch( \Exception $e )
     {
@@ -155,7 +161,12 @@ final class bootstrap
       );
 
       if( class_exists( 'cenozo\log' ) )
-        log::error( sprintf( "When loading mainUI:\nLast minute %s", $e ) );
+      {
+        log::error( sprintf(
+          "When loading mainUI:\nLast minute %s",
+          $e
+        ) );
+      }
     }
 
     ob_end_clean();
@@ -221,16 +232,10 @@ final class bootstrap
     }
     catch( exception\base_exception $e )
     {
-      $status = NULL;
-      if( !is_null( $service ) && !$service->may_continue() )
-      {
-        $status = $service->get_status();
-      }
-      else
-      {
-        $status = lib::create( 'service\status',
-          NOTICE__CENOZO_BOOTSTRAP__LAUNCH_API__ERRNO == $e->get_number() ? 503 : 500 );
-      }
+      $status = !is_null( $service ) && !$service->may_continue()
+              ? $service->get_status()
+              : lib::create( 'service\status',
+                  NOTICE__CENOZO_BOOTSTRAP__LAUNCH_API__ERRNO == $e->get_number() ? 503 : 500 );
 
       // The service's data may already be set to something which would have been returned had an error
       // not been encountered.  For this reason we should overwrite with the exception's error code
@@ -242,26 +247,34 @@ final class bootstrap
 
       // log all but notice exceptions
       if( 'notice' != $e->get_type() )
-        log::error( sprintf( "For service \"%s:%s\":\n%s %s",
-                           $this->method,
-                           $this->path,
-                           ucwords( $e->get_type() ),
-                           $e ) );
+      {
+        log::error( sprintf(
+          "For service \"%s:%s\":\n%s %s",
+          $this->method,
+          $this->path,
+          ucwords( $e->get_type() ),
+          $e->to_string( false )
+        ) );
+      }
     }
     catch( \Exception $e )
     {
       $status = lib::create( 'service\status', 500 );
 
       if( class_exists( 'cenozo\log' ) )
-        log::error( sprintf( "For service \"%s\":\nLast minute %s",
-                           $this->path,
-                           $e ) );
+      {
+        log::error( sprintf(
+          "For service \"%s\":\nLast minute %s",
+          $this->path,
+          $e
+        ) );
+      }
     }
 
     // fail transactions on error
     if( !is_null( $db ) )
     {
-      if( !$service->may_continue() ) $db->fail_transaction();
+      if( is_null( $service ) || !$service->may_continue() ) $db->fail_transaction();
       else $db->complete_transaction();
     }
 

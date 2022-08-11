@@ -67,7 +67,33 @@ class base_exception extends \Exception
    * @return string
    * @access public
    */
-  public function to_string() { return $this->__toString(); }
+  public function to_string( $include_args = true )
+  {
+    // if we want to include arguments then the base Exception class' __toString method will do
+    if( $include_args ) return $this->__toString();
+
+    // we don't want arguments so we have to create the string ourselves
+    $output = sprintf(
+      "%s:%sStack trace:\n",
+      get_class( $this ),
+      $this->message
+    );
+
+    foreach( $this->getTrace() as $index => $trace )
+    {
+      $output .= sprintf(
+        "#%d %s(%d): %s%s%s()\n",
+        $index,
+        $trace['file'],
+        $trace['line'],
+        $trace['class'],
+        $trace['type'],
+        $trace['function']
+      );
+    }
+
+    return $output;
+  }
 
   /**
    * Returns the exception's error number.
