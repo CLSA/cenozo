@@ -240,7 +240,16 @@ class session extends \cenozo\singleton
     // string $domain = "",
     // bool $secure = false,
     // bool $httponly = false
-    setcookie( $name, $value, 0, '/;SameSite=strict', $_SERVER['SERVER_NAME'], true, true );
+    $path = preg_replace( '/(api\/?)index.php/', '', $_SERVER['PHP_SELF'] );
+    setcookie(
+      $name,
+      $value,
+      0,
+      sprintf( '%s;SameSite=Lax', $path ),
+      $_SERVER['SERVER_NAME'],
+      true,
+      true
+    );
   }
 
   /**
@@ -250,7 +259,16 @@ class session extends \cenozo\singleton
    */
   public function remove_cookie( $name )
   {
-    setcookie( $name, '', time()-60, "/;SameSite=strict", $_SERVER['SERVER_NAME'], true, true );
+    $path = preg_replace( '/(api\/?)index.php/', '', $_SERVER['PHP_SELF'] );
+    setcookie(
+      $name,
+      '',
+      time()-60,
+      sprintf( '%s;SameSite=Lax', $path ),
+      $_SERVER['SERVER_NAME'],
+      true,
+      true
+    );
   }
 
   /**

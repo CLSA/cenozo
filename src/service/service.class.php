@@ -34,6 +34,7 @@ abstract class service extends \cenozo\base_object
     $this->arguments = $args;
     if( !is_array( $this->arguments ) ) $this->arguments = array();
     $this->file = $file;
+    $this->headers['Access-Control-Allow-Origin'] = '*';
 
     // now process the path and mime type
     $code = $this->process_path( $path );
@@ -317,9 +318,11 @@ abstract class service extends \cenozo\base_object
           $session->check_authorization_header( $user, $pass ) &&
           $session->login( $user ) ) $this->temporary_login = true;
 
-      if( is_null( $session->get_user() ) ||
-          // don't allow users with no role any access except to confirm basic information about their account
-          ( is_null( $session->get_role() ) && 'GET' != $this->method ) ) $code = 401;
+      if( 'OPTIONS' != $this->method && (
+            is_null( $session->get_user() ) ||
+            // don't allow users with no role any access except to confirm basic information about their account
+            ( is_null( $session->get_role() ) && 'GET' != $this->method )
+          ) ) $code = 401;
     }
 
     if( $this->may_continue() && 0 < strlen( $path ) )
@@ -1069,6 +1072,8 @@ abstract class service extends \cenozo\base_object
     'DELETE' => true,
     'GET' => false,
     'HEAD' => false,
+    'OPTIONS' => true,
     'PATCH' => true,
-    'POST' => true );
+    'POST' => true
+  );
 }

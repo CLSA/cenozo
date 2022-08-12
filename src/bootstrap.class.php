@@ -23,6 +23,10 @@ final class bootstrap
   {
     // WARNING!  Do not use the log class in this method!
 
+    // remove credentials for security, we don't need them anyway
+    $_SERVER['PHP_AUTH_USER'] = NULL;
+    $_SERVER['PHP_AUTH_PW'] = NULL;
+
     // set the method type, arguments and input file (if patching/posting)
     $this->method = array_key_exists( 'REQUEST_METHOD', $_SERVER ) ? $_SERVER['REQUEST_METHOD'] : NULL;
     $this->arguments = $_REQUEST;
