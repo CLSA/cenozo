@@ -108,10 +108,14 @@ class form extends record
       throw lib::create( 'exception\argument', 'type', $type, __METHOD__ );
     }
 
-    $db_alternate = lib::create( 'database\alternate', $alternate_id );
-    if( is_null( $db_alternate ) )
+    try
     {
-      throw lib::create( 'exception\argument', 'alternate_id', $alternate_id, __METHOD__ );
+      $db_alternate = lib::create( 'database\alternate', $alternate_id );
+    }
+    catch( \cenozo\exception\runtime $e )
+    {
+      // denote that the alternate_id argument is the problem
+      throw lib::create( 'exception\argument', 'alternate_id', $alternate_id, __METHOD__, $e );
     }
 
     $alternate_consent_mod = lib::create( 'database\modifier' );

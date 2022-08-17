@@ -56,7 +56,7 @@ class post extends \cenozo\service\post
     if( is_null( $this->db_script ) ) $this->db_script = $this->get_parent_record();
     $this->db_participant = $participant_class_name::get_record_from_identifier( $data['identifier'] );
     if( is_null( $this->db_participant ) )
-      throw lib::create( 'database\runtime', 'Invalid resource provided for token.', __METHOD__ );
+      throw lib::create( 'exception\runtime', 'Invalid resource provided for token.', __METHOD__ );
 
     // populate the token
     $db_tokens = $this->get_leaf_record();

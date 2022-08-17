@@ -89,27 +89,29 @@ class consent extends record
       $matches = array();
       if( preg_match( $regex, $identifier, $matches ) )
       {
-        $db_consent_type = lib::create( 'database\consent_type', $matches[1] );
-        if( !is_null( $db_consent_type ) )
+        try
         {
+          $db_consent_type = lib::create( 'database\consent_type', $matches[1] );
           $regex = '/participant_id=([0-9]+)/';
           $matches = array();
           if( preg_match( $regex, $identifier, $matches ) )
           {
             $db_participant = lib::create( 'database\participant', $matches[1] );
-            if( !is_null( $db_participant ) )
+            $regex = '/type=(last|last_written)/';
+            $matches = array();
+            if( preg_match( $regex, $identifier, $matches ) )
             {
-              $regex = '/type=(last|last_written)/';
-              $matches = array();
-              if( preg_match( $regex, $identifier, $matches ) )
-              {
-                $db_consent = 'last' == $matches[1]
-                            ? $db_participant->get_last_consent( $db_consent_type )
-                            : $db_participant->get_last_written_consent( $db_consent_type );
-                $identifier = is_null( $db_consent ) ? NULL : $db_consent->id;
-              }
+              $db_consent = 'last' == $matches[1]
+                          ? $db_participant->get_last_consent( $db_consent_type )
+                          : $db_participant->get_last_written_consent( $db_consent_type );
+              $identifier = is_null( $db_consent ) ? NULL : $db_consent->id;
             }
           }
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          // A runtime exception means the consent type or participant doesn't exist, so leave the
+          // identifier unchanged
         }
       }
     }

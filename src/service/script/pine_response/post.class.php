@@ -74,7 +74,7 @@ class post extends \cenozo\service\post
       $db_script = $this->get_parent_record();
       $db_participant = $participant_class_name::get_record_from_identifier( $data['identifier'] );
       if( is_null( $db_participant ) )
-        throw lib::create( 'database\runtime', 'Invalid resource provided for token.', __METHOD__ );
+        throw lib::create( 'exception\runtime', 'Invalid resource provided for token.', __METHOD__ );
 
       $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
       try

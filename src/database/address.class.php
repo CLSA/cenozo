@@ -27,9 +27,9 @@ class address extends has_rank
       $matches = array();
       if( preg_match( $regex, $identifier, $matches ) )
       {
-        $db_participant = lib::create( 'database\participant', $matches[1] );
-        if( !is_null( $db_participant ) ) 
+        try
         {
+          $db_participant = lib::create( 'database\participant', $matches[1] );
           $regex = '/type=(primary|first)/';
           $matches = array();
           if( preg_match( $regex, $identifier, $matches ) )
@@ -38,6 +38,10 @@ class address extends has_rank
                         ? $db_participant->get_primary_address()->id
                         : $db_participant->get_first_address()->id;
           }
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          // A runtime exception means the participant doesn't exist, so don't change the identifier and proceed
         }
       }
     }
