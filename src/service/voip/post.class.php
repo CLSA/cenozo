@@ -41,16 +41,8 @@ class post extends \cenozo\service\service
   {
     $voip_manager = lib::create( 'business\voip_manager' );
     $object = $this->get_file_as_object();
-    try
-    {
-      $voip_call = $voip_manager->call( lib::create( 'database\phone', $object->phone_id ) );
-      $this->set_data( $voip_call->get_channel() );
-      $this->status->set_code( 201 );
-    }
-    catch( \cenozo\exception\runtime $e )
-    {
-      // if no voip call was found then simply return a 202
-      $this->status->set_code( 202 );
-    }
+    $voip_call = $voip_manager->call( lib::create( 'database\phone', $object->phone_id ) );
+    if( !is_null( $voip_call ) ) $this->set_data( $voip_call->get_channel() );
+    $this->status->set_code( !is_null( $voip_call ) ? 201 : 202 );
   }
 }
