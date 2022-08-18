@@ -206,21 +206,26 @@ class module extends \cenozo\service\site_restricted_module
         try
         {
           $voip_manager = lib::create( 'business\voip_manager' );
-          $sip_info_list = $voip_manager->get_sip_info_list();
 
-          $webphone_list = array_reduce( $sip_info_list, function( $list, $sip_info ) {
-            $list[] = $sip_info['user_id'];
-            return $list;
-          }, array() );
-          sort( $webphone_list );
-          $webphone_string = 0 < count( $webphone_list ) ? implode( ',', $webphone_list ) : '0';
-          
-          $in_call_list = array_reduce( $sip_info_list, function( $list, $sip_info ) {
-            if( 'In use' == $sip_info['status'] ) $list[] = $sip_info['user_id'];
-            return $list;
-          }, array() );
-          sort( $in_call_list );
-          $in_call_string = 0 < count( $in_call_list ) ? implode( ',', $in_call_list ) : '0';
+          $webphone_string = '0';
+          $in_call_string = '0';
+          $sip_info_list = $voip_manager->get_sip_info_list();
+          if( is_array( $sip_info_list ) )
+          {
+            $webphone_list = array_reduce( $sip_info_list, function( $list, $sip_info ) {
+              $list[] = $sip_info['user_id'];
+              return $list;
+            }, array() );
+            sort( $webphone_list );
+            if( 0 < count( $webphone_list ) ) $webphone_string = implode( ',', $webphone_list );
+
+            $in_call_list = array_reduce( $sip_info_list, function( $list, $sip_info ) {
+              if( 'In use' == $sip_info['status'] ) $list[] = $sip_info['user_id'];
+              return $list;
+            }, array() );
+            sort( $in_call_list );
+            if( 0 < count( $in_call_list ) ) $in_call_string = implode( ',', $in_call_list );
+          }
           
           $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_string ), 'webphone', false );
           $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_string ), 'in_call', false );

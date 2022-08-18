@@ -122,18 +122,19 @@ class post extends \cenozo\service\service
             }
             else
             {
-              // get the collection
-              $db_collection = lib::create( 'database\collection', $file->collection->id );
-
               // get the list of participant ids
               $id_list = array_reduce(
                 $participant_class_name::select( $select, $modifier ),
-                function( $id_list, $row ) { $id_list[] = $row['participant_id']; return $id_list; },
+                function( $id_list, $row ) {
+                  $id_list[] = $row['participant_id'];
+                  return $id_list;
+                },
                 array()
               );
 
               if( 0 < count( $id_list ) )
               {
+                $db_collection = lib::create( 'database\collection', $file->collection->id );
                 if( 'add' == $file->collection->operation ) $db_collection->add_participant( $id_list );
                 else $db_collection->remove_participant( $id_list );
               }
@@ -196,18 +197,19 @@ class post extends \cenozo\service\service
             }
             else
             {
-              // get the study
-              $db_study = lib::create( 'database\study', $file->study->id );
-
               // get the list of participant ids
               $id_list = array_reduce(
                 $participant_class_name::select( $select, $modifier ),
-                function( $id_list, $row ) { $id_list[] = $row['participant_id']; return $id_list; },
+                function( $id_list, $row ) {
+                  $id_list[] = $row['participant_id'];
+                  return $id_list;
+                },
                 array()
               );
 
               if( 0 < count( $id_list ) )
               {
+                $db_study = lib::create( 'database\study', $file->study->id );
                 if( 'add' == $file->study->operation ) $db_study->add_participant( $id_list );
                 else $db_study->remove_participant( $id_list );
               }
