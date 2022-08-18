@@ -4412,7 +4412,6 @@
           siteList: [],
           finalHoldTypeList: [],
           moduleList: [],
-          sessionList: [],
           messageList: [],
           unreadMessageCount: 0,
           breadcrumbTrail: [],
@@ -4533,9 +4532,6 @@
               // add the supporting script list
               this.supportingScriptList = response.data.supporting_script_list;
             }
-
-            // process session records
-            this.sessionList = response.data.session_list;
 
             // if the user's password isn't set then open the password dialog
             if (response.data.no_password && !CnModalPasswordFactory.isOpen()) {
