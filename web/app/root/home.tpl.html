@@ -65,7 +65,7 @@
         </button>
         {{ message.title }}
       </h4>
-      <blockquote class="text-info" style="white-space: pre-wrap;">{{ message.note }}</blockquote>
+      <blockquote class="text-info" style="white-space: pre-wrap;" ng-bind-html="message.note"></blockquote>
     </div>
     <div ng-if="0 == session.messageList.length">
       <blockquote class="text-info" style="white-space: pre-wrap;">There are no messages.</blockquote>
