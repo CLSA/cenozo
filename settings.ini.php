@@ -165,10 +165,3 @@ $settings['failover_opal']['timeout'] = 5;
 $settings['mail']['enabled'] = false;
 $settings['mail']['default_from_name'] = NULL;
 $settings['mail']['default_from_address'] = 'noreply@noreply.com';
-
-// default CANTAB settings
-$settings['cantab']['enabled'] = false;
-$settings['cantab']['url'] = '';
-$settings['cantab']['username'] = '';
-$settings['cantab']['password'] = '';
-$settings['cantab']['organisation'] = '';
