@@ -32,6 +32,12 @@ cenozoApp.defineModule({
     });
 
     module.addInputGroup("", {
+      identifier_id: {
+        column: "participant_identifier.identifier_id",
+        title: "Identifier",
+        type: "enum",
+        isConstant: "view",
+      },
       participant_id: {
         column: "participant_identifier.participant_id",
         title: "Participant",
@@ -73,6 +79,58 @@ cenozoApp.defineModule({
               return false;
             }, // is overridden by identifier module
           });
+        };
+
+        return {
+          root: new object(true),
+          instance: function () {
+            return new object(false);
+          },
+        };
+      },
+    ]);
+
+    /* ############################################################################################## */
+    cenozo.providers.factory("CnParticipantIdentifierModelFactory", [
+      "CnBaseModelFactory",
+      "CnParticipantIdentifierAddFactory",
+      "CnParticipantIdentifierListFactory",
+      "CnParticipantIdentifierViewFactory",
+      "CnHttpFactory",
+      function (
+        CnBaseModelFactory,
+        CnParticipantIdentifierAddFactory,
+        CnParticipantIdentifierListFactory,
+        CnParticipantIdentifierViewFactory,
+        CnHttpFactory
+      ) {
+        var object = function (root) {
+          CnBaseModelFactory.construct(this, module);
+          this.addModel = CnParticipantIdentifierAddFactory.instance(this);
+          this.listModel = CnParticipantIdentifierListFactory.instance(this);
+          this.viewModel = CnParticipantIdentifierViewFactory.instance(this, root);
+
+          // extend getMetadata
+          this.getMetadata = async function () {
+            await this.$$getMetadata();
+
+            var response = await CnHttpFactory.instance({
+              path: "identifier",
+              data: {
+                select: { column: ["id", "name"] },
+                modifier: { order: "name", limit: 1000 },
+              },
+            }).query();
+
+            this.metadata.columnList.identifier_id.enumList =
+              response.data.reduce((list, item) => {
+                list.push({
+                  value: item.id,
+                  name: item.name,
+                });
+                return list;
+              }, []);
+          };
         };
 
         return {
