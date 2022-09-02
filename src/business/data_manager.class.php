@@ -424,6 +424,7 @@ class data_manager extends \cenozo\singleton
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
       $event_mod = lib::create( 'database\modifier' );
+      $event_mod->join( 'event_type', 'event.event_type_id', 'event_type.id' );
       $event_mod->where( 'event_type.name', '=', $type );
       $event_mod->order( 'datetime', $last ); // last means order by descending
       $event_mod->limit( 1 );
