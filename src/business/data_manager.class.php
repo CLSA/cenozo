@@ -223,7 +223,7 @@ class data_manager extends \cenozo\singleton
     {
       if( 'count()' == $parts[1] )
       {
-        // participant.address.count() or address.count()
+        // participant.address.count()
         $value = $db_participant->get_address_count();
       }
       else
@@ -231,7 +231,7 @@ class data_manager extends \cenozo\singleton
         $db_address = NULL;
         if( 'address' == $subject )
         {
-          // participant.address.<n>.<column> or address.<n>.<column>
+          // participant.address.<n>.<column>
           if( 3 != count( $parts ) )
             throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
@@ -248,7 +248,7 @@ class data_manager extends \cenozo\singleton
         }
         else if( 'primary_address' == $subject )
         {
-          // participant.primary_address.<column> or primary_address.<column>
+          // participant.primary_address.<column>
           if( 2 != count( $parts ) )
             throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
           $column = $parts[1];
@@ -257,7 +257,7 @@ class data_manager extends \cenozo\singleton
         }
         else if( 'first_address' == $subject )
         {
-          // participant.first_address.<column> or first_address.<column>
+          // participant.first_address.<column>
           if( 2 != count( $parts ) )
             throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
           $column = $parts[1];
@@ -289,7 +289,7 @@ class data_manager extends \cenozo\singleton
     }
     else if( 'cohort' == $subject )
     {
-      // participant.cohort.<column> or cohort.<column>
+      // participant.cohort.<column>
       if( 2 != count( $parts ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
@@ -301,7 +301,7 @@ class data_manager extends \cenozo\singleton
     }
     else if( 'collection' == $subject )
     {
-      // participant.collection.<name> or collection.<name>
+      // participant.collection.<name>
       if( 2 != count( $parts ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
@@ -321,17 +321,17 @@ class data_manager extends \cenozo\singleton
       $db_consent_type = $consent_type_class_name::get_unique_record( 'name', $parts[1] );
       if( is_null( $db_consent_type ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-      $consent_mod = lib::create( 'database\modifier' );
-      $consent_mod->where( 'consent_type_id', '=', $db_consent_type->id );
-
       if( 'count()' == $parts[2] )
       {
+        $consent_mod = lib::create( 'database\modifier' );
+        $consent_mod->where( 'consent_type_id', '=', $db_consent_type->id );
+
         if( 'consent' == $subject )
-        { // participant.consent.<type>.count() or consent.<type>.count()
-          $value = $db_participant->get_consent_count();
+        { // participant.consent.<type>.count()
+          $value = $db_participant->get_consent_count( $consent_mod );
         }
         else if( 'written_consent' == $subject )
-        { // participant.written_consent.<type>.count() or written_consent.count()
+        { // participant.written_consent.<type>.count()
           $consent_mod->where( 'written', '=', true );
           $value = $db_participant->get_consent_count( $consent_mod );
         }
@@ -340,43 +340,22 @@ class data_manager extends \cenozo\singleton
       else
       {
         $db_consent = NULL;
-        $default = NULL;
+        $format = NULL;
 
-        if( 4 < count( $parts ) && 'default' == $parts[ count( $parts )-2 ] )
+        if( 'last_consent' == $subject )
         {
-          $default = array_pop( $parts );
-          array_pop( $parts );
-        }
-
-        if( 'consent' == $subject )
-        {
-          // participant.consent.<type>.<n>.<column> or consent.<type>.<n>.<column>
-          if( 4 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-
-          // get the rank and make sure it's a number
-          $rank = $parts[2];
-          if( !$util_class_name::string_matches_int( $rank ) )
-            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-          $column = $parts[3];
-
-          $consent_mod->order( 'date' );
-          $consent_mod->limit( 1 );
-          $consent_mod->offset( $rank - 1 );
-          $consent_list = $db_participant->get_consent_object_list( $consent_mod );
-          if( 1 == count( $consent_list ) ) $db_consent = current( $consent_list );
-        }
-        else if( 'last_consent' == $subject )
-        {
-          // participant.last_consent.<type>.<column> or last_consent.<type>.<column>
-          if( 3 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          // participant.last_consent.<type>.<column>
+          // or participant.last_consent.<type>.datetime, with optional .format(format)
+          if( 3 > count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
           $column = $parts[2];
           $db_consent = $db_participant->get_last_consent( $db_consent_type );
         }
         else if( 'last_written_consent' == $subject )
         {
-          // participant.last_written_consent.<type>.<column> or last_written_consent.<type>.<column>
-          if( 3 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          // participant.last_written_consent.<type>.<column>
+          // or participant.last_consent.<type>.datetime, with optional .format(format)
+          if( 3 > count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
           $column = $parts[2];
           $db_consent = $db_participant->get_last_written_consent( $db_consent_type );
@@ -385,55 +364,68 @@ class data_manager extends \cenozo\singleton
 
         if( !is_null( $db_consent ) )
         {
-          // return column
+          if( 'datetime' == $column && array_key_exists( 3, $parts ) )
+          {
+            if( !preg_match( '/format\(([^)]+)\)/', $parts[3], $format_matches ) )
+              throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+            $format = $format_matches[1];
+          }
+
           if( !$db_consent->column_exists( $column ) )
             throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-          $value = $db_consent->$column;
-        }
-        else if( !is_null( $default ) )
-        {
-          $value = $default;
+          $value = is_null( $format ) ? $db_consent->$column : $db_consent->$column->format( $format );
         }
       }
     }
-    else if( 'event' == $subject )
+    else if( 'event' == $subject || 'last_event' == $subject )
     {
-      $event_class_name = lib::get_class_name( 'database\event' );
+      $event_type_class_name = lib::get_class_name( 'database\event_type' );
+      if( 2 >= count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-      if( 5 < count( $parts ) && 'default' == $parts[ count( $parts )-2 ] )
+      $db_event_type = $event_type_class_name::get_unique_record( 'name', $parts[1] );
+      if( is_null( $db_event_type ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      if( 'count()' == $parts[2] )
       {
-        $value = array_pop( $parts );
-        array_pop( $parts );
+        if( 'event' == $subject )
+        { // participant.event.<type>.count()
+          $event_mod = lib::create( 'database\modifier' );
+          $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+          $value = $db_participant->get_event_count( $event_mod );
+        }
+        else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
       }
-
-      // participant.event.<type>.<column>.<first|last> or event.<type>.<column>.<first|last>
-      if( !( 3 <= count( $parts ) && count( $parts ) <= 4 ) )
-        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-
-      $type = $parts[1];
-      $column = $parts[2];
-      $last = false;
-      if( 4 == count( $parts ) )
+      else
       {
-        if( 'first' != $parts[3] && 'last' != $parts[3] )
-          throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-        $last = 'last' == $parts[3];
-      }
+        $db_event = NULL;
+        $format = NULL;
 
-      if( !$event_class_name::column_exists( $column ) )
-        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+        if( 'last_event' == $subject )
+        {
+          // participant.last_event.<type>.<column>
+          // or participant.last_event.<type>.datetime, with optional .format(format)
+          if( 3 > count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->join( 'event_type', 'event.event_type_id', 'event_type.id' );
-      $event_mod->where( 'event_type.name', '=', $type );
-      $event_mod->order( 'datetime', $last ); // last means order by descending
-      $event_mod->limit( 1 );
-      $event_list = $db_participant->get_event_list( NULL, $event_mod );
-      if( 0 < count( $event_list ) )
-      {
-        if( !array_key_exists( $column, $event_list[0] ) )
-          throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
-        $value = $event_list[0][$column];
+          $column = $parts[2];
+          $db_event = $db_participant->get_last_event( $db_event_type );
+        }
+        else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+        if( !is_null( $db_event ) )
+        {
+          if( 'datetime' == $column && array_key_exists( 3, $parts ) )
+          {
+            if( !preg_match( '/format\(([^)]+)\)/', $parts[3], $format_matches ) )
+              throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+            $format = $format_matches[1];
+          }
+
+          if( !$db_event->column_exists( $column ) )
+            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+          $value = is_null( $format ) ? $db_event->$column : $db_event->$column->format( $format );
+        }
       }
     }
     else if( 'hin' == $subject )
@@ -445,7 +437,7 @@ class data_manager extends \cenozo\singleton
       $column = $parts[1];
       if( 'code_exists' == $column )
       {
-        // participant.hin.code_exists (true/false) or hin.code_exists (true/false)
+        // participant.hin.code_exists (true/false)
         $value = !( is_null( $db_hin ) || is_null( $db_hin->code ) ) ? 1 : 0;
       }
       else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
@@ -565,7 +557,7 @@ class data_manager extends \cenozo\singleton
       $column = $parts[1];
       if( 'age()' == $column )
       {
-        // participant.age() or participant.age()
+        // participant.age()
         $value = is_null( $db_participant->date_of_birth )
                ? ''
                : $util_class_name::get_interval( $db_participant->date_of_birth )->y;
@@ -584,7 +576,7 @@ class data_manager extends \cenozo\singleton
       }
       else
       {
-        // participant.participant.<column> or participant.<column>
+        // participant.participant.<column>
         if( !$db_participant->column_exists( $column ) )
           throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
         $value = $db_participant->$column;
@@ -594,12 +586,12 @@ class data_manager extends \cenozo\singleton
     {
       if( 'count()' == $parts[1] )
       {
-        // participant.phone.count() or phone.count()
+        // participant.phone.count()
         $value = $db_participant->get_phone_count();
       }
       else
       {
-        // participant.phone.<n>.<column> or phone.<n>.<column>
+        // participant.phone.<n>.<column>
         if( 3 != count( $parts ) )
           throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
@@ -627,7 +619,7 @@ class data_manager extends \cenozo\singleton
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
       $column = $parts[1];
 
-      // participant.source.<column> or source.<column>
+      // participant.source.<column>
       $db_source = $db_participant->get_source();
       if( !$db_source->column_exists( $column ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
@@ -635,7 +627,7 @@ class data_manager extends \cenozo\singleton
     }
     else if( 'study' == $subject )
     {
-      // participant.study.<name> or study.<name>
+      // participant.study.<name>
       if( 2 != count( $parts ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
