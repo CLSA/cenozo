@@ -182,6 +182,7 @@ class form extends record
    *          first_name
    *          last_name
    *          global_note
+   *          address_international (optional)
    *          apartment_number
    *          street_number
    *          street_name
@@ -191,6 +192,8 @@ class form extends record
    *          city
    *          region_id
    *          postcode
+   *          international_region (optional)
+   *          international_country_id (optional)
    *          address_note
    *          phone
    *          phone_note
@@ -261,6 +264,9 @@ class form extends record
     $db_address->alternate_id = $db_alternate->id;
     $db_address->active = true;
     $db_address->rank = 1;
+    $db_address->international = array_key_exists( 'address_international', $data )
+                               ? $data['address_international']
+                               : false;
     $db_address->address1 = $address[0];
     $db_address->address2 = $address[1];
     $db_address->city = $data['city'];
@@ -269,6 +275,15 @@ class form extends record
               ? sprintf( '%s %s', substr( $data['postcode'], 0, 3 ), substr( $data['postcode'], 3, 3 ) )
               : $data['postcode'];
     $db_address->postcode = $postcode;
+
+    if( $db_address->international )
+    {
+      if( array_key_exists( 'international_region', $data ) )
+        $db_address->international_region = $data['international_region'];
+      if( array_key_exists( 'international_country_id', $data ) )
+        $db_address->international_country_id = $data['international_country_id'];
+    }
+
     $db_address->source_postcode();
     $db_address->note = $data['address_note'];
     $db_address->save();
@@ -279,6 +294,9 @@ class form extends record
     $db_phone->active = true;
     $db_phone->rank = 1;
     $db_phone->type = 'other';
+    $db_phone->international = array_key_exists( 'phone_international', $data )
+                             ? $data['phone_international']
+                             : false;
     $db_phone->number = $data['phone'];
     $db_phone->note = $data['phone_note'];
     $db_phone->save();
