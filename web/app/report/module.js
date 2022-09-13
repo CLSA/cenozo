@@ -152,7 +152,8 @@ cenozoApp.defineModule({
             $scope.$on("cnRecordAdd ready", async function (event, data) {
               cnRecordAddScope = data;
 
-              await $scope.model.metadata.getPromise();
+              // we have to call getMetadata again to update the restriction columns in case they changed
+              await $scope.model.getMetadata();
 
               cnRecordAddScope.dataArray = $scope.model.getDataArray([], "add");
               var parameters = cnRecordAddScope.dataArray.findByProperty(
@@ -260,7 +261,9 @@ cenozoApp.defineModule({
 
             onNew: async function (record) {
               await this.$$onNew(record);
-              await this.parentModel.metadata.getPromise();
+
+              // if we don't call getMetadata again then the format enum may not be filled out
+              await this.parentModel.getMetadata();
 
               for (var column in this.parentModel.metadata.columnList) {
                 var meta = this.parentModel.metadata.columnList[column];
