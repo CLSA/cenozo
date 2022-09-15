@@ -4550,20 +4550,22 @@
               if (subResponse) this.setUserDetails();
             }
 
-            // if voip is enabled the load the voip data
-            this.voip = { enabled: false, info: false };
-            if (this.application.voipEnabled) this.updateVoip();
+            // load the voip data (ignored if voip is disabled)
+            this.updateVoip();
           },
 
           // get the application, user, site and role details
           updateVoip: async function () {
-            var response = await CnHttpFactory.instance({
-              path: "voip/0",
-              onError: function () {
-                this.voip = { enabled: true, info: null, call: null };
-              },
-            }).get();
-            this.voip = response.data;
+            this.voip = { enabled: false, info: false };
+            if (this.application.voipEnabled) {
+              var response = await CnHttpFactory.instance({
+                path: "voip/0",
+                onError: function () {
+                  this.voip = { enabled: true, info: null, call: null };
+                },
+              }).get();
+              this.voip = response.data;
+            }
           },
 
           logout: async function () {
