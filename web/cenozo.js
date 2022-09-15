@@ -10438,35 +10438,43 @@
               }
             }
 
-            if ("pine" == this.script.application) {
-              baseUrl += this.token.token;
+            if( null == this.token.token ) {
+              CnModalMessageFactory.instance({
+                title: "Respondent Not Found",
+                message: "Unable to find the respondent record belonging to the script you are trying to launch.  If this problem persists please contact support."
+              }).show();
             } else {
-              // add parameters required by limesurvey and launch
-              urlParams.lang = this.lang;
-              urlParams.newtest = "Y";
-              urlParams.token = this.token.token;
+              if ("pine" == this.script.application) {
+                baseUrl += this.token.token;
+              } else {
+                // add parameters required by limesurvey and launch
+                urlParams.lang = this.lang;
+                urlParams.newtest = "Y";
+                urlParams.token = this.token.token;
+              }
+
+              // launch the script
+              /* TODO: for the future
+             * Note: we'd like to use URLSearchParams but it doesn't work for older browsers.  The following is fine for now
+             * however it does not encode the url parameters so it should be replaced with the following block once old versions
+             * of FF are no longer required (due to Java for Webphone):
+
+              CnSession.scriptWindowHandler = $window.open(
+                baseUrl + '?' + new URLSearchParams( urlParams ).toString(),
+                'cenozoScript'
+              );
+              */
+
+              var queryArray = [];
+              for (var property in urlParams)
+                if (Object.prototype.hasOwnProperty.call(urlParams, property))
+                  queryArray.push(property + "=" + urlParams[property]);
+              if (0 < queryArray.length) baseUrl += "?" + queryArray.join("&");
+              CnSession.scriptWindowHandler = $window.open(
+                baseUrl,
+                "cenozoScript"
+              );
             }
-
-            // launch the script
-            /* TODO: for the future
-           * Note: we'd like to use URLSearchParams but it doesn't work for older browsers.  The following is fine for now
-           * however it does not encode the url parameters so it should be replaced with the following block once old versions
-           * of FF are no longer required (due to Java for Webphone):
-
-          CnSession.scriptWindowHandler = $window.open(
-            baseUrl + '?' + new URLSearchParams( urlParams ).toString(),
-            'cenozoScript'
-          );
-          */
-            var queryArray = [];
-            for (var property in urlParams)
-              if (Object.prototype.hasOwnProperty.call(urlParams, property))
-                queryArray.push(property + "=" + urlParams[property]);
-            if (0 < queryArray.length) baseUrl += "?" + queryArray.join("&");
-            CnSession.scriptWindowHandler = $window.open(
-              baseUrl,
-              "cenozoScript"
-            );
           },
         });
       };
