@@ -4551,12 +4551,12 @@
             }
 
             // load the voip data (ignored if voip is disabled)
+            this.voip = { enabled: false, info: false };
             this.updateVoip();
           },
 
           // get the application, user, site and role details
           updateVoip: async function () {
-            this.voip = { enabled: false, info: false };
             if (this.application.voipEnabled) {
               var response = await CnHttpFactory.instance({
                 path: "voip/0",

@@ -123,7 +123,7 @@ class voip_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return;
 
-  $paired_list = array();
+    $paired_list = array();
     foreach( $this->command( [ 'action' => 'Status' ] ) as $object )
     {
       // go through the status events matching channels with bridged channels and create call objects
