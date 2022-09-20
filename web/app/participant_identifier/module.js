@@ -59,43 +59,6 @@ cenozoApp.defineModule({
       "CnParticipantIdentifierAddFactory",
       "CnParticipantIdentifierListFactory",
       "CnParticipantIdentifierViewFactory",
-      function (
-        CnBaseModelFactory,
-        CnParticipantIdentifierAddFactory,
-        CnParticipantIdentifierListFactory,
-        CnParticipantIdentifierViewFactory
-      ) {
-        var object = function (root) {
-          CnBaseModelFactory.construct(this, module);
-
-          angular.extend(this, {
-            addModel: CnParticipantIdentifierAddFactory.instance(this),
-            listModel: CnParticipantIdentifierListFactory.instance(this),
-            viewModel: CnParticipantIdentifierViewFactory.instance(this, root),
-            getEditEnabled: function () {
-              return this.$$getEditEnabled() && !this.viewModel.record.locked;
-            },
-            getDeleteEnabled: function () {
-              return false;
-            }, // is overridden by identifier module
-          });
-        };
-
-        return {
-          root: new object(true),
-          instance: function () {
-            return new object(false);
-          },
-        };
-      },
-    ]);
-
-    /* ############################################################################################## */
-    cenozo.providers.factory("CnParticipantIdentifierModelFactory", [
-      "CnBaseModelFactory",
-      "CnParticipantIdentifierAddFactory",
-      "CnParticipantIdentifierListFactory",
-      "CnParticipantIdentifierViewFactory",
       "CnHttpFactory",
       function (
         CnBaseModelFactory,
@@ -106,31 +69,43 @@ cenozoApp.defineModule({
       ) {
         var object = function (root) {
           CnBaseModelFactory.construct(this, module);
-          this.addModel = CnParticipantIdentifierAddFactory.instance(this);
-          this.listModel = CnParticipantIdentifierListFactory.instance(this);
-          this.viewModel = CnParticipantIdentifierViewFactory.instance(this, root);
+          angular.extend(this, {
+            addModel: CnParticipantIdentifierAddFactory.instance(this),
+            listModel: CnParticipantIdentifierListFactory.instance(this),
+            viewModel: CnParticipantIdentifierViewFactory.instance(this, root),
 
-          // extend getMetadata
-          this.getMetadata = async function () {
-            await this.$$getMetadata();
+            getEditEnabled: function () {
+              return this.$$getEditEnabled() && !this.viewModel.record.locked;
+            },
 
-            var response = await CnHttpFactory.instance({
-              path: "identifier",
-              data: {
-                select: { column: ["id", "name"] },
-                modifier: { order: "name", limit: 1000 },
-              },
-            }).query();
+            getDeleteEnabled: function () {
+              return this.$$getDeleteEnabled() &&
+                     'participant' != this.getSubjectFromState() &&
+                     !this.viewModel.record.locked;
+            }, // is overridden by identifier module
 
-            this.metadata.columnList.identifier_id.enumList =
-              response.data.reduce((list, item) => {
-                list.push({
-                  value: item.id,
-                  name: item.name,
-                });
-                return list;
-              }, []);
-          };
+            // extend getMetadata
+            getMetadata: async function () {
+              await this.$$getMetadata();
+
+              var response = await CnHttpFactory.instance({
+                path: "identifier",
+                data: {
+                  select: { column: ["id", "name"] },
+                  modifier: { order: "name", limit: 1000 },
+                },
+              }).query();
+
+              this.metadata.columnList.identifier_id.enumList =
+                response.data.reduce((list, item) => {
+                  list.push({
+                    value: item.id,
+                    name: item.name,
+                  });
+                  return list;
+                }, []);
+            },
+          });
         };
 
         return {

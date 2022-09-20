@@ -115,11 +115,9 @@ cenozoApp.defineModule({
               if (angular.isDefined(this.participantIdentifierModel)) {
                 var self = this;
                 this.participantIdentifierModel.getDeleteEnabled = function () {
-                  var subject = this.getSubjectFromState();
-                  return this.$$getDeleteEnabled() &&
-                    "identifier" == this.getSubjectFromState()
+                  return this.$$getDeleteEnabled() && "identifier" == this.getSubjectFromState()
                     ? !self.record.locked
-                    : !this.viewModel.record.locked;
+                    : false;
                 };
               }
             },
