@@ -36,7 +36,10 @@ class export_column extends has_rank
       }
       else if( 'auxiliary' == $this->table_name )
       {
-        $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+        $check_array = array(
+          'has_alternate', 'has_decedent', 'has_emergency',
+          'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
+        );
         if( in_array( $this->column_name, $check_array ) )
         {
           $column_name = sprintf( 'IF( %s.total, "yes", "no" )', $this->column_name );
@@ -73,6 +76,7 @@ class export_column extends has_rank
   public function apply_modifier( $modifier )
   {
     $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
+    $alternate_consent_type_class_name = lib::get_class_name( 'database\alternate_consent_type' );
     $application_id = lib::create( 'business\session' )->get_application()->id;
 
     $table_name = $this->get_table_alias();
@@ -119,10 +123,16 @@ class export_column extends has_rank
     }
     else if( 'auxiliary' == $this->table_name )
     {
-      $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+      $check_array = array(
+        'has_alternate', 'has_decedent', 'has_emergency',
+        'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
+      );
       if( in_array( $this->column_name, $check_array ) )
       {
-        $alternate_type = substr( $this->column_name, 4 );
+        $matches = array();
+        preg_match( '/has_([^_]+)(_with_consent)?/', $this->column_name, $matches );
+        $alternate_type = $matches[1];
+        $with_consent = array_key_exists( 2, $matches ) && '_with_consent' == $matches[2];
         $join_table_name = $this->column_name;
         if( !$modifier->has_join( $join_table_name ) )
         {
@@ -140,11 +150,59 @@ class export_column extends has_rank
             $db_alternate_type = $alternate_type_class_name::get_unique_record( 'name', $alternate_type );
             $alternate_type_table_name = sprintf( 'alternate_has_%s_alternate_type', $alternate_type );
             $join_mod = lib::create( 'database\modifier' );
-            $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $alternate_type_table_name ), false );
-            $join_mod->where( sprintf( '%s.alternate_type_id', $alternate_type_table_name ), '=', $db_alternate_type->id );
-            $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', $alternate_type_table_name );
+            $join_mod->where(
+              'alternate.id',
+              '=',
+              sprintf( '%s.alternate_id', $alternate_type_table_name ),
+              false
+            );
+            $join_mod->where(
+              sprintf( '%s.alternate_type_id', $alternate_type_table_name ),
+              '=',
+              $db_alternate_type->id
+            );
+            $alternate_mod->join_modifier(
+              'alternate_has_alternate_type',
+              $join_mod,
+              'left',
+              $alternate_type_table_name
+            );
+
+            if( $with_consent )
+            {
+              // join to the alternate_last_alternate_consent table
+              $last_ac_table_name = sprintf( '%s_last_consent', $alternate_type );
+              $ac_table_name = sprintf( '%s_consent', $alternate_type );
+              $alternate_consent_type_id = $alternate_consent_type_class_name::get_unique_record(
+                'name', 'proxy' == $alternate_type ? 'decision maker' : 'information provider'
+              )->id;
+              $join_mod = lib::create( 'database\modifier' );
+              $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $last_ac_table_name ), false );
+              $join_mod->where(
+                sprintf( '%s.alternate_consent_type_id', $last_ac_table_name ),
+                '=',
+                $alternate_consent_type_id
+              );
+              $alternate_mod->join_modifier(
+                'alternate_last_alternate_consent',
+                $join_mod,
+                'left',
+                $last_ac_table_name
+              );
+
+              // join to the alternate_consent table
+              $alternate_mod->left_join(
+                'alternate_consent',
+                sprintf( '%s.alternate_consent_id', $last_ac_table_name ),
+                sprintf( '%s.id', $ac_table_name ),
+                $ac_table_name
+              );
+            }
+
             $alternate_sel->add_column(
-              sprintf( 'SUM( IF( %s.alternate_id IS NULL, 0, 1 ) )', $alternate_type_table_name ),
+              $with_consent ?
+                sprintf( 'SUM( IF( %s.accept, 1, 0 ) )', $ac_table_name ) :
+                sprintf( 'SUM( IF( %s.alternate_id IS NULL, 0, 1 ) )', $alternate_type_table_name ),
               'total',
               false
             );
@@ -431,7 +489,10 @@ class export_column extends has_rank
   {
     if( 'auxiliary' == $this->table_name )
     {
-      $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+      $check_array = array(
+        'has_alternate', 'has_decedent', 'has_emergency',
+        'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
+      );
       if( in_array( $this->column_name, $check_array ) )
       {
         return 'participant_'.$this->column_name;

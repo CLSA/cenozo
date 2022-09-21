@@ -27,14 +27,21 @@ class export_restriction extends has_rank
     $table_name = $this->get_table_alias();
     if( 'auxiliary' == $this->table_name )
     {
-      $check_array = array( 'has_alternate', 'has_decedent', 'has_emergency', 'has_informant', 'has_proxy' );
+      $check_array = array(
+        'has_alternate', 'has_decedent', 'has_emergency',
+        'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
+      );
       if( in_array( $this->column_name, $check_array ) )
       {
+        $matches = array();
+        preg_match( '/has_([^_]+)(_with_consent)?/', $this->column_name, $matches );
+        $alternate_type = $matches[1];
+        $with_consent = array_key_exists( 2, $matches ) && '_with_consent' == $matches[2];
+
         // specify a special column
         $column = sprintf( '%s.total > 0', $table_name );
 
         // join to the appropriate table
-        $alternate_type = substr( $this->column_name, 4 );
         $alternate_table_name = $this->column_name;
         if( !$modifier->has_join( $alternate_table_name ) )
         {

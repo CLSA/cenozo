@@ -416,8 +416,28 @@ cenozoApp.defineModule({
                     required: true,
                   },
                   {
+                    key: "has_informant_with_consent",
+                    title: "Has Information Provider With Consent",
+                    type: "boolean",
+                    enumList: [
+                      { value: true, name: "Yes" },
+                      { value: false, name: "No" },
+                    ],
+                    required: true,
+                  },
+                  {
                     key: "has_proxy",
                     title: "Has Decision Maker",
+                    type: "boolean",
+                    enumList: [
+                      { value: true, name: "Yes" },
+                      { value: false, name: "No" },
+                    ],
+                    required: true,
+                  },
+                  {
+                    key: "has_proxy_with_consent",
+                    title: "Has Decision Maker With Consent",
                     type: "boolean",
                     enumList: [
                       { value: true, name: "Yes" },
@@ -508,7 +528,9 @@ cenozoApp.defineModule({
                   { key: "has_decedent", title: "Has Decedent Responder" },
                   { key: "has_emergency", title: "Has Emergency Contact" },
                   { key: "has_informant", title: "Has Information Provider" },
+                  { key: "has_informant_with_consent", title: "Has Information Provider With Consent" },
                   { key: "has_proxy", title: "Has Decision Maker" },
+                  { key: "has_proxy_with_consent", title: "Has Decision Maker With Consent" },
                 ],
               },
               participant: {
