@@ -23,9 +23,11 @@ class module extends \cenozo\service\site_restricted_module
     $db_application = lib::create( 'business\session' )->get_application();
     $db_restrict_site = $this->get_restricted_site();
 
+    /*
     // if the application has a study-phase then only show the parent study's strata
     $db_study_phase = $db_application->get_study_phase();
     if( !is_null( $db_study_phase ) ) $modifier->where( 'stratum.study_id', '=', $db_study_phase->study_id );
+    */
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
