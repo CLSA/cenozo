@@ -148,6 +148,8 @@ class post extends \cenozo\service\service
         else if( property_exists( $file, 'event' ) )
         { // add the given event record
           $db_event = lib::create( 'database\event' );
+          $db_event->site_id = $db_site->id;
+          $db_event->user_id = $db_user->id;
           foreach( $file->event as $column => $value ) $db_event->$column = $value;
           $this->set_data( $db_event->save_list( $select, $modifier ) );
         }
