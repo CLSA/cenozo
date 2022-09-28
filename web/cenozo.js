@@ -530,6 +530,7 @@
              *     file: A file which can be attached to the record
              *     audio_url: An audio file where the src is provided as a URL
              *     base64_image: An image file encoded/decoded as base64 data
+             *     div: A non-input div (any HTML text can be included)
              *   format: one of the following
              *     integer: will only accept integers
              *     float: will only accept float and integers
@@ -7197,7 +7198,8 @@
                 object.module.inputGroupList.forEach((group) => {
                   for (var column in group.inputList) {
                     var input = group.inputList[column];
-                    list[column] = input;
+                    // don't include the DIV type
+                    if( 'div' != input.type ) list[column] = input;
                   }
                 });
               }

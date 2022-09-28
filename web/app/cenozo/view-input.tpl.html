@@ -13,6 +13,7 @@
         <div class="input-group"
              ng-switch="input.type|cnViewType"
              ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
+          <div ng-switch-when="div" ng-bind-html="input.getContent( state, model )" />
           <input ng-switch-when="string"
             ng-attr-id="{{ input.key }}"
             name="name"
