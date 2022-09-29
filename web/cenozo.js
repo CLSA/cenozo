@@ -4695,6 +4695,10 @@
             this.time = now.format(this.getTimeFormat(false, true));
           },
 
+          /**
+           * Note, the timezone property can be a string or an object containing a participant_id or
+           * alternate_id (where their first address' timezone will be used instead)
+           */
           setTimezone: async function (timezone, use12hourClock) {
             if (angular.isUndefined(timezone)) timezone = this.user.timezone;
             if (angular.isUndefined(use12hourClock))
@@ -4706,10 +4710,13 @@
               },
               onError: function (error) {
                 if (409 == error.status) {
+                  const type = angular.isObject(timezone) && angular.isDefined(timezone.alternate_id)
+                             ? 'alternate'
+                             : 'participant';
                   CnModalMessageFactory.instance({
                     title: "No Timezone Available",
                     message:
-                      "The participant does not currently have an active address. " +
+                      "The " + type + " does not currently have an active address. " +
                       "Without an active address there is no way to determine which timezone they are in.",
                   }).show();
                 } else {

@@ -67,6 +67,12 @@ class patch extends \cenozo\service\service
               $db_first_address = $db_participant->get_first_address();
               if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
             }
+            else if( is_object( $timezone ) && property_exists( $timezone, 'alternate_id' ) )
+            {
+              $db_alternate = lib::create( 'database\alternate', $timezone->alternate_id );
+              $db_first_address = $db_alternate->get_first_address();
+              if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+            }
           }
         }
       }
@@ -151,6 +157,12 @@ class patch extends \cenozo\service\service
               {
                 $db_participant = lib::create( 'database\participant', $value->participant_id );
                 $db_first_address = $db_participant->get_first_address();
+                $value = $db_first_address->get_timezone_name();
+              }
+              else if( property_exists( $value, 'alternate_id' ) )
+              {
+                $db_alternate = lib::create( 'database\alternate', $value->alternate_id );
+                $db_first_address = $db_alternate->get_first_address();
                 $value = $db_first_address->get_timezone_name();
               }
             }

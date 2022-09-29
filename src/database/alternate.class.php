@@ -96,4 +96,31 @@ class alternate extends has_note
     // divide affected rows by 2 since every row that gets changed will count as 2 rows
     return static::db()->affected_rows() / 2;
   }
+
+  /**
+   * Get the alternate's "first" address.  This is the highest ranking, active, available
+   * address.
+   * Note: this address may be in the United States
+   * @return address
+   * @access public
+   */
+  public function get_first_address()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query alternate with no primary key.' );
+      return NULL;
+    }
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'alternate_first_address' );
+    $select->add_column( 'address_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'alternate_id', '=', $this->id );
+
+    // need custom SQL
+    $address_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
+  }
 }
