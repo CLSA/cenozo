@@ -1,4 +1,16 @@
-<div class="container-fluid bg-primary rounded-top"><h4>{{ model.addModel.heading }}</h4></div>
+<div class="container-fluid bg-primary rounded-top">
+  <h4>
+    <div class="pull-right">
+      <i class="glyphicon glyphicon-question-sign glyph-hover btn-primary btn-header"
+         ng-class="{'glyph-disabled':!model.module.hasNotation(notationType)}"
+         ng-if="model.isRole('administrator') || model.module.hasNotation(notationType)"
+         uib-tooltip="Click to view documentation"
+         tooltip-placement="left"
+         ng-click="model.showNotation(notationType); $event.stopPropagation()"></i>
+    </div>
+    {{ model.addModel.heading }}
+  </h4>
+</div>
 <form name="form" class="form-horizontal" novalidate><fieldset ng-disabled="!isComplete">
   <div class="form-footer text-right bg-info" ng-if="footerAtTop">
     <cn-extra-operation-button-group model="model" class="pull-left" type="add">

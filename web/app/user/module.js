@@ -159,7 +159,7 @@ cenozoApp.defineModule({
       "CnUserOverviewFactory",
       function (CnUserOverviewFactory) {
         return {
-          templateUrl: module.getFileUrl("list.tpl.html"),
+          templateUrl: module.getFileUrl("overview.tpl.html"),
           restrict: "E",
           scope: { model: "=?" },
           controller: function ($scope) {

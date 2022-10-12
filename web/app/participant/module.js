@@ -2087,6 +2087,7 @@ cenozoApp.defineModule({
         var object = function () {
           angular.extend(this, {
             module: module,
+            parentModel: CnParticipantModelFactory.root,
             participantSelection: CnParticipantSelectionFactory.instance(),
             activeInput: "",
             hasActiveInputs: false,
@@ -2147,13 +2148,15 @@ cenozoApp.defineModule({
 
             applyMultiedit: async function (type) {
               // test the formats of all columns
+              var model = null;
+              var inputList = null;
               var error = false;
               var messageObj = { title: null, message: null };
               var identifierList =
                 this.participantSelection.getIdentifierList();
               if ("consent" == type) {
-                var inputList = this.consentInputList;
-                var model = CnConsentModelFactory.root;
+                inputList = this.consentInputList;
+                model = CnConsentModelFactory.root;
                 messageObj.title = "Consent Records Added";
                 messageObj.message =
                   "The consent record has been successfully added to <TOTAL> participant(s).";
@@ -2177,36 +2180,33 @@ cenozoApp.defineModule({
                   '" ' +
                   "collection";
               } else if ("event" == type) {
-                var inputList = this.eventInputList;
-                var model = CnEventModelFactory.root;
+                inputList = this.eventInputList;
+                model = CnEventModelFactory.root;
                 messageObj.title = "Event Records Added";
                 messageObj.message =
                   "The event record has been successfully added to <TOTAL> participant(s).";
               } else if ("hold" == type) {
-                var inputList = this.holdInputList;
-                var model = CnHoldModelFactory.root;
+                inputList = this.holdInputList;
+                model = CnHoldModelFactory.root;
                 messageObj.title = "Hold Records Added";
                 messageObj.message =
                   "The hold record has been successfully added to <TOTAL> participant(s).";
               } else if ("note" == type) {
-                var inputList = this.noteInputList;
-                var model = null;
+                inputList = this.noteInputList;
                 messageObj.title = "Note Records Added";
                 messageObj.message =
                   "The note record has been successfully added to <TOTAL> participant(s).";
               } else if ("participant" == type) {
-                var inputList = this.participantInputList.filter(
-                  (input) => input.active
-                );
-                var model = CnParticipantModelFactory.root;
+                inputList = this.participantInputList.filter(input => input.active);
+                model = CnParticipantModelFactory.root;
                 messageObj.title = "Participant Details Updated";
                 messageObj.message =
                   "The listed details have been successfully updated on " +
                   identifierList.length +
                   " participant records.";
               } else if ("proxy" == type) {
-                var inputList = this.proxyInputList;
-                var model = CnProxyModelFactory.root;
+                inputList = this.proxyInputList;
+                model = CnProxyModelFactory.root;
                 messageObj.title = "Proxy Records Added";
                 messageObj.message =
                   "The proxy record has been successfully added to <TOTAL> participant(s).";
@@ -2460,11 +2460,13 @@ cenozoApp.defineModule({
     /* ############################################################################################## */
     cenozo.providers.factory("CnParticipantNotesFactory", [
       "CnBaseNoteFactory",
+      "CnParticipantModelFactory",
       "CnSession",
       "$state",
-      function (CnBaseNoteFactory, CnSession, $state) {
+      function (CnBaseNoteFactory, CnParticipantModelFactory, CnSession, $state) {
         var object = function () {
           CnBaseNoteFactory.construct(this, module);
+          this.parentModel = CnParticipantModelFactory.root;
 
           async function init(object) {
             await object.onView();

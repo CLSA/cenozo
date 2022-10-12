@@ -36,9 +36,11 @@ class get extends \cenozo\service\service
     $webphone_class_name = lib::get_class_name( 'database\webphone' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $application_class_name = lib::get_class_name( 'database\application' );
+    $notation_class_name = lib::get_class_name( 'database\notation' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
+    $db_application_type = $db_application->get_application_type();
     $db_identifier = $db_application->get_identifier();
     $db_site = $session->get_site();
     $db_role = $session->get_role();
@@ -177,7 +179,8 @@ class get extends \cenozo\service\service
       }
 
       // add the application type name
-      $pseudo_record['application']['type'] = $db_application->get_application_type()->name;
+      $pseudo_record['application']['type'] = $db_application_type->name;
+      $pseudo_record['application']['application_type_id'] = $db_application_type->id;
 
       // include the last (closed) activity for this user
       $activity_sel = lib::create( 'database\select' );
@@ -256,6 +259,22 @@ class get extends \cenozo\service\service
       $activity_mod->where( 'application_id', '=', $db_application->id );
       $activity_mod->where( 'site_id', '=', $db_site->id );
       $pseudo_record['site']['active_users'] = $activity_class_name::count( $activity_mod );
+
+      // include all module notations
+      $notation_sel = lib::create( 'database\select' );
+      $notation_sel->add_column( 'subject' );
+      $notation_sel->add_column( 'type' );
+      $notation_sel->add_column( 'description' );
+      $notation_mod = lib::create( 'database\modifier' );
+      $notation_mod->where(
+        // include this application, and framework notations (NULL application type)
+        sprintf( 'IFNULL( application_type_id, %d )', $db_application_type->id ),
+        '=',
+        $db_application_type->id
+      );
+      $notation_mod->order( 'subject' );
+      $notation_mod->order( 'type' );
+      $pseudo_record['notation'] = $notation_class_name::select( $notation_sel, $notation_mod );
     }
 
     return $pseudo_record;

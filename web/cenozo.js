@@ -463,6 +463,7 @@
               }
               return url;
             },
+            notationList: {},
             inputGroupList: [],
             columnList: {},
             extraOperationList: {
@@ -2210,10 +2211,12 @@
           model: "=",
           footerAtTop: "@",
           removeInputs: "@",
+          notationType: "@",
         },
         controller: [
           "$scope",
           async function ($scope) {
+            if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'add';
             angular.extend($scope, {
               directive: "cnRecordAdd",
               record: {},
@@ -2550,11 +2553,13 @@
         scope: {
           model: "=",
           preventSiteChange: "@?",
+          notationType: "@",
         },
         controller: [
           "$scope",
           "$element",
           function ($scope, $element) {
+            if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'calendar';
             angular.extend($scope, {
               directive: "cnRecordCalendar",
               reportTypeListOpen: false,
@@ -2696,11 +2701,13 @@
           noRefresh: "@",
           noReports: "@",
           disableEmptyToEnd: "=",
+          notationType: "@",
         },
         controller: [
           "$scope",
           "$element",
           async function ($scope, $element) {
+            if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'list';
             angular.extend($scope, {
               directive: "cnRecordList",
               reportTypeListOpen: false,
@@ -2865,10 +2872,12 @@
           removeInputs: "@",
           initCollapsed: "=",
           noRefresh: "@",
+          notationType: "@",
         },
         controller: [
           "$scope",
           async function ($scope) {
+            if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'view';
             angular.extend($scope, {
               directive: "cnRecordView",
               isComplete: false,
@@ -4528,6 +4537,119 @@
 
             // process module list
             this.moduleList = response.data.module_list;
+
+            // process notations (add descriptions to the module)
+            response.data.notation.forEach( notation => {
+              cenozoApp.module(notation.subject).notationList[notation.type] = notation.description;
+            });
+
+            // Add set/get notation functions to all modules
+            // Note: do not confuse cenozoApp modules with Session modules.
+            // cenozoApp modules include a list of all UI modules, Session modules are special
+            // activated modules.
+            // Note: this is done here instead of in the module because we need access to the
+            // CnHttpFactory service
+            const self = this;
+            for( const key in cenozoApp.moduleList ) {
+              angular.extend(cenozoApp.moduleList[key], {
+                hasNotation: function( type ) {
+                  // if not provided then get the type from the state action
+                  if( angular.isUndefined( type ) ) {
+                    const stateNameParts = $state.current.name.split(".");
+                    type = stateNameParts[1];
+                  }
+                  return angular.isDefined( this.notationList[type] ) && 0 < this.notationList[type].length;
+                },
+
+                getNotation: function( type ) {
+                  // if not provided then get the type from the state action
+                  if( angular.isUndefined( type ) ) {
+                    const stateNameParts = $state.current.name.split(".");
+                    type = stateNameParts[1];
+                  }
+                  return angular.isDefined( this.notationList[type] ) ? this.notationList[type] : '';
+                },
+
+                setNotation: async function( type, notation ) {
+                  // if not provided then get the type from the state action
+                  if( angular.isUndefined( type ) ) {
+                    const stateNameParts = $state.current.name.split(".");
+                    type = stateNameParts[1];
+                  }
+                  const currentNotation = angular.isDefined( this.notationList[type] )
+                                        ? this.notationList[type]
+                                        : '';
+                  if( notation !== currentNotation ) {
+                    const appTypeId = this.framework ? null : self.application.applicationTypeId;
+                    const path = "notation/application_type_id=" + appTypeId +
+                                 ";subject=" + this.subject.snake +
+                                 ";type=" + type;
+                    if( 0 == notation.length ) {
+                      CnHttpFactory.instance({
+                        path: path,
+                        onError: function (error) {
+                          if (404 == error.status) {
+                            // ignore missing record errors, the record has already been deleted
+                          } else {
+                            CnModalMessageFactory.httpError(error);
+                          }
+                        },
+                      }).delete();
+                    } else {
+                      if( 0 == currentNotation.length ) {
+                        CnHttpFactory.instance({
+                          path: "notation",
+                          data: {
+                            subject: this.subject.snake,
+                            type: type,
+                            description: notation,
+                            application_type_id: appTypeId,
+                          },
+                          onError: function (error) {
+                            // if there is a conflict then the notation already exists
+                            if (409 == error.status) {
+                              CnModalMessageFactory.instance({
+                                title: "Notation Already Exists",
+                                message:
+                                  "This notation has been recently created by another user. " +
+                                  "You must reload your page in order to make changes to the notation.",
+                              }).show();
+                            } else {
+                              CnModalMessageFactory.httpError(error);
+                            }
+                          },
+                        }).post();
+                      } else {
+                        const thisModule = this;
+                        CnHttpFactory.instance({
+                          path: path,
+                          data: { description: notation, },
+                          onError: function (error) {
+                            if (404 == error.status) {
+                              // if the notation doesn't exist then try POST the new data
+                              CnHttpFactory.instance({
+                                path: "notation",
+                                data: {
+                                  subject: thisModule.subject.snake,
+                                  type: type,
+                                  description: notation,
+                                  application_type_id: appTypeId,
+                                },
+                              }).post();
+                            } else {
+                              CnModalMessageFactory.httpError(error);
+                            }
+                          },
+                        }).patch();
+                      }
+                    }
+
+                    // set the local copy
+                    this.notationList[type] = notation;
+                  }
+                },
+              });
+            }
 
             if (this.moduleList.includes("script")) {
               // add the supporting script list
@@ -6899,7 +7021,9 @@
     "$filter",
     "CnSession",
     "CnHttpFactory",
-    function ($state, $filter, CnSession, CnHttpFactory) {
+    "CnModalTextFactory",
+    "CnModalMessageFactory",
+    function ($state, $filter, CnSession, CnHttpFactory, CnModalTextFactory, CnModalMessageFactory) {
       return {
         construct: function (object, module) {
           /**
@@ -7865,6 +7989,35 @@
             return angular.isDefined(object.module.actions.view);
           });
 
+          cenozo.addExtendableFunction(object, "showNotation", async function (type) {
+            // if not provided then get the type from the state action
+            if( angular.isUndefined( type ) ) {
+              const stateNameParts = $state.current.name.split(".");
+              type = stateNameParts[1];
+            }
+            const notation = this.module.getNotation(type);
+
+            // administrators have read/write access to the notation
+            if( this.isRole("administrator") ) {
+              const response = await CnModalTextFactory.instance({
+                title: "Page Documentation",
+                message: "Provide documentation relevant to this page, or leave blank if no documentation is required:",
+                text: notation,
+                size: "lg"
+              }).show();
+
+              if( false !== response ) {
+                this.module.setNotation(type,response);
+              }
+            } else { // all other roles have read-only access to the notation
+              await CnModalMessageFactory.instance({
+                title: "Documetation",
+                message: notation,
+                size: "lg"
+              }).show();
+            }
+          });
+
           /**
            * Loads the model's base metadata
            */
@@ -8069,10 +8222,10 @@
     "$state",
     function (CnHttpFactory, $state) {
       return {
-        construct: function (object, module, model) {
+        construct: function (object, module, parentModel) {
           angular.extend(object, {
             module: module,
-            model: model,
+            parentModel: parentModel,
             historyList: [],
 
             viewNotes: async function () {
@@ -8091,23 +8244,23 @@
               for (var name in object.module.historyCategoryList) {
                 object.module.historyCategoryList[name].active = true;
               }
-              await object.model.reloadState(false, false);
+              await object.parentModel.reloadState(false, false);
             },
 
             unselectAllCategories: async function () {
               for (var name in object.module.historyCategoryList) {
                 object.module.historyCategoryList[name].active = false;
               }
-              await object.model.reloadState(false, false);
+              await object.parentModel.reloadState(false, false);
             },
 
             toggleCategory: async function (name) {
               // update the query parameters with whatever the category's active state is
-              object.model.setQueryParameter(
+              object.parentModel.setQueryParameter(
                 name.toLowerCase(),
                 object.module.historyCategoryList[name].active
               );
-              await object.model.reloadState(false, false);
+              await object.parentModel.reloadState(false, false);
             },
 
             getVisibleHistoryList: function () {
@@ -8123,7 +8276,7 @@
               // get all history category promises, run them and then sort the resulting history list
               for (var name in object.module.historyCategoryList) {
                 // sync the active parameter to the state while we're at it
-                var active = object.model.getQueryParameter(name.toLowerCase());
+                var active = object.parentModel.getQueryParameter(name.toLowerCase());
                 object.module.historyCategoryList[name].active =
                   angular.isDefined(active) ? active : true;
                 if (
@@ -10581,7 +10734,7 @@
     "$rootScope",
     "CnSession",
     "CnHttpFactory",
-    function (
+    async function (
       $window,
       $state,
       $location,

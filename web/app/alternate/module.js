@@ -667,12 +667,14 @@ cenozoApp.defineModule({
     /* ############################################################################################## */
     cenozo.providers.factory("CnAlternateNotesFactory", [
       "CnBaseNoteFactory",
+      "CnAlternateModelFactory",
       "CnSession",
       "CnHttpFactory",
       "$state",
-      function (CnBaseNoteFactory, CnSession, CnHttpFactory, $state) {
+      function (CnBaseNoteFactory, CnAlternateModelFactory, CnSession, CnHttpFactory, $state) {
         var object = function () {
           CnBaseNoteFactory.construct(this, module);
+          this.parentModel = CnAlternateModelFactory.root;
 
           async function init(object) {
             await object.onView();

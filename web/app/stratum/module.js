@@ -116,12 +116,14 @@ cenozoApp.defineModule({
 
     /* ############################################################################################## */
     cenozo.providers.factory("CnStratumMassParticipantFactory", [
+      "CnStratumModelFactory",
       "CnSession",
       "CnHttpFactory",
       "CnModalMessageFactory",
       "CnParticipantSelectionFactory",
       "$state",
       function (
+        CnStratumModelFactory,
         CnSession,
         CnHttpFactory,
         CnModalMessageFactory,
@@ -130,6 +132,7 @@ cenozoApp.defineModule({
       ) {
         var object = function () {
           angular.extend(this, {
+            parentModel: CnStratumModelFactory.root,
             operation: "add",
             working: false,
             participantSelection: CnParticipantSelectionFactory.instance({
