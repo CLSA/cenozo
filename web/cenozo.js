@@ -532,6 +532,7 @@
              *     audio_url: An audio file where the src is provided as a URL
              *     base64_image: An image file encoded/decoded as base64 data
              *     div: A non-input div (any HTML text can be included)
+             *   multi: used when add allows for multiple enum selections (view not affected)
              *   format: one of the following
              *     integer: will only accept integers
              *     float: will only accept float and integers
@@ -1831,8 +1832,8 @@
    */
   cenozo.filter("cnAddType", function () {
     return function (input) {
-      if ("boolean" == input || "enum" == input || "rank" == input)
-        input = "select";
+      if ("enum" == input && input.multi) input = "multiselect";
+      else if ("boolean" == input || "enum" == input || "rank" == input) input = "select";
       else if (cenozo.isDatetimeType(input)) input = "datetime";
       else if ("base64_image" == input) input = "file";
       return input;
@@ -2220,6 +2221,7 @@
             angular.extend($scope, {
               directive: "cnRecordAdd",
               record: {},
+              test: [],
               isComplete: false,
               getCancelText: function () {
                 return "Cancel";
@@ -2316,7 +2318,7 @@
                         name: $filter("cnOrdinal")(newRank),
                       });
 
-                    if (!meta.required || 1 < enumList.length) {
+                    if (!input.multi && (!meta.required || 1 < enumList.length)) {
                       // only add the empty value if one doesn't already exist
                       if (null == enumList.findByProperty("value", undefined)) {
                         var name = meta.required
@@ -2328,8 +2330,12 @@
                       }
                     }
 
-                    if (1 == enumList.length)
+                    if (input.multi) {
+                      $scope.record[input.key] = [];
+                    } else if (1 == enumList.length) {
                       $scope.record[input.key] = enumList[0].value;
+                    }
+
                     input.enumList = enumList;
                   } else if ("lookup-typeahead" == input.type) {
                     // use the default value if one is provided
