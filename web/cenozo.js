@@ -9998,8 +9998,9 @@
         angular.extend(this, {
           getInitialValue: function () {
             if ("string" == this.type) return "";
+            else if ("boolean" == this.type) return "1"; // must convert to a string for the select UI value
             else if (cenozo.isDatetimeType(this.type)) return null;
-            return 1; // boolean, number, size, rank
+            return 1; // number, size, rank
           },
 
           addRestriction: function () {
