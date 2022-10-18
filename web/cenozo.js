@@ -8011,7 +8011,7 @@
               }
             } else { // all other roles have read-only access to the notation
               await CnModalMessageFactory.instance({
-                title: "Documetation",
+                title: "Page Documentation",
                 message: notation,
                 size: "lg"
               }).show();

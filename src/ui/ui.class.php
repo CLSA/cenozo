@@ -124,9 +124,9 @@ class ui extends \cenozo\base_object
       'access', 'activity', 'address', 'alternate', 'alternate_consent', 'alternate_consent_type', 'alternate_type',
       'application', 'application_type', 'availability_type', 'callback', 'cohort', 'collection', 'consent',
       'consent_type', 'event', 'event_type', 'export', 'export_file', 'failed_login', 'form', 'form_association',
-      'form_type', 'hin', 'hold', 'hold_type', 'identifier', 'jurisdiction', 'language', 'overview', 'mail',
-      'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site', 'role',
-      'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result', 'site', 'source',
+      'form_type', 'hin', 'hold', 'hold_type', 'identifier', 'jurisdiction', 'language', 'mail', 'notation',
+      'overview', 'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site',
+      'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result', 'site', 'source',
       'stratum', 'study', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
 
@@ -492,6 +492,7 @@ class ui extends \cenozo\base_object
     if( $extended && in_array( 'jurisdiction', $grouping_list ) )
     $this->add_listitem( 'Jurisdictions', 'jurisdiction' );
     if( $extended ) $this->add_listitem( 'Languages', 'language' );
+    $this->add_listitem( 'Notations', 'notation' );
     if( 2 <= $db_role->tier ) $this->add_listitem( 'Overviews', 'overview' );
     $this->add_listitem( 'Participants', 'participant' );
     $this->add_listitem( 'Proxy Types', 'proxy_type' );
