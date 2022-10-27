@@ -200,10 +200,9 @@
       // by default modules are not marked
       if (angular.isUndefined(mark)) mark = false;
 
-      if (angular.isUndefined(this.moduleList[moduleName]))
-        throw new Error(
-          'Tried to load module "' + moduleName + "\" which doesn't exist."
-        );
+      if (angular.isUndefined(this.moduleList[moduleName])) {
+        throw new Error( 'Tried to load module "' + moduleName + "\" which doesn't exist." );
+      }
 
       var module = this.moduleList[moduleName];
 
@@ -306,13 +305,7 @@
                 list = list.concat(this.module(module).getRequiredFiles());
             } catch (err) {
               // ignore if module doesn't exist
-              if (
-                null ==
-                err.message.match(
-                  /Tried to load module "[^"]+" which doesn't exist./
-                )
-              )
-                throw err;
+              if (null == err.message.match( /Tried to load module "[^"]+" which doesn't exist./ )) throw err;
             }
             return list;
           }, [])
@@ -395,16 +388,10 @@
             try {
               // if the module doesn't exist then ignore
               if (angular.isDefined(cenozoApp.moduleList[module]))
-                list.concat(this.module(module).getRequiredFiles());
+                list = list.concat(this.module(module).getRequiredFiles());
             } catch (err) {
               // ignore if module doesn't exist
-              if (
-                null ==
-                err.message.match(
-                  /Tried to load module "[^"]+" which doesn't exist./
-                )
-              )
-                throw err;
+              if (null == err.message.match( /Tried to load module "[^"]+" which doesn't exist./ )) throw err;
             }
             return list;
           }, [])
@@ -4546,7 +4533,9 @@
 
             // process notations (add descriptions to the module)
             response.data.notation.forEach( notation => {
-              cenozoApp.module(notation.subject).notationList[notation.type] = notation.description;
+              try {
+                cenozoApp.module(notation.subject).notationList[notation.type] = notation.description;
+              } catch (err) {} // do nothing if an exception was thrown
             });
 
             // Add set/get notation functions to all modules
