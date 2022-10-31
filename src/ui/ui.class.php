@@ -276,6 +276,7 @@ class ui extends \cenozo\base_object
         $module->add_choose( 'site' );
         $module->add_choose( 'script' );
         $module->add_choose( 'collection' );
+        $module->add_choose( 'identifier' );
       }
       else if( 'assignment' == $module->get_subject() )
       {

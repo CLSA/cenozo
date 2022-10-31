@@ -26,6 +26,7 @@ SOURCE equipment.sql
 SOURCE equipment_loan.sql
 SOURCE notation.sql
 SOURCE supporting_script_check.sql
+SOURCE application_has_identifier.sql
 
 SOURCE update_version_number.sql
 

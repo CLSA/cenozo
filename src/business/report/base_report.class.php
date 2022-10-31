@@ -433,6 +433,52 @@ abstract class base_report extends \cenozo\base_object
   }
 
   /**
+   * Adds all identifiers associated with the application as columns in the report
+   * 
+   * @param database\select $select
+   * @param database\modifier $modifier
+   */
+  protected function add_application_identifier_columns( &$select, &$modifier )
+  {
+    $db_application = lib::create( 'business\session' )->get_application();
+    $db_study_phase_identifier = NULL;
+
+    // first see if the application's study-phase has an identifier
+    $db_study_phase = $db_application->get_study_phase();
+    if( !is_null( $db_study_phase ) )
+    {
+      $db_study_phase_identifier = $db_study_phase->get_identifier();
+      if( !is_null( $db_study_phase_identifier ) )
+      {
+        $table_name = sprintf( 'participant_identifier_%d', $db_study_phase_identifier->id );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', sprintf( '%s.participant_id', $table_name ), false );
+        $join_mod->where( sprintf( '%s.identifier_id', $table_name ), '=', $db_study_phase_identifier->id );
+        $modifier->join_modifier( 'participant_identifier', $join_mod, 'left', $table_name );
+        $select->add_column(
+          sprintf( '%s.value', $table_name ),
+          sprintf( '%s ID', $db_study_phase_identifier->name ),
+          false
+        );
+      }
+    }
+
+    // now get a list of all identifiers linked to this application
+    foreach( $db_application->get_identifier_object_list() as $db_identifier )
+    {
+      if( $db_identifier != $db_study_phase_identifier )
+      {
+        $table_name = sprintf( 'participant_identifier_%d', $db_identifier->id );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', sprintf( '%s.participant_id', $table_name ), false );
+        $join_mod->where( sprintf( '%s.identifier_id', $table_name ), '=', $db_identifier->id );
+        $modifier->join_modifier( 'participant_identifier', $join_mod, 'left', $table_name );
+        $select->add_column( sprintf( '%s.value', $table_name ), sprintf( '%s ID', $db_identifier->name ), false );
+      }
+    }
+  }
+
+  /**
    * Adds a table to the report
    * 
    * @param string $title The title of the report.

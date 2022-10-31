@@ -32,10 +32,13 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     );
 
     $select = lib::create( 'database\select' );
+    $modifier = lib::create( 'database\modifier' );
+
     $select->from( 'participant' );
     $select->add_column( 'IF( hold.id IS NULL, "no", "yes" )', '3rd Party', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
+    $this->add_application_identifier_columns( $select, $modifier );
     $select->add_column( 'honorific', 'Honorific' );
     $select->add_column( 'first_name', 'First Name' );
     $select->add_column( 'last_name', 'Last Name' );
@@ -46,7 +49,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'country.name', 'Country', false );
 
-    $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'IF( hold.id IS NULL, "no", "yes" )' );
     $modifier->order( 'uid' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );

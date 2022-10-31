@@ -74,8 +74,11 @@ class proxy extends \cenozo\business\report\base_report
 
     // now prepare the report
     $select = lib::create( 'database\select' );
+    $modifier = lib::create( 'database\modifier' );
+
     $select->from( 'participant' );
     $select->add_column( 'uid', 'UID' );
+    $this->add_application_identifier_columns( $select, $modifier );
     $select->add_column( 'cohort.name', 'Cohort', false );
     $select->add_column(
       $participant_class_name::get_status_column_sql(),
@@ -95,7 +98,6 @@ class proxy extends \cenozo\business\report\base_report
       false
     );
 
-    $modifier = lib::create( 'database\modifier' );
     $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );
     $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
