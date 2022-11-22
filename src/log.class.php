@@ -212,7 +212,7 @@ final class log extends singleton
       $this->log_file_handler,
       sprintf(
         "%s [%s] %s%s\n",
-        strftime( '%Y-%m-%d (%a) %H:%M:%S' ),
+        date( 'Y-m-d (D) H:i:s' ),
         $type,
         preg_replace( '/\'?\n\'?/', "\n", $message ),
         $this->policy_list[$type]['condensed'] ? '' : "\n"
