@@ -28,7 +28,7 @@
         $scope.baseUrl = '<?php print ROOT_URL; ?>';
         $scope.loginChanged = function() { $scope.state = 'ready'; };
 
-        $scope.loginFooter = `<?php print nl2br( $login_footer ); ?>`;
+        $scope.loginFooter = `<?php if( !is_null( $login_footer ) ) print nl2br( $login_footer ); ?>`;
         var adminEmail = '<?php print $admin_email; ?>';
         if( adminEmail ) {
           $scope.loginFooter +=
