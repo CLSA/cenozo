@@ -517,7 +517,7 @@
              *     percent: A percentage from 0% to 100%
              *     file: A file which can be attached to the record
              *     audio_url: An audio file where the src is provided as a URL
-             *     base64_image: An image file encoded/decoded as base64 data
+             *     base64: A data file encoded/decoded as base64 data (images, audio, etc)
              *     div: A non-input div (any HTML text can be included)
              *   multi: used when add allows for multiple enum selections (view not affected)
              *   format: one of the following
@@ -1822,7 +1822,7 @@
       if ("enum" == input && input.multi) input = "multiselect";
       else if ("boolean" == input || "enum" == input || "rank" == input) input = "select";
       else if (cenozo.isDatetimeType(input)) input = "datetime";
-      else if ("base64_image" == input) input = "file";
+      else if ("base64" == input) input = "file";
       return input;
     };
   });
