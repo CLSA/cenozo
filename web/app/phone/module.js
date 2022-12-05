@@ -98,8 +98,7 @@ cenozoApp.defineModule({
 
           this.onAdd = async function (record) {
             var identifier = this.parentModel.getParentIdentifier();
-            var traceResponse =
-              await traceModel.checkForTraceResolvedAfterPhoneAdded(identifier);
+            var traceResponse = await traceModel.checkForTraceResolvedAfterPhoneAdded(identifier);
             if (traceResponse) {
               await this.$$onAdd(record);
               if (angular.isString(traceResponse))
@@ -141,10 +140,11 @@ cenozoApp.defineModule({
                 true
               ),
             };
-            var traceResponse =
-              await traceModel.checkForTraceRequiredAfterPhoneRemoved(
-                identifier
-              );
+
+            // only check for tracing if the record is active
+            var traceResponse = record.active ?
+              await traceModel.checkForTraceRequiredAfterPhoneRemoved(identifier) :
+              true;
             if (traceResponse) {
               await this.$$onDelete(record);
               if (angular.isString(traceResponse))
@@ -177,12 +177,8 @@ cenozoApp.defineModule({
             var traceResponse = !angular.isDefined(data.active)
               ? true
               : data.active
-              ? await traceModel.checkForTraceResolvedAfterPhoneAdded(
-                  identifier
-                )
-              : await traceModel.checkForTraceRequiredAfterPhoneRemoved(
-                  identifier
-                );
+              ? await traceModel.checkForTraceResolvedAfterPhoneAdded(identifier)
+              : await traceModel.checkForTraceRequiredAfterPhoneRemoved(identifier);
 
             if (traceResponse) {
               await this.$$onPatch(data);
@@ -195,10 +191,11 @@ cenozoApp.defineModule({
 
           this.onDelete = async function () {
             var identifier = this.parentModel.getParentIdentifier();
-            var traceResponse =
-              await traceModel.checkForTraceRequiredAfterPhoneRemoved(
-                identifier
-              );
+
+            // only check for tracing if the record is active
+            var traceResponse = this.record.active ?
+              await traceModel.checkForTraceRequiredAfterPhoneRemoved(identifier) :
+              true;
             if (traceResponse) {
               await this.$$onDelete();
               if (angular.isString(traceResponse))

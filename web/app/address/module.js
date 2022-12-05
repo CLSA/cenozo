@@ -213,10 +213,7 @@ cenozoApp.defineModule({
 
           this.onAdd = async function (record) {
             var identifier = this.parentModel.getParentIdentifier();
-            var traceResponse =
-              await traceModel.checkForTraceResolvedAfterAddressAdded(
-                identifier
-              );
+            var traceResponse = await traceModel.checkForTraceResolvedAfterAddressAdded(identifier);
             if (traceResponse) {
               await this.$$onAdd(record);
               if (angular.isString(traceResponse))
@@ -252,10 +249,11 @@ cenozoApp.defineModule({
                 true
               ),
             };
-            var traceResponse =
-              await traceModel.checkForTraceRequiredAfterAddressRemoved(
-                identifier
-              );
+
+            // only check for tracing if the record is active
+            var traceResponse = record.active ?
+              await traceModel.checkForTraceRequiredAfterAddressRemoved(identifier) :
+              true;
             if (traceResponse) {
               await this.$$onDelete(record);
               if (angular.isString(traceResponse))
@@ -295,12 +293,8 @@ cenozoApp.defineModule({
             var traceResponse = !angular.isDefined(data.active)
               ? true
               : data.active
-              ? await traceModel.checkForTraceResolvedAfterAddressAdded(
-                  identifier
-                )
-              : await traceModel.checkForTraceRequiredAfterAddressRemoved(
-                  identifier
-                );
+              ? await traceModel.checkForTraceResolvedAfterAddressAdded(identifier)
+              : await traceModel.checkForTraceRequiredAfterAddressRemoved(identifier);
 
             if (traceResponse) {
               await this.$$onPatch(data);
@@ -314,10 +308,11 @@ cenozoApp.defineModule({
 
           this.onDelete = async function () {
             var identifier = this.parentModel.getParentIdentifier();
-            var traceResponse =
-              await traceModel.checkForTraceRequiredAfterAddressRemoved(
-                identifier
-              );
+
+            // only check for tracing if the record is active
+            var traceResponse = this.record.active ?
+              await traceModel.checkForTraceRequiredAfterAddressRemoved(identifier) :
+              true;
             if (traceResponse) {
               await this.$$onDelete();
               if (angular.isString(traceResponse))
