@@ -18,7 +18,7 @@ final class initial
    * Constructor
    * @access public
    */
-  public function __construct()
+  public function __construct( $scripting = false )
   {
     // include the initialization settings
     global $SETTINGS;
@@ -37,25 +37,28 @@ final class initial
       die( 'Error, application name not set!' );
 
     // make sure all paths are valid
-    foreach( $this->settings['path'] as $key => $path )
+    if( !$scripting )
     {
-      if( 'TEMP' == $key )
-      { // create the temp directory if it doesn't already exist
-        if( !is_dir( $path ) ) mkdir( $path, 0777, true );
-      }
-      else if( false !== strpos( $path, $this->settings['path']['TEMP'] ) )
-      { // create paths which are in the temp directory
-        if( !is_dir( $path ) ) mkdir( $path, 0777, true );
-      }
-      else if( 'COOKIE' != $key &&
-               'TEMPLATE_CACHE' != $key &&
-               !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+      foreach( $this->settings['path'] as $key => $path )
       {
-        die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
-      }
-      else if( 'REPORT' == $key && !is_writable( $path ) )
-      {
-        die( sprintf( 'Error, report path, %s, is not writable!', $path ) );
+        if( 'TEMP' == $key )
+        { // create the temp directory if it doesn't already exist
+          if( !is_dir( $path ) ) mkdir( $path, 0777, true );
+        }
+        else if( false !== strpos( $path, $this->settings['path']['TEMP'] ) )
+        { // create paths which are in the temp directory
+          if( !is_dir( $path ) ) mkdir( $path, 0777, true );
+        }
+        else if( 'COOKIE' != $key &&
+                 'TEMPLATE_CACHE' != $key &&
+                 !( is_null( $path ) || is_file( $path ) || is_link( $path ) || is_dir( $path ) ) )
+        {
+          die( sprintf( 'Error, path for %s (%s) is invalid!', $key, $path ) );
+        }
+        else if( 'REPORT' == $key && !is_writable( $path ) )
+        {
+          die( sprintf( 'Error, report path, %s, is not writable!', $path ) );
+        }
       }
     }
 
