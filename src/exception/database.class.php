@@ -54,14 +54,25 @@ class database extends base_exception
   }
 
   /**
-   * Returns whether the exception was thrown because of a failed constrained key.
+   * Returns whether the exception was thrown because of a referenced record
+   * 
+   * @return boolean
+   * @access public
+   */
+  public function is_referenced()
+  {
+    return DATABASE_CENOZO_BASE_ERRNO + 1451 == $this->get_number();
+  }
+
+  /**
+   * Returns whether the exception was thrown because of a failed constraint
    * 
    * @return boolean
    * @access public
    */
   public function is_constrained()
   {
-    return DATABASE_CENOZO_BASE_ERRNO + 1451 == $this->get_number();
+    return DATABASE_CENOZO_BASE_ERRNO + 4025 == $this->get_number();
   }
 
   /**
@@ -103,14 +114,14 @@ class database extends base_exception
   }
 
   /**
-   * Used to identify which table failed the foreign key constraint
+   * Used to identify which table failed the foreign key constraint reference
    * 
    * @return string
    * @access public
    */
-  public function get_failed_constraint_table()
+  public function get_failed_reference_table()
   {
-    if( !$this->is_constrained() ) return NULL;
+    if( !$this->is_referenced() ) return NULL;
 
     $matches = array();
     $result = array();
