@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS equipment (
   equipment_type_id INT UNSIGNED NOT NULL,
   site_id INT(10) UNSIGNED NULL DEFAULT NULL,
   serial_number VARCHAR(45) NOT NULL,
+  status ENUM('new', 'loaned', 'returned', 'lost') NOT NULL DEFAULT 'new',
   note TEXT NULL,
   PRIMARY KEY (id),
   INDEX fk_equipment_type_id (equipment_type_id ASC),

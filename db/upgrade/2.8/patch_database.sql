@@ -24,6 +24,8 @@ SOURCE study.sql
 SOURCE equipment_type.sql
 SOURCE equipment.sql
 SOURCE equipment_loan.sql
+SOURCE equipment_last_loan.sql
+SOURCE update_equipment_last_loan.sql
 SOURCE notation.sql
 SOURCE supporting_script_check.sql
 SOURCE application_has_identifier.sql

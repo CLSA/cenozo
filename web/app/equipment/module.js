@@ -29,6 +29,9 @@ cenozoApp.defineModule({
         serial_number: {
           title: "Serial Number",
         },
+        status: {
+          title: "Status",
+        },
         uid: {
           column: "participant.uid",
           title: "On Loan",
@@ -59,6 +62,12 @@ cenozoApp.defineModule({
       serial_number: {
         title: "Serial Number",
         type: "string",
+      },
+      status: {
+        title: "Status",
+        type: "string",
+        isConstant: true,
+        isExcluded: 'add',
       },
       uid: {
         column: "participant.uid",

@@ -266,9 +266,10 @@ abstract class module extends \cenozo\base_object
    * @param string $joining_table Used to force a many-to-many relationship with the provided table name
    * @param string $count The definition of the counting column (default is COUNT(*))
    * @param database|modifier $special_join_mod A special modifier used when creating the joining table
+   * @param string $join_table_name Used to customize the name of the joining table (for multiple joins to same table)
    * @access public
    */
-  protected function add_count_column( $column_name, $table, $select, $modifier, $joining_table = NULL, $count = 'COUNT(*)', $special_join_mod = NULL )
+  protected function add_count_column( $column_name, $table, $select, $modifier, $joining_table = NULL, $count = 'COUNT(*)', $special_join_mod = NULL, $join_table_name = NULL )
   {
     $db = lib::create( 'business\session' )->get_database();
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
@@ -276,7 +277,7 @@ abstract class module extends \cenozo\base_object
     $subject = $this->get_subject();
     $subject_id = sprintf( '%s_id', $subject );
     $record_class_name = $this->service->get_record_class_name( $this->index );
-    $join_table_name = sprintf( '%s_count_join_%s', $subject, $table );
+    if( is_null( $join_table_name ) ) $join_table_name = sprintf( '%s_count_join_%s', $subject, $table );
     $table_primary_key = sprintf( '%s.id', $table );
     $subject_primary_key = sprintf( '%s.id', $subject );
     $join_mod = is_null( $special_join_mod ) ? lib::create( 'database\modifier' ) : $special_join_mod;

@@ -30,6 +30,10 @@ cenozoApp.defineModule({
           column: "equipment.serial_number",
           title: "Serial Number",
         },
+        lost: {
+          title: "Lost",
+          type: "boolean",
+        },
         start_datetime: {
           title: "Loan Date & Time",
           type: "datetime",
@@ -67,6 +71,11 @@ cenozoApp.defineModule({
         },
         help: "Type in the serial number of the device (do not include the device type",
       },
+      lost: {
+        title: "Lost",
+        type: "boolean",
+        isExcluded: "add",
+      },
       start_datetime: {
         title: "Loan Date & Time",
         type: "datetime",
@@ -85,23 +94,49 @@ cenozoApp.defineModule({
     });
 
     /* ############################################################################################## */
+    cenozo.providers.factory("CnEquipmentLoanViewFactory", [
+      "CnBaseViewFactory",
+      function (CnBaseViewFactory) {
+        var object = function (parentModel, root) {
+          CnBaseViewFactory.construct(this, parentModel, root);
+
+          // extend the onPatch function
+          this.onPatch = async function (data) {
+            await this.$$onPatch(data);
+
+            // anytime lost is set to true the backend automatically sets the end datetime to now (if not set)
+            if (angular.isDefined(data.lost) && data.lost && null == this.record.end_datetime) {
+              this.record.end_datetime = moment().format();
+              this.updateFormattedRecord("end_datetime");
+            }
+          };  
+        };  
+        return {
+          instance: function (parentModel, root) {
+            return new object(parentModel, root);
+          },  
+        };  
+      },
+    ]);
+
+    /* ############################################################################################## */
     cenozo.providers.factory("CnEquipmentLoanModelFactory", [
       "CnBaseModelFactory",
-      "CnEquipmentAddFactory",
-      "CnEquipmentListFactory",
-      "CnEquipmentViewFactory",
+      "CnEquipmentLoanAddFactory",
+      "CnEquipmentLoanListFactory",
+      "CnEquipmentLoanViewFactory",
       function (
         CnBaseModelFactory,
-        CnEquipmentAddFactory,
-        CnEquipmentListFactory,
-        CnEquipmentViewFactory
+        CnEquipmentLoanAddFactory,
+        CnEquipmentLoanListFactory,
+        CnEquipmentLoanViewFactory
       ) {
         var object = function (root) {
           CnBaseModelFactory.construct(this, module);
           angular.extend(this, {
-            addModel: CnEquipmentAddFactory.instance(this),
-            listModel: CnEquipmentListFactory.instance(this),
-            viewModel: CnEquipmentViewFactory.instance(this, root),
+            addModel: CnEquipmentLoanAddFactory.instance(this),
+            listModel: CnEquipmentLoanListFactory.instance(this),
+            viewModel: CnEquipmentLoanViewFactory.instance(this, root),
 
             getAddEnabled: function() {
               // Need to override parent method since we don't care if the role doesn't have edit access

@@ -15,6 +15,22 @@ cenozoApp.defineModule({
           title: "Inventory",
           type: "number",
         },
+        equipment_new_count: {
+          title: "new",
+          type: "number",
+        },
+        equipment_loaned_count: {
+          title: "loaned",
+          type: "number",
+        },
+        equipment_returned_count: {
+          title: "returned",
+          type: "number",
+        },
+        equipment_lost_count: {
+          title: "lost",
+          type: "number",
+        },
         description: {
           title: "Description",
           align: "left",
