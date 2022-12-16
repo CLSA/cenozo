@@ -253,7 +253,7 @@ abstract class service extends \cenozo\base_object
 
     if( false !== strpos( $mime_type, 'application/' ) || false !== strpos( $mime_type, 'image/' ) || $is_text )
     {
-      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename=%s;', $this->get_filename() );
+      $this->headers['Content-Disposition'] = sprintf( 'attachment; filename="%s";', $this->get_filename() );
       $this->headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
       $this->headers['Pragma'] = 'no-cache';
       $this->headers['Expires'] = '0';
