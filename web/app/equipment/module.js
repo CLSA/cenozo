@@ -68,6 +68,7 @@ cenozoApp.defineModule({
         type: "string",
         isConstant: true,
         isExcluded: 'add',
+        help: 'Will show "new" if never loaned out, "loaned" if currently on loan, "returned" if ready to re-distribute, and "lost" if never returned.',
       },
       uid: {
         column: "participant.uid",
