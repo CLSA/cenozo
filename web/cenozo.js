@@ -4940,7 +4940,7 @@
         angular.extend(this, params);
 
         angular.extend(this, {
-          audioContext: new AudioContext(),
+          audioContext: null,
           audioIn: null,
           mixer: null,
           analyser: null,
@@ -4948,13 +4948,43 @@
           inputVolume: 0,
           inputVolumePromise: null,
           recordingInProgress: false,
+          initialize: function() {
+            if( null == this.audioContext ) {
+              this.audioContext = new AudioContext();
+              this.analyser = this.audioContext.createAnalyser();
+              this.mixer = this.audioContext.createGain();
+              this.mixer.connect(this.audioContext.destination);
+              this.audioRecorder = new WebAudioRecorder(this.mixer, {
+                workerDir:
+                  window.cenozo.libUrl + "/web-audio-recorder-js/lib-minified/",
+                onEncoderLoading: function (recorder, encoding) {}, // we have to define this
+              });
+              this.audioRecorder.setOptions({
+                timeLimit: this.timeLimit,
+                encodeAfterRecord: this.encodeAfterRecord,
+                progressInterval: this.progressInterval,
+                bufferSize: this.bufferSize,
+              });
+              this.audioRecorder.setEncoding(this.encoding);
+              angular.extend(this.audioRecorder, {
+                onComplete: (recorder, blob) => this.onComplete(recorder, blob),
+                onTimeout: (recorder) => {
+                  this.onTimeout(recorder);
+                  this.stop();
+                },
+              });
+            }
+          },
           start: async function () {
             try {
+              this.initialize();
+
               // connect to the first media device and start recording
-              var deviceResponse =
-                await navigator.mediaDevices.enumerateDevices();
-              if (0 == deviceResponse.length)
+              await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+              var deviceResponse = await navigator.mediaDevices.enumerateDevices();
+              if (0 == deviceResponse.length || !deviceResponse[0].deviceId)
                 throw new Error("No audio media device found.");
+
               var stream = await navigator.mediaDevices.getUserMedia({
                 audio: { deviceId: { exact: deviceResponse[0].deviceId } },
               });
@@ -5003,29 +5033,6 @@
             this.audioRecorder.cancelRecording();
             this.audioIn.disconnect();
             this.recordingInProgress = false;
-          },
-        });
-
-        this.analyser = this.audioContext.createAnalyser();
-        this.mixer = this.audioContext.createGain();
-        this.mixer.connect(this.audioContext.destination);
-        this.audioRecorder = new WebAudioRecorder(this.mixer, {
-          workerDir:
-            window.cenozo.libUrl + "/web-audio-recorder-js/lib-minified/",
-          onEncoderLoading: function (recorder, encoding) {}, // we have to define this
-        });
-        this.audioRecorder.setOptions({
-          timeLimit: this.timeLimit,
-          encodeAfterRecord: this.encodeAfterRecord,
-          progressInterval: this.progressInterval,
-          bufferSize: this.bufferSize,
-        });
-        this.audioRecorder.setEncoding(this.encoding);
-        angular.extend(this.audioRecorder, {
-          onComplete: (recorder, blob) => this.onComplete(recorder, blob),
-          onTimeout: (recorder) => {
-            this.onTimeout(recorder);
-            this.stop();
           },
         });
       };
