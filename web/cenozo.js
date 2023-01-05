@@ -3822,7 +3822,6 @@
         ],
         link: function (scope, element) {
           function tick() {
-            scope.duration.add(1, "second");
             var days = Math.floor(scope.duration.asDays());
             var negative = 0 > days;
             scope.timeSign = 0 > days ? "-" : "+";
@@ -3839,6 +3838,7 @@
             if (10 > scope.minuteStr) scope.minuteStr = "0" + scope.minuteStr;
             scope.secondStr = Math.abs(scope.duration.seconds());
             if (10 > scope.secondStr) scope.secondStr = "0" + scope.secondStr;
+            scope.duration.add(1, "second");
           }
 
           scope.duration = moment.duration(moment().diff(moment(scope.since)));
@@ -3848,11 +3848,12 @@
           if (false === scope.allowNegative && 0 > seconds)
             scope.duration.subtract(seconds + 1, "second");
 
+          // calculate the duration immediately
           tick();
+
+          // then keep ticking every second
           var promise = $interval(tick, 1000);
-          element.on("$destroy", function () {
-            $interval.cancel(promise);
-          });
+          element.on("$destroy", () => $interval.cancel(promise));
         },
       };
     },
