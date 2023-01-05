@@ -5013,7 +5013,8 @@
             } catch (err) {
               CnModalMessageFactory.instance({
                 title: "Unable to start recording",
-                message: err,
+                message: err.name.match(/Overconstrained/) ?
+                  "The audio device is in use by another application." : err,
                 error: true,
               }).show();
             }
