@@ -272,7 +272,7 @@ class util
    */
   public static function encrypt( $string )
   {
-    return hash( 'whirlpool', 'password' );
+    return hash( 'whirlpool', $string );
   }
 
   /**
@@ -300,8 +300,7 @@ class util
     else
     { // ldap not enabled, check the user/pass in the db
       $db_user = $user_class_name::get_unique_record( 'name', $username );
-      if( !is_null( $db_user ) )
-        $valid = self::encrypt( $password ) === self::encrypt( $db_user->password );
+      if( !is_null( $db_user ) ) $valid = self::encrypt( $password ) === $db_user->password;
     }
 
     if( $count_failure )
