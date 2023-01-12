@@ -7597,6 +7597,12 @@
                 : undefined;
 
               if (null != stateName) {
+                // when in the add state, use the current subject as the tab in the parent view state
+                if(angular.isDefined(parent.subject)) {
+                  const action = object.getActionFromState();
+                  const matches = action.match(/add_(.+)/);
+                  if(null != matches) params.tab = matches[1];
+                }
                 await $state.go(stateName, params);
               } else if (angular.isDefined(object.module.identifier.parent)) {
                 await object.transitionToParentViewState(
@@ -7665,7 +7671,13 @@
             object,
             "transitionToParentViewState",
             async function (subject, identifier) {
-              await $state.go(subject + ".view", { identifier: identifier });
+              let params = { identifier: identifier };
+
+              // set the tab in the parent view state to the current (child) subject
+              const childSubject = object.getSubjectFromState();
+              if( childSubject != subject ) params.tab = childSubject;
+
+              await $state.go(subject + ".view", params);
             }
           );
 
