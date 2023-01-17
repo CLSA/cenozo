@@ -36,12 +36,12 @@ abstract class base_overview
   /**
    * Used to render the overview
    */
-  public function get_data( $flat = false )
+  public function get_data( $modifier = NULL, $flat = false )
   {
     if( is_null( $this->root_node ) )
     {
       $this->root_node = lib::create( 'business\overview\node', NULL );
-      $this->build();
+      $this->build( $modifier );
     }
     
     // transform node tree into an associative array
@@ -95,9 +95,10 @@ abstract class base_overview
 
   /**
    * Abstract function which generates the overview's data
+   * @param database\modifier $modifier A modifier to be applied by the implementing class
    * @access protected
    */
-  abstract protected function build();
+  abstract protected function build( $modifier = NULL );
 
   /**
    * Adds a child item to a node (or adds a root node if no parent is provided)

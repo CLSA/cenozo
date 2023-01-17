@@ -16,7 +16,7 @@ class withdraw extends \cenozo\business\overview\base_overview
   /**
    * Implements abstract method
    */
-  protected function build()
+  protected function build( $modifier = NULL )
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $survey_manager_class_name = lib::get_class_name( 'business\survey_manager' );

@@ -87,7 +87,7 @@ cenozoApp.defineModule({
             var promise = $interval(update, 600000);
             element.on("$destroy", function () {
               $interval.cancel(promise);
-            });
+            })
           },
         };
       },

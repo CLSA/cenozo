@@ -60,7 +60,7 @@ class data_manager extends \cenozo\singleton
     {
       if( 1 == preg_match( '/date\(([^)]*)\)(.(add|sub)\((.+)\))?.format\(([^)]+)\)/', $key, $matches ) )
       {
-        // constant.date(format) with optional .add(interval) or .sub(interval)
+        // constant.date().format(FORMAT) with optional .add(interval) or .sub(interval)
         // for possible interval values see https://www.php.net/manual/en/dateinterval.construct.php
         $date = NULL;
         $date_string = trim( $matches[1], ' \'"' );

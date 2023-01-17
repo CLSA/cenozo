@@ -33,6 +33,13 @@
     {{ model.viewModel.record.description }}
   </h4>
   <hr/>
+  <div ng-if="model.viewModel.studyList">
+    <select ng-model="model.viewModel.study"
+            ng-change="model.viewModel.setStudy()"
+            ng-options="item.value as item.name for item in model.viewModel.studyList"
+            class="form-control">
+    </select>
+  </div>
   <div ng-if="!model.viewModel.record.data.value" class="alert alert-warning">
     There is no data currently available.
   </div>

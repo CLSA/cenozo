@@ -203,6 +203,7 @@
                ng-attr-id="{{ input.key }}"
                name="name"
                class="vertical-spacer">
+            <div ng-if="'application/pdf' == model.viewModel.record[input.key].mime_type">{{ (model.viewModel.record[input.key].data.length/1024).toFixed(2) }} KB</div>
             <div ng-if="'audio/' == model.viewModel.record[input.key].mime_type.substr(0,6)">(Audio files cannot be previewed)</div>
             <img ng-if="'image/' == model.viewModel.record[input.key].mime_type.substr(0,6)"
                  ng-src="data:{{ model.viewModel.record[input.key].mime_type }};base64,{{ model.viewModel.record[input.key].data }}"
