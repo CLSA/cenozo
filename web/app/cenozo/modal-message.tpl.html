@@ -2,7 +2,7 @@
   <div class="modal-header bg-primary">
     <h4 class="modal-title">{{ model.title }}</h4>
   </div>
-  <div class="modal-body allow-select" ng-class="{ 'text-danger': error }">
+  <div class="modal-body allow-select" ng-class="{ 'text-danger': model.error }">
     <span ng-if="!model.html" style="white-space: pre-wrap;">{{ model.message }}</span>
     <span ng-if="model.html" ng-bind-html="model.message"></span>
     <small ng-if="small" style="white-space: pre-wrap;"><br>{{ model.small }}</small>
