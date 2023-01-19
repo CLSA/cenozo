@@ -17,11 +17,31 @@ cenozoApp.defineModule({
       },
       columnList: {
         name: { title: "Name" },
-        participant_count: { title: "Participants", type: "number" },
-        eligible_count: { title: "Eligible", type: "number" },
-        refused_count: { title: "Refused", type: "number" },
-        consented_count: { title: "Consented", type: "number" },
-        completed_count: { title: "Completed", type: "number" },
+        participant_count: {
+          title: "Participants",
+          type: "number",
+          help: "The total number of participants who are in the stratum.",
+        },
+        eligible_count: {
+          title: "Eligible",
+          type: "number",
+          help: "The total number of participants who are in the stratum and eligible for the study.",
+        },
+        refused_count: {
+          title: "Refused",
+          type: "number",
+          help: "The total number of participants who are in the stratum and refused the extra consent type.",
+        },
+        consented_count: {
+          title: "Consented",
+          type: "number",
+          help: "The total number of participants who are in the stratum and accepted the extra consent type.",
+        },
+        completed_count: {
+          title: "Completed",
+          type: "number",
+          help: "The total number of participants who are in the stratum, eligible for the study, and have the completed event type.",
+        },
         description: {
           column: "stratum.description",
           title: "Description",
@@ -41,30 +61,35 @@ cenozoApp.defineModule({
         type: "string",
         isConstant: true,
         isExcluded: "add",
+        help: "The total number of participants who are in the stratum.",
       },
       eligible_count: {
         title: "Total Eligible",
         type: "string",
         isConstant: true,
         isExcluded: "add",
+        help: "The total number of participants who are in the stratum and eligible for the study.",
       },
       refused_count: {
         title: "Total Refused Consent",
         type: "string",
         isConstant: true,
         isExcluded: "add",
+        help: "The total number of participants who are in the stratum and refused the extra consent type.",
       },
       consented_count: {
         title: "Total Accepted Consent",
         type: "string",
         isConstant: true,
         isExcluded: "add",
+        help: "The total number of participants who are in the stratum and accepted the extra consent type.",
       },
       completed_count: {
         title: "Total Completed",
         type: "string",
         isConstant: true,
         isExcluded: "add",
+        help: "The total number of participants who are in the stratum, eligible for the study, and have the completed event type.",
       },
       description: { title: "Description", type: "text" },
     });
