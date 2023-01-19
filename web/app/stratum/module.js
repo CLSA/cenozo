@@ -18,6 +18,7 @@ cenozoApp.defineModule({
       columnList: {
         name: { title: "Name" },
         participant_count: { title: "Participants", type: "number" },
+        eligible_count: { title: "Eligible", type: "number" },
         refused_count: { title: "Refused", type: "number" },
         consented_count: { title: "Consented", type: "number" },
         completed_count: { title: "Completed", type: "number" },
@@ -37,6 +38,12 @@ cenozoApp.defineModule({
       name: { title: "Name", type: "string" },
       participant_count: {
         title: "Total Participants",
+        type: "string",
+        isConstant: true,
+        isExcluded: "add",
+      },
+      eligible_count: {
+        title: "Total Eligible",
         type: "string",
         isConstant: true,
         isExcluded: "add",
