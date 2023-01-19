@@ -61,7 +61,7 @@ cenozoApp.defineModule({
         isExcluded: "add",
       },
       completed_count: {
-        title: "Total Completed Event",
+        title: "Total Completed",
         type: "string",
         isConstant: true,
         isExcluded: "add",
