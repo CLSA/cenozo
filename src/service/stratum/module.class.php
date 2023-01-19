@@ -242,6 +242,17 @@ class module extends \cenozo\service\site_restricted_module
       $join_mod->left_join( 'event', 'participant_last_event.event_id', 'event.id' );
       $join_mod->group( 'stratum.id' );
 
+      // restrict to participants belonging to the study
+      $study_join_mod = lib::create( 'database\modifier' );
+      $study_join_mod->where( 'study.id', '=', 'study_has_participant.study_id', false );
+      $study_join_mod->where(
+        'stratum_has_participant.participant_id',
+        '=',
+        'study_has_participant.participant_id',
+        false
+      );
+      $join_mod->join_modifier( 'study_has_participant', $study_join_mod );
+
       // restrict to participants in this application
       if( $db_application->release_based )
       {
