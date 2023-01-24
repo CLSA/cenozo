@@ -464,8 +464,28 @@ class export_column extends has_rank
       // join to the foreign table when the column is a foreign key
       if( '_id' == substr( $this->column_name, -3 ) )
       {
-        $sub_table_name = substr( $this->column_name, 0, -3 );
-        $joining_table_name = $table_name.'_'.$sub_table_name;
+        $sub_table_alias = substr( $this->column_name, 0, -3 );
+
+        // keep removing words at the start of the table name until we find one that matches
+        $sub_table_name = $sub_table_alias;
+        while( !static::db()->table_exists( $sub_table_name ) && false !== strpos( $sub_table_name, '_' ) )
+        {
+          $sub_table_name = preg_replace( '/^[^_]+_/', '', $sub_table_name );
+        }
+
+        if( !static::db()->table_exists( $sub_table_name ) )
+        {
+          throw lib::create( 'exception\runtime',
+            sprintf(
+              'Unable to join to foreign table based on table "%s" column "%s"',
+              $this->table_name,
+              $this->column_name
+            ),
+            __METHOD__
+          );
+        }
+
+        $joining_table_name = $table_name.'_'.$sub_table_alias;
         if( !$modifier->has_join( $joining_table_name ) )
         {
           $modifier->join(
