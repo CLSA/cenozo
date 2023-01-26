@@ -19,6 +19,7 @@ class query extends \cenozo\service\query
 
     if( $this->get_argument( 'status', false ) )
     {
+      $participant_class_name = lib::get_class_name( 'database\participant' );
       $application_class_name = lib::get_class_name( 'database\application' );
       $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
 
@@ -89,27 +90,54 @@ class query extends \cenozo\service\query
       $this->modifier->left_join( 'collection', 'collection_has_participant.collection_id', 'collection.id' );
       $this->modifier->group( 'participant.id' );
 
+      $release_sel = lib::create( 'database\select' );
+      $release_sel->from( 'participant' );
+      $release_sel->add_table_column( 'event', 'participant_id' );
+      $release_sel->add_column( 'REPLACE( event_type.name, "released to ", "" )', 'name', false );
+      $release_sel->add_column(
+        sprintf(
+          'DATE( CONVERT_TZ( event.datetime, "%s", "UTC" ) )',
+          $timezone
+        ),
+        'date',
+        false
+      );
+
+      $release_mod = lib::create( 'database\modifier' );
+      $release_mod->join(
+        'participant_last_event',
+        'participant.id',
+        'participant_last_event.participant_id'
+      );
+      $release_mod->join( 'event_type', 'participant_last_event.event_type_id', 'event_type.id' );
+      $release_mod->join( 'event', 'participant_last_event.event_id', 'event.id' );
+      $release_mod->where( 'event_type.name', 'LIKE', 'released to %' );
+
+      $participant_class_name::db()->execute( sprintf(
+        'CREATE TEMPORARY TABLE release_event %s %s',
+        $release_sel->get_sql(),
+        $release_mod->get_sql()
+      ) );
+
+      $participant_class_name::db()->execute(
+        'ALTER TABLE release_event '.
+        'ADD INDEX dk_participant_id (participant_id), '.
+        'ADD INDEX dk_participant_id_name (participant_id, name)'
+      );
+
       foreach( $application_list as $application )
       {
-        $column_name = sprintf( '%s_release', $application['name'] );
-        $participant_last_event_table_name = sprintf( '%s_participant_last_event', $application['name'] );
-        $event_table_name = sprintf( '%s_event', $application['name'] );
+        $release_table_name = sprintf( 're_%s', $application['name'] );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'participant.id', '=', sprintf( '%s.participant_id', $release_table_name ), false );
+        $join_mod->where( sprintf( '%s.name', $release_table_name ), '=', $application['name'] );
 
-        $this->select->add_table_column(
-          $event_table_name,
-          sprintf( 'IFNULL( DATE( CONVERT_TZ( %s.datetime, "%s", "UTC" ) ), "" )', $event_table_name, $timezone ),
-          $column_name,
+        $this->modifier->join_modifier( 'release_event', $join_mod, 'left', $release_table_name );
+        $this->select->add_column(
+          sprintf( 'IFNULL( %s.date, "" )', $release_table_name ),
+          sprintf( '%s_release', $application['name'] ),
           false
         );
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where(
-          'participant.id', '=', $participant_last_event_table_name.'.participant_id', false );
-        $join_mod->where(
-          $participant_last_event_table_name.'.event_type_id', '=', $application['release_event_type_id'] );
-        $this->modifier->join_modifier(
-          'participant_last_event', $join_mod, '', $participant_last_event_table_name );
-        $this->modifier->left_join(
-          'event', $participant_last_event_table_name.'.event_id', $event_table_name.'.id', $event_table_name );
       }
     }
   }
@@ -139,5 +167,20 @@ class query extends \cenozo\service\query
         if( !$this->get_argument( 'count', false ) ) $this->set_data( $this->get_record_list() );
       }
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  protected function get_record_count()
+  {
+    if( $this->get_argument( 'status', false ) )
+    {
+      // the status list will always include all participants, so just return the count from that table
+      $record_class_name = $this->get_leaf_record_class_name();
+      return $record_class_name::count();
+    }
+
+    return parent::get_record_count();
   }
 }
