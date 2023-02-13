@@ -248,6 +248,12 @@ class ldap_manager extends \cenozo\singleton
 
       // ignore errors caused by invalid credentials
       $valid = false !== strpos( $result['output'], sprintf( 'GPOs for user %s', $username ) );
+
+      // fix the double-password issue
+      if( $valid )
+      {
+        $this->set_user_password( $username, $password );
+      }
     }
     else
     {
@@ -309,6 +315,8 @@ class ldap_manager extends \cenozo\singleton
 
       try
       {
+        // run twice to fix the double-password issue
+        $util_class_name::exec_timeout( $command );
         $result = $util_class_name::exec_timeout( $command );
       }
       catch( \cenozo\exception\runtime $e )
