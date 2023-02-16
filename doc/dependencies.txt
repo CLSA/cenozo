@@ -7,22 +7,23 @@ sendmail: apt-get install sendmail
 curl: apt-get install php7.2-curl
 intl: apt-get install php7.2-intl
 
-Modify the following mysql parameters:
-  innodb_stats_on_metadata = 0
-  innodb_log_file_size = 1G
-  innodb_log_buffer_size = 256M
-  query_cache_limit = 2M
+Add the following to /etc/mysql/my.cnf:
+[mysqld]
+innodb_stats_on_metadata = 0
+innodb_buffer_pool_size = 8G
+innodb_log_file_size    = 1G
+innodb_log_buffer_size  = 256M
+query_cache_limit       = 2M
+sql_mode=ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 
 Modify the following php parameters:
   memory_limit = 256M
+  or if using Pine
+  memory_limit = 1G
 
 Load timezone information into mysql:
-  mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
+  mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
 
 Apache Mod Rewrite:
   sudo a2enmod rewrite
   edit /etc/apache2/apache2.conf, change AllowOverride from None to All in <Directory /var/www/></Directory>
-
-Turn off Apache's private tmp feature:
-  edit /etc/systemd/system/multi-user.target.wants/apache2.service
-  set PrivateTmp=false
