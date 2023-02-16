@@ -13,7 +13,7 @@
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/moment/min/moment-with-locales.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
-  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-2012-2022.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
+  <script src="<?php print LIB_URL; ?>/moment-timezone/builds/moment-timezone-with-data-1970-2030.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/angular/angular.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/angular-animate/angular-animate.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
