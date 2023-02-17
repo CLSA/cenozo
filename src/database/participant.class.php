@@ -83,7 +83,7 @@ class participant extends record
    */
   public static function get_status_column_sql()
   {
-    return 
+    return
       "IF( exclusion.name IS NOT NULL, 'not enrolled',\n".
       "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
       "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
@@ -410,7 +410,102 @@ class participant extends record
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
       static::db()->format_string( $db_application->id ),
       static::db()->format_string( $this->id ),
-      static::db()->format_string( $site_id ) ) );
+      static::db()->format_string( $site_id )
+    ) );
+
+    // if the new preferred site is null then we may be able to remove the row in the
+    // application_has_participant altogether
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'datetime', '=', NULL );
+    $modifier->where( 'preferred_site_id', '=', NULL );
+    $modifier->where( 'participant_id', '=', $this->id );
+    static::db()->execute( sprintf(
+      'DELETE FROM application_has_participant %s',
+      $modifier->get_sql()
+    ) );
+  }
+
+  /**
+   * Applies a new preferred site to any application that has no effective site
+   * 
+   * Note that calling this method will also remove any preferred site that is identical to the
+   * application's default site.
+   * @param associative array (application_id => site_id) $application_site_list
+   * @access public
+   */
+  public function set_preferred_site_for_missing_effective_site( $application_site_list )
+  {
+    // Loop through all applications with no effective site and apply the site provided in the
+    // $application_site_list as a preferred site
+    $participant_site_sel = lib::create( 'database\select' );
+    $participant_site_sel->from( 'participant_site' );
+    $participant_site_sel->add_column( 'application_id' );
+    $participant_site_sel->add_column( 'default_site_id' );
+    $participant_site_mod = lib::create( 'database\modifier' );
+    $participant_site_mod->where( 'site_id', '=', NULL );
+    $participant_site_mod->where( 'participant_id', '=', $this->id );
+    $rows = static::db()->get_all(
+      sprintf(
+        '%s %s',
+        $participant_site_sel->get_sql(),
+        $participant_site_mod->get_sql()
+      )
+    );
+    foreach( $rows as $row )
+    {
+      $default_site_id = array_key_exists( $row['application_id'], $application_site_list )
+                       ? $application_site_list[$row['application_id']]
+                       : NULL;
+      if( !is_null( $default_site_id ) )
+      {
+        // update the participant's preferred site
+        $this->set_preferred_site(
+          lib::create( 'database\application', $row['application_id'] ),
+          $default_site_id
+        );
+      }
+    }
+
+    // Now remove any preferred site that is the same as the default site
+    $preferred_site_sel = lib::create( 'database\select' );
+    $preferred_site_sel->from( 'application_has_participant' );
+    $preferred_site_sel->add_column( 'application_id' );
+    $preferred_site_mod = lib::create( 'database\modifier' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where(
+      'application_has_participant.application_id',
+      '=',
+      'participant_site.application_id',
+      false
+    );
+    $join_mod->where(
+      'application_has_participant.participant_id',
+      '=',
+      'participant_site.participant_id',
+      false
+    );
+    $join_mod->where(
+      'application_has_participant.preferred_site_id',
+      '=',
+      'participant_site.default_site_id',
+      false
+    );
+    $preferred_site_mod->join_modifier( 'participant_site', $join_mod );
+    $preferred_site_mod->where( 'application_has_participant.participant_id', '=', $this->id );
+    $rows = static::db()->get_all(
+      sprintf(
+        '%s %s',
+        $preferred_site_sel->get_sql(),
+        $preferred_site_mod->get_sql()
+      )
+    );
+    foreach( $rows as $row )
+    {
+      $this->set_preferred_site(
+        lib::create( 'database\application', $row['application_id'] ),
+        NULL
+      );
+    }
   }
 
   /**
@@ -437,6 +532,33 @@ class participant extends record
 
     $site_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $site_id ? lib::create( 'database\site', $site_id ) : NULL;
+  }
+
+  /**
+   * TODO
+   */
+  public function get_default_site_list()
+  {
+    $site_list = [];
+
+    // Get all application default sites so we can restore them if changing the address
+    // results in the participant having no default site
+    $participant_site_sel = lib::create( 'database\select' );
+    $participant_site_sel->from( 'participant_site' );
+    $participant_site_sel->add_column( 'application_id' );
+    $participant_site_sel->add_column( 'default_site_id' );
+    $participant_site_mod = lib::create( 'database\modifier' );
+    $participant_site_mod->where( 'participant_id', '=', $this->id );
+    $rows = static::db()->get_all(
+      sprintf(
+        '%s %s',
+        $participant_site_sel->get_sql(),
+        $participant_site_mod->get_sql()
+      )
+    );
+    foreach( $rows as $row ) $site_list[$row['application_id']] = $row['default_site_id'];
+
+    return $site_list;
   }
 
   /**
