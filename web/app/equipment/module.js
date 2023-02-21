@@ -1,5 +1,6 @@
 cenozoApp.defineModule({
   name: "equipment",
+  dependencies: "equipment_type",
   models: ["add", "list", "view"],
   create: (module) => {
     angular.extend(module, {
