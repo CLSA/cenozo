@@ -58,5 +58,15 @@ class module extends \cenozo\service\site_restricted_module
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) )
       $modifier->where( 'equipment.site_id', '=', $db_restrict_site->id );
+
+    if( !is_null( $this->get_resource() ) )
+    {
+      // include the participant first/last/uid as supplemental data
+      $select->add_column(
+        'CONCAT( participant.first_name, " ", participant.last_name, " (", participant.uid, ")" )',
+        'formatted_participant_id',
+        false
+      );
+    }
   }
 }

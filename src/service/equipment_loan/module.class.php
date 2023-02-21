@@ -26,6 +26,13 @@ class module extends \cenozo\service\module
 
     if( !is_null( $this->get_resource() ) )
     {
+      // include the participant first/last/uid as supplemental data
+      $select->add_column(
+        'CONCAT( participant.first_name, " ", participant.last_name, " (", participant.uid, ")" )',
+        'formatted_participant_id',
+        false
+      );
+
       // include the equipment serial number as supplemental data
       $select->add_column(
         'CONCAT( equipment_type.name, ": ", equipment.serial_number )',

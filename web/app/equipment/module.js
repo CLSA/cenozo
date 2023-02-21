@@ -70,10 +70,16 @@ cenozoApp.defineModule({
         isExcluded: 'add',
         help: 'Will show "new" if never loaned out, "loaned" if currently on loan, "returned" if ready to re-distribute, and "lost" if never returned.',
       },
-      uid: {
-        column: "participant.uid",
+      participant_id: {
+        column: "participant.id",
         title: "On Loan To",
-        type: "string",
+        type: "lookup-typeahead",
+        typeahead: {
+          table: "participant",
+          select:
+            'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
+          where: ["participant.first_name", "participant.last_name", "uid"],
+        },
         isConstant: true,
         isExcluded: "add",
       },
