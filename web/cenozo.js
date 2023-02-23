@@ -1050,6 +1050,22 @@
       return await blobToBase64(blob);
     },
 
+    convertBase64ToBlob: function (data, contentType = '', sliceSize = 512) {
+      const byteCharacters = atob(data);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      const blob = new Blob(byteArrays, {type: contentType});
+      return blob;
+    },
+
     // Sets up the routing for a module
     routeModule: function (stateProvider, name, module) {
       if (angular.isUndefined(stateProvider))
@@ -8774,6 +8790,7 @@
                 "pdf",
                 "txt",
                 "unknown",
+                "wav",
                 "xlsx",
                 "zip",
               ].includes(this.format)
@@ -8788,6 +8805,7 @@
               else if ("txt" == this.format) format = "text/plain";
               else if ("unknown" == this.format)
                 format = "application/octet-stream";
+              else if ("wav" == this.format) format = "audio/wav";
               else if ("xlsx" == this.format)
                 format =
                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
