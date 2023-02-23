@@ -6094,6 +6094,15 @@
                 }
               }
 
+              // determine if there is a row caution condition
+              var cautionCondition = {};
+              for (var column in this.parentModel.columnList) {
+                var caution = this.parentModel.columnList[column].caution;
+                if (angular.isDefined(caution)) {
+                  cautionCondition[column] = caution;
+                }
+              }
+
               // set up the restrict, offset and sorting
               if (this.parentModel.hasQueryParameter("restrict")) {
                 var restrict = this.parentModel.getQueryParameter("restrict");
@@ -6183,6 +6192,13 @@
                   for (var name in highlightCondition) {
                     item.$highlight = item[name] == highlightCondition[name];
                     if (!item.$highlight) break; // don't highlight if any condition doesn't match
+                  }
+
+                  // check if we should caution the row (by default no)
+                  item.$caution = false;
+                  for (var name in cautionCondition) {
+                    item.$caution = item[name] == cautionCondition[name];
+                    if (!item.$caution) break; // don't caution if any condition doesn't match
                   }
                 });
                 this.cache = this.cache.concat(response.data);
