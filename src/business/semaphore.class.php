@@ -140,9 +140,9 @@ class semaphore extends \cenozo\base_object
         $this->set_variable( self::PROCESS_COUNT_INDEX, $process_count - 1 );
       }
 
-      // detach the shared memory
-      if( !shm_detach( $this->memory ) )
-        log::error( 'Unable to detach shared memory' );
+      // remove and detach the shared memory
+      if( !shm_remove( $this->memory ) ) log::error( 'Unable to remove shared memory' );
+      if( !shm_detach( $this->memory ) ) log::error( 'Unable to detach shared memory' );
       $this->memory = NULL;
 
       // release the semaphore
