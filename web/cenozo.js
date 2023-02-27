@@ -10548,63 +10548,27 @@
 
           initialize: async function () {
             var self = this;
-            if ("pine" == this.script.application) {
               if (!this.initialized) {
-                this.initialized = true;
-                var response = await CnHttpFactory.instance({
-                  path:
-                    "script/" +
-                    this.script.id +
-                    "/pine_response/" +
-                    this.identifier,
-                  onError: function (error) {
-                    // ignore 404
-                    if (404 == error.status) {
-                      self.token = null;
-                      if (angular.isDefined(self.onReady)) self.onReady();
-                    } else {
-                      CnModalMessageFactory.httpError(error);
-                    }
-                  },
-                }).get();
-
-                this.token = response.data;
-                if (angular.isDefined(this.onReady)) this.onReady();
-              }
-            } else {
-              if (!this.initialized) {
-                this.initialized = true;
-
-                // if the script is repeated determine the token
-                if (this.script.repeated) {
-                  if (angular.isDefined(this.onReady)) this.onReady();
-                } else {
-                  try {
-                    var response = await CnHttpFactory.instance({
-                      path:
-                        "script/" +
-                        this.script.id +
-                        "/token/" +
-                        this.identifier,
-                      data: { select: { column: ["token", "completed"] } },
-                      onError: function (error) {
-                        // ignore 404
-                        if (404 == error.status) {
-                          self.token = null;
-                          if (angular.isDefined(self.onReady)) self.onReady();
-                        } else {
-                          CnModalMessageFactory.httpError(error);
-                        }
-                      },
-                    }).get();
-
-                    this.token = response.data;
-                    if (angular.isDefined(this.onReady)) this.onReady();
-                  } catch (error) {
-                    // handled by onError above
+              this.initialized = true;
+              var response = await CnHttpFactory.instance({
+                path:
+                  "script/" +
+                  this.script.id +
+                  "/pine_response/" +
+                  this.identifier,
+                onError: function (error) {
+                  // ignore 404
+                  if (404 == error.status) {
+                    self.token = null;
+                    if (angular.isDefined(self.onReady)) self.onReady();
+                  } else {
+                    CnModalMessageFactory.httpError(error);
                   }
-                }
-              }
+                },
+              }).get();
+
+              this.token = response.data;
+              if (angular.isDefined(this.onReady)) this.onReady();
             }
           },
 
@@ -10625,7 +10589,7 @@
                 path: [
                   "script",
                   this.script.id,
-                  "pine" == this.script.application ? "pine_response" : "token",
+                  "pine_response",
                 ].join("/"),
                 data: { identifier: this.identifier },
                 onError: function (error) {
@@ -10637,19 +10601,8 @@
               // close the wait message
               modal.close();
 
-              if ("pine" == this.script.application) {
-                this.token = response.data;
-                if (angular.isDefined(this.onReady)) this.onReady();
-              } else {
-                // now get the new token string we just created and use it to open the script window
-                var subResponse = await CnHttpFactory.instance({
-                  path: ["script", this.script.id, "token", response.data].join(
-                    "/"
-                  ),
-                }).get();
-
-                this.token = { token: subResponse.data.token, completed: "N" };
-              }
+              this.token = response.data;
+              if (angular.isDefined(this.onReady)) this.onReady();
             }
 
             if( null == this.token.token ) {
