@@ -190,16 +190,9 @@ class database extends \cenozo\base_object
   {
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    // Only start a transaction for the main database
-    // TODO: this was an ADOdb limitation, so we need to implement transactions for all databases (limesurvey)
-    $database = sprintf(
-      '%s%s', $setting_manager->get_setting( 'db', 'database_prefix' ), INSTANCE );
-    if( $database == $this->name )
-    {
-      if( true === self::$debug ) log::debug( '(DB) starting transaction' );
-      $this->connection->begin_transaction();
-      $this->transaction_state = 'started';
-    }
+    if( true === self::$debug ) log::debug( '(DB) starting transaction' );
+    $this->connection->begin_transaction();
+    $this->transaction_state = 'started';
   }
 
   /**

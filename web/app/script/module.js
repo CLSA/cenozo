@@ -17,9 +17,6 @@ cenozoApp.defineModule({
         application: {
           title: "Application",
         },
-        qnaire_title: {
-          title: "Questionnaire",
-        },
         supporting: {
           title: "Supporting",
           type: "boolean",
@@ -46,10 +43,6 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
-      },
-      sid: {
-        title: "Limesurvey Questionnaire",
-        type: "enum",
       },
       pine_qnaire_id: {
         title: "Pine Questionnaire",
@@ -145,40 +138,23 @@ cenozoApp.defineModule({
           this.getMetadata = async function () {
             await this.$$getMetadata();
 
-            var [surveyResponse, pineQnaireResponse, eventTypeResponse] =
-              await Promise.all([
-                CnHttpFactory.instance({
-                  path: "survey",
-                  data: {
-                    select: { column: ["sid", "title"] },
-                    modifier: { order: { title: false }, limit: 1000 },
-                  },
-                }).query(),
+            var [pineQnaireResponse, eventTypeResponse] = await Promise.all([
+              CnHttpFactory.instance({
+                path: "pine_qnaire",
+                data: {
+                  select: { column: ["id", "name", "total_pages"] },
+                  modifier: { order: { name: false }, limit: 1000 },
+                },
+              }).query(),
 
-                CnHttpFactory.instance({
-                  path: "pine_qnaire",
-                  data: {
-                    select: { column: ["id", "name", "total_pages"] },
-                    modifier: { order: { name: false }, limit: 1000 },
-                  },
-                }).query(),
-
-                CnHttpFactory.instance({
-                  path: "event_type",
-                  data: {
-                    select: { column: ["id", "name"] },
-                    modifier: { order: "name", limit: 1000 },
-                  },
-                }).query(),
-              ]);
-
-            this.metadata.columnList.sid.enumList = surveyResponse.data.reduce(
-              (list, item) => {
-                list.push({ value: item.sid, name: item.title });
-                return list;
-              },
-              []
-            );
+              CnHttpFactory.instance({
+                path: "event_type",
+                data: {
+                  select: { column: ["id", "name"] },
+                  modifier: { order: "name", limit: 1000 },
+                },
+              }).query(),
+            ]);
 
             this.metadata.columnList.pine_qnaire_id.enumList =
               pineQnaireResponse.data.reduce((list, item) => {

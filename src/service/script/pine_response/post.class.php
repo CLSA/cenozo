@@ -28,10 +28,10 @@ class post extends \cenozo\service\post
 
     if( $this->may_continue() )
     {
-      // don't allow this service for limesurvey scripts
-      if( 'limesurvey' == $this->get_parent_record()->get_type() )
+      // don't allow this service for external scripts
+      if( 'pine' != $this->get_parent_record()->get_type() )
       {
-        log::error( 'The script/token/post service should never be called for a Limesurvey script.' );
+        log::error( 'The script/token/post service should never be called for non-Pine scripts.' );
         $this->status->set_code( 400 );
       }
       else

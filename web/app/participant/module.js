@@ -24,14 +24,6 @@ cenozoApp.defineModule({
           column: "participant.uid",
           title: "UID",
         },
-        sid: {
-          column: "participant_identifier.value",
-          title: "Study ID",
-          isIncluded: function ($state, model) {
-            return model.hasIdentifier;
-          },
-          help: "Special study identifier used by this application.",
-        },
         first: {
           column: "participant.first_name",
           title: "First",
@@ -70,16 +62,6 @@ cenozoApp.defineModule({
         title: "Unique ID",
         type: "string",
         isConstant: true,
-      },
-      sid: {
-        column: "participant_identifier.value",
-        title: "Study ID",
-        type: "string",
-        isExcluded: function ($state, model) {
-          return !model.hasIdentifier;
-        },
-        isConstant: true,
-        help: "Special study identifier used by this application.",
       },
       cohort: {
         column: "cohort.name",
@@ -1367,12 +1349,7 @@ cenozoApp.defineModule({
                           identifier:
                             this.parentModel.getQueryParameter("identifier"),
                           onReady: function () {
-                            self.hasDecedent =
-                              null != this.token && (
-                              'limesurvey' == script.application ?
-                                null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                                null != this.token.end_datetime
-                            );
+                            self.hasDecedent = null != this.token && null != this.token.end_datetime;
                           },
                         });
                       try {
@@ -1388,12 +1365,7 @@ cenozoApp.defineModule({
                         identifier:
                           this.parentModel.getQueryParameter("identifier"),
                         onReady: function () {
-                          self.hasProxyInitiation =
-                            null != this.token && (
-                            'limesurvey' == script.application ?
-                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                              null != this.token.end_datetime
-                          );
+                          self.hasProxyInitiation = null != this.token && null != this.token.end_datetime;
                         },
                       });
                     try {
@@ -1408,12 +1380,7 @@ cenozoApp.defineModule({
                         identifier:
                           this.parentModel.getQueryParameter("identifier"),
                         onReady: function () {
-                          self.hasQualityControl =
-                            null != this.token && (
-                            'limesurvey' == script.application ?
-                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                              null != this.token.end_datetime
-                          );
+                          self.hasQualityControl = null != this.token && null != this.token.end_datetime;
                         },
                       });
                     try {
@@ -1428,12 +1395,7 @@ cenozoApp.defineModule({
                         identifier:
                           this.parentModel.getQueryParameter("identifier"),
                         onReady: function () {
-                          self.hasWithdraw =
-                            null != this.token && (
-                            'limesurvey' == script.application ?
-                              null != this.token.completed.match( /[0-9]{4}-(0[1-9])|(1[0-2])-[0-3][0-9]/ ) :
-                              null != this.token.end_datetime
-                          );
+                          self.hasWithdraw = null != this.token && null != this.token.end_datetime;
                         },
                       });
                     try {

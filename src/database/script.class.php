@@ -25,14 +25,14 @@ class script extends record
   }
 
   /**
-   * Returns whether the script is in Pine or Limesurvey
+   * Returns whether the script is in Pine or unsupported (external) survey software
    * 
    * @return string
    * @access public
    */
   public function get_type()
   {
-    return !is_null( $this->pine_qnaire_id ) ? 'pine' : ( !is_null( $this->sid ) ? 'limesurvey' : NULL );
+    return !is_null( $this->pine_qnaire_id ) ? 'pine' : 'external';
   }
 
   /**
@@ -111,142 +111,6 @@ class script extends record
         $db_event->save();
       }
     }
-  }
-
-  /**
-   * Adds all missing started events for this script
-   * 
-   * @param database\participant $db_participant
-   * @access public
-   */
-  public function add_started_event_types( $db_participant )
-  {
-    static::add_all_started_event_types( $db_participant, $this );
-  }
-
-  /**
-   * Adds all missing started events for all of this application's scripts
-   * 
-   * @param database\participant $db_participant
-   * @param database\script $db_script
-   * @access public
-   * @static
-   */
-  public static function add_all_started_event_types( $db_participant, $db_script = NULL )
-  {
-    static::add_all_event_types( $db_participant, $db_script, true, false );
-  }
-
-  /**
-   * Adds all missing finished events for this script
-   * 
-   * @param database\participant $db_participant
-   * @access public
-   */
-  public function add_finished_event_types( $db_participant )
-  {
-    static::add_all_finished_event_types( $db_participant, $this );
-  }
-
-  /**
-   * Adds all missing finished events for all of this application's scripts
-   * 
-   * @param database\participant $db_participant
-   * @param database\script $db_script
-   * @access public
-   * @static
-   */
-  public static function add_all_finished_event_types( $db_participant, $db_script = NULL )
-  {
-    static::add_all_event_types( $db_participant, $db_script, false, true );
-  }
-
-  /**
-   * Adds a script's missing events to a participant.
-   * 
-   * @param database\participant $db_participant
-   * @param database\script $db_script
-   * @param boolean $started_events Whether to include started_events
-   * @param boolean $finished_events Whether to include finished_events
-   * @access public
-   * @static
-   */
-  public static function add_all_event_types(
-    $db_participant, $db_script = NULL, $started_events = true, $finished_events = true )
-  {
-    $setting_manager = lib::create( 'business\setting_manager' );
-    if( !$setting_manager->get_setting( 'module', 'script' ) )
-    {
-      throw lib::create( 'exception\runtime',
-        'Tried to add script event types but the script module is not enabled.',
-        __METHOD__ );
-    }
-
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $db_application = lib::create( 'business\session' )->get_application();
-    $server_timezone = date_default_timezone_get();
-
-    $modifier = lib::create( 'database\modifier' );
-    if( $started_events ) $modifier->where( 'started_event_type_id', '!=', NULL );
-    if( $finished_events ) $modifier->where( 'finished_event_type_id', '!=', NULL );
-    if( !is_null( $db_script ) ) $modifier->where( 'script.id', '=', $db_script->id );
-    $modifier->where( 'repeated', '=', false );
-
-    foreach( $db_application->get_script_object_list( $modifier ) as $db_script )
-    {
-      // only limesurvey scripts need events added (Pine does this automatically)
-      if( !is_null( $db_script->sid ) )
-      {
-        $old_sid = $survey_class_name::get_sid();
-        $survey_class_name::set_sid( $db_script->sid );
-
-        $survey_sel = lib::create( 'database\select' );
-        if( $started_events )
-          $survey_sel->add_column(
-            sprintf( 'CONVERT_TZ( startdate, "%s", "UTC" )', $server_timezone ),
-            'startdate',
-            false );
-        if( $finished_events )
-          $survey_sel->add_column(
-            sprintf( 'CONVERT_TZ( submitdate, "%s", "UTC" )', $server_timezone ),
-            'submitdate',
-            false );
-        $survey_sel->from( $survey_class_name::get_table_name() );
-        $survey_mod = lib::create( 'database\modifier' );
-        $tokens_class_name::where_token( $survey_mod, $db_participant, false );
-
-        foreach( $survey_class_name::select( $survey_sel, $survey_mod ) as $survey )
-        {
-          // check if a start date exists within one minute of the survey's startdate and add it if not
-          if( $started_events && !is_null( $survey['startdate'] ) )
-            $db_script->add_started_event( $db_participant, $survey['startdate'] );
-
-          // check if a complete date exists within one minute of the survey's submitdate and add it if not
-          if( $finished_events && !is_null( $survey['submitdate'] ) )
-            $db_script->add_finished_event( $db_participant, $survey['submitdate'] );
-        }
-
-        $survey_class_name::set_sid( $old_sid );
-      }
-    }
-  }
-
-  /**
-   * Extend parent method
-   * Note: this is used by limesurvey only (ignored by pine scripts)
-   */
-  public function get_token_count( $modifier )
-  {
-    if( !$this->sid ) return 0;
-
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $old_sid = $tokens_class_name::get_sid();
-    $tokens_class_name::set_sid( $this->sid );
-    $count = $tokens_class_name::count( $modifier );
-    $tokens_class_name::set_sid( $old_sid );
-
-    return $count;
   }
 
   /**

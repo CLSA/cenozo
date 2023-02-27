@@ -29,6 +29,7 @@ SOURCE update_equipment_last_loan.sql
 SOURCE notation.sql
 SOURCE supporting_script_check.sql
 SOURCE application_has_identifier.sql
+SOURCE script.sql
 
 SOURCE update_version_number.sql
 

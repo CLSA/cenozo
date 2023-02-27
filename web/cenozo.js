@@ -10611,7 +10611,6 @@
           launch: async function (urlParams) {
             if (!angular.isObject(urlParams)) urlParams = {};
 
-            var baseUrl = this.script.url;
             if (!this.token) {
               // the token doesn't exist so create it
               var modal = CnModalMessageFactory.instance({
@@ -10659,16 +10658,9 @@
                 message: "Unable to find the respondent record belonging to the script you are trying to launch.  If this problem persists please contact support."
               }).show();
             } else {
-              if ("pine" == this.script.application) {
-                baseUrl += this.token.token;
-              } else {
-                // add parameters required by limesurvey and launch
-                urlParams.lang = this.lang;
-                urlParams.newtest = "Y";
-                urlParams.token = this.token.token;
-              }
-
               // launch the script
+              var baseUrl = this.script.url + this.token.token;
+
               /* TODO: for the future
              * Note: we'd like to use URLSearchParams but it doesn't work for older browsers.  The following is fine for now
              * however it does not encode the url parameters so it should be replaced with the following block once old versions

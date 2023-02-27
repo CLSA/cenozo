@@ -95,10 +95,6 @@ class phone_call extends \cenozo\database\record
           $db_event->save();
         }
       }
-
-      // mark any completed script events
-      $script_class_name = lib::get_class_name( 'database\script' );
-      $script_class_name::add_all_event_types( $db_participant );
     }
   }
 }

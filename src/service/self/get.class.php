@@ -161,16 +161,19 @@ class get extends \cenozo\service\service
         $script_sel->add_column( 'name' );
         $script_sel->add_column( 'repeated' );
         $script_sel->add_column( 'supporting' );
-        $script_sel->add_column( 'IF( pine_qnaire_id IS NULL, "limesurvey", "pine" )', 'application', false );
-        $script_sel->add_column(
-          sprintf(
-            'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", CONCAT( "%s/index.php/", script.sid ) )',
-            is_null( $db_pine_application ) ? '' : $db_pine_application->url,
-            LIMESURVEY_URL
-          ),
-          'url',
-          false
-        );
+        $script_sel->add_column( 'IF( pine_qnaire_id IS NULL, "external", "pine" )', 'application', false );
+        if( is_null( $db_pine_application ) )
+        {
+          $script_sel->add_constant( NULL, 'url' );
+        }
+        else
+        {
+          $script_sel->add_column(
+            sprintf( 'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", NULL )', $db_pine_application->url ),
+            'url',
+            false
+          );
+        }
         $script_mod = lib::create( 'database\modifier' );
         $script_mod->join( 'application_has_script', 'script.id', 'application_has_script.script_id' );
         $script_mod->where( 'application_id', '=', $db_application->id );

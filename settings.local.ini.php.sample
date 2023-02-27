@@ -28,10 +28,6 @@ if( !is_null( $host ) ) $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to
 // the location of the PDF-writing mikehaertl libraries (only add if using the pdf module)
 $settings['path']['MIKEHAERTL'] = '/path/to/mikehaertl';
 
-// the path and url of Limesurvey (only add if using the script module)
-$settings['path']['LIMESURVEY'] = '/path/to/limesurvey';
-$settings['url']['LIMESURVEY'] = '../limesurvey';
-
 // utility account
 $settings['utility']['password'] = 'set password to utility account here'; 
 

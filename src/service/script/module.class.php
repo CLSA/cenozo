@@ -24,55 +24,19 @@ class module extends \cenozo\service\module
     $application_class_name = lib::get_class_name( 'database\application' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $script_class_name = lib::get_class_name( 'database\script' );
-    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
     $session = lib::create( 'business\session' );
 
     $select->add_column(
-      'IF( script.sid IS NOT NULL, "limesurvey", IF( script.pine_qnaire_id IS NOT NULL, "pine", NULL ) )',
+      'IF( script.pine_qnaire_id IS NOT NULL, "pine", "external" )',
       'application',
       false
     );
-
-    // join to limesurvey and pine qnaire tables to get the qnaire name
-    if( $select->has_column( 'qnaire_title' ) )
-    {
-      // link to limesurvey survey list
-      $survey_table_array = array();
-      foreach( $surveys_class_name::get_titles() as $sid => $title )
-        $survey_table_array[] = sprintf( 'SELECT %s sid, "%s" title', $sid, $title );
-      $survey_table = sprintf( '( %s ) AS survey', implode( ' UNION ', $survey_table_array ) );
-      $modifier->left_join( $survey_table, 'script.sid', 'survey.sid' );
-
-      // link to pine qnaire list
-      $select->add_column( 'survey.title', 'qnaire_title', false ); // the default if the following doesn't work
-
-      $cenozo_manager = lib::create( 'business\cenozo_manager', $session->get_pine_application() );
-      if( $cenozo_manager->exists() )
-      {
-        $select_obj = array( 'column' => array( 'id', 'name' ) );
-        $service = sprintf( 'qnaire?no_activity=1&select=%s', $util_class_name::json_encode( $select_obj ) );
-
-        $qnaire_table_array = array();
-        foreach( $cenozo_manager->get( $service ) as $obj )
-          $qnaire_table_array[] = sprintf( 'SELECT %s id, "%s" name', $obj->id, $obj->name );
-
-        if( 0 < count( $qnaire_table_array ) )
-        {
-          $qnaire_table = sprintf( '( %s ) AS pine_qnaire', implode( ' UNION ', $qnaire_table_array ) );
-          $modifier->left_join( $qnaire_table, 'script.pine_qnaire_id', 'pine_qnaire.id' );
-          $select->add_column( 'IFNULL( survey.title, pine_qnaire.name )', 'qnaire_title', false );
-        }
-      }
-    }
 
     $db_participant = NULL;
     $participant_id = $this->get_argument( 'participant_id', NULL );
     $uid = $this->get_argument( 'uid', NULL );
     if( !is_null( $participant_id ) ) $db_participant = lib::create( 'database\participant', $participant_id );
     else if( !is_null( $uid ) ) $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
-
-    // if a participant is specified then update the started/finished events
-    if( !is_null( $db_participant ) ) $script_class_name::add_all_event_types( $db_participant );
 
     if( $select->has_table_columns( 'started_event' ) || $select->has_table_columns( 'finished_event' ) )
     {
@@ -120,9 +84,8 @@ class module extends \cenozo\service\module
       $db_pine_application = $session->get_pine_application();
       $select->add_column(
         sprintf(
-          'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", CONCAT( "%s/index.php/", script.sid ) )',
-          is_null( $db_pine_application ) ? '' : $db_pine_application->url,
-          LIMESURVEY_URL
+          'IF( pine_qnaire_id IS NOT NULL, "%s/respondent/run/", NULL )',
+          is_null( $db_pine_application ) ? '' : $db_pine_application->url
         ),
         'url',
         false

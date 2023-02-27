@@ -442,46 +442,6 @@ class data_manager extends \cenozo\singleton
       }
       else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
     }
-    else if( 'limesurvey' == $subject )
-    {
-      $setting_manager = lib::create( 'business\setting_manager' );
-      if( !$setting_manager->get_setting( 'module', 'script' ) )
-      {
-        throw lib::create( 'exception\runtime',
-          'Tried to get limesurvey value but the script module is not enabled.',
-          __METHOD__ );
-      }
-
-      $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-
-      // participant.limesurvey.<sid>.<question_title>
-      $parts = static::parse_key( $key, true );
-
-      if( 3 != count( $parts ) ) throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-
-      $sid = $parts[1];
-      $q_title = $parts[2];
-
-      // get this participant's survey for the given sid
-      $old_survey_sid = $survey_class_name::get_sid();
-      $survey_class_name::set_sid( $sid );
-      $old_tokens_sid = $tokens_class_name::get_sid();
-      $tokens_class_name::set_sid( $sid );
-
-      $survey_mod = lib::create( 'database\modifier' );
-      $tokens_class_name::where_token( $survey_mod, $db_participant, false );
-      $survey_mod->order_desc( 'datestamp' );
-      $survey_list = $survey_class_name::select_objects( $survey_mod );
-      if( 0 < count( $survey_list ) )
-      {
-        $db_survey = current( $survey_list );
-        $value = $db_survey->get_response( $q_title );
-      }
-
-      $survey_class_name::set_sid( $old_survey_sid );
-      $tokens_class_name::set_sid( $old_tokens_sid );
-    }
     else if( 'opal' == $subject )
     {
       if( !( 4 == count( $parts ) || 5 == count( $parts ) ) )
