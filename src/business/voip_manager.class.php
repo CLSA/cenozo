@@ -129,15 +129,34 @@ class voip_manager extends \cenozo\singleton
       // go through the status events matching channels with bridged channels and create call objects
       if( array_key_exists( 'Event', $object ) && 'Status' == $object['Event'] )
       {
-        $id = $object['BridgeID'];
-        if( !array_key_exists( $id, $paired_list ) ) $paired_list[$id] = array( 'call' => NULL, 'bridge' => NULL );
-        $paired_list[$id][ 'from-trunk-' == substr( $object['Context'], 0, 11 ) ? 'bridge' : 'call'] = $object;
+        // the bridge context (caller) will always have "from-trunk-" in the context
+        $bridge = 'from-trunk-' == substr( $object['Context'], 0, 11 );
+
+        // the remote number will depend on if this is the bridge or not
+        $number = $bridge ? $object['CallerIDNum'] : $object['ConnectedLineNum'];
+        if( '1' == $number[0] ) $number = substr( $number, 1 ); // remove the leading 1, if it exists
+
+        // we may or may not have a bridge ID
+        $bridge_id = $object['BridgeID'];
+
+        // if we don't have a bridge ID then use the number to identify the caller/callee
+        $id = $bridge_id ? $bridge_id : $number;
+        if( '<unknown>' != $id )
+        {
+          if( !array_key_exists( $id, $paired_list ) )
+          {
+            $paired_list[$id] = array( 'call' => NULL, 'bridge' => NULL );
+          }
+          $paired_list[$id][ 'from-trunk-' == substr( $object['Context'], 0, 11 ) ? 'bridge' : 'call'] = $object;
+        }
       }
     }
 
     $this->call_list = array();
     foreach( $paired_list as $pair )
+    {
       $this->call_list[] = lib::create( 'business\voip_call', $pair['call'], $pair['bridge'] );
+    }
   }
 
   /**
@@ -212,8 +231,11 @@ class voip_manager extends \cenozo\singleton
     ] );
 
     // rebuild the call list and return (what should be) the peer's only call
+    sleep( 1 ); // wait for the call to register in Asterisk before rebuilding the call list
     $this->rebuild_call_list();
-    return $this->get_call();
+    $call = $this->get_call();
+    if( is_null( $call ) ) log::error( "No call found after placing call." );
+    return $call;
   }
 
   /** 
