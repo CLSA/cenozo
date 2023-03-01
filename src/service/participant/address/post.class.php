@@ -19,7 +19,10 @@ class post extends \cenozo\service\post
 
     // Get the participant's default site for all site-based application before making the change
     $this->db_participant = $this->get_leaf_record()->get_participant();
-    $this->default_site_list = $this->db_participant->get_default_site_list();
+    if( !is_null( $this->db_participant ) )
+    {
+      $this->default_site_list = $this->db_participant->get_default_site_list();
+    }
   }
 
   /**
@@ -30,7 +33,10 @@ class post extends \cenozo\service\post
     parent::finish();
 
     // If any application no longer has a default site then set the preferred site to what the default used to be
-    $this->db_participant->set_preferred_site_for_missing_effective_site( $this->default_site_list );
+    if( !is_null( $this->db_participant ))
+    {
+      $this->db_participant->set_preferred_site_for_missing_effective_site( $this->default_site_list );
+    }
   }
 
   /**
