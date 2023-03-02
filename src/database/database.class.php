@@ -34,6 +34,14 @@ class database extends \cenozo\base_object
 
     // set up the database connection
     $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
+    if( $this->connection->connect_error )
+    {
+      throw lib::create( 'exception\notice',
+        'We\'re sorry but the application is unavailable due to network interruptions.  Please try again later.',
+        __METHOD__
+      );
+    }
+
     $this->connection->set_charset( 'utf8mb4' );
     if( lib::in_development_mode() ) $this->execute( 'SET profiling = 1', false );
 
