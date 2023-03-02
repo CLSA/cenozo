@@ -234,7 +234,15 @@ class voip_manager extends \cenozo\singleton
     sleep( 1 ); // wait for the call to register in Asterisk before rebuilding the call list
     $this->rebuild_call_list();
     $call = $this->get_call();
-    if( is_null( $call ) ) log::error( "No call found after placing call." );
+    if( is_null( $call ) )
+    {
+      log::error( sprintf(
+        "No call found after %s placed call to %s.",
+        lib::create( 'business\session' )->get_user()->name,
+        $number
+      ) );
+    }
+
     return $call;
   }
 
