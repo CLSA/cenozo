@@ -142,8 +142,9 @@ final class bootstrap
         'code' => sprintf( '%s.%s', strtoupper( substr( $e->get_type(), 0, 1 ) ), $e->get_code() )
       );
 
-      // log all but notice exceptions
-      if( 'notice' != $e->get_type() )
+      // log all but notice exceptions and "wrong URL" errors
+      if( 'notice' != $e->get_type() &&
+          !preg_match( '/Server name, ".*", is not found in the application/', $e->get_raw_message() ) )
       {
         log::error( sprintf(
           "When loading main UI:\n%s %s",
