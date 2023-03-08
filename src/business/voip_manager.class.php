@@ -129,25 +129,35 @@ class voip_manager extends \cenozo\singleton
       // go through the status events matching channels with bridged channels and create call objects
       if( array_key_exists( 'Event', $object ) && 'Status' == $object['Event'] )
       {
-        // the bridge context (caller) will always have "from-trunk-" in the context
-        $bridge = 'from-trunk-' == substr( $object['Context'], 0, 11 );
+        $id = NULL;
+        $bridge = false;
 
-        // the remote number will depend on if this is the bridge or not
-        $number = $bridge ? $object['CallerIDNum'] : $object['ConnectedLineNum'];
-        if( '1' == $number[0] ) $number = substr( $number, 1 ); // remove the leading 1, if it exists
+        // check for internal ringing/down events
+        if( 'from-internal' == $object['Context'] &&
+            array_key_exists( 'ChannelStateDesc', $object ) &&
+            in_array( $object['ChannelStateDesc'], ['Down', 'Ringing'] ) )
+        {
+          // For internal ring events the CallerIDNum will be the user's peer
+          $id = $object['CallerIDNum'];
+        }
+        else
+        {
+          // the bridge context (participant) will always have "from-trunk-" in the context
+          $bridge = 'from-trunk-' == substr( $object['Context'], 0, 11 );
 
-        // we may or may not have a bridge ID
-        $bridge_id = $object['BridgeID'];
+          // the remote number will depend on if this is the bridge or not
+          $number = $bridge ? $object['CallerIDNum'] : $object['ConnectedLineNum'];
+          if( '1' == $number[0] ) $number = substr( $number, 1 ); // remove the leading 1, if it exists
 
-        // if we don't have a bridge ID then use the number to identify the caller/callee
-        $id = $bridge_id ? $bridge_id : $number;
+          // if we don't have a bridge ID then use the number to identify the caller/callee
+          $id = $object['BridgeID'] ? $object['BridgeID'] : $number;
+        }
+
         if( '<unknown>' != $id )
         {
           if( !array_key_exists( $id, $paired_list ) )
-          {
             $paired_list[$id] = array( 'call' => NULL, 'bridge' => NULL );
-          }
-          $paired_list[$id][ 'from-trunk-' == substr( $object['Context'], 0, 11 ) ? 'bridge' : 'call'] = $object;
+          $paired_list[$id][$bridge ? 'bridge' : 'call'] = $object;
         }
       }
     }
