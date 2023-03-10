@@ -121,13 +121,14 @@ class ui extends \cenozo\base_object
   {
     $setting_manager = lib::create( 'business\setting_manager' );
     $list = array(
-      'access', 'activity', 'address', 'alternate', 'alternate_consent', 'alternate_consent_type', 'alternate_type',
-      'application', 'application_type', 'availability_type', 'callback', 'cohort', 'collection', 'consent',
-      'consent_type', 'event', 'event_type', 'export', 'export_file', 'failed_login', 'form', 'form_association',
-      'form_type', 'hin', 'hold', 'hold_type', 'identifier', 'jurisdiction', 'language', 'mail', 'notation',
-      'overview', 'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site',
-      'role', 'report', 'report_restriction', 'report_schedule', 'report_type', 'search_result', 'site', 'source',
-      'stratum', 'study', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
+      'access', 'activity', 'address', 'alternate', 'alternate_consent', 'alternate_consent_type',
+      'alternate_type', 'application', 'application_type', 'availability_type', 'callback', 'cohort',
+      'collection', 'consent', 'consent_type', 'event', 'event_mail', 'event_type', 'event_type_mail',
+      'export', 'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold',
+      'hold_type', 'identifier', 'jurisdiction', 'language', 'mail', 'notation', 'overview', 'participant',
+      'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site', 'role', 'report',
+      'report_restriction', 'report_schedule', 'report_type', 'search_result', 'site', 'source', 'stratum',
+      'study', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'equipment' ) )
@@ -335,12 +336,14 @@ class ui extends \cenozo\base_object
       }
       else if( 'event' == $module->get_subject() )
       {
+        $module->add_child( 'event_mail' );
         $module->add_child( 'form' );
       }
       else if( 'event_type' == $module->get_subject() )
       {
-        $module->add_child( 'role' );
         $module->add_child( 'participant' );
+        $module->add_child( 'role' );
+        $module->add_child( 'event_type_mail' );
       }
       else if( 'export' == $module->get_subject() )
       {

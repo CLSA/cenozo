@@ -613,6 +613,29 @@ class data_manager extends \cenozo\singleton
         }
       }
     }
+    else if( 'site' == $subject )
+    {
+      $application_class_name = lib::get_class_name( 'database\application' );
+
+      if( 3 != count( $parts ) )
+        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+      $application = $parts[1];
+      $column = $parts[2];
+
+      // participant.site.<application>.<column>
+      $db_application = $application_class_name::get_unique_record( 'name', $application );
+      if( !is_null( $db_application ) )
+      {
+        $db_site = $db_participant->get_effective_site( $db_application );
+        if( !is_null( $db_site ) )
+        {
+          if( !$db_site->column_exists( $column ) )
+            throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+          $value = $db_site->$column;
+        }
+      }
+    }
     else if( 'source' == $subject )
     {
       if( 2 != count( $parts ) )

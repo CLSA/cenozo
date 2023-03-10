@@ -113,7 +113,7 @@ cenozoApp.defineModule({
       "CnBaseViewFactory",
       function (CnBaseViewFactory) {
         var object = function (parentModel, root) {
-          CnBaseViewFactory.construct(this, parentModel, root);
+          CnBaseViewFactory.construct(this, parentModel, root, 'event_mail');
 
           // extend onView
           this.onView = async function (force) {
