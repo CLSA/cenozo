@@ -90,22 +90,31 @@ class mail_manager extends \cenozo\base_object
   /**
    * Sets the body of the mail
    */
-  public function set_body( $body )
+  public function set_body( $body, $add_header_and_footer = true  )
   {
     $db_application = lib::create( 'business\session' )->get_application();
 
     $this->body = $body;
 
-    // add the application's mail header/footer
-    if( !is_null( $db_application->mail_header ) )
+    if( $add_header_and_footer )
     {
-      // if the header has html but the body doesn't then convert line breaks to <br>s
-      if( false !== strpos( $db_application->mail_header, '<html>' ) && 0 == preg_match( '/<[^>]+>/', $this->body ) )
-        $this->body = preg_replace( '/\r?\n/', '<br>$0', $this->body );
-      $this->body = sprintf( "%s\n%s", $db_application->mail_header, $this->body );
-    }
+      // add the application's mail header/footer
+      if( !is_null( $db_application->mail_header ) )
+      {
+        // if the header has html but the body doesn't then convert line breaks to <br>s
+        if( false !== strpos( $db_application->mail_header, '<html>' ) &&
+            0 == preg_match( '/<[^>]+>/', $this->body ) )
+        {
+          $this->body = preg_replace( '/\r?\n/', '<br>$0', $this->body );
+        }
+        $this->body = sprintf( "%s\n%s", $db_application->mail_header, $this->body );
+      }
 
-    if( !is_null( $db_application->mail_footer ) ) $this->body = sprintf( "%s\n%s", $this->body, $db_application->mail_footer );
+      if( !is_null( $db_application->mail_footer ) )
+      {
+        $this->body = sprintf( "%s\n%s", $this->body, $db_application->mail_footer );
+      }
+    }
 
     // if the body contains the <html> tag then assume this is an html encoded email
     if( false !== strpos( $this->body, '<html>' ) ) $this->html = true;
