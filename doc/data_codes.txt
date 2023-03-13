@@ -1,0 +1,117 @@
+A list of all possible "Data Codes" as provided by the business\data_manager class.
+
+constant.date().format(<format>) with optional .add(<interval>) or .sub(<interval>)
+  Display the current date or interval away from the current date in any format.
+  Valid syntax for <format> is found here: https://www.php.net/manual/en/datetime.format.php
+  Valid syntax for <interval> is found here: https://www.php.net/manual/en/dateinterval.format.php
+
+role.name
+  The name of the current user’s role.
+
+site.<column>
+  Details about the current user’s site
+  <column> can be any of the following: name, timezone, title, phone_number, address1, address2, city, postcode
+
+user.<column>
+  Details about the current user
+  <column> can be any of the following: name, first_name, last_name, active, email, timezone
+
+participant.identifier.<name>
+  The related participant’s identifier as referred to by <name>.
+
+participant.<alternate|decedent|emergency|informant|proxy>.count()
+  The number of alternate contacts of a particular kind belonging to the related participant.
+
+participant.<alternate|decedent|emergency|informant|proxy>.<column>
+  Details about the alternate contact of a particular kind belonging to the related participant.  If there are more than one alternate of a particular kind the oldest active alternate will be used.
+
+participant.address.count()
+  The number of addresses the related participant has (including both active and inactive, national and international).
+
+participant.address.<n>.<column>
+  Details about the nth ranked address belonging to the related participant.
+  <column> can be any of the following: rank, international, street, full, address1, address1, city, postcode, international_region, timezone_offset, daylight_savings, january, february, march, april, may, june, july, august, september, october, november, december, note
+
+participant.primary_address.<column>
+  Details about the related participant’s primary address.  The primary address is the highest ranking, active address which is not international.
+  <column> can be any of the following: rank, international, street, full, address1, address1, city, postcode, international_region, timezone_offset, daylight_savings, january, february, march, april, may, june, july, august, september, october, november, december, note
+
+participant.first_address.<column>
+  Details about the related participant’s first address.  The first address is the highest ranking address, active address that the participant is currently living at (as defined by “active” months).
+  <column> can be any of the following: rank, international, street, full, address1, address1, city, postcode, international_region, timezone_offset, daylight_savings, january, february, march, april, may, june, july, august, september, october, november, december, note
+
+participant.cohort.name
+  The name of the related participant’s cohort.
+
+participant.collection.<name>
+  Whether or not the related participant belongs to the collection referred to by <name> (1 if they are, 0 if they are not).
+
+participant.consent.<type>.count()
+  The number of <type> consent records that belong to the related participant.
+
+participant.written_consent.<type>.count()
+  The number of written <type> consent records that belong to the related participant.
+
+participant.last_consent.<type>.<column>
+  Details about the most recent <type> consent record of a particular type that belong to the related participant.
+  <column> can be any of the following: accept, written, datetime, note
+
+participant.last_consent.<type>.datetime, with optional .format(<format>)
+  The current date and time of the most recent <type> consent record that belong to the related participant.  Adding the format parameter will display the date and time in a particular format.
+  Valid syntax for <format> is found here: https://www.php.net/manual/en/datetime.format.php
+
+participant.last_written_consent.<type>.<column>
+  Details about the most recent written <type> consent record that belong to the related participant.
+  <column> can be any of the following: accept, written, datetime, note
+
+participant.last_consent.<type>.datetime, with optional .format(<format>)
+  The current date and time of the most recent written <type> consent record that belong to the related participant.  Adding the format parameter will display the date and time in a particular format.
+  Valid syntax for <format> is found here: https://www.php.net/manual/en/datetime.format.php
+
+participant.event.<type>.count()
+  The number of <type> events that belong to the related participant.
+
+participant.last_event.<type>.datetime, with optional .format(<format>)
+  The current date and time of the most recent <type> event that belongs to the related participant.  Adding the format parameter will display the date and time in a particular format.
+  Valid syntax for <format> is found here: https://www.php.net/manual/en/datetime.format.php
+
+participant.hin.code_exists
+  Whether or not the related participant has provided an HIN (1 if they have, 0 if they have not).
+
+participant.opal.<datasource>.<table>.<variable>
+  The related participant’s variable stored in Opal for a particular <datasource>, <table> and <variable> name.  The value will be read from Opal every time this code is referred to.
+
+participant.opal.<datasource>.<table>.<variable>.cache
+  The related participant’s variable stored in Opal for a particular <datasource>, <table> and <variable> name.  The value is only read from Opal once and stored in a cache which is used whenever the code is referred to.
+
+participant.opal.<datasource>.<table>.<variable>.label
+  The label of the the related participant’s variable stored in Opal for a particular <datasource>, <table> and <variable> name.  The label will always be provided in the participant’s preferred language.
+
+participant.age()
+  The related participant’s current age.  Note that a deceased participant’s age is defined as the number of years since their birth and not affected by their date of death.
+
+participant.date_of_birth(<format>)
+  The related participant’s date of birth, as defined by the given format.
+  Valid syntax for <format> is found here: https://www.php.net/manual/en/datetime.format.php
+
+participant.participant.<column>
+  Details about the related participant.
+  <column> can be any of the following: uid, grouping, honorific, first_name, other_name, last_name, sex, current_sex, date_of_birth, date_of_death, date_of_death_accuracy, date_of_death_ministry, callback, override_stratum, email, email2, mass_email, delink, withdraw_third_party, out_of_area, low_education, global_note
+
+participant.phone.count()
+  The number of phone numbers the related participant has (including both active and inactive, national and international).
+
+participant.phone.<n>.<column>
+  Details about the nth ranked phone number belonging to the related participant.
+  <column> can be any of the following: active, rank, international, type, number, note
+
+participant.site.<application>.<column>
+  Details about the related participant’s effective site for the application referred to by <application> name.
+  <column> can be any of the following: name, timezone, title, phone_number, address1, address2, city, postcode
+
+participant.source.<column>
+  Details about the related participant’s source.
+  <column> can be any of the following: name, override_stratum, description
+
+participant.study.<name>
+  Whether or not the related participant is eligible for the study referred to by <name> (1 if they are, 0 if they are not).
