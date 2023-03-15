@@ -337,7 +337,7 @@ class ldap_manager extends \cenozo\singleton
         }
       }
 
-      if( 0 != $result['exitcode'] && 'Changed password OK' != substr( $result['output'], 0, 19 ) )
+      if( 0 != $result['exitcode'] && !preg_match( '/Changed password OK/', $result['output'] ) )
         throw lib::create( 'exception\ldap', $result['output'], $result['exitcode'] );
     }
     else
