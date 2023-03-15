@@ -42,12 +42,12 @@ final class initial
       foreach( $this->settings['path'] as $key => $path )
       {
         if( 'TEMP' == $key )
-        { // create the temp directory if it doesn't already exist
-          if( !is_dir( $path ) ) mkdir( $path, 0777, true );
-        }
-        else if( false !== strpos( $path, $this->settings['path']['TEMP'] ) )
-        { // create paths which are in the temp directory
-          if( !is_dir( $path ) ) mkdir( $path, 0777, true );
+        {
+          // create the temp directory if it doesn't already exist
+          if( !is_dir( $path ) && !mkdir( $path, 0777, true ) )
+          {
+            die( sprintf( 'Error, unable to create temporary path, %s', $path ) );
+          }
         }
         else if( 'COOKIE' != $key &&
                  'TEMPLATE_CACHE' != $key &&
