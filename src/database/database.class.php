@@ -58,7 +58,7 @@ class database extends \cenozo\base_object
    */
   protected function read_schema()
   {
-    $filename = sprintf( '%s/%s.schema.ser', TEMPORARY_FILES_PATH, $this->name );
+    $filename = sprintf( '%s/%s.schema.ser', TEMP_PATH, $this->name );
 
     if( file_exists( $filename ) && 0 < filesize( $filename ) )
     {
@@ -183,6 +183,10 @@ class database extends \cenozo\base_object
         log::warning(
           sprintf( 'Unable to write schema cache to "%s", make sure permissions are set correctly.',
                    $filename ) );
+      }
+      else
+      {
+        chmod( $filename, 0666 );
       }
     }
   }

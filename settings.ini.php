@@ -117,9 +117,7 @@ $settings['path']['FORM'] = str_replace( 'settings.ini.php', 'doc/form', __FILE_
 $settings['path']['OPAL_FORM_TEMPLATE'] = str_replace( 'settings.ini.php', 'doc/opal_form_template', __FILE__ );
 
 // the location of the temporary files
-$settings['path']['TEMP'] =
-  '/tmp/'.$this->settings['general']['framework_name'].$this->settings['path']['APPLICATION'];
-$settings['path']['TEMPORARY_FILES'] = $settings['path']['TEMP'].'/files';
+$settings['path']['TEMP'] = sprintf( '%s/doc/tmp', $this->settings['path']['APPLICATION'] );
 
 // the url of PHPExcel
 $settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );
