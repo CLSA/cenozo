@@ -1,9 +1,0 @@
-#!/bin/sh
-# 
-# build
-# 
-# Builds API documentation for Cenozo using apigen
-# @author Patrick Emond <emondpd@mcmaster.ca>
-
-# generate the documentation
-apigen --config apigen.conf

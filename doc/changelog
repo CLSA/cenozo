@@ -1,7 +1,0 @@
-Version 2.1
-===========
-Compressing participant notes and history
-Adding "view participant" button when viewing appointment
-Tracking UI list page as a state parameter (current list page is saved)
-Fixed all reports which were treating UTC dates as user's timezone
-Fixed bug where region input was showing for new addresses
