@@ -1214,7 +1214,7 @@ cenozoApp.defineModule({
                 },
               },
               {
-                title: "Multi-Edit",
+                title: "Import",
               },
             ]);
           },
