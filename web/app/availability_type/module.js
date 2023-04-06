@@ -31,6 +31,7 @@ cenozoApp.defineModule({
         title: "Participants",
         type: "string",
         isConstant: true,
+        isExcluded: 'add',
         help: "Participants can only be added to this availability type by going directly to participant details.",
       },
     });
