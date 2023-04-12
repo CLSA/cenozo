@@ -6,7 +6,7 @@
   <link rel="shortcut icon" href="img/favicon.ico">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/bootstrap/dist/css/bootstrap.min.css?_">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo<?php print $min; ?>.css?build=<?php print CENOZO_BUILD; ?>">
-  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?_">
+  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?build=<?php print CENOZO_BUILD.$theme_build; ?>">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js?_"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js?_"></script>

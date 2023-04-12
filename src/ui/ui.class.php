@@ -29,6 +29,11 @@ class ui extends \cenozo\base_object
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_user = $session->get_user();
+    $theme_build = sprintf(
+      '%s%s',
+      str_replace( '#', '', $db_application->primary_color ),
+      str_replace( '#', '', $db_application->secondary_color )
+    );
 
     $interface = '';
     if( $maintenance || !is_null( $error ) )

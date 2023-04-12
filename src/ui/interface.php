@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.css?build=<?php print CENOZO_BUILD; ?>">
   <link rel="stylesheet" href="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/css/colorpicker.min.css?build=<?php print CENOZO_BUILD; ?>">
   <link rel="stylesheet" href="<?php print CSS_URL; ?>/cenozo<?php print $min; ?>.css?build=<?php print CENOZO_BUILD; ?>">
-  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?build=<?php print CENOZO_BUILD; ?>">
+  <link rel="stylesheet" href="<?php print ROOT_URL; ?>/css/theme.css?build=<?php print CENOZO_BUILD.$theme_build; ?>">
 
   <script src="<?php print LIB_URL; ?>/jquery/dist/jquery.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/bootstrap/dist/js/bootstrap.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
