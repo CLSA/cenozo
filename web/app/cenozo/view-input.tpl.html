@@ -145,7 +145,7 @@
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            cn-change="model.getEditEnabled() &&
+            ng-change="model.getEditEnabled() &&
                        true !== input.isConstant( state, model ) &&
                        'view' !== input.isConstant( state, model ) &&
                        patch()"
