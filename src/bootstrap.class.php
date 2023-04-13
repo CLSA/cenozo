@@ -26,9 +26,6 @@ final class bootstrap
     // set the method type, arguments and input file (if patching/posting)
     $this->method = array_key_exists( 'REQUEST_METHOD', $_SERVER ) ? $_SERVER['REQUEST_METHOD'] : NULL;
     $this->arguments = $_REQUEST;
-    $util_class_name = lib::get_class_name( 'util' );
-    if( 'true' === $util_class_name::get_header( 'No-Activity' ) )
-      $this->no_activity = 'true' == $headers['No-Activity'];
     if( 'PATCH' == $this->method || 'POST' == $this->method )
       $this->file = file_get_contents( 'php://input' );
   }
@@ -85,6 +82,10 @@ final class bootstrap
 
     // registers an autoloader so classes don't have to be included manually
     lib::register( $this->method, $this->settings['general']['development_mode'] );
+
+    // determine if we should record activity
+    $util_class_name = lib::get_class_name( 'util' );
+    $this->no_activity = 'true' === $util_class_name::get_header( 'No-Activity' );
 
     // set up the logger and session
     lib::create( 'log' );
