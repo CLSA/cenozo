@@ -23,11 +23,14 @@ abstract class base_report extends \cenozo\base_object
    */
   public function __construct( $db_report )
   {
-    $class_name = is_null( $db_report )
-                ? NULL
-                : is_a( $db_report, lib::get_class_name( 'database\record' ) )
-                ? $db_report->get_class_name()
-                : 'not a database\report';
+    $class_name = NULL;
+    if( !is_null( $db_report ) )
+    {
+      $class_name = is_a( $db_report, lib::get_class_name( 'database\record' ) )
+                  ? $db_report->get_class_name()
+                  : 'not a database\report';
+    }
+
     if( 'report' != $class_name )
       throw lib::create( 'exception\argument', 'db_report (class)', $class_name, __METHOD__ );
     $this->db_report = $db_report;
@@ -228,7 +231,7 @@ abstract class base_report extends \cenozo\base_object
             }
             else if( 'boolean' == $setting['type'] )
             {
-              $value = is_null( $value ) ? '(all)' : $value ? 'Yes' : 'No';
+              $value = is_null( $value ) ? '(all)' : ( $value ? 'Yes' : 'No' );
             }
             else
             {
