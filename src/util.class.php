@@ -137,7 +137,7 @@ class util
 
     // Depending on the version of PHP the case of header names may vary, so create an array with lowercase keys
     $headers = [];
-    foreach( $apache_headers as $key => $value ) $header[strtolower($key)] = $value;
+    foreach( $apache_headers as $key => $value ) $headers[strtolower($key)] = $value;
 
     $name = strtolower( $name );
     return array_key_exists( $name, $headers ) ? $headers[$name] : NULL;
