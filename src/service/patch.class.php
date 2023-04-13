@@ -31,8 +31,8 @@ class patch extends write
     $leaf_record = $this->get_leaf_record();
     if( !is_null( $leaf_record ) )
     {
-      $headers = apache_request_headers();
-      if( false !== strpos( $headers['Content-Type'], 'application/json' ) )
+      $util_class_name = lib::get_class_name( 'util' );
+      if( false !== strpos( $util_class_name::get_header( 'Content-Type' ), 'application/json' ) )
       {
         foreach( $this->get_file_as_array() as $key => $value )
         {
