@@ -127,6 +127,23 @@ class util
   }
 
   /**
+   * Returns request header information
+   */
+  public static function get_header( $name )
+  {
+    $apache_headers = apache_request_headers();
+    if( false === $apache_headers )
+      throw lib::create( 'exception\runtime', 'Unable to decode Apache request headers', __METHOD__ );
+
+    // Depending on the version of PHP the case of header names may vary, so create an array with lowercase keys
+    $headers = [];
+    foreach( $apache_headers as $key => $value ) $header[strtolower($key)] = $value;
+
+    $name = strtolower( $name );
+    return array_key_exists( $name, $headers ) ? $headers[$name] : NULL;
+  }
+
+  /**
    * Test whether a variable's string value matches its int value
    * 
    * This function converts the variable to an int then into string and tests whether this is the

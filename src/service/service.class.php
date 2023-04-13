@@ -703,18 +703,16 @@ abstract class service extends \cenozo\base_object
   {
     if( is_null( $this->mime_type ) )
     {
-      // determine the encoding from the accept header
-      $headers = apache_request_headers();
-      if( false === $headers )
-        throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
-
       $mime_type_list = $this->get_supported_mime_type_list();
 
-      if( array_key_exists( 'Accept', $headers ) )
+      // determine the encoding from the accept header
+      $util_class_name = lib::get_class_name( 'util' );
+      $accept_header = $util_class_name::get_header( 'Accept' );
+      if( !is_null( $accept_header ) )
       {
         // order accept arguments into three categories: no wildcards, one wildcard and two wildcards
         $parsed_accept = array( array(), array(), array() );
-        foreach( array_map( 'trim', explode( ',', $headers['Accept'] ) ) as $type )
+        foreach( array_map( 'trim', explode( ',', $accept_header ) ) as $type )
         {
           // remove additional accept parameters, they are ignored
           $parts = explode( ';', $type );
