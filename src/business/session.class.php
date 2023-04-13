@@ -385,13 +385,11 @@ class session extends \cenozo\singleton
     $success = false;
 
     // check for a basic authorization header
-    $headers = apache_request_headers();
-    if( false === $headers )
-      throw lib::create( 'exception\runtime', 'Unable to decode request headers', __METHOD__ );
-
-    if( array_key_exists( 'Authorization', $headers ) )
+    $util_class_name = lib::get_class_name( 'util' );
+    $authorization_header = $util_class_name::get_header( 'Authorization' );
+    if( !is_null( $authorization_header ) )
     {
-      $parts = explode( ' ', $headers['Authorization'] );
+      $parts = explode( ' ', $authorization_header );
       if( 'Basic' == $parts[0] )
       {
         $auth = explode( ':', base64_decode( $parts[1] ), 2 );

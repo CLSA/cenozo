@@ -26,8 +26,8 @@ final class bootstrap
     // set the method type, arguments and input file (if patching/posting)
     $this->method = array_key_exists( 'REQUEST_METHOD', $_SERVER ) ? $_SERVER['REQUEST_METHOD'] : NULL;
     $this->arguments = $_REQUEST;
-    $headers = apache_request_headers();
-    if( false !== $headers && array_key_exists( 'No-Activity', $headers ) )
+    $util_class_name = lib::get_class_name( 'util' );
+    if( 'true' === $util_class_name::get_header( 'No-Activity' ) )
       $this->no_activity = 'true' == $headers['No-Activity'];
     if( 'PATCH' == $this->method || 'POST' == $this->method )
       $this->file = file_get_contents( 'php://input' );
