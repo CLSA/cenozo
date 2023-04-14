@@ -51,11 +51,17 @@ cenozoApp.defineModule({
             if (angular.isUndefined($scope.model))
               $scope.model = CnSearchResultModelFactory.root;
             $scope.q = $state.params.q;
+            $scope.working = false;
 
             $scope.search = async function () {
+              $scope.working = true;
               $state.params.q = $scope.q;
-              await $state.go("search_result.list", $state.params);
-              $scope.model.listModel.onList(true);
+              try {
+                await $state.go("search_result.list", $state.params);
+                await $scope.model.listModel.onList(true);
+              } finally {
+                $scope.working = false;
+              }
             };
           },
         };
