@@ -320,6 +320,7 @@ final class log extends singleton
       log::critical( $message );
 
       // try and set the current operations error code, if possible
+      $theme_build = '';
       $session_class_name = lib::get_class_name( 'business\session' );
       if( class_exists( $session_class_name ) && $session_class_name::exists() )
       {
@@ -328,6 +329,13 @@ final class log extends singleton
         // we need to complete the transaction if there is one in progress
         $db = $session->get_database();
         if( $db ) $db->fail_transaction();
+
+        $db_application = $session->get_application();
+        $theme_build = sprintf(
+          '%s%s',
+          str_replace( '#', '', $db_application->primary_color ),
+          str_replace( '#', '', $db_application->secondary_color )
+        );
       }
 
       $title = ucwords( $e->get_type() ).' Error!';
