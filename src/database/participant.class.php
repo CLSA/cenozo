@@ -701,7 +701,7 @@ class participant extends record
     };
 
     // used to add phone numbers to imported participants (below)
-    $add_phone_func = function( $participant_id, $rank, $phone )
+    $add_phone_func = function( $participant_id, $rank, $phone, $new_address_id_list )
     {
       $util_class_name = lib::get_class_name( 'util' );
       $phone_class_name = lib::get_class_name( 'database\phone' );
@@ -929,7 +929,7 @@ class participant extends record
 
     // now create the phone record(s)
     $current_phone_rank = 1;
-    $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $data );
+    $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $data, $new_address_id_list );
     if( is_string( $result ) )
     {
       static::db()->rollback_savepoint( $savepoint_name );
@@ -950,7 +950,7 @@ class participant extends record
 
     foreach( $phone_list as $index => $phone )
     {
-      $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $phone );
+      $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $phone, $new_address_id_list );
       if( is_string( $result ) )
       {
         static::db()->rollback_savepoint( $savepoint_name );

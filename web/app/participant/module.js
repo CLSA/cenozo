@@ -1805,6 +1805,7 @@ cenozoApp.defineModule({
         CnModalMessageFactory
       ) {
         var object = function () {
+          const self = this;
           angular.extend(this, {
             parentModel: CnParticipantModelFactory.root,
             addressModel: CnAddressModelFactory.root,
@@ -1889,12 +1890,12 @@ cenozoApp.defineModule({
                         }).post();
                         message =
                           "A total of " +
-                          (participantList.length - response.length) +
+                          (participantList.length - response.data.length) +
                           " out of " +
                           participantList.length +
                           " participants have been imported." +
-                          (0 < response.length
-                            ? "\n\n" + response.join("\n")
+                          (0 < response.data.length
+                            ? "\n\n" + response.data.join("\n")
                             : "");
                       }
                     }
@@ -1906,6 +1907,8 @@ cenozoApp.defineModule({
                       message: message,
                       error: !validColumnCount,
                     }).show();
+
+                    self.parentModel.reloadState(true);
                   } finally {
                     obj.processing = false;
                   }
