@@ -1577,7 +1577,7 @@ cenozoApp.defineModule({
               if (language)
                 this.scriptLaunchers[scriptName].lang = language.code;
 
-              var urlParams = { show_hidden: 1 };
+              var urlParams = { show_hidden: 1, username: CnSession.user.name };
               this.scriptLaunchers[scriptName].launch( urlParams );
 
               // check for when the window gets focus back and update the participant details
