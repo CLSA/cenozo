@@ -669,6 +669,8 @@ class participant extends record
    */
   public static function import( $data )
   {
+    set_time_limit( 1800 ); // 30 minutes max
+
     // used to add addresses to imported participants (below)
     $add_address_func = function( $participant_id, $rank, $address )
     {
@@ -1227,13 +1229,25 @@ class participant extends record
    */
   public static function get_new_uid()
   {
+    $uid = NULL;
+
     // Get a random UID by selecting a random number between the min and max ID and finding
     // the first record who's id is greater or equal to that random number (since some may
     // get deleted)
     $row = static::db()->get_row( 'SELECT MIN( id ) AS min, MAX( id ) AS max FROM unique_identifier_pool' );
-    return count( $row ) ? static::db()->get_one(
-                 'SELECT uid FROM unique_identifier_pool WHERE id >= '.
-                 rand( $row['min'], $row['max'] ) ) : NULL;
+
+    if( count( $row ) )
+    {
+      $select = lib::create( 'database\select' );
+      $select->add_column( 'uid' );
+      $select->from( 'unique_identifier_pool' );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'id', '>=', rand( $row['min'], $row['max'] ) );
+      $modifier->limit( 1 );
+      $uid = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    }
+
+    return $uid;
   }
 
   /**
