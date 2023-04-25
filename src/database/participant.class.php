@@ -895,68 +895,99 @@ class participant extends record
 
     $db_participant->save();
 
-    // now create the address record(s)
-    $current_address_rank = 1;
+    // now check for a single address record
     $new_address_id_list = array();
-    $result = $add_address_func( $db_participant->id, $current_address_rank++, $data );
-    if( is_string( $result ) )
-    {
-      static::db()->rollback_savepoint( $savepoint_name );
-      return $result;
-    }
-    else $new_address_id_list['first'] = $result;
 
-    // check for additional addresses
-    $address_list = array();
+    $address_pattern = '(address1|address2|city|postcode|address_note)';
+    $single_address_record = false;
     foreach( array_keys( $data ) as $column )
     {
-      $matches = array();
-      if( 1 === preg_match( '/(address1|address2|city|postcode|address_note)_([0-9]+)/', $column, $matches ) )
+      if( 1 === preg_match( sprintf( '/^%s$/', $address_pattern ), $column, $matches ) )
       {
-        if( !array_key_exists( $matches[2], $address_list ) ) $address_list[$matches[2]] = array();
-        $address_list[$matches[2]][$matches[1]] = $data[$column];
+        $single_address_record = true;
+        break;
       }
     }
 
-    foreach( $address_list as $index => $address )
+    $current_address_rank = 1;
+    if( $single_address_record )
     {
-      $result = $add_address_func( $db_participant->id, $current_address_rank++, $address );
+      $result = $add_address_func( $db_participant->id, $current_address_rank++, $data );
       if( is_string( $result ) )
       {
         static::db()->rollback_savepoint( $savepoint_name );
         return $result;
       }
-      else $new_address_id_list[$index] = $result;
+      else $new_address_id_list['first'] = $result;
+    }
+    else // no single address record found, look for multiple (having postfix: _1, _2, etc)
+    {
+      $address_list = array();
+      foreach( array_keys( $data ) as $column )
+      {
+        $matches = array();
+        if( 1 === preg_match( sprintf( '/^%s_([0-9]+)$/', $address_pattern ), $column, $matches ) )
+        {
+          if( !array_key_exists( $matches[2], $address_list ) ) $address_list[$matches[2]] = array();
+          $address_list[$matches[2]][$matches[1]] = $data[$column];
+        }
+      }
+
+      foreach( $address_list as $index => $address )
+      {
+        $result = $add_address_func( $db_participant->id, $current_address_rank++, $address );
+        if( is_string( $result ) )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return $result;
+        }
+        else $new_address_id_list[$index] = $result;
+      }
     }
 
-    // now create the phone record(s)
+    // now check for a single phone record
+    $phone_pattern = '(phone_type|phone_number|link_phone_to_address|phone_note|phone_note)';
+    $single_phone_record = false;
+    foreach( array_keys( $data ) as $column )
+    {
+      if( 1 === preg_match( sprintf( '/^%s$/', $phone_pattern ), $column, $matches ) )
+      {
+        $single_phone_record = true;
+        break;
+      }
+    }
+
     $current_phone_rank = 1;
-    $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $data, $new_address_id_list );
-    if( is_string( $result ) )
+    if( $single_phone_record )
     {
-      static::db()->rollback_savepoint( $savepoint_name );
-      return $result;
-    }
-
-    // check for additional phonees
-    $phone_list = array();
-    foreach( array_keys( $data ) as $column )
-    {
-      $matches = array();
-      if( 1 === preg_match( '/(phone_type|phone_number|link_phone_to_address|phone_note|phone_note)_([0-9]+)/', $column, $matches ) )
-      {
-        if( !array_key_exists( $matches[2], $phone_list ) ) $phone_list[$matches[2]] = array();
-        $phone_list[$matches[2]][$matches[1]] = $data[$column];
-      }
-    }
-
-    foreach( $phone_list as $index => $phone )
-    {
-      $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $phone, $new_address_id_list );
+      $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $data, $new_address_id_list );
       if( is_string( $result ) )
       {
         static::db()->rollback_savepoint( $savepoint_name );
         return $result;
+      }
+    }
+    else // no single phone record found, look for multiple (having postfix: _1, _2, etc)
+    {
+      $phone_list = array();
+      foreach( array_keys( $data ) as $column )
+      {
+        $matches = array();
+        if( 1 === preg_match( sprintf( '/^%s_([0-9]+)$/', $phone_pattern ), $column, $matches ) )
+        {
+          if( !array_key_exists( $matches[2], $phone_list ) ) $phone_list[$matches[2]] = array();
+          $phone_list[$matches[2]][$matches[1]] = $data[$column];
+        }
+      }
+
+      foreach( $phone_list as $index => $phone )
+      {
+        $result = $add_phone_func( $db_participant->id, $current_phone_rank++, $phone, $new_address_id_list );
+        if( is_string( $result ) )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return $result;
+        }
       }
     }
 
