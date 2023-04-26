@@ -8858,6 +8858,8 @@
 
             if ("GET" == method || "HEAD" == method) object.headers["No-Activity"] = this.noActivity;
 
+            /*
+            TODO: temporarily disabling this feature
             if (angular.isDefined(object.params)) {
               if (angular.isDefined(object.params.select)) {
                 object.params.select = shortenSelectKeys(object.params.select);
@@ -8866,6 +8868,7 @@
                 object.params.modifier = shortenModifierKeys(object.params.modifier);
               }
             }
+            */
 
             try {
               return await $http(object);
