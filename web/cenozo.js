@@ -8623,9 +8623,9 @@
               else if ('open' == key) key = 'n';
               else if ('order' == key) key = 'o';
               else if ('offset' == key) key = 'off';
-              else if ('onleft' == key) key = 'ol';
+              else if ('onleft' == key) key = 'onl';
               else if ('operator' == key) key = 'op';
-              else if ('onright' == key) key = 'or';
+              else if ('onright' == key) key = 'onr';
               else if ('prepend' == key) key = 'p';
               else if ('table' == key) key = 't';
               else if ('type' == key) key = 'tp';
@@ -8858,8 +8858,6 @@
 
             if ("GET" == method || "HEAD" == method) object.headers["No-Activity"] = this.noActivity;
 
-            /*
-            TODO: temporarily disabling this feature
             if (angular.isDefined(object.params)) {
               if (angular.isDefined(object.params.select)) {
                 object.params.select = shortenSelectKeys(object.params.select);
@@ -8868,7 +8866,6 @@
                 object.params.modifier = shortenModifierKeys(object.params.modifier);
               }
             }
-            */
 
             try {
               return await $http(object);

@@ -629,9 +629,6 @@ class select extends \cenozo\base_object
    */
   protected static function convert_keys( $object )
   {
-    // TODO: temporarily disabling this feature
-    return $object;
-
     // do nothing to non object/arrays
     if( !is_object( $object ) && !is_array( $object ) ) return $object;
 

@@ -1262,9 +1262,6 @@ class modifier extends \cenozo\base_object
    */
   protected static function convert_keys( $object )
   {
-    // TODO: temporarily disabling this feature
-    return $object;
-
     // do nothing to non object/arrays
     if( !is_object( $object ) && !is_array( $object ) ) return $object;
 
@@ -1280,9 +1277,9 @@ class modifier extends \cenozo\base_object
       else if( 'n' == $key ) $key = 'open';
       else if( 'o' == $key ) $key = 'order';
       else if( 'off' == $key ) $key = 'offset';
-      else if( 'ol' == $key ) $key = 'onleft';
+      else if( 'onl' == $key ) $key = 'onleft';
       else if( 'op' == $key ) $key = 'operator';
-      else if( 'or' == $key ) $key = 'onright';
+      else if( 'onr' == $key ) $key = 'onright';
       else if( 'p' == $key ) $key = 'prepend';
       else if( 't' == $key ) $key = 'table';
       else if( 'tp' == $key ) $key = 'type';
