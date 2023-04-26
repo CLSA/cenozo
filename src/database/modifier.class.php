@@ -1109,47 +1109,48 @@ class modifier extends \cenozo\base_object
   /**
    * JSON-based modifier expected in the form:
    * {
-   *   join:
+   *   join or j:
    *   [
    *     {
-   *       table:   <table>,
-   *       onleft:  <column>,
-   *       onright: <column>,
-   *       type: inner|cross|straight|left|left outer|right|right outer (optional)
-   *       alias: <string> (optional),
-   *       prepend: true|false (optional)
+   *       table or t:   <table>,
+   *       onleft or ol:  <column>,
+   *       onright or or: <column>,
+   *       type or tp: inner|cross|straight|left|left outer|right|right outer (optional)
+   *       alias or a: <string> (optional),
+   *       prepend or p: true|false (optional)
    *     }
    *   ],
-   *   having|where:
+   *   having|where or h|w:
    *   [
    *     {
-   *       bracket: true,
-   *       open: true|false,
+   *       bracket or b: true,
+   *       open or n: true|false,
    *       or: true|false
    *     },
    *     {
-   *       column:   <column>
-   *       operator: =|!=|<|>|LIKE|NOT LIKE|etc
-   *       value:    <value>
+   *       column or c:   <column>
+   *       operator or op: =|!=|<|>|LIKE|NOT LIKE|etc
+   *       value or v:    <value>
    *     }
    *   ],
-   *   order:
+   *   order or o:
    *   [
    *     <column>,
    *     { <column>: true|false (whether to sort descending) }
    *   ],
-   *   limit: N,
-   *   offset: N
+   *   limit or l: N,
+   *   offset or off: N
    * }
    */
   public static function from_json( $json_string )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $json_object = static::convert_keys( $util_class_name::json_decode( $json_string ) );
+
     $modifier = lib::create( 'database\modifier' );
     $limit = NULL;
     $offset = NULL;
-
-    $util_class_name = lib::get_class_name( 'util' );
-    $json_object = $util_class_name::json_decode( $json_string );
     if( is_object( $json_object ) || is_array( $json_object ) )
     {
       foreach( (array) $json_object as $key => $value )
@@ -1252,6 +1253,45 @@ class modifier extends \cenozo\base_object
     else throw lib::create( 'exception\runtime', 'Invalid format', __METHOD__ );
 
     return $modifier;
+  }
+
+  /**
+   * Converts keys in JSON objects from short to long form
+   * @param mixed $object
+   * @return mixed
+   */
+  protected static function convert_keys( $object )
+  {
+    // do nothing to non object/arrays
+    if( !is_object( $object ) && !is_array( $object ) ) return $object;
+
+    $new_object = is_object( $object ) ? new \stdClass : [];
+    foreach( $object as $key => $value )
+    {
+      if( 'a' == $key ) $key = 'alias';
+      else if( 'b' == $key ) $key = 'bracket';
+      else if( 'c' == $key ) $key = 'column';
+      else if( 'h' == $key ) $key = 'having';
+      else if( 'j' == $key ) $key = 'join';
+      else if( 'l' == $key ) $key = 'limit';
+      else if( 'n' == $key ) $key = 'open';
+      else if( 'o' == $key ) $key = 'order';
+      else if( 'off' == $key ) $key = 'offset';
+      else if( 'ol' == $key ) $key = 'onleft';
+      else if( 'op' == $key ) $key = 'operator';
+      else if( 'or' == $key ) $key = 'onright';
+      else if( 'p' == $key ) $key = 'prepend';
+      else if( 't' == $key ) $key = 'table';
+      else if( 'tp' == $key ) $key = 'type';
+      else if( 'v' == $key ) $key = 'value';
+      else if( 'w' == $key ) $key = 'where';
+
+      $value = static::convert_keys( $value );
+      if( is_object( $new_object ) ) $new_object->$key = $value;
+      else $new_object[$key] = $value;
+    }
+
+    return $new_object;
   }
 
   /**

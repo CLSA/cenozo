@@ -623,14 +623,20 @@ class util
 
   /**
    * Decodes a json string and converts it into the corresponding variable/object/array
+   * 
+   * Note that the associative property controls how the parent PHP json_decode function behaves. From the docs:
+   * When true, JSON objects will be returned as associative arrays; when false, JSON objects will be returned
+   * as objects. When null, JSON objects will be returned as associative arrays or objects depending on whether
+   * JSON_OBJECT_AS_ARRAY is set in the flags.
    * @param string $arg
+   * @param boolean $associative
    * @return mixed
    * @static
    * @access public
    */
-  public static function json_decode( $arg )
+  public static function json_decode( $arg, $associative = NULL )
   {
-    return json_decode( self::utf8_encode( $arg ) );
+    return json_decode( self::utf8_encode( $arg ), $associative );
   }
 
   /**

@@ -541,21 +541,21 @@ class select extends \cenozo\base_object
   /**
    * JSON-based select expected in the form:
    * {
-   *   from: <table_name>
+   *   from or f: <table_name>
    *   OR
    *   from:
    *   {
-   *     table: <table_name>
-   *     alias: <table_alias>
+   *     table or t: <table_name>
+   *     alias or a: <table_alias>
    *   }
-   *   column:
+   *   column or c:
    *   [
    *     <column_name>,
    *     {
-   *       table: <table_name> (optional)
-   *       column: <column_name>
-   *       alias: <column_alias> (optional)
-   *       table_prefix: true|false (optional)
+   *       table or t: <table_name> (optional)
+   *       column or c: <column_name>
+   *       alias or a: <column_alias> (optional)
+   *       table_prefix or p: true|false (optional)
    *     },
    *   ],
    *   distinct: <true|false>
@@ -563,10 +563,11 @@ class select extends \cenozo\base_object
    */
   public static function from_json( $json_string )
   {
-    $select = lib::create( 'database\select' );
-
     $util_class_name = lib::get_class_name( 'util' );
-    $json_object = $util_class_name::json_decode( $json_string );
+
+    $json_object = static::convert_keys( $util_class_name::json_decode( $json_string ) );
+
+    $select = lib::create( 'database\select' );
     if( is_object( $json_object ) || is_array( $json_object ) )
     {
       foreach( (array) $json_object as $key => $value )
@@ -619,6 +620,34 @@ class select extends \cenozo\base_object
     else throw lib::create( 'exception\runtime', 'Invalid select format', __METHOD__ );
 
     return $select;
+  }
+
+  /**
+   * Converts keys in JSON objects from short to long form
+   * @param mixed $object
+   * @return mixed
+   */
+  protected static function convert_keys( $object )
+  {
+    // do nothing to non object/arrays
+    if( !is_object( $object ) && !is_array( $object ) ) return $object;
+
+    $new_object = is_object( $object ) ? new \stdClass : [];
+    foreach( $object as $key => $value )
+    {
+      if( 'a' == $key ) $key = 'alias';
+      else if( 'c' == $key ) $key = 'column';
+      else if( 'd' == $key ) $key = 'distinct';
+      else if( 'f' == $key ) $key = 'from';
+      else if( 'p' == $key ) $key = 'table_prefix';
+      else if( 't' == $key ) $key = 'table';
+
+      $value = static::convert_keys( $value );
+      if( is_object( $new_object ) ) $new_object->$key = $value;
+      else $new_object[$key] = $value;
+    }
+
+    return $new_object;
   }
 
   /**

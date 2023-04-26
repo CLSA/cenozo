@@ -7339,16 +7339,13 @@
             object,
             "getServiceData",
             function (type, columnRestrictLists) {
-              if (
-                angular.isUndefined(type) ||
-                !["calendar", "list", "report", "view"].includes(type)
-              )
+              if (angular.isUndefined(type) || !["calendar", "list", "report", "view"].includes(type)) {
                 throw new Error(
                   'getServiceData expects an argument which is either "calendar", "list", "report" or "view".'
                 );
+              }
 
-              if (angular.isUndefined(columnRestrictLists))
-                columnRestrictLists = {};
+              if (angular.isUndefined(columnRestrictLists)) columnRestrictLists = {};
 
               // set up the select, join and where list based on the column list
               var selectList = [];
@@ -7382,18 +7379,13 @@
                   : "id";
                 var columns = angular.isArray(column) ? column : [column];
                 columns.forEach((col) => {
-                  if (angular.isUndefined(list[col]))
-                    list[col] = { type: "hidden" };
+                  if (angular.isUndefined(list[col])) list[col] = { type: "hidden" };
                 });
               }
 
-              if (
-                "view" == type &&
-                angular.isDefined(object.module.identifier.parent)
-              ) {
+              if ("view" == type && angular.isDefined(object.module.identifier.parent)) {
                 object.module.identifier.parent.forEach(
-                  (item) =>
-                    (list[item.alias] = { type: "hidden", column: item.column })
+                  (item) => (list[item.alias] = { type: "hidden", column: item.column })
                 );
               }
 
@@ -7459,19 +7451,18 @@
                 // now add the column details to the selectList
                 if ("months" == list[key].type) {
                   for (var month = 0; month < 12; month++)
-                    selectList.push(
-                      moment().month(month).format("MMMM").toLowerCase()
-                    );
+                    selectList.push(moment().month(month).format("MMMM").toLowerCase());
                 } else if ("days" == list[key].type) {
                   for (var day = 0; day < 7; day++)
-                    selectList.push(
-                      moment().day(day).format("dddd").toLowerCase()
-                    );
+                    selectList.push(moment().day(day).format("dddd").toLowerCase());
                 } else {
                   // add column to the select list
-                  var select = { column: columnName, alias: key };
+                  var select = { column: columnName };
+                  if (key != columnName) select.alias = key;
                   if (null != tableName) select.table = tableName;
-                  selectList.push(select);
+
+                  // if we only have a column name then use it (as a string) instead of an object
+                  selectList.push(1 == Object.keys(select).length ? columnName : select);
                 }
 
                 if (
@@ -7480,8 +7471,7 @@
                   angular.isArray(columnRestrictLists[key])
                 ) {
                   // add brackets around columns with multiple restrictions
-                  if (1 < columnRestrictLists[key].length)
-                    whereList.push({ bracket: true, open: true });
+                  if (1 < columnRestrictLists[key].length) whereList.push({ bracket: true, open: true });
 
                   columnRestrictLists[key].forEach((item) => {
                     var test = item.test;
@@ -7494,9 +7484,7 @@
                       var columnParts = list[key].column.split(".");
                       var len = columnParts.length;
                       column = list[key].column;
-                      if (2 < len)
-                        column =
-                          columnParts[len - 2] + "." + columnParts[len - 1];
+                      if (2 < len) column = columnParts[len - 2] + "." + columnParts[len - 1];
                     }
 
                     // convert yearmonth to appropriate searches involving values in YYYY-MM format
@@ -7508,21 +7496,11 @@
                       value = value + "-01";
                       if ("<=>" == test || "<>" == test) {
                         // convert this to "1st of month" <= date && date < "1st of next month"
-                        var upperValue = moment(value)
-                          .add(1, "month")
-                          .format("YYYY-MM-DD");
+                        var upperValue = moment(value).add(1, "month").format("YYYY-MM-DD");
                         whereList = whereList.concat([
                           { bracket: true, open: true, or: "or" == item.logic },
-                          {
-                            column: column,
-                            operator: "<=>" ? ">=" : "<",
-                            value: value,
-                          },
-                          {
-                            column: column,
-                            operator: "<=>" ? "<" : ">=",
-                            value: upperValue,
-                          },
+                          { column: column, operator: "<=>" ? ">=" : "<", value: value, },
+                          { column: column, operator: "<=>" ? "<" : ">=", value: upperValue, },
                           { bracket: true, open: false },
                         ]);
                       } else if ("<" == test || ">=" == test) {
@@ -7540,9 +7518,7 @@
                         var where = {
                           column: column,
                           operator: "<=" == test ? "<" : ">=",
-                          value: moment(value)
-                            .add(1, "month")
-                            .format("YYYY-MM-DD"),
+                          value: moment(value).add(1, "month").format("YYYY-MM-DD"),
                         };
                         if ("or" == item.logic) where.or = true;
                         whereList.push(where);
@@ -7553,13 +7529,11 @@
                         // LIKE "" is meaningless, so search for <=> "" instead
                         if (0 == value.length) test = "<=>";
                         // LIKE without % is meaningless, so add % at each end of the string
-                        else if (!value.includes("%"))
-                          value = "%" + value + "%";
+                        else if (!value.includes("%")) value = "%" + value + "%";
                       }
 
                       // convert units
-                      if (angular.isDefined(unit))
-                        value = $filter("cnSize")(value + " " + unit, true);
+                      if (angular.isDefined(unit)) value = $filter("cnSize")(value + " " + unit, true);
 
                       var where = {
                         column: column,
@@ -7572,14 +7546,12 @@
                   });
 
                   // add brackets around columns with multiple restrictions
-                  if (1 < columnRestrictLists[key].length)
-                    whereList.push({ bracket: true, open: false });
+                  if (1 < columnRestrictLists[key].length) whereList.push({ bracket: true, open: false });
                 }
               }
 
               var data = {};
-              if ("calendar" == type || "report" == type)
-                data.modifier = { limit: 1000000 }; // get all records
+              if ("calendar" == type || "report" == type) data.modifier = { limit: 1000000 }; // get all records
               if (0 < selectList.length) data.select = { column: selectList };
               if (0 < joinList.length || 0 < whereList.length) {
                 if (angular.isUndefined(data.modifier)) data.modifier = {};
@@ -8610,6 +8582,65 @@
         return defaults.concat(transform);
       }
 
+      function shortenSelectKeys(object) {
+        if (angular.isArray(object)) {
+          return object.map( item => shortenSelectKeys(item) );
+        } else if (angular.isObject(object)) {
+          let newObject = {};
+          for (var key in object) {
+            if (Object.prototype.hasOwnProperty.call(object, key)) {
+              const value = shortenSelectKeys(object[key]);
+              if ('alias' == key) key = 'a';
+              else if ('column' == key) key = 'c';
+              else if ('distinct' == key) key = 'd';
+              else if ('from' == key) key = 'f';
+              else if ('table_prefix' == key) key = 'p';
+              else if ('table' == key) key = 't';
+              newObject[key] = value;
+            }
+          }
+          return newObject;
+        }
+
+        // return non array/objects unchanged
+        return object;
+      }
+
+      function shortenModifierKeys(object) {
+        if (angular.isArray(object)) {
+          return object.map( item => shortenModifierKeys(item) );
+        } else if (angular.isObject(object)) {
+          let newObject = {};
+          for (var key in object) {
+            if (Object.prototype.hasOwnProperty.call(object, key)) {
+              const value = shortenModifierKeys(object[key]);
+              if ('alias' == key) key = 'a';
+              else if ('bracket' == key) key = 'b';
+              else if ('column' == key) key = 'c';
+              else if ('having' == key) key = 'h';
+              else if ('join' == key) key = 'j';
+              else if ('limit' == key) key = 'l';
+              else if ('open' == key) key = 'n';
+              else if ('order' == key) key = 'o';
+              else if ('offset' == key) key = 'off';
+              else if ('onleft' == key) key = 'ol';
+              else if ('operator' == key) key = 'op';
+              else if ('onright' == key) key = 'or';
+              else if ('prepend' == key) key = 'p';
+              else if ('table' == key) key = 't';
+              else if ('type' == key) key = 'tp';
+              else if ('value' == key) key = 'v';
+              else if ('where' == key) key = 'w';
+              newObject[key] = value;
+            }
+          }
+          return newObject;
+        }
+
+        // return non array/objects unchanged
+        return object;
+      }
+
       // used top track current login credentials
       var login = { site: null, user: null, role: null };
 
@@ -8793,24 +8824,12 @@
               object.timeout = transitionCanceller.promise;
 
             if (null !== this.data) {
-              if ("POST" == method || "PATCH" == method)
-                object.data = this.data;
+              if ("POST" == method || "PATCH" == method) object.data = this.data;
               else object.params = this.data;
             }
 
-            if (
-              [
-                "csv",
-                "jpeg",
-                "ods",
-                "pdf",
-                "txt",
-                "unknown",
-                "wav",
-                "xlsx",
-                "zip",
-              ].includes(this.format)
-            ) {
+            const formatList = [ "csv", "jpeg", "ods", "pdf", "txt", "unknown", "wav", "xlsx", "zip" ];
+            if (formatList.includes(this.format)) {
               var format = null;
               if ("csv" == this.format) format = "text/csv;charset=utf-8";
               else if ("jpeg" == this.format) format = "image/jpeg";
@@ -8837,8 +8856,16 @@
               object.headers = {};
             }
 
-            if ("GET" == method || "HEAD" == method)
-              object.headers["No-Activity"] = this.noActivity;
+            if ("GET" == method || "HEAD" == method) object.headers["No-Activity"] = this.noActivity;
+
+            if (angular.isDefined(object.params)) {
+              if (angular.isDefined(object.params.select)) {
+                object.params.select = shortenSelectKeys(object.params.select);
+              }
+              if (angular.isDefined(object.params.modifier)) {
+                object.params.modifier = shortenModifierKeys(object.params.modifier);
+              }
+            }
 
             try {
               return await $http(object);
