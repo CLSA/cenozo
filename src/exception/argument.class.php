@@ -28,7 +28,7 @@ class argument extends base_exception
   {
     $util_class_name = lib::get_class_name( 'util' );
     $this->argument_name = $argument_name;
-    $message = sprintf( 'Invalid argument "%s" with value "%s".',
+    $message = sprintf( 'Invalid argument "%s" with value %s',
                         $this->argument_name,
                         $util_class_name::var_dump( $value ) );
     parent::__construct( $message, $context, $previous );
