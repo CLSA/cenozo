@@ -321,132 +321,16 @@ cenozoApp.defineModule({
     try {
       var tokenModule = cenozoApp.module("token");
       if (tokenModule && angular.isDefined(tokenModule.actions.add)) {
-        module.addExtraOperationGroup("view", {
+        module.addExtraOperation("view", {
           title: "Scripts",
-          operations: [
-            {
-              title: "Decedent",
-              operation: function ($state, model) {
-                model.viewModel.launchSupportingScript("Decedent");
-              },
-              isDisabled: function ($state, model) {
-                return !model.getEditEnabled();
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowDecedent &&
-                  false === model.viewModel.hasDecedent
-                );
-              },
-            },
-            {
-              title: "Decedent Complete",
-              isDisabled: function ($state, model) {
-                return !model.getEditEnabled();
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowDecedent &&
-                  true === model.viewModel.hasDecedent
-                );
-              },
-            },
-            {
-              title: "Quality Control",
-              operation: function ($state, model) {
-                model.viewModel.launchSupportingScript("Quality Control");
-              },
-              isDisabled: function ($state, model) {
-                return !model.getEditEnabled();
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowQualityControl &&
-                  false === model.viewModel.hasQualityControl
-                );
-              },
-            },
-            {
-              title: "Quality Control Complete",
-              isDisabled: function ($state, model) {
-                return !model.getEditEnabled();
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowQualityControl &&
-                  true === model.viewModel.hasQualityControl
-                );
-              },
-            },
-            {
-              title: "Proxy Initiation",
-              operation: function ($state, model) {
-                model.viewModel.launchSupportingScript("Proxy Initiation");
-              },
-              isDisabled: function ($state, model) {
-                return !model.getEditEnabled();
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowProxyInitiation &&
-                  false === model.viewModel.hasProxyInitiation
-                );
-              },
-            },
-            {
-              title: "Reverse Proxy Initiation",
-              operation: function ($state, model) {
-                model.viewModel.reverseProxyInitiation();
-              },
-              isDisabled: function ($state, model) {
-                return (
-                  !model.getEditEnabled() &&
-                  model.viewModel.reverseProxyInitiationDisabled
-                );
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowProxyInitiation &&
-                  true === model.viewModel.hasProxyInitiation &&
-                  model.viewModel.allowReverseProxyInitiation
-                );
-              },
-            },
-            {
-              title: "Withdraw",
-              operation: function ($state, model) {
-                model.viewModel.launchSupportingScript("Withdraw");
-              },
-              isDisabled: function ($state, model) {
-                return !model.getEditEnabled();
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowWithdraw &&
-                  false === model.viewModel.hasWithdraw
-                );
-              },
-            },
-            {
-              title: "Reverse Withdraw",
-              operation: function ($state, model) {
-                model.viewModel.reverseWithdraw();
-              },
-              isDisabled: function ($state, model) {
-                return (
-                  !model.getEditEnabled() &&
-                  model.viewModel.reverseWithdrawDisabled
-                );
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowWithdraw &&
-                  true === model.viewModel.hasWithdraw &&
-                  model.viewModel.allowReverseWithdraw
-                );
-              },
-            },
-          ],
+          isIncluded: function ($state, model) { return model.getEditEnabled(); },
+          help: "Launch various supporting scripts on behalf of the participant",
+          operation: async function ($state, model) {
+            await model.viewModel.onViewPromise;
+            await $state.go("participant.scripts", {
+              identifier: model.viewModel.record.getIdentifier(),
+            });
+          },
         });
       }
     } catch (err) {}
@@ -1115,12 +999,9 @@ cenozoApp.defineModule({
             }).get();
             $scope.uid = response.data.uid;
             $scope.name =
-              response.data.first_name +
-              " " +
+              response.data.first_name + " " +
               response.data.last_name +
-              " (" +
-              response.data.uid +
-              ")";
+              " (" + response.data.uid + ")";
 
             // create an array from the history categories object
             $scope.historyCategoryArray = [];
@@ -1168,6 +1049,54 @@ cenozoApp.defineModule({
               } finally {
                 $scope.isLoading = false;
               }
+            };
+            $scope.refresh();
+          },
+        };
+      },
+    ]);
+
+    /* ############################################################################################## */
+    cenozo.providers.directive("cnParticipantScripts", [
+      "CnParticipantScriptsFactory",
+      "CnSession",
+      "CnHttpFactory",
+      "$state",
+      function (CnParticipantScriptsFactory, CnSession, CnHttpFactory, $state) {
+        return {
+          templateUrl: module.getFileUrl("scripts.tpl.html"),
+          restrict: "E",
+          controller: async function ($scope) {
+            $scope.model = CnParticipantScriptsFactory.instance();
+
+            $scope.refresh = async function () {
+              await $scope.model.onView();
+
+              $scope.uid = $scope.model.participant.uid;
+              $scope.name =
+                $scope.model.participant.first_name + " " +
+                $scope.model.participant.last_name +
+                " (" + $scope.model.participant.uid + ")";
+
+              CnSession.setBreadcrumbTrail([
+                {
+                  title: "Participants",
+                  go: async function () {
+                    await $state.go("participant.list");
+                  },
+                },
+                {
+                  title: $scope.uid,
+                  go: async function () {
+                    await $state.go("participant.view", {
+                      identifier: $state.params.identifier,
+                    });
+                  },
+                },
+                {
+                  title: "Scripts",
+                },
+              ]);
             };
             $scope.refresh();
           },
@@ -1272,7 +1201,6 @@ cenozoApp.defineModule({
       "CnHttpFactory",
       "CnModalMessageFactory",
       "CnModalConfirmFactory",
-      "CnScriptLauncherFactory",
       "$window",
       "$state",
       function (
@@ -1281,7 +1209,6 @@ cenozoApp.defineModule({
         CnHttpFactory,
         CnModalMessageFactory,
         CnModalConfirmFactory,
-        CnScriptLauncherFactory,
         $window,
         $state
       ) {
@@ -1290,16 +1217,6 @@ cenozoApp.defineModule({
 
           angular.extend(this, {
             onViewPromise: null,
-            scriptLaunchers: {},
-            hasDecedent: null,
-            hasQualityControl: null,
-            hasWithdraw: null,
-            allowDecedent: false,
-            allowProxyInitiation: false,
-            allowQualityControl: false,
-            allowWithdraw: false,
-            allowReverseWithdraw: 3 <= CnSession.role.tier,
-            allowReverseProxyInitiation: true,
 
             useTimezone: async function () {
               await CnSession.setTimezone({ participant_id: this.record.id });
@@ -1319,92 +1236,6 @@ cenozoApp.defineModule({
             },
 
             onView: async function (force) {
-              // always assume that the decedent script is not allowed (until more details are found below)
-              angular.extend(this, {
-                hasDecedent: null,
-                hasQualityControl: null,
-                hasWithdraw: null,
-                allowDecedent:
-                  "mastodon" == CnSession.application.type &&
-                  CnSession.role.allSites,
-                allowQualityControl: false,
-                allowWithdraw: false,
-              });
-
-              // only create launchers for each supporting script if the script module is activated
-              if (CnSession.moduleList.includes("script")) {
-                // note: there's no need to wait for these calls so there's no "Promise.all" here
-                var self = this;
-                CnSession.supportingScriptList.forEach(async (script) => {
-                  if (null != script.name.match(/Decedent/)) {
-                    // only check for the decedent token if we're allowed to launch the script
-                    this.allowDecedent =
-                      "mastodon" == CnSession.application.type &&
-                      CnSession.role.allSites;
-                    if (this.allowDecedent) {
-                      var name = "Decedent";
-                      this.scriptLaunchers[name] =
-                        CnScriptLauncherFactory.instance({
-                          script: script,
-                          identifier:
-                            this.parentModel.getQueryParameter("identifier"),
-                          onReady: function () {
-                            self.hasDecedent = null != this.token && null != this.token.end_datetime;
-                          },
-                        });
-                      try {
-                        await this.scriptLaunchers[name].initialize();
-                      } catch (error) {}
-                    }
-                  } else if (null != script.name.match(/Proxy Initiation/)) {
-                    var name = "Proxy Initiation";
-                    this.allowProxyInitiation = true;
-                    this.scriptLaunchers[name] =
-                      CnScriptLauncherFactory.instance({
-                        script: script,
-                        identifier:
-                          this.parentModel.getQueryParameter("identifier"),
-                        onReady: function () {
-                          self.hasProxyInitiation = null != this.token && null != this.token.end_datetime;
-                        },
-                      });
-                    try {
-                      await this.scriptLaunchers[name].initialize();
-                    } catch (error) {}
-                  } else if (null != script.name.match(/Quality Control/)) {
-                    var name = "Quality Control";
-                    this.allowQualityControl = true;
-                    this.scriptLaunchers[name] =
-                      CnScriptLauncherFactory.instance({
-                        script: script,
-                        identifier:
-                          this.parentModel.getQueryParameter("identifier"),
-                        onReady: function () {
-                          self.hasQualityControl = null != this.token && null != this.token.end_datetime;
-                        },
-                      });
-                    try {
-                      await this.scriptLaunchers[name].initialize();
-                    } catch (error) {}
-                  } else if (null != script.name.match(/Withdraw/)) {
-                    var name = "Withdraw";
-                    this.allowWithdraw = true;
-                    this.scriptLaunchers[name] =
-                      CnScriptLauncherFactory.instance({
-                        script: script,
-                        identifier:
-                          this.parentModel.getQueryParameter("identifier"),
-                        onReady: function () {
-                          self.hasWithdraw = null != this.token && null != this.token.end_datetime;
-                        },
-                      });
-                    try {
-                      await this.scriptLaunchers[name].initialize();
-                    } catch (error) {}
-                  }
-                });
-              }
-
               // set a special heading
               this.onViewPromise = await this.$$onView(force);
 
@@ -1498,98 +1329,7 @@ cenozoApp.defineModule({
               )
                 await this.onView();
             },
-
-            // reverses the participant's withdraw status
-            reverseWithdrawDisabled: false,
-            reverseWithdraw: async function () {
-              this.reverseWithdrawDisabled = true;
-              var response = await CnModalConfirmFactory.instance({
-                title: "Reverse Withdraw",
-                message:
-                  "Are you sure you wish to reverse this participant's withdraw status?\n\n" +
-                  "By selecting yes you are confirming that the participant has re-consented to " +
-                  "participate in the study.",
-              }).show();
-
-              try {
-                if (response) {
-                  await CnHttpFactory.instance({
-                    path: this.parentModel.getServiceResourcePath(),
-                    data: { reverse_withdraw: true },
-                  }).patch();
-
-                  await this.onView();
-                  if (this.consentModel)
-                    await this.consentModel.listModel.onList(true);
-                }
-              } finally {
-                this.reverseWithdrawDisabled = false;
-              }
-            },
-
-            // reverses the participant's proxy initiation status
-            reverseProxyInitiationDisabled: false,
-            reverseProxyInitiation: async function () {
-              this.reverseProxyInitiationDisabled = true;
-              var response = await CnModalConfirmFactory.instance({
-                title: "Reverse Proxy Initiation",
-                message:
-                  "Are you sure you wish to reverse this participant's proxy status?\n\n" +
-                  "By selecting yes you are confirming that the participant has decided to re-consider " +
-                  "their proxy status.",
-              }).show();
-
-              try {
-                if (response) {
-                  await CnHttpFactory.instance({
-                    path: this.parentModel.getServiceResourcePath(),
-                    data: { reverse_proxy_initiation: true },
-                  }).patch();
-
-                  await this.onView();
-                  if (this.consentModel)
-                    await this.consentModel.listModel.onList(true);
-                  if (this.proxyModel)
-                    await this.proxyModel.listModel.onList(true);
-                }
-              } finally {
-                this.reverseProxyInitiationDisabled = false;
-              }
-            },
           });
-
-          // only add script launching if the script module is activated
-          if (CnSession.moduleList.includes("script")) {
-            this.launchSupportingScript = function (scriptName) {
-              var foundLauncher = null;
-              if (angular.isUndefined(this.scriptLaunchers[scriptName]))
-                throw new Error(
-                  'Cannot launch supporting script "' +
-                    scriptName +
-                    '", script not found.'
-                );
-
-              var language =
-                this.parentModel.metadata.columnList.language_id.enumList.findByProperty(
-                  "value",
-                  this.record.language_id
-                );
-              if (language)
-                this.scriptLaunchers[scriptName].lang = language.code;
-
-              var urlParams = { show_hidden: 1, username: CnSession.user.name };
-              this.scriptLaunchers[scriptName].launch( urlParams );
-
-              // check for when the window gets focus back and update the participant details
-              var win = angular.element($window).on("focus", async () => {
-                await this.onView();
-                if (this.consentModel) this.consentModel.listModel.onList(true);
-                if (this.proxyModel) this.proxyModel.listModel.onList(true);
-                if (this.holdModel) this.holdModel.listModel.onList(true);
-                win.off("focus");
-              });
-            };
-          }
 
           async function init(object) {
             if (root) {
@@ -1665,11 +1405,7 @@ cenozoApp.defineModule({
           init(this);
         };
 
-        return {
-          instance: function (parentModel, root) {
-            return new object(parentModel, root);
-          },
-        };
+        return { instance: function (parentModel, root) { return new object(parentModel, root); }, };
       },
     ]);
 
@@ -1760,9 +1496,7 @@ cenozoApp.defineModule({
 
         return {
           root: new object(true),
-          instance: function () {
-            return new object(false);
-          },
+          instance: function () { return new object(false); },
         };
       },
     ]);
@@ -1773,20 +1507,244 @@ cenozoApp.defineModule({
       "CnParticipantModelFactory",
       function (CnBaseHistoryFactory, CnParticipantModelFactory) {
         var object = function () {
-          CnBaseHistoryFactory.construct(
-            this,
-            module,
-            CnParticipantModelFactory.root
-          );
+          CnBaseHistoryFactory.construct(this, module, CnParticipantModelFactory.root);
         };
 
-        return {
-          instance: function () {
-            return new object(false);
-          },
-        };
+        return { instance: function () { return new object(false); }, };
       },
     ]);
+
+    /* ############################################################################################## */
+    cenozo.providers.factory("CnParticipantScriptsFactory", [
+      "CnParticipantModelFactory",
+      "CnScriptLauncherFactory",
+      "CnModalConfirmFactory",
+      "CnModalMessageFactory",
+      "CnHttpFactory",
+      "CnSession",
+      "$window",
+      "$state",
+      function (
+        CnParticipantModelFactory,
+        CnScriptLauncherFactory,
+        CnModalConfirmFactory,
+        CnModalMessageFactory,
+        CnHttpFactory,
+        CnSession,
+        $window,
+        $state
+      ){
+        var object = function () {
+          angular.extend(this, {
+            isLoading: true,
+            module: module,
+            parentModel: CnParticipantModelFactory.root,
+            participant: {},
+            validScriptNameList: ['Decedent', 'Proxy Initiation', 'Quality Control', 'Withdraw'],
+            reversableScripts: {
+              proxy_initiation:
+                "Are you sure you wish to reverse this participant's proxy status?\n\n" +
+                "By selecting yes you are confirming that the participant has decided to " +
+                "re-consider their proxy status.",
+              withdraw:
+                "Are you sure you wish to reverse this participant's withdraw status?\n\n" +
+                "By selecting yes you are confirming that the participant has re-consented to " +
+                "participate in the study.",
+            },
+            scriptList: [],
+            viewRecord: async function () {
+              await $state.go("participant.view", { identifier: $state.params.identifier });
+            },
+            
+            launchScript: function (script) {
+              script.launcher.launch({ show_hidden: 1, username: CnSession.user.name });
+
+              // check for when the window gets focus back and update the script details
+              var win = angular.element($window).on("focus", async () => {
+                await this.onView();
+                win.off("focus");
+              });
+            },
+
+            reverse: async function (script) {
+              script.isWorking = true;
+              var response = await CnModalConfirmFactory.instance({
+                title: "Reverse " + script.name + " for " + this.participant.uid,
+                message: this.reversableScripts[script.subject],
+              }).show();
+
+              try {
+                if (response) {
+                  script.title = "Reverse " + script.name + " (in progress)";
+                  let data = {};
+                  data["reverse_" + script.subject] = true;
+                  await CnHttpFactory.instance({
+                    path: "participant/" + $state.params.identifier,
+                    data: data,
+                  }).patch();
+
+                  await this.onView();
+                }
+              } finally {
+                script.title = "Reverse " + script.name;
+                script.isWorking = false;
+              }
+            },
+
+            onView: async function () {
+              this.isLoading = true;
+              this.scriptList = [];
+
+              // get the participant's details
+              var response = await CnHttpFactory.instance({
+                path: "participant/" + $state.params.identifier,
+                data: { select: { column: [
+                  "uid", "first_name", "last_name", {table: "language", column: "code", alias: "lang"}
+                ] } },
+                redirectOnError: true,
+              }).get();
+              angular.extend(this.participant, response.data);
+
+              // only scripts if the script module is activated
+              if (CnSession.moduleList.includes("script")) {
+                const re = new RegExp("(" + this.validScriptNameList.join("|") + ")");
+                CnSession.supportingScriptList.forEach((script) => {
+                  const matches = script.name.match(re);
+                  if (null != matches) {
+                    const name = matches[1];
+                    const subject = name.toLowerCase().replace(" ", "_");
+
+                    // only allow the decedent script in mastodon with all-sites access
+                    if ("dececent" == subject && !(
+                      "mastodon" == CnSession.application.type &&
+                      CnSession.role.allSites
+                    )) return;
+
+                    const item = {};
+                    const launcher = CnScriptLauncherFactory.instance({
+                      lang: this.participant.lang,
+                      script: script,
+                      identifier: this.parentModel.getQueryParameter("identifier"),
+                      onReady: function() {
+                        item.completed = false;
+                        if (null != this.token && null != this.token.end_datetime) {
+                          item.completed = true;
+                          const datetime = moment(this.token.end_datetime);
+                          datetime.tz(CnSession.user.timezone);
+                          item.completedOn = datetime.format(CnSession.getDatetimeFormat("datetime"));
+                        }
+
+                        item.title = "Launch " + item.name;
+                        if (item.completed) {
+                          if (item.reversable) {
+                            item.title = "Reverse " + item.name;
+                            if (null != item.completedOn)
+                              item.title += " (completed on " + item.completedOn + ")";
+                          } else {
+                            item.title = item.name + " Completed";
+                            if (null != item.completedOn)
+                              item.title += " (" + item.completedOn + ")";
+                          }
+                        }
+                        item.isWorking = false;
+                      },
+                      // we need to override the launcher's onError function to prevent 403 error dialogs
+                      onError: function(error) {
+                        // ignore 404
+                        if (403 == error.status) {
+                          launcher.token = null;
+                          item.enabled = false; // disable the script since the user isn't allowed to launch it
+                          if (angular.isDefined(launcher.onReady)) launcher.onReady();
+                        } else if (404 == error.status) {
+                          launcher.token = null; 
+                          if (angular.isDefined(launcher.onReady)) launcher.onReady();
+                        } else {
+                          CnModalMessageFactory.httpError(error);
+                        }
+                      }
+                    });
+                    angular.extend(item, {
+                      enabled: true,
+                      subject: subject,
+                      name: name,
+                      title: name,
+                      reversable: Object.keys(this.reversableScripts).includes(subject),
+                      completed: null,
+                      completedOn: null,
+                      isWorking: true,
+                      launcher: launcher,
+                      isDisabled: () => (
+                        !item.enabled || // no access to script (403)
+                        item.isWorking || // actively changing something, user must wait
+                        (item.completed && !item.reversable) || // completed and no way to reverse
+                        !this.parentModel.getEditEnabled() // user does not have permission to edit participant
+                      ),
+                    });
+                    this.scriptList.push(item);
+                  }
+                });
+
+                // now initialize all launchers
+                await Promise.allSettled(this.scriptList.map(script => script.launcher.initialize()));
+                this.isLoading = false;
+              }
+            },
+          });
+        };
+
+        return { instance: function () { return new object(false); }, };
+      },
+    ]);
+
+
+
+        /*
+            {
+              title: "Proxy Initiation",
+              isIncluded: function ($state, model) {
+                return ( model.viewModel.allowProxyInitiation && false === model.viewModel.hasProxyInitiation);
+              },
+            },
+            {
+              title: "Reverse Proxy Initiation",
+              operation: function ($state, model) {
+                model.viewModel.reverseProxyInitiation();
+              },
+              isDisabled: function ($state, model) {
+                return ( !model.getEditEnabled() && model.viewModel.reverseProxyInitiationDisabled);
+              },
+              isIncluded: function ($state, model) {
+                return ( model.viewModel.allowProxyInitiation && true === model.viewModel.hasProxyInitiation);
+              },
+            },
+            {
+              title: "Withdraw",
+              isIncluded: function ($state, model) {
+                return ( model.viewModel.allowWithdraw && false === model.viewModel.hasWithdraw);
+              },
+            },
+            {
+              title: "Reverse Withdraw",
+              operation: function ($state, model) {
+                model.viewModel.reverseWithdraw();
+              },
+              isDisabled: function ($state, model) {
+                return ( !model.getEditEnabled() && model.viewModel.reverseWithdrawDisabled);
+              },
+              isIncluded: function ($state, model) {
+                return (
+                  model.viewModel.allowWithdraw &&
+                  true === model.viewModel.hasWithdraw &&
+                  3 <= CnSession.role.tier
+                );
+              },
+            },
+          ],
+        });
+        */
+
+
+
 
     /* ############################################################################################## */
     cenozo.providers.factory("CnParticipantImportFactory", [
@@ -2017,11 +1975,7 @@ cenozoApp.defineModule({
           init(this);
         };
 
-        return {
-          instance: function () {
-            return new object(false);
-          },
-        };
+        return { instance: function () { return new object(false); }, };
       },
     ]);
 
@@ -2414,11 +2368,7 @@ cenozoApp.defineModule({
           init(this);
         };
 
-        return {
-          instance: function () {
-            return new object(false);
-          },
-        };
+        return { instance: function () { return new object(false); }, };
       },
     ]);
 
@@ -2460,11 +2410,7 @@ cenozoApp.defineModule({
           init(this);
         };
 
-        return {
-          instance: function () {
-            return new object(false);
-          },
-        };
+        return { instance: function () { return new object(false); }, };
       },
     ]);
   },

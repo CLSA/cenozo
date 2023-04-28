@@ -399,6 +399,7 @@ class ui extends \cenozo\base_object
           ( $use_interview_module ? '&{assignment}' : '' ).
           '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}' );
         $module->add_action( 'notes', '/{identifier}?{search}' );
+        $module->add_action( 'scripts', '/{identifier}' );
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );
       }

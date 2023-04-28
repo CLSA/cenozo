@@ -10556,6 +10556,18 @@
 
         this.initialized = false;
         this.lang = "en";
+
+        var self = this;
+        this.onError = function (error) {
+          // ignore 404
+          if (404 == error.status) {
+            self.token = null;
+            if (angular.isDefined(self.onReady)) self.onReady();
+          } else {
+            CnModalMessageFactory.httpError(error);
+          }
+        };
+
         if (angular.isUndefined(params.script))
           throw new Error(
             "Tried to create CnScriptLauncherFactory instance without a script"
@@ -10574,24 +10586,11 @@
           token: undefined,
 
           initialize: async function () {
-            var self = this;
-              if (!this.initialized) {
+            if (!this.initialized) {
               this.initialized = true;
               var response = await CnHttpFactory.instance({
-                path:
-                  "script/" +
-                  this.script.id +
-                  "/pine_response/" +
-                  this.identifier,
-                onError: function (error) {
-                  // ignore 404
-                  if (404 == error.status) {
-                    self.token = null;
-                    if (angular.isDefined(self.onReady)) self.onReady();
-                  } else {
-                    CnModalMessageFactory.httpError(error);
-                  }
-                },
+                path: "script/" + this.script.id + "/pine_response/" + this.identifier,
+                onError: this.onError,
               }).get();
 
               this.token = response.data;
