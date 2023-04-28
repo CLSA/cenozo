@@ -436,7 +436,10 @@ cenozoApp.defineModule({
             // remove restrict_* columns from service data's select.column array
             var data = this.$$getServiceData(type, columnRestrictLists);
             data.select.column = data.select.column.filter(
-              (column) => "restrict_" != column.column.substring(0, 9)
+              (column) => (
+                (angular.isString(column) && "restrict_" != column.substring(0, 9)) ||
+                (angular.isObject(column) && "restrict_" != column.column.substring(0, 9))
+              )
             );
             return data;
           };
