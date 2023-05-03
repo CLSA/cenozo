@@ -1555,7 +1555,7 @@ cenozoApp.defineModule({
             viewRecord: async function () {
               await $state.go("participant.view", { identifier: $state.params.identifier });
             },
-            
+
             launchScript: function (script) {
               script.launcher.launch({ show_hidden: 1, username: CnSession.user.name });
 
@@ -1656,7 +1656,7 @@ cenozoApp.defineModule({
                           item.enabled = false; // disable the script since the user isn't allowed to launch it
                           if (angular.isDefined(launcher.onReady)) launcher.onReady();
                         } else if (404 == error.status) {
-                          launcher.token = null; 
+                          launcher.token = null;
                           if (angular.isDefined(launcher.onReady)) launcher.onReady();
                         } else {
                           CnModalMessageFactory.httpError(error);
@@ -1695,56 +1695,6 @@ cenozoApp.defineModule({
         return { instance: function () { return new object(false); }, };
       },
     ]);
-
-
-
-        /*
-            {
-              title: "Proxy Initiation",
-              isIncluded: function ($state, model) {
-                return ( model.viewModel.allowProxyInitiation && false === model.viewModel.hasProxyInitiation);
-              },
-            },
-            {
-              title: "Reverse Proxy Initiation",
-              operation: function ($state, model) {
-                model.viewModel.reverseProxyInitiation();
-              },
-              isDisabled: function ($state, model) {
-                return ( !model.getEditEnabled() && model.viewModel.reverseProxyInitiationDisabled);
-              },
-              isIncluded: function ($state, model) {
-                return ( model.viewModel.allowProxyInitiation && true === model.viewModel.hasProxyInitiation);
-              },
-            },
-            {
-              title: "Withdraw",
-              isIncluded: function ($state, model) {
-                return ( model.viewModel.allowWithdraw && false === model.viewModel.hasWithdraw);
-              },
-            },
-            {
-              title: "Reverse Withdraw",
-              operation: function ($state, model) {
-                model.viewModel.reverseWithdraw();
-              },
-              isDisabled: function ($state, model) {
-                return ( !model.getEditEnabled() && model.viewModel.reverseWithdrawDisabled);
-              },
-              isIncluded: function ($state, model) {
-                return (
-                  model.viewModel.allowWithdraw &&
-                  true === model.viewModel.hasWithdraw &&
-                  3 <= CnSession.role.tier
-                );
-              },
-            },
-          ],
-        });
-        */
-
-
-
 
     /* ############################################################################################## */
     cenozo.providers.factory("CnParticipantImportFactory", [
