@@ -9106,7 +9106,7 @@
           locale: "en",
           date: null,
           viewingDate: null,
-          title: "Title",
+          title: null,
           pickerType: "datetime",
           mode: "day",
           emptyAllowed: true,

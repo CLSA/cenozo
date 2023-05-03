@@ -1,6 +1,9 @@
 <form ng-submit="ok()" class="noselect">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title">{{ 'fr' == model.locale ? 'Sélectionner une valeur pour' : 'Select a value for' }} {{ model.title }}</h4>
+    <h4 class="modal-title">
+      {{ 'fr' == model.locale ? 'Sélectionner une valeur' : 'Select a value' }}
+      {{ model.title ? ('fr' == model.locale ? ' pour ' : ' for ') + model.title : "" }}
+    </h4>
   </div>
   <div class="modal-body">
     <div>
