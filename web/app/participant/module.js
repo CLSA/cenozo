@@ -1537,7 +1537,6 @@ cenozoApp.defineModule({
         var object = function () {
           angular.extend(this, {
             isLoading: true,
-            module: module,
             parentModel: CnParticipantModelFactory.root,
             participant: {},
             validScriptNameList: ['Decedent', 'Proxy Initiation', 'Quality Control', 'Withdraw'],
