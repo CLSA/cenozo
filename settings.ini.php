@@ -113,9 +113,6 @@ $settings['path']['REPORT'] = str_replace( 'settings.ini.php', 'doc/report', __F
 // the location of forms (defaults to cenozo/doc/form)
 $settings['path']['FORM'] = str_replace( 'settings.ini.php', 'doc/form', __FILE__ );
 
-// the location of opal form templates
-$settings['path']['OPAL_FORM_TEMPLATE'] = str_replace( 'settings.ini.php', 'doc/opal_form_template', __FILE__ );
-
 // the location of the temporary files
 $settings['path']['TEMP'] = sprintf( '%s/doc/tmp', $this->settings['path']['APPLICATION'] );
 
