@@ -63,6 +63,17 @@ cenozoApp.defineModule({
                 return parentModel.getEditEnabled();
               };
             }
+
+            if (angular.isDefined(object.participantModel)) {
+              object.participantModel.addColumn(
+                "accept",
+                { title: "Accept", column: "consent.accept", type: "boolean" },
+              );
+              object.participantModel.addColumn(
+                "datetime",
+                { title: "Date & Time", column: "consent.datetime", type: "datetime" },
+              );
+            }
           }
 
           init(this);

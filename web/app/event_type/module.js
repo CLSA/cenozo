@@ -60,6 +60,13 @@ cenozoApp.defineModule({
                 return parentModel.getEditEnabled();
               };
             }
+
+            if (angular.isDefined(object.participantModel)) {
+              object.participantModel.addColumn(
+                "datetime",
+                { title: "Date & Time", column: "event.datetime", type: "datetime" },
+              );
+            }
           }
 
           init(this);
