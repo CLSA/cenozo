@@ -10,7 +10,10 @@ cenozoApp.defineModule({
         possessive: "event type's",
       },
       columnList: {
-        name: { title: "Name" },
+        name: {
+          title: "Name",
+          column: "event_type.name",
+        },
         event_count: {
           title: "Events",
           type: "number",

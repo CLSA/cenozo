@@ -11,7 +11,10 @@ cenozoApp.defineModule({
         possessive: "study's",
       },
       columnList: {
-        name: { title: "Name" },
+        name: {
+          title: "Name",
+          column: "study.name",
+        },
         consent_type: { column: "consent_type.name", title: "Consent Type" },
         completed_event_type: {
           column: "event_type.name",
