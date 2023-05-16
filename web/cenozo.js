@@ -26,6 +26,17 @@
   // setup moment.timezone
   moment.tz.setDefault("UTC");
 
+  // Polyfill the addSettled command if it is missing
+  if (!Promise.allSettled) {
+    Promise.allSettled = promises =>
+      Promise.all(
+        promises.map((promise, i) =>
+          promise.then(value => ({ status: "fulfilled", value, }))
+                 .catch(reason => ({ status: "rejected", reason, }))
+        )
+      );
+  }
+
   // Extend the Array prototype with extra functions
   angular.extend(Array.prototype, {
     findIndexByProperty: function (property, value) {
