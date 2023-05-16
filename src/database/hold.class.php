@@ -31,6 +31,14 @@ class hold extends record
     }
 
     parent::save();
+
+    // remove any scheduled mail
+    if( !is_null( $this->hold_type_id ) )
+    {
+      $mail_mod = lib::create( 'database\modifier' );
+      $mail_mod->where( 'sent_datetime', '=', NULL );
+      foreach( $db_participant->get_mail_object_list( $mail_mod ) as $db_mail ) $db_mail->delete();
+    }
   }
 
   /**
