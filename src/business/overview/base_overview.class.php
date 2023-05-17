@@ -23,11 +23,10 @@ abstract class base_overview
    */
   public function __construct( $db_overview )
   {
-    $class_name = is_null( $db_overview )
-                ? NULL
-                : is_a( $db_overview, lib::get_class_name( 'database\record' ) )
-                ? $db_overview->get_class_name()
-                : 'not a database\overview';
+    $class_name = 'not a database\overview';
+    if( is_null( $db_overview ) ) $class_name = NULL;
+    else if( is_a( $db_overview, lib::get_class_name( 'database\record' ) ) )
+      $class_name = $db_overview->get_class_name();
     if( 'overview' != $class_name )
       throw lib::create( 'exception\argument', 'db_overview (class)', $class_name, __METHOD__ );
     $this->db_overview = $db_overview;
