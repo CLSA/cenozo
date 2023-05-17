@@ -1260,7 +1260,7 @@ class modifier extends \cenozo\base_object
    * @param mixed $object
    * @return mixed
    */
-  protected static function convert_keys( $object )
+  public static function convert_keys( $object )
   {
     // do nothing to non object/arrays
     if( !is_object( $object ) && !is_array( $object ) ) return $object;
