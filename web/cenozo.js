@@ -6946,6 +6946,7 @@
                   var patchObj = {};
                   patchObj[obj.key] = null;
                   await self.onPatch(patchObj);
+                  self.record[obj.key] = null;
                   await obj.updateFileSize();
                 },
                 upload: async function () {
