@@ -126,6 +126,7 @@ class get extends \cenozo\service\service
       $module_list = array();
       if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
       if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
+      if( $setting_manager->get_setting( 'module', 'relation' ) ) $module_list[] = 'relation';
       if( $setting_manager->get_setting( 'module', 'script' ) ) $module_list[] = 'script';
 
       // get a list of all final holds
@@ -238,6 +239,8 @@ class get extends \cenozo\service\service
         $setting_manager->get_setting( 'general', 'uid_regex' );
       $pseudo_record['application']['default_postcode'] =
         $setting_manager->get_setting( 'general', 'default_postcode' );
+      $pseudo_record['application']['use_relation'] =
+        $setting_manager->get_setting( 'general', 'use_relation' );
 
       if( $pseudo_record['application']['voip_enabled'] )
       {

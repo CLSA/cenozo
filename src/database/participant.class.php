@@ -659,8 +659,9 @@ class participant extends record
    * 
    * @param array $data An associative array of the following data.  Possible values include:
    *        participant columns:
-   *          source cohort grouping honorific first_name other_name last_name sex date_of_birth language availability_type
-   *          callback email mass_email low_education global_note
+   *          source cohort grouping honorific first_name other_name last_name sex date_of_birth language
+   *          availability_type callback email mass_email low_education global_note
+   *          relationship_index, relationship_type (only if user_relation is enabled)
    *        address columns: (may have _1, _2, etc, suffixes)
    *          address1 address2 city postcode address_note
    *        phone coluns: ( may have _1, _2, etc, suffixes)
@@ -671,11 +672,12 @@ class participant extends record
   {
     set_time_limit( 1800 ); // 30 minutes max
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     // used to add addresses to imported participants (below)
-    $add_address_func = function( $participant_id, $rank, $address )
+    $add_address_func = function( $participant_id, $rank, $address ) use ( $setting_manager )
     {
       $address_class_name = lib::get_class_name( 'database\address' );
-      $setting_manager = lib::create( 'business\setting_manager' );
 
       $db_address = lib::create( 'database\address' );
       $db_address->participant_id = $participant_id;
@@ -740,6 +742,8 @@ class participant extends record
     $util_class_name = lib::get_class_name( 'util' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $cohort_class_name = lib::get_class_name( 'database\cohort' );
+    $relation_class_name = lib::get_class_name( 'database\relation' );
+    $relation_type_class_name = lib::get_class_name( 'database\relation_type' );
     $language_class_name = lib::get_class_name( 'database\language' );
     $availability_type_class_name = lib::get_class_name( 'database\availability_type' );
     $session = lib::create( 'business\session' );
@@ -894,6 +898,79 @@ class participant extends record
     static::db()->savepoint( $savepoint_name );
 
     $db_participant->save();
+
+    if( $setting_manager->get_setting( 'general', 'use_relation' ) )
+    {
+      $db_primary_participant = NULL;
+      if( array_key_exists( 'relationship_index', $data ) && !is_null( $data['relationship_index'] ) )
+      {
+        $db_primary_participant = 'self' == $data['relationship_index']
+                                ? $db_participant
+                                : self::get_unique_record( 'uid', $data['relationship_index'] );
+        if( is_null( $db_primary_participant ) )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return sprintf( 'Participant "%s" does not exist for participant index.', $data['relationship_index'] );
+        }
+      }
+
+      $db_relation_type = NULL;
+      if( array_key_exists( 'relationship_type', $data ) && !is_null( $data['relationship_type'] ) )
+      {
+        $db_relation_type = $relation_type_class_name::get_unique_record(
+          'name',
+          $data['relationship_type']
+        );
+        if( is_null( $db_relation_type ) )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return sprintf( 'Relationship type "%s" does not exist.', $data['relationship_type'] );
+        }
+      }
+
+      if( !is_null( $db_primary_participant ) && is_null( $db_relation_type ) )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return 'No relationship type specified.';
+      }
+
+      if( is_null( $db_primary_participant ) && !is_null( $db_relation_type ) )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return 'No relationship index specified.';
+      }
+
+      // only create the relation if it doesn't already exist
+      $db_relation = $relation_class_name::get_unique_record(
+        ['primary_participant_id', 'relation_type_id'],
+        [$db_primary_participant->id, $db_relation_type->id]
+      );
+
+      if( !is_null( $db_relation ) )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return sprintf(
+          'Participant Index "%s" already has a relationship type "%s" with participant "%s".',
+          $data['relationship_index'],
+          $data['relationship_type'],
+          $db_relation->get_participant()->uid
+        );
+      }
+
+      try
+      {
+        $db_relation = lib::create( 'database\relation' );
+        $db_relation->primary_participant_id = $db_primary_participant->id;
+        $db_relation->participant_id = $db_participant->id;
+        $db_relation->relation_type_id = $db_relation_type->id;
+        $db_relation->save();
+      }
+      catch( \cenozo\exception\database $e )
+      {
+        static::db()->rollback_savepoint( $savepoint_name );
+        return 'Unable to create relationship.';
+      }
+    }
 
     // now check for a single address record
     $new_address_id_list = array();

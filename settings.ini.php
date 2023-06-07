@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.9';
-$settings['general']['cenozo_build'] = '558fbff3';
+$settings['general']['cenozo_build'] = 'ae173d5a';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -50,6 +50,9 @@ $settings['general']['participant_import'] = false;
 // the default postcode used when importing participants
 $settings['general']['default_postcode'] = 'T1A 1A1';
 
+// optional setting to turn on participant relationship tracking
+$settings['general']['use_relation'] = false;
+
 // optional setting to turn on HIN checking during assignments
 $settings['general']['check_for_missing_hin'] = false;
 
@@ -70,6 +73,7 @@ $settings['module']['equipment'] = false;
 $settings['module']['interview'] = false;
 $settings['module']['pdf'] = false;
 $settings['module']['recording'] = false;
+$settings['module']['relation'] = false;
 $settings['module']['script'] = false;
 $settings['module']['voip'] = false;
 

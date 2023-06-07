@@ -52,6 +52,16 @@
               Can be empty or any string up to {{ model.parentModel.metadata.columnList.grouping.max_length }} characters long.
             </td>
           </tr>
+          <tr ng-if="model.useRelation && 0 < model.relationTypeList.length">
+            <td class="allow-select">relationship_index</td>
+            <td>"(empty)"</td>
+            <td class="text-left">Must be an existing UID, or "self" if this participant is the relationship Index.</td>
+          </tr>
+          <tr ng-if="model.useRelation && 0 < model.relationTypeList.length">
+            <td class="allow-select">relationship_type</td>
+            <td>"(empty)"</td>
+            <td class="text-left">Must be one of the following: {{ model.relationTypeList.join( ', ' ) }}</td>
+          </tr>
           <tr>
             <td class="allow-select">honorific</td>
             <td>(empty)</td>

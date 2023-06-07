@@ -53,7 +53,18 @@ class module extends \cenozo\service\site_restricted_participant_module
    */
   public function prepare_read( $select, $modifier )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     parent::prepare_read( $select, $modifier );
+
+    $use_relation = $setting_manager->get_setting( 'module', 'relation' ) &&
+                    $setting_manager->get_setting( 'general', 'use_relation' );
+
+    if( $use_relation )
+    {
+      $modifier->left_join( 'relation', 'participant.id', 'relation.participant_id' );
+      $modifier->left_join( 'relation_type', 'relation.relation_type_id', 'relation_type.id' );
+    }
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $db_application = lib::create( 'business\session' )->get_application();
@@ -208,5 +219,41 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     if( $select->has_table_columns( 'next_of_kin' ) )
       $modifier->left_join( 'next_of_kin', 'participant.id', 'next_of_kin.participant_id' );
+
+    $db_participant = $this->get_resource();
+    if( !is_null( $db_participant ) )
+    {
+      if( $use_relation )
+      {
+        if( $select->has_column( 'is_primary_relation' ) )
+        {
+          $select->add_column(
+            'IFNULL( relation.primary_participant_id = relation.participant_id, 0 )',
+            'is_primary_relation',
+            false,
+            'boolean'
+          );
+        }
+
+        if( $select->has_column( 'full_relation_type' ) )
+        {
+          $select->add_column(
+            'IFNULL( '.
+              'CONCAT( '.
+                'relation_type.name, '.
+                'IF( '.
+                  'relation.primary_participant_id = relation.participant_id, '.
+                  '" (Index)", '.
+                  '"" '.
+                ') '.
+              '),'.
+              '"(none)" '.
+            ')',
+            'full_relation_type',
+            false
+          );
+        }
+      }
+    }
   }
 }

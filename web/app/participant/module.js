@@ -1393,6 +1393,15 @@ cenozoApp.defineModule({
                   );
                 };
               }
+
+              if (object.relationModel) {
+                object.relationModel.getAddEnabled = function () {
+                  return (
+                    object.relationModel.$$getAddEnabled() &&
+                    object.record.is_primary_relation
+                  );
+                };
+              }
             }
 
             if (angular.isDefined(object.studyModel)) {
@@ -1428,6 +1437,48 @@ cenozoApp.defineModule({
           this.listModel = CnParticipantListFactory.instance(this);
           if (root)
             this.viewModel = CnParticipantViewFactory.instance(this, root);
+
+          // add the relation_type input and column if the application is setup to use relations
+          if (CnSession.application.useRelation) {
+            const group = module.inputGroupList.findByProperty("title", "");
+            if (null != group) {
+              if (angular.isUndefined(group.inputList.full_relation_type)) {
+                module.addInput(
+                  "",
+                  "full_relation_type",
+                  {
+                    title: "Relationship Type",
+                    type: "string",
+                    isConstant: true,
+                  },
+                  "cohort"
+                );
+                module.addInput(
+                  "",
+                  "is_primary_relation",
+                  { type: "hidden" }
+                );
+              }
+            }
+
+            var cohortIndex = null;
+            Object.keys(module.columnList).some((column, index) => {
+              if ("cohort" == column) {
+                cohortIndex = index;
+                return true;
+              }
+            });
+            if (null != cohortIndex) {
+              this.addColumn(
+                'relation_type',
+                {
+                  column: "relation_type.name",
+                  title: "Relationship Type",
+                },
+                cohortIndex+1
+              );
+            }
+          }
 
           angular.extend(this, {
             hasIdentifier: null != CnSession.application.identifier,
@@ -1717,8 +1768,10 @@ cenozoApp.defineModule({
             parentModel: CnParticipantModelFactory.root,
             addressModel: CnAddressModelFactory.root,
             phoneModel: CnPhoneModelFactory.root,
+            useRelation: CnSession.application.useRelation,
             sourceList: [],
             cohortList: [],
+            relationTypeList: [],
             sexList: [],
             languageList: [],
             availabilityTypeList: [],
@@ -1844,6 +1897,10 @@ cenozoApp.defineModule({
             "global_note",
           ];
 
+          if (this.useRelation) validColumnList = validColumnList.concat(
+            ["relationship_index", "relationship_type"]
+          );
+
           var validMultiColumnList = [
             "address1",
             "address2",
@@ -1890,6 +1947,16 @@ cenozoApp.defineModule({
                 },
               }).query();
               object.cohortList = response.data.map((row) => row.name);
+
+              // get the relation type list
+              var response = await CnHttpFactory.instance({
+                path: "relation_type",
+                data: {
+                  select: { column: "name" },
+                  modifier: { order: "name" },
+                },
+              }).query();
+              object.relationTypeList = response.data.map((row) => row.name);
 
               // get the language list
               var response = await CnHttpFactory.instance({

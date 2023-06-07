@@ -131,9 +131,10 @@ class ui extends \cenozo\base_object
       'collection', 'consent', 'consent_type', 'event', 'event_mail', 'event_type', 'event_type_mail',
       'export', 'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold',
       'hold_type', 'identifier', 'jurisdiction', 'language', 'mail', 'notation', 'overview', 'participant',
-      'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site', 'role', 'report',
-      'report_restriction', 'report_schedule', 'report_type', 'search_result', 'site', 'source', 'stratum',
-      'study', 'study_phase', 'system_message', 'trace', 'trace_type', 'user', 'writelog'
+      'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site', 'relation',
+      'relation_type', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
+      'search_result', 'site', 'source', 'stratum', 'study', 'study_phase', 'system_message', 'trace',
+      'trace_type', 'user', 'writelog'
     );
 
     if( $setting_manager->get_setting( 'module', 'equipment' ) )
@@ -144,6 +145,9 @@ class ui extends \cenozo\base_object
 
     if( $setting_manager->get_setting( 'module', 'recording' ) )
       $list = array_merge( $list, array( 'recording', 'recording_file' ) );
+
+    if( $setting_manager->get_setting( 'module', 'relation' ) )
+      $list = array_merge( $list, array( 'relation', 'relation_type' ) );
 
     if( $setting_manager->get_setting( 'module', 'script' ) )
       $list = array_merge( $list, array( 'script' ) );
@@ -167,6 +171,7 @@ class ui extends \cenozo\base_object
     $use_equipment_module = $setting_manager->get_setting( 'module', 'equipment' );
     $use_interview_module = $setting_manager->get_setting( 'module', 'interview' );
     $use_recording_module = $setting_manager->get_setting( 'module', 'recording' );
+    $use_relation_module = $setting_manager->get_setting( 'module', 'relation' );
     $use_script_module = $setting_manager->get_setting( 'module', 'script' );
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
@@ -232,6 +237,19 @@ class ui extends \cenozo\base_object
         }
       }
       
+      // Check that modules are activated before using them
+      if( in_array( $module->get_subject(), array( 'relation', 'relation_type' ) ) )
+      {
+        if( !$use_relation_module )
+        {
+          throw lib::create( 'exception\runtime',
+            sprintf( 'Application has %s service but it\'s parent module, relation, is not activated.',
+                     $module->get_subject() ),
+            __METHOD__
+          );
+        }
+      }
+
       if( in_array( $module->get_subject(), array( 'script' ) ) )
       {
         if( !$use_script_module )
@@ -379,6 +397,8 @@ class ui extends \cenozo\base_object
       else if( 'participant' == $module->get_subject() )
       {
         if( $use_interview_module ) $module->add_child( 'interview' );
+        if( $use_relation_module && $setting_manager->get_setting( 'general', 'use_relation' ) )
+          $module->add_child( 'relation' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
         $module->add_choose( 'study' );
@@ -411,6 +431,10 @@ class ui extends \cenozo\base_object
       else if( 'recording' == $module->get_subject() )
       {
         $module->add_child( 'recording_file' );
+      }
+      else if( 'relation_type' == $module->get_subject() )
+      {
+        $module->add_child( 'relation' );
       }
       else if( 'report_type' == $module->get_subject() )
       {
@@ -511,6 +535,10 @@ class ui extends \cenozo\base_object
       if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );
     }
     if( $extended && in_array( 'region', $grouping_list ) ) $this->add_listitem( 'Region Sites', 'region_site' );
+    if( $setting_manager->get_setting( 'module', 'relation' ) )
+    {
+      $this->add_listitem( 'Relationship Types', 'relation_type' );
+    }
     if( 3 <= $db_role->tier ) $this->add_listitem( 'Scripts', 'script' );
     $this->add_listitem( 'Settings', 'setting' );
     if( $db_role->all_sites ) $this->add_listitem( 'Sites', 'site' );
