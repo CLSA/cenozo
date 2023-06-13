@@ -46,11 +46,24 @@ class export_column extends has_rank
           $table_prefix = false;
         }
       }
-      else if( 'participant' == $this->table_name && 'status' == $column_name )
+      else if( 'participant' == $this->table_name )
       {
-        // participant.status is a pseudo-column
-        $column_name = $participant_class_name::get_status_column_sql();
-        $table_prefix = false;
+        if( 'relation_index' == $column_name )
+        {
+          $column_name = 'relation_index.uid';
+          $table_prefix = false;
+        }
+        else if( 'relation_type' == $column_name )
+        {
+          $column_name = 'relation_type.name';
+          $table_prefix = false;
+        }
+        else if( 'status' == $column_name )
+        {
+          // participant.status is a pseudo-column
+          $column_name = $participant_class_name::get_status_column_sql();
+          $table_prefix = false;
+        }
       }
 
       // replace foreign key IDs with the name from the foreign table
@@ -295,14 +308,41 @@ class export_column extends has_rank
         $modifier->join_modifier( 'interview', $join_mod, 'left', $table_name );
       }
     }
-    else if( 'hold' == $this->table_name ||
-             'proxy' == $this->table_name ||
-             'trace' == $this->table_name ||
-             ( 'participant' == $this->table_name && 'status' == $this->column_name ) )
-    {
+    else if(
+      'hold' == $this->table_name ||
+      'proxy' == $this->table_name ||
+      'trace' == $this->table_name || (
+        'participant' == $this->table_name && (
+          'relation_index' == $this->column_name ||
+          'relation_type' == $this->column_name ||
+          'status' == $this->column_name
+        )
+      )
+    ) {
       if( 'participant' == $this->table_name )
+      {
         if( !$modifier->has_join( 'exclusion' ) )
+        {
           $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );
+        }
+
+        if( 'relation_index' == $this->column_name || 'relation_type' == $this->column_name )
+        {
+          if( !$modifier->has_join( 'relation' ) )
+            $modifier->left_join( 'relation', 'participant.id', 'relation.participant_id' );
+          if( !$modifier->has_join( 'relation_type' ) )
+            $modifier->left_join( 'relation_type', 'relation.relation_type_id', 'relation_type.id' );
+          if( 'relation_index' == $this->column_name && !$modifier->has_join( 'relation_index' ) )
+          {
+            $modifier->left_join(
+              'participant',
+              'relation.primary_participant_id',
+              'relation_index.id',
+              'relation_index'
+            );
+          }
+        }
+      }
 
       if( 'hold' == $this->table_name || 'participant' == $this->table_name )
       {

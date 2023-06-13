@@ -87,7 +87,18 @@ class export_restriction extends has_rank
     else
     {
       if( 'application' == $this->table_name )
+      {
         $table_name = str_replace( 'application', 'application_has_participant', $table_name );
+      }
+      else if( 'participant' == $this->table_name )
+      {
+        if( 'relation_type_id' == $this->column_name )
+        {
+          if( !$modifier->has_join( 'relation' ) )
+            $modifier->left_join( 'relation', 'participant.id', 'relation.participant_id' );
+          $table_name = 'relation';
+        }
+      }
       $column = sprintf( '%s.%s', $table_name, $this->column_name );
     }
 

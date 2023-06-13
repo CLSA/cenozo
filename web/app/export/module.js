@@ -12,6 +12,7 @@ cenozoApp.defineModule({
     "participant_identifier",
     "phone",
     "proxy",
+    "relation",
     "site",
     "stratum",
     "study",
@@ -73,10 +74,7 @@ cenozoApp.defineModule({
     module.addExtraOperation("view", {
       title: "Generate",
       isDisabled: function ($state, model) {
-        return (
-          !model.viewModel.participantCount ||
-          0 == model.viewModel.columnList.length
-        );
+        return (!model.viewModel.participantCount || 0 == model.viewModel.columnList.length);
       },
       operation: function ($state, model) {
         model.viewModel.exportFileModel.listModel.transitionOnAdd();
@@ -103,9 +101,7 @@ cenozoApp.defineModule({
           // immediately view the export record after it has been created
           this.transitionOnSave = async function (record) {
             await CnSession.workingTransition(async function () {
-              await $state.go("export.view", {
-                identifier: "title=" + record.title,
-              });
+              await $state.go("export.view", { identifier: "title=" + record.title });
             });
           };
         };
@@ -164,13 +160,11 @@ cenozoApp.defineModule({
         var object = function (parentModel, root) {
           CnBaseViewFactory.construct(this, parentModel, root, "export_file");
 
-          var interviewModule = angular.isDefined(
-            cenozoApp.moduleList.interview
-          );
+          var interviewModule = angular.isDefined(cenozoApp.moduleList.interview);
+          var CnInterviewModelFactory = interviewModule ? $injector.get("CnInterviewModelFactory") : null;
 
-          var CnInterviewModelFactory = interviewModule
-            ? $injector.get("CnInterviewModelFactory")
-            : null;
+          var relationModule =
+            CnSession.application.useRelation && angular.isDefined(cenozoApp.moduleList.relation);
 
           angular.extend(this, {
             // create a custom child list that includes the column and restriction dialogs
@@ -196,9 +190,7 @@ cenozoApp.defineModule({
               } else if ("restriction" == child.subject.snake) {
                 return (
                   "Restrictions (" +
-                  (this.restrictionListIsLoading
-                    ? "..."
-                    : this.restrictionList.length) +
+                  (this.restrictionListIsLoading ? "..." : this.restrictionList.length) +
                   ")"
                 );
               }
@@ -210,9 +202,7 @@ cenozoApp.defineModule({
                 path: "export?duplicate_export_id=" + this.record.id,
               }).post();
               var record = {
-                getIdentifier: function () {
-                  return response.data;
-                },
+                getIdentifier: function () { return response.data; },
               };
               return this.parentModel.transitionToViewState(record);
             },
@@ -225,16 +215,7 @@ cenozoApp.defineModule({
                 path:
                   "export/" + this.record.getIdentifier() + "/export_column",
                 data: {
-                  select: {
-                    column: [
-                      "id",
-                      "rank",
-                      "table_name",
-                      "subtype",
-                      "column_name",
-                      "include",
-                    ],
-                  },
+                  select: { column: [ "id", "rank", "table_name", "subtype", "column_name", "include" ] },
                   modifier: { order: { rank: false }, limit: 1000000 },
                 },
               }).query();
@@ -245,17 +226,12 @@ cenozoApp.defineModule({
                   var columnObject = {
                     id: item.id,
                     table_name: item.table_name,
-                    table_title:
-                      "participant_identifier" == item.table_name
-                        ? "Identifier"
-                        : item.table_name.replace(/_/g, " ").ucWords(),
-                    subtype:
-                      null == item.subtype ? null : item.subtype.toString(),
-                    oldSubtype:
-                      null == item.subtype ? null : item.subtype.toString(),
-                    column: this.tableColumnList[
-                      item.table_name
-                    ].list.findByProperty("key", item.column_name),
+                    table_title: "participant_identifier" == item.table_name
+                      ? "Identifier"
+                      : item.table_name.replace(/_/g, " ").ucWords(),
+                    subtype: null == item.subtype ? null : item.subtype.toString(),
+                    oldSubtype: null == item.subtype ? null : item.subtype.toString(),
+                    column: this.tableColumnList[item.table_name].list.findByProperty("key", item.column_name),
                     rank: item.rank,
                     include: item.include,
                     isUpdating: false,
@@ -264,10 +240,7 @@ cenozoApp.defineModule({
 
                   // mark that the table/subtype is in use
                   if (null != item.subtype) {
-                    this.subtypeList[item.table_name].findByProperty(
-                      "key",
-                      item.subtype
-                    ).inUse = true;
+                    this.subtypeList[item.table_name].findByProperty("key", item.subtype).inUse = true;
                   }
 
                   // load the restriction list
@@ -283,16 +256,7 @@ cenozoApp.defineModule({
                   "/export_restriction",
                 data: {
                   select: {
-                    column: [
-                      "id",
-                      "table_name",
-                      "subtype",
-                      "column_name",
-                      "rank",
-                      "logic",
-                      "test",
-                      "value",
-                    ],
+                    column: [ "id", "table_name", "subtype", "column_name", "rank", "logic", "test", "value" ],
                   },
                   modifier: { order: { rank: false } },
                 },
@@ -315,10 +279,7 @@ cenozoApp.defineModule({
                   isUpdating: false,
                 };
 
-                if (
-                  "boolean" == restriction.restriction.type &&
-                  null != restriction.value
-                ) {
+                if ("boolean" == restriction.restriction.type && null != restriction.value) {
                   restriction.value = Boolean(restriction.value);
                 } else if (
                   cenozo.isDatetimeType(restriction.restriction.type)
@@ -616,11 +577,9 @@ cenozoApp.defineModule({
               // get a list of all subtypes from columns for this table
               var subtypeList = this.columnList
                 .reduce((subtypeList, column) => {
-                  if (
-                    column.table_name == tableName &&
-                    !subtypeList.includes(column.subtype)
-                  )
+                  if (column.table_name == tableName && !subtypeList.includes(column.subtype)) {
                     subtypeList.push(column.subtype);
+                  }
                   return subtypeList;
                 }, [])
                 .sort();
@@ -628,9 +587,7 @@ cenozoApp.defineModule({
               var item = {
                 table_name: tableName,
                 subtype: subtypeList[0],
-                restriction: this.tableRestrictionList[
-                  tableName
-                ].list.findByProperty("key", key),
+                restriction: this.tableRestrictionList[tableName].list.findByProperty("key", key),
                 value: null,
                 logic: "and",
                 test: "<=>",
@@ -639,20 +596,11 @@ cenozoApp.defineModule({
 
               if ("boolean" == item.restriction.type) {
                 item.value = true;
-              } else if (
-                ["dob", "dod", "datetime"].includes(item.restriction.type)
-              ) {
+              } else if (["dob", "dod", "datetime"].includes(item.restriction.type)) {
                 var datetime = moment();
-                if ("dob" == item.restriction.type)
-                  datetime.subtract(50, "years");
-                item.value = datetime.format(
-                  "datetime" != item.restriction.type ? "YYYY-MM-DD" : null
-                );
-                item.formattedValue = CnSession.formatValue(
-                  item.value,
-                  item.restriction.type,
-                  true
-                );
+                if ("dob" == item.restriction.type) datetime.subtract(50, "years");
+                item.value = datetime.format("datetime" != item.restriction.type ? "YYYY-MM-DD" : null);
+                item.formattedValue = CnSession.formatValue(item.value, item.restriction.type, true);
               } else if ("enum" == item.restriction.type) {
                 item.value = item.restriction.enumList[0].value;
               } else if ("string" == item.restriction.type) {
@@ -660,10 +608,7 @@ cenozoApp.defineModule({
               }
 
               var response = await CnHttpFactory.instance({
-                path:
-                  "export/" +
-                  this.record.getIdentifier() +
-                  "/export_restriction",
+                path: "export/" + this.record.getIdentifier() + "/export_restriction",
                 data: {
                   table_name: item.table_name,
                   subtype: item.subtype,
@@ -682,10 +627,7 @@ cenozoApp.defineModule({
             },
 
             updateRestriction: async function (restrictionId, key) {
-              var restriction = this.restrictionList.findByProperty(
-                "id",
-                restrictionId
-              );
+              var restriction = this.restrictionList.findByProperty("id", restrictionId);
               var data = {};
               if (angular.isArray(key)) {
                 key.forEach((k) => (data[k] = restriction[k]));
@@ -724,11 +666,7 @@ cenozoApp.defineModule({
             selectDatetime: async function (index) {
               var item = this.restrictionList[index];
               if (!["dob", "dod", "datetime"].includes(item.restriction.type)) {
-                console.error(
-                  'Tried to select datetime for restriction type "' +
-                    item.restriction.type +
-                    '".'
-                );
+                console.error('Tried to select datetime for restriction type "' + item.restriction.type + '".');
               } else {
                 var response = await CnModalDatetimeFactory.instance({
                   title: item.restriction.title,
@@ -739,22 +677,13 @@ cenozoApp.defineModule({
 
                 if (false !== response) {
                   var key = "value";
-                  item.value =
-                    null == response ? null : response.replace(/Z$/, ""); // remove the Z at the end
-                  if (
-                    null == item.value &&
-                    "<=>" != item.test &&
-                    "<>" != item.test
-                  ) {
+                  item.value = null == response ? null : response.replace(/Z$/, ""); // remove the Z at the end
+                  if (null == item.value && "<=>" != item.test && "<>" != item.test) {
                     item.test = "<=>";
                     key = ["test", "value"];
                   }
                   await this.updateRestriction(item.id, key);
-                  item.formattedValue = CnSession.formatValue(
-                    response,
-                    item.restriction.type,
-                    true
-                  );
+                  item.formattedValue = CnSession.formatValue(response, item.restriction.type, true);
                 }
                 this.updateParticipantCount();
               }
@@ -762,36 +691,25 @@ cenozoApp.defineModule({
 
             updateParticipantCount: async function () {
               // get a count of participants to be included in the export
-              angular.extend(this, {
-                participantCount: null,
-                dataPointCount: null,
-              });
+              angular.extend(this, {participantCount: null, dataPointCount: null});
 
               var response = await CnHttpFactory.instance({
                 path: "export/" + this.record.getIdentifier() + "/participant",
               }).count();
 
               this.participantCount = parseInt(response.headers("Total"));
-              this.dataPointCount =
-                this.participantCount *
-                this.columnList.filter((c) => c.include).length;
+              this.dataPointCount = this.participantCount * this.columnList.filter((c) => c.include).length;
             },
 
             addColumn: async function (tableName, key) {
-              var column = this.tableColumnList[tableName].list.findByProperty(
-                "key",
-                key
-              );
+              var column = this.tableColumnList[tableName].list.findByProperty("key", key);
               if (column) {
-                var subtypeObject = angular.isDefined(
-                  this.subtypeList[tableName]
-                )
+                var subtypeObject = angular.isDefined(this.subtypeList[tableName])
                   ? this.subtypeList[tableName][0]
                   : null;
 
                 var response = await CnHttpFactory.instance({
-                  path:
-                    "export/" + this.record.getIdentifier() + "/export_column",
+                  path: "export/" + this.record.getIdentifier() + "/export_column",
                   data: {
                     table_name: tableName,
                     column_name: column.key,
@@ -810,9 +728,7 @@ cenozoApp.defineModule({
                   isUpdating: false,
                   include: true,
                 });
-                this.columnList.forEach((item, index) => {
-                  item.rank = index + 1;
-                }); // re-rank
+                this.columnList.forEach((item, index) => { item.rank = index + 1; }); // re-rank
               }
               this.newColumn[tableName] = undefined;
 
@@ -829,16 +745,11 @@ cenozoApp.defineModule({
 
               var column = this.columnList.splice(oldIndex, 1);
               this.columnList.splice(newIndex, 0, column[0]);
-              this.columnList.forEach((item, index) => {
-                item.rank = index + 1;
-              }); // re-rank
+              this.columnList.forEach((item, index) => { item.rank = index + 1; }); // re-rank
             },
 
             updateColumn: async function (columnId, key) {
-              var workingColumn = this.columnList.findByProperty(
-                "id",
-                columnId
-              );
+              var workingColumn = this.columnList.findByProperty("id", columnId);
               var tableName = workingColumn.table_name;
               var subtype = workingColumn.oldSubtype;
 
@@ -856,17 +767,13 @@ cenozoApp.defineModule({
                 });
                 if (hasUniqueTableSubtype) {
                   updateRestrictionList = this.restrictionList.filter(
-                    (restriction) =>
-                      restriction.table_name == tableName &&
-                      restriction.subtype == subtype
+                    (restriction) => restriction.table_name == tableName && restriction.subtype == subtype
                   );
                 }
 
                 // also update the subtype list inUse property
                 if (null != workingColumn.subtype) {
-                  var subtypeObject = this.subtypeList[
-                    tableName
-                  ].findByProperty("key", workingColumn.subtype);
+                  var subtypeObject = this.subtypeList[tableName].findByProperty("key", workingColumn.subtype);
                   if (null != subtypeObject) subtypeObject.inUse = true;
                 }
               }
@@ -924,15 +831,12 @@ cenozoApp.defineModule({
                   proceed = false;
                   CnModalMessageFactory.instance({
                     title: "Cannot Remove Column",
-                    message:
-                      "You cannot remove this column as there is a restriction which depends on it.",
+                    message: "You cannot remove this column as there is a restriction which depends on it.",
                     error: true,
                   }).show();
                 } else {
                   if (null != subtype) {
-                    var subtypeObject = this.subtypeList[
-                      tableName
-                    ].findByProperty("key", subtype);
+                    var subtypeObject = this.subtypeList[tableName].findByProperty("key", subtype);
                     if (null != subtypeObject) subtypeObject.inUse = false;
                   }
                 }
@@ -943,9 +847,7 @@ cenozoApp.defineModule({
                   path: "export_column/" + this.columnList[index].id,
                 }).delete();
                 this.columnList.splice(index, 1);
-                this.columnList.forEach((item, index) => {
-                  item.rank = index + 1;
-                }); // re-rank
+                this.columnList.forEach((item, index) => { item.rank = index + 1; }); // re-rank
                 this.updateParticipantCount();
               }
             },
@@ -956,29 +858,20 @@ cenozoApp.defineModule({
             },
 
             getSubtypeList: function (tableName) {
-              return this.subtypeList[tableName].filter(
-                (subtypeObject) => subtypeObject.inUse
-              );
+              return this.subtypeList[tableName].filter((subtypeObject) => subtypeObject.inUse);
             },
 
             showRestrictionList: function (tableName) {
-              return this.columnList.some(
-                (column) => tableName == column.table_name
-              );
+              return this.columnList.some((column) => tableName == column.table_name);
             },
 
             getRestrictionColumnList: function (columnRank) {
               if (angular.isUndefined(columnRank)) return [];
 
-              var type = this.columnList.findByProperty(
-                "rank",
-                columnRank
-              ).type;
+              var type = this.columnList.findByProperty("rank", columnRank).type;
               var test = this.columnList.reduce((list, item) => {
                 if (type === item.type && angular.isDefined(item.subtype)) {
-                  list.push(
-                    this.subtypeList[type].findByProperty("key", item.subtype)
-                  );
+                  list.push(this.subtypeList[type].findByProperty("key", item.subtype));
                 }
                 return list;
               }, []);
@@ -999,28 +892,16 @@ cenozoApp.defineModule({
                   if (!ignoreColumnList.includes(column)) {
                     var restrictionItem = {
                       key: column,
-                      title:
-                        "id" == column || "uid" == column
-                          ? column.toUpperCase()
-                          : column
-                              .replace(/_/g, " ")
-                              .replace(/ id/g, "")
-                              .ucWords(),
-                      type:
-                        "tinyint" == item.data_type
-                          ? "boolean"
-                          : angular.isDefined(item.enumList)
-                          ? "enum"
-                          : ("datetime" == item.type) |
-                            ("timestamp" == item.type)
-                          ? "datetime"
-                          : "date_of_birth" == column
-                          ? "dob"
-                          : "date_of_death" == column
-                          ? "dod"
-                          : "varchar"
-                          ? "string"
-                          : "unknown",
+                      title: "id" == column || "uid" == column
+                        ? column.toUpperCase()
+                        : column.replace(/_/g, " ").replace(/ id/g, "").ucWords(),
+                      type: "tinyint" == item.data_type ? "boolean"
+                        : angular.isDefined(item.enumList) ? "enum"
+                        : ("datetime" == item.type) || ("timestamp" == item.type) ? "datetime"
+                        : "date_of_birth" == column ? "dob"
+                        : "date_of_death" == column ? "dod"
+                        : "varchar" ? "string"
+                        : "unknown",
                       required: item.required,
                     };
 
@@ -1029,17 +910,10 @@ cenozoApp.defineModule({
                       "boolean" == restrictionItem.type ||
                       "enum" == restrictionItem.type
                     ) {
-                      restrictionItem.enumList =
-                        "boolean" == restrictionItem.type
-                          ? [
-                              { value: true, name: "Yes" },
-                              { value: false, name: "No" },
-                            ]
-                          : angular.copy(item.enumList);
-                      restrictionItem.enumList.unshift({
-                        value: "",
-                        name: "(empty)",
-                      });
+                      restrictionItem.enumList = "boolean" == restrictionItem.type ?
+                        [ { value: true, name: "Yes" }, { value: false, name: "No" } ] :
+                        angular.copy(item.enumList);
+                      restrictionItem.enumList.unshift({ value: "", name: "(empty)" });
                     }
 
                     restrictionType.list.push(restrictionItem);
@@ -1047,6 +921,32 @@ cenozoApp.defineModule({
                 }
 
                 if ("participant" == tableName) {
+                  // participant relation columns
+                  if (relationModule) {
+                    var response = await CnHttpFactory.instance({
+                      path: "relation_type",
+                      data: {
+                        select: { column: ["id", "name"] },
+                        modifier: { order: ["name"], limit: 1000000 },
+                      },
+                    }).query();
+
+                    let item = {
+                      key: "relation_type_id",
+                      title: "Relation Type",
+                      type: "enum",
+                      required: false,
+                      enumList: [{ value: "", name: "(empty)" }],
+                    };
+                    response.data.forEach((relation_type) => {
+                      item.enumList.push({ value: relation_type.id, name: relation_type.name });
+                    });
+
+                    index = restrictionType.list.findIndexByProperty("key", "override_stratum");
+                    if(null == index) index = restrictionType.list.length-1;
+                    restrictionType.list.splice(index+1, 0, item);
+                  }
+
                   // participant.source_id is not filled in regularly, we must do it here
                   var response = await CnHttpFactory.instance({
                     path: "source",
@@ -1056,15 +956,10 @@ cenozoApp.defineModule({
                     },
                   }).query();
 
-                  var item = restrictionType.list.findByProperty(
-                    "key",
-                    "source_id"
-                  );
+                  var item = restrictionType.list.findByProperty("key", "source_id");
                   item.type = "enum";
                   item.required = false;
-                  item.enumList = item.required
-                    ? []
-                    : [{ value: "", name: "(empty)" }];
+                  item.enumList = item.required ? [] : [{ value: "", name: "(empty)" }];
                   response.data.forEach((source) => {
                     item.enumList.push({ value: source.id, name: source.name });
                   });
@@ -1078,15 +973,10 @@ cenozoApp.defineModule({
                     },
                   }).query();
 
-                  var item = restrictionType.list.findByProperty(
-                    "key",
-                    "cohort_id"
-                  );
+                  var item = restrictionType.list.findByProperty("key", "cohort_id");
                   item.type = "enum";
                   item.required = true;
-                  item.enumList = item.required
-                    ? []
-                    : [{ value: "", name: "(empty)" }];
+                  item.enumList = item.required ? [] : [{ value: "", name: "(empty)" }];
                   response.data.forEach((cohort) => {
                     item.enumList.push({ value: cohort.id, name: cohort.name });
                   });
@@ -1095,17 +985,11 @@ cenozoApp.defineModule({
                 restrictionType.isLoading = false;
                 restrictionType.list.findByProperty("key", undefined).title =
                   "Select a new " +
-                  ("participant_identifier" == tableName
-                    ? "identifier"
-                    : tableName.replace(/_/g, " ")) +
+                  ("participant_identifier" == tableName ? "identifier" : tableName.replace(/_/g, " ")) +
                   " restriction...";
               }
 
-              var ignoreColumnList = [
-                "check_withdraw",
-                "participant_id",
-                "preferred_site_id",
-              ];
+              var ignoreColumnList = ["check_withdraw", "participant_id", "preferred_site_id"];
               var restrictionType = this.tableRestrictionList[tableName];
 
               // only load the restriction list if we haven't already done so
@@ -1120,41 +1004,40 @@ cenozoApp.defineModule({
             processMetadata: async function (subject) {
               await this.modelList[subject].metadata.getPromise();
 
-              var ignoreColumnList = [
-                "address_id",
-                "alternate_id",
-                "participant_id",
-                "preferred_site_id",
-              ];
+              var ignoreColumnList = ["address_id", "alternate_id", "participant_id", "preferred_site_id"];
               var columnList = this.tableColumnList[subject];
               for (var column in this.modelList[subject].metadata.columnList) {
                 // ignore certain columns
                 if (!ignoreColumnList.includes(column)) {
                   columnList.list.push({
                     key: column,
-                    title:
-                      "uid" == column
-                        ? column.toUpperCase()
-                        : "id" == column
-                        ? "Internal ID"
-                        : column
-                            .replace(/_/g, " ")
-                            .replace(/ id/g, "")
-                            .ucWords(),
+                    title: "uid" == column ? column.toUpperCase()
+                      : "id" == column ? "Internal ID"
+                      : column.replace(/_/g, " ").replace(/ id/g, "").ucWords(),
                   });
                 }
               }
               columnList.list.findByProperty("key", undefined).title =
                 "Add a new " +
-                ("participant_identifier" == subject
-                  ? "identifier"
-                  : subject.replace(/_/g, " ")) +
+                ("participant_identifier" == subject ? "identifier" : subject.replace(/_/g, " ")) +
                 " column...";
               columnList.isLoading = false;
 
               // add special meta columns
-              if ("participant" == subject)
-                columnList.list.push({ key: "status", title: "Status" });
+              if ("participant" == subject) {
+                // add in relation columns, but only if the relation module exists
+                if (relationModule) {
+                  let index = columnList.list.findIndexByProperty("key", "override_stratum");
+                  if(null == index) index = columnList.list.length-1;
+                  columnList.list.splice(index+1, 0, { key: "relation_index", title: "Relation Index" });
+                  columnList.list.splice(index+2, 0, { key: "relation_type", title: "Relation Type" });
+                }
+
+                // add in the status column
+                let index = columnList.list.findIndexByProperty("key", "source_id");
+                if(null == index) index = columnList.list.length-1;
+                columnList.list.splice(index+1, 0, { key: "status", title: "Status" });
+              }
             },
           });
 
