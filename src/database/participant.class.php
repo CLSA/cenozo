@@ -1254,8 +1254,10 @@ class participant extends record
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw lib::create( 'exception\argument', 'columns', $columns, __METHOD__ );
 
-    $success = true;
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $affected_rows = 0;
     $preferred_site_id = false;
+    $relation_type_id = false;
     $sql = sprintf( 'UPDATE participant %s ', $modifier->get_join() );
     $first = true;
     foreach( $columns as $column => $value )
@@ -1264,6 +1266,10 @@ class participant extends record
       if( 'preferred_site_id' == $column )
       {
         $preferred_site_id = $value;
+      }
+      else if( 'relation_type_id' == $column )
+      {
+        $relation_type_id = $value;
       }
       else
       {
@@ -1317,16 +1323,70 @@ class participant extends record
         );
       }
 
-      $success = static::db()->execute( $sql );
+      $affected_rows = static::db()->execute( $sql );
     }
 
-    if( $success && !$first )
+    // set the relation type, if necessary
+    if( false !== $relation_type_id && $setting_manager->get_setting( 'general', 'use_relation' ) )
+    {
+      if( '' === $relation_type_id )
+      {
+        $select = lib::create( 'database\select' );
+        $select->from( 'participant' );
+        $select->add_column( 'id' );
+
+        $sql = sprintf(
+          'DELETE FROM relation WHERE participant_id IN (%s%s)',
+          $select->get_sql(),
+          $modifier->get_sql()
+        );
+      }
+      else
+      {
+        $select = lib::create( 'database\select' );
+        $select->from( 'participant' );
+        $select->add_constant( NULL, 'create_timestamp' );
+        $select->add_column(
+          'IFNULL( relation.primary_participant_id, participant.id )',
+          'primary_participant_id',
+          false
+        );
+        $select->add_column( 'id', 'participant_id' );
+        $select->add_constant( $relation_type_id, 'relation_type_id' );
+
+        // make sure the relation_type doesn't already exist in the participant's relation group
+        $modifier->left_join( 'relation', 'participant.id', 'relation.participant_id' );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where(
+          'relation.primary_participant_id',
+          '=',
+          'existing_relation.primary_participant_id',
+          false
+        );
+        $join_mod->where( 'existing_relation.relation_type_id', '=', $relation_type_id );
+        $join_mod->where( 'existing_relation.participant_id', '!=', 'participant.id', false );
+        $modifier->join_modifier( 'relation', $join_mod, 'left', 'existing_relation' );
+        $modifier->where( 'existing_relation.id', '=', NULL );
+
+        $sql = sprintf(
+          'INSERT INTO relation( create_timestamp, primary_participant_id, participant_id, relation_type_id ) '.
+          '%s %s '.
+          'ON DUPLICATE KEY UPDATE relation_type_id = VALUES( relation_type_id )',
+          $select->get_sql(),
+          $modifier->get_sql()
+        );
+      }
+
+      $affected_rows = static::db()->execute( $sql );
+    }
+
+    if( $affected_rows && !$first )
     {
       $sql .= ' '.$modifier->get_sql_without_joins();
-      $success = static::db()->execute( $sql );
+      $affected_rows = static::db()->execute( $sql );
     }
 
-    return $success;
+    return $affected_rows;
   }
 
   /**

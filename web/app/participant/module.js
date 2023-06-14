@@ -20,29 +20,12 @@ cenozoApp.defineModule({
         possessive: "participant's",
       },
       columnList: {
-        uid: {
-          column: "participant.uid",
-          title: "UID",
-        },
-        first: {
-          column: "participant.first_name",
-          title: "First",
-        },
-        last: {
-          column: "participant.last_name",
-          title: "Last",
-        },
-        cohort: {
-          column: "cohort.name",
-          title: "Cohort",
-        },
-        status: {
-          title: "Effective Status",
-        },
-        site: {
-          column: "site.name",
-          title: "Site",
-        },
+        uid: { column: "participant.uid", title: "UID" },
+        first: { column: "participant.first_name", title: "First" },
+        last: { column: "participant.last_name", title: "Last" },
+        cohort: { column: "cohort.name", title: "Cohort" },
+        status: { title: "Effective Status" },
+        site: { column: "site.name", title: "Site" },
         global_note: {
           column: "participant.global_note",
           title: "Special Note",
@@ -50,10 +33,7 @@ cenozoApp.defineModule({
           limit: 20,
         },
       },
-      defaultOrder: {
-        column: "uid",
-        reverse: false,
-      },
+      defaultOrder: { column: "uid", reverse: false },
     });
 
     // define inputs
@@ -89,18 +69,9 @@ cenozoApp.defineModule({
           "English examples: Mr. Mrs. Miss Ms. Dr. Prof. Br. Sr. Fr. Rev. Pr.  " +
           "French examples: M. Mme Dr Dre Prof. F. Sr P. Révérend Pasteur Pasteure Me",
       },
-      first_name: {
-        title: "First Name",
-        type: "string",
-      },
-      other_name: {
-        title: "Other/Nickname",
-        type: "string",
-      },
-      last_name: {
-        title: "Last Name",
-        type: "string",
-      },
+      first_name: { title: "First Name", type: "string" },
+      other_name: { title: "Other/Nickname", type: "string" },
+      last_name: { title: "Last Name", type: "string" },
     });
 
     module.addInputGroup("Status Details", {
@@ -340,44 +311,28 @@ cenozoApp.defineModule({
       if (angular.isDefined(searchResultModule.actions.list)) {
         module.addExtraOperation("list", {
           title: "Search",
-          isIncluded: function ($state, model) {
-            return "participant" == model.getSubjectFromState();
-          },
-          operation: async function ($state, model) {
-            await $state.go("search_result.list");
-          },
+          isIncluded: function ($state, model) { return "participant" == model.getSubjectFromState(); },
+          operation: async function ($state, model) { await $state.go("search_result.list"); },
         });
       }
     } catch (e) {
       // ignore missing module
-      if (
-        'Tried to load module "search_result" which doesn\'t exist.' !=
-        e.message
-      )
-        throw e;
+      if ('Tried to load module "search_result" which doesn\'t exist.' != e.message) throw e;
     }
 
     if (angular.isDefined(module.actions.import)) {
       module.addExtraOperation("list", {
         title: "Import",
-        isIncluded: function ($state, model) {
-          return "participant" == model.getSubjectFromState();
-        },
-        operation: async function ($state, model) {
-          await $state.go("participant.import");
-        },
+        isIncluded: function ($state, model) { return "participant" == model.getSubjectFromState(); },
+        operation: async function ($state, model) { await $state.go("participant.import"); },
       });
     }
 
     if (angular.isDefined(module.actions.multiedit)) {
       module.addExtraOperation("list", {
         title: "Multiedit",
-        isIncluded: function ($state, model) {
-          return "participant" == model.getSubjectFromState();
-        },
-        operation: async function ($state, model) {
-          await $state.go("participant.multiedit");
-        },
+        isIncluded: function ($state, model) { return "participant" == model.getSubjectFromState(); },
+        operation: async function ($state, model) { await $state.go("participant.multiedit"); },
       });
     }
 
@@ -386,12 +341,8 @@ cenozoApp.defineModule({
       if (angular.isDefined(exportModule.actions.list)) {
         module.addExtraOperation("list", {
           title: "Export",
-          isIncluded: function ($state, model) {
-            return "participant" == model.getSubjectFromState();
-          },
-          operation: async function ($state, model) {
-            await $state.go("export.list");
-          },
+          isIncluded: function ($state, model) { return "participant" == model.getSubjectFromState(); },
+          operation: async function ($state, model) { await $state.go("export.list"); },
         });
       }
     } catch (err) {}
@@ -436,18 +387,10 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             var description = item.address1;
             if (item.address2) description += "\n" + item.address2;
-            description +=
-              "\n" +
-              item.city +
-              ", " +
-              item.region +
-              ", " +
-              item.country +
-              "\n" +
-              item.postcode;
+            description += "\n" + item.city + ", " + item.region + ", " + item.country + "\n" + item.postcode;
             if (item.international) description += "\n(international)";
             historyList.push({
               datetime: item.create_timestamp,
@@ -478,22 +421,16 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.create_timestamp,
               category: "Alternate",
               title: "added " + item.first_name + " " + item.last_name,
               description:
-                item.first_name +
-                " " +
-                item.last_name +
-                " (" +
-                (item.association ? item.association : "unknown association") +
-                ")\n" +
-                "Current roles: " +
-                (item.alternate_type_list
-                  ? item.alternate_type_list
-                  : "(none)"),
+                item.first_name + " " +
+                item.last_name + " (" +
+                (item.association ? item.association : "unknown association") + ")\n" +
+                "Current roles: " + (item.alternate_type_list ? item.alternate_type_list : "(none)"),
             });
           });
         },
@@ -527,15 +464,13 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.datetime,
               category: "Consent",
               title:
-                (item.written ? "Written" : "Verbal") +
-                ' "' +
-                item.name +
-                '" ' +
+                (item.written ? "Written" : "Verbal") + ' "' +
+                item.name + '" ' +
                 (item.accept ? "accepted" : "rejected"),
               description: item.description + "\n" + item.note,
             });
@@ -568,7 +503,7 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.datetime,
               category: "Event",
@@ -604,7 +539,7 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.date,
               category: "Form",
@@ -642,14 +577,11 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.datetime,
               category: "Hold",
-              title:
-                null == item.type
-                  ? "removed hold"
-                  : 'added "' + item.type + " " + item.name + '"',
+              title: null == item.type ? "removed hold" : 'added "' + item.type + " " + item.name + '"',
               description: null == item.type ? "" : item.description,
             });
           });
@@ -664,13 +596,11 @@ cenozoApp.defineModule({
             path: "participant/" + $state.params.identifier + "/mail",
             data: {
               select: { column: ["sent_datetime", "subject", "note"] },
-              modifier: {
-                where: { column: "sent_datetime", operator: "!=", value: null },
-              },
+              modifier: { where: { column: "sent_datetime", operator: "!=", value: null } },
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.sent_datetime,
               category: "Mail",
@@ -707,7 +637,7 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.datetime,
               category: "Note",
@@ -737,16 +667,12 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.create_timestamp,
               category: "Phone",
               title: "added rank " + item.rank,
-              description:
-                item.type +
-                ": " +
-                item.number +
-                (item.international ? " (international)" : ""),
+              description: item.type + ": " + item.number + (item.international ? " (international)" : ""),
             });
           });
         },
@@ -778,14 +704,11 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.datetime,
               category: "Proxy",
-              title:
-                null == item.name
-                  ? "removed proxy"
-                  : 'added proxy: "' + item.name + '"',
+              title: null == item.name ? "removed proxy" : 'added proxy: "' + item.name + '"',
               description: null == item.name ? "" : item.description,
             });
           });
@@ -820,17 +743,13 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.datetime,
               category: "Trace",
               title:
-                (null == item.name
-                  ? "removed trace"
-                  : 'added to "' + item.name + '"') +
-                " by " +
-                item.first_name +
-                " " +
+                (null == item.name ? "removed trace" : 'added to "' + item.name + '"') + " by " +
+                item.first_name + " " +
                 item.last_name,
               description: item.note,
             });
@@ -880,41 +799,25 @@ cenozoApp.defineModule({
                 },
               }).query();
 
-              subResponse.data.forEach((assignment) => {
+              subResponse.data.forEach(assignment => {
                 if (null != assignment.start_datetime) {
                   historyList.push({
                     datetime: assignment.start_datetime,
                     category: "Assignment",
-                    title:
-                      "started by " +
-                      assignment.user_first +
-                      " " +
-                      assignment.user_last,
+                    title: "started by " + assignment.user_first + " " + assignment.user_last,
                     description:
-                      'Started an assignment for the "' +
-                      assignment.script +
-                      '" questionnaire.\n' +
-                      "Assigned from the " +
-                      assignment.site +
-                      " site.",
+                      'Started an assignment for the "' + assignment.script + '" questionnaire.\n' +
+                      "Assigned from the " + assignment.site + " site.",
                   });
                 }
                 if (null != assignment.end_datetime) {
                   historyList.push({
                     datetime: assignment.end_datetime,
                     category: "Assignment",
-                    title:
-                      "completed by " +
-                      assignment.user_first +
-                      " " +
-                      assignment.user_last,
+                    title: "completed by " + assignment.user_first + " " + assignment.user_last,
                     description:
-                      'Completed an assignment for the "' +
-                      assignment.script +
-                      '" questionnaire.\n' +
-                      "Assigned from the " +
-                      assignment.site +
-                      " site.",
+                      'Completed an assignment for the "' + assignment.script + '" questionnaire.\n' +
+                      "Assigned from the " + assignment.site + " site.",
                   });
                 }
               });
@@ -945,17 +848,13 @@ cenozoApp.defineModule({
             },
           }).query();
 
-          response.data.forEach((item) => {
+          response.data.forEach(item => {
             historyList.push({
               datetime: item.start_datetime,
               category: "Equipment",
               title: "loaned " + item.name,
               description:
-                "Loaned " +
-                item.name +
-                ' with serial number "' +
-                item.serial_number +
-                '"' +
+                "Loaned " + item.name + ' with serial number "' + item.serial_number + '"' +
                 ( item.end_datetime ? "" : " (not yet returned)" ) +
                 ( item.note ? '\n' + item.note : "" ),
             });
@@ -966,11 +865,7 @@ cenozoApp.defineModule({
                 category: "Equipment",
                 title: "returned " + item.name,
                 description:
-                  "Returned " +
-                  item.name +
-                  ' with serial number "' +
-                  item.serial_number +
-                  '"' +
+                  "Returned " + item.name + ' with serial number "' + item.serial_number + '"' +
                   ( item.note ? '\n' + item.note : "" ),
               });
             }
@@ -1006,21 +901,13 @@ cenozoApp.defineModule({
             // create an array from the history categories object
             $scope.historyCategoryArray = [];
             for (var name in $scope.model.module.historyCategoryList) {
-              if (
-                angular.isUndefined(
-                  $scope.model.module.historyCategoryList[name].framework
-                )
-              )
+              if (angular.isUndefined($scope.model.module.historyCategoryList[name].framework)) {
                 $scope.model.module.historyCategoryList[name].framework = false;
-              if (
-                angular.isUndefined(
-                  $scope.model.module.historyCategoryList[name].name
-                )
-              )
+              }
+              if (angular.isUndefined($scope.model.module.historyCategoryList[name].name)) {
                 $scope.model.module.historyCategoryList[name].name = name;
-              $scope.historyCategoryArray.push(
-                $scope.model.module.historyCategoryList[name]
-              );
+              }
+              $scope.historyCategoryArray.push($scope.model.module.historyCategoryList[name]);
             }
 
             $scope.refresh = async function () {
@@ -1030,16 +917,12 @@ cenozoApp.defineModule({
                 CnSession.setBreadcrumbTrail([
                   {
                     title: "Participants",
-                    go: async function () {
-                      await $state.go("participant.list");
-                    },
+                    go: async function () { await $state.go("participant.list"); },
                   },
                   {
                     title: $scope.uid,
                     go: async function () {
-                      await $state.go("participant.view", {
-                        identifier: $state.params.identifier,
-                      });
+                      await $state.go("participant.view", { identifier: $state.params.identifier, });
                     },
                   },
                   {
@@ -1081,16 +964,12 @@ cenozoApp.defineModule({
               CnSession.setBreadcrumbTrail([
                 {
                   title: "Participants",
-                  go: async function () {
-                    await $state.go("participant.list");
-                  },
+                  go: async function () { await $state.go("participant.list"); },
                 },
                 {
                   title: $scope.uid,
                   go: async function () {
-                    await $state.go("participant.view", {
-                      identifier: $state.params.identifier,
-                    });
+                    await $state.go("participant.view", { identifier: $state.params.identifier, });
                   },
                 },
                 {
@@ -1120,9 +999,7 @@ cenozoApp.defineModule({
             CnSession.setBreadcrumbTrail([
               {
                 title: "Participants",
-                go: async function () {
-                  await $state.go("participant.list");
-                },
+                go: async function () { await $state.go("participant.list"); },
               },
               {
                 title: "Import",
@@ -1148,9 +1025,7 @@ cenozoApp.defineModule({
             CnSession.setBreadcrumbTrail([
               {
                 title: "Participants",
-                go: async function () {
-                  await $state.go("participant.list");
-                },
+                go: async function () { await $state.go("participant.list"); },
               },
               {
                 title: "Multi-Edit",
@@ -1183,9 +1058,7 @@ cenozoApp.defineModule({
                 angular.element("#note" + id).trigger("elastic");
               },
 
-              refresh: async function () {
-                await $scope.model.onView();
-              },
+              refresh: async function () { await $scope.model.onView(); },
             });
 
             await $scope.model.onView();
@@ -1228,9 +1101,7 @@ cenozoApp.defineModule({
               let title = this.$$getChildTitle(child);
 
               // change some of the default titles
-              if ("study" == child.subject.snake) {
-                title = title.replace("Study", "Eligible Study");
-              }
+              if ("study" == child.subject.snake) title = title.replace("Study", "Eligible Study");
 
               return title;
             },
@@ -1241,10 +1112,8 @@ cenozoApp.defineModule({
 
               // put the participant's full name in the heading
               var nameList = [this.record.first_name, this.record.last_name];
-              if (this.record.other_name)
-                nameList.splice(1, 0, "(" + this.record.other_name + ")");
-              if (this.record.honorific)
-                nameList.unshift(this.record.honorific);
+              if (this.record.other_name) nameList.splice(1, 0, "(" + this.record.other_name + ")");
+              if (this.record.honorific) nameList.unshift(this.record.honorific);
               this.heading = "Participant Details for " + nameList.join(" ");
 
               if (null != this.record.date_of_death) {
@@ -1252,21 +1121,13 @@ cenozoApp.defineModule({
                 if ("day unknown" == this.record.date_of_death_accuracy) {
                   this.formattedRecord.date_of_death =
                     this.formattedRecord.date_of_death.replace(/ [0-9]+,/, ",");
-                } else if (
-                  "month and day unknown" == this.record.date_of_death_accuracy
-                ) {
+                } else if ("month and day unknown" == this.record.date_of_death_accuracy) {
                   this.formattedRecord.date_of_death =
-                    this.formattedRecord.date_of_death.replace(
-                      /[A-Za-z]+ [0-9]+,/,
-                      ""
-                    );
+                    this.formattedRecord.date_of_death.replace(/[A-Za-z]+ [0-9]+,/, "");
                 }
 
                 // if the date of death is defined then show age of death instead of current age
-                var age = moment(this.record.date_of_death).diff(
-                  this.record.date_of_birth,
-                  "years"
-                );
+                var age = moment(this.record.date_of_death).diff(this.record.date_of_birth, "years");
                 this.formattedRecord.date_of_birth =
                   this.formattedRecord.date_of_birth.replace(/ \(.*\)/, "");
                 this.formattedRecord.date_of_death +=
@@ -1314,8 +1175,7 @@ cenozoApp.defineModule({
                     await this.$$onPatch(data);
                     if (!assignedParticipant) await $state.go("root.home");
                   } else {
-                    this.record.preferred_site_id =
-                      this.backupRecord.preferred_site_id;
+                    this.record.preferred_site_id = this.backupRecord.preferred_site_id;
                   }
                 }
               }
@@ -1323,11 +1183,9 @@ cenozoApp.defineModule({
               await this.$$onPatch(data);
 
               // refresh the data if date-of-death information has changed
-              if (
-                angular.isDefined(data.date_of_death) ||
-                angular.isDefined(data.date_of_death_accuracy)
-              )
+              if (angular.isDefined(data.date_of_death) || angular.isDefined(data.date_of_death_accuracy)) {
                 await this.onView();
+              }
             },
           });
 
@@ -1337,23 +1195,11 @@ cenozoApp.defineModule({
 
               // override the collection model's getServiceData function (list active collections only)
               if (object.collectionModel) {
-                object.collectionModel.getServiceData = function (
-                  type,
-                  columnRestrictLists
-                ) {
-                  var data = object.collectionModel.$$getServiceData(
-                    type,
-                    columnRestrictLists
-                  );
-                  if (angular.isUndefined(data.modifier))
-                    data.modifier = { where: [] };
-                  else if (angular.isUndefined(data.modifier.where))
-                    data.modifier.where = [];
-                  data.modifier.where.push({
-                    column: "collection.active",
-                    operator: "=",
-                    value: true,
-                  });
+                object.collectionModel.getServiceData = function (type, columnRestrictLists) {
+                  var data = object.collectionModel.$$getServiceData(type, columnRestrictLists);
+                  if (angular.isUndefined(data.modifier)) data.modifier = { where: [] };
+                  else if (angular.isUndefined(data.modifier.where)) data.modifier.where = [];
+                  data.modifier.where.push({ column: "collection.active", operator: "=", value: true });
                   return data;
                 };
               }
@@ -1381,25 +1227,16 @@ cenozoApp.defineModule({
               // only allow adding a hold or proxy if the participant is enrolled
               if (object.holdModel) {
                 object.holdModel.getAddEnabled = function () {
-                  return (
-                    object.holdModel.$$getAddEnabled() &&
-                    "Yes" == object.record.exclusion
-                  );
+                  return (object.holdModel.$$getAddEnabled() && "Yes" == object.record.exclusion);
                 };
                 object.proxyModel.getAddEnabled = function () {
-                  return (
-                    object.proxyModel.$$getAddEnabled() &&
-                    "Yes" == object.record.exclusion
-                  );
+                  return (object.proxyModel.$$getAddEnabled() && "Yes" == object.record.exclusion);
                 };
               }
 
               if (object.relationModel) {
                 object.relationModel.getAddEnabled = function () {
-                  return (
-                    object.relationModel.$$getAddEnabled() &&
-                    object.record.is_primary_relation
-                  );
+                  return (object.relationModel.$$getAddEnabled() && object.record.is_primary_relation);
                 };
               }
             }
@@ -1435,8 +1272,7 @@ cenozoApp.defineModule({
         var object = function (root) {
           CnBaseModelFactory.construct(this, module);
           this.listModel = CnParticipantListFactory.instance(this);
-          if (root)
-            this.viewModel = CnParticipantViewFactory.instance(this, root);
+          if (root) this.viewModel = CnParticipantViewFactory.instance(this, root);
 
           // add the relation_type input and column if the application is setup to use relations
           if (CnSession.application.useRelation) {
@@ -1658,7 +1494,7 @@ cenozoApp.defineModule({
               // only scripts if the script module is activated
               if (CnSession.moduleList.includes("script")) {
                 const re = new RegExp("(" + this.validScriptNameList.join("|") + ")");
-                CnSession.supportingScriptList.forEach((script) => {
+                CnSession.supportingScriptList.forEach(script => {
                   const matches = script.name.match(re);
                   if (null != matches) {
                     const name = matches[1];
@@ -1692,8 +1528,7 @@ cenozoApp.defineModule({
                               item.title += " (completed on " + item.completedOn + ")";
                           } else {
                             item.title = item.name + " Completed";
-                            if (null != item.completedOn)
-                              item.title += " (" + item.completedOn + ")";
+                            if (null != item.completedOn) item.title += " (" + item.completedOn + ")";
                           }
                         }
                         item.isWorking = false;
@@ -1768,7 +1603,6 @@ cenozoApp.defineModule({
             parentModel: CnParticipantModelFactory.root,
             addressModel: CnAddressModelFactory.root,
             phoneModel: CnPhoneModelFactory.root,
-            useRelation: CnSession.application.useRelation,
             sourceList: [],
             cohortList: [],
             relationTypeList: [],
@@ -1806,16 +1640,12 @@ cenozoApp.defineModule({
                       // assume the first line is a header
                       var columnLookup = csv
                         .shift()
-                        .map((column) =>
-                          column.trim().toLowerCase().replace(" ", "_")
-                        );
+                        .map(column => column.trim().toLowerCase().replace(" ", "_"));
                       columnLookup.forEach((column, index) => {
                         // check for regular column names and multi (address and phone) column names
                         if (
                           !validColumnList.includes(column) &&
-                          !validMultiColumnList.includes(
-                            column.replace(/_[0-9]+$/, "")
-                          )
+                          !validMultiColumnList.includes(column.replace(/_[0-9]+$/, ""))
                         ) {
                           columnLookup[index] = null;
                         } else {
@@ -1827,20 +1657,17 @@ cenozoApp.defineModule({
                       if (validColumnCount) {
                         // go through all lines which aren't empty
                         csv
-                          .filter((line) => line.length)
-                          .forEach((line) => {
+                          .filter(line => line.length)
+                          .forEach(line => {
                             var participant = {};
                             line.forEach((value, index) => {
-                              if (
-                                null !== columnLookup[index] &&
-                                null !== value
-                              )
+                              if (null !== columnLookup[index] && null !== value) {
                                 participant[columnLookup[index]] = value;
+                              }
                             });
 
                             // don't add participants which only have empty values
-                            if (Object.keys(participant).length)
-                              participantList.push(participant);
+                            if (Object.keys(participant).length) participantList.push(participant);
                           });
 
                         // now send the list of participants to the server
@@ -1849,21 +1676,14 @@ cenozoApp.defineModule({
                           data: participantList,
                         }).post();
                         message =
-                          "A total of " +
-                          (participantList.length - response.data.length) +
-                          " out of " +
-                          participantList.length +
-                          " participants have been imported." +
-                          (0 < response.data.length
-                            ? "\n\n" + response.data.join("\n")
-                            : "");
+                          "A total of " + (participantList.length - response.data.length) +
+                          " out of " + participantList.length + " participants have been imported." +
+                          (0 < response.data.length ? "\n\n" + response.data.join("\n") : "");
                       }
                     }
 
                     await CnModalMessageFactory.instance({
-                      title: validColumnCount
-                        ? "Import Results"
-                        : "Unable to Parse File",
+                      title: validColumnCount ? "Import Results" : "Unable to Parse File",
                       message: message,
                       error: !validColumnCount,
                     }).show();
@@ -1897,7 +1717,7 @@ cenozoApp.defineModule({
             "global_note",
           ];
 
-          if (this.useRelation) validColumnList = validColumnList.concat(
+          if (CnSession.application.useRelation) validColumnList = validColumnList.concat(
             ["relationship_index", "relationship_type"]
           );
 
@@ -1916,17 +1736,11 @@ cenozoApp.defineModule({
           async function init(object) {
             try {
               await object.parentModel.metadata.getPromise();
-              object.sexList =
-                object.parentModel.metadata.columnList.sex.enumList.map(
-                  (row) => row.name
-                );
+              object.sexList = object.parentModel.metadata.columnList.sex.enumList.map(row => row.name);
 
               await object.addressModel.metadata.getPromise();
               await object.phoneModel.metadata.getPromise();
-              object.phoneTypeList =
-                object.phoneModel.metadata.columnList.type.enumList.map(
-                  (row) => row.name
-                );
+              object.phoneTypeList = object.phoneModel.metadata.columnList.type.enumList.map(row => row.name);
 
               // get the source list
               var response = await CnHttpFactory.instance({
@@ -1936,7 +1750,7 @@ cenozoApp.defineModule({
                   modifier: { order: "name" },
                 },
               }).query();
-              object.sourceList = response.data.map((row) => row.name);
+              object.sourceList = response.data.map(row => row.name);
 
               // get the cohort list
               var response = await CnHttpFactory.instance({
@@ -1946,17 +1760,19 @@ cenozoApp.defineModule({
                   modifier: { order: "name" },
                 },
               }).query();
-              object.cohortList = response.data.map((row) => row.name);
+              object.cohortList = response.data.map(row => row.name);
 
-              // get the relation type list
-              var response = await CnHttpFactory.instance({
-                path: "relation_type",
-                data: {
-                  select: { column: "name" },
-                  modifier: { order: "name" },
-                },
-              }).query();
-              object.relationTypeList = response.data.map((row) => row.name);
+              if (CnSession.application.useRelation) {
+                // get the relation type list
+                var response = await CnHttpFactory.instance({
+                  path: "relation_type",
+                  data: {
+                    select: { column: "name" },
+                    modifier: { order: "name" },
+                  },
+                }).query();
+                object.relationTypeList = response.data.map(row => row.name);
+              }
 
               // get the language list
               var response = await CnHttpFactory.instance({
@@ -1969,7 +1785,7 @@ cenozoApp.defineModule({
                   },
                 },
               }).query();
-              object.languageList = response.data.map((row) => row.code);
+              object.languageList = response.data.map(row => row.code);
 
               // get the availability_type list
               var response = await CnHttpFactory.instance({
@@ -1979,9 +1795,7 @@ cenozoApp.defineModule({
                   modifier: { order: "name" },
                 },
               }).query();
-              object.availabilityTypeList = response.data.map(
-                (row) => row.name
-              );
+              object.availabilityTypeList = response.data.map(row => row.name);
             } finally {
               object.loading = false;
             }
@@ -2051,34 +1865,21 @@ cenozoApp.defineModule({
 
               if (false !== response) {
                 input.value = response;
-                input.formattedValue = CnSession.formatValue(
-                  response,
-                  input.type,
-                  true
-                );
+                input.formattedValue = CnSession.formatValue(response, input.type, true);
               }
             },
 
             activateInput: function (column) {
               if (column) {
-                this.participantInputList.findByProperty(
-                  "column",
-                  column
-                ).active = true;
+                this.participantInputList.findByProperty("column", column).active = true;
                 this.hasActiveInputs = true;
                 if (column == this.activeInput) this.activeInput = "";
               }
             },
 
             deactivateInput: function (column) {
-              this.participantInputList.findByProperty(
-                "column",
-                column
-              ).active = false;
-              this.hasActiveInputs =
-                0 <
-                this.participantInputList.filter((input) => input.active)
-                  .length;
+              this.participantInputList.findByProperty("column", column).active = false;
+              this.hasActiveInputs = 0 < this.participantInputList.filter(input => input.active).length;
             },
 
             applyMultiedit: async function (type) {
@@ -2093,82 +1894,63 @@ cenozoApp.defineModule({
                 inputList = this.consentInputList;
                 model = CnConsentModelFactory.root;
                 messageObj.title = "Consent Records Added";
-                messageObj.message =
-                  "The consent record has been successfully added to <TOTAL> participant(s).";
+                messageObj.message = "The consent record has been successfully added to <TOTAL> participant(s).";
               } else if ("collection" == type) {
                 // handle the collection id specially
-                var element =
-                  cenozo.getScopeByQuerySelector("#collectionId").innerForm
-                    .name;
+                var element = cenozo.getScopeByQuerySelector("#collectionId").innerForm.name;
                 element.$error.format = false;
                 cenozo.updateFormElement(element, true);
                 error = error || element.$invalid;
                 messageObj.title = "Collection Updated";
                 messageObj.message =
                   "The participant list has been " +
-                  ("add" == this.collectionOperation
-                    ? "added to "
-                    : "removed from ") +
-                  'the "' +
-                  this.collectionList.findByProperty("id", this.collectionId)
-                    .name +
-                  '" ' +
-                  "collection";
+                  ("add" == this.collectionOperation ? "added to " : "removed from ") +
+                  'the "' + this.collectionList.findByProperty("id", this.collectionId).name +
+                  '" ' + "collection";
               } else if ("event" == type) {
                 inputList = this.eventInputList;
                 model = CnEventModelFactory.root;
                 messageObj.title = "Event Records Added";
-                messageObj.message =
-                  "The event record has been successfully added to <TOTAL> participant(s).";
+                messageObj.message = "The event record has been successfully added to <TOTAL> participant(s).";
               } else if ("hold" == type) {
                 inputList = this.holdInputList;
                 model = CnHoldModelFactory.root;
                 messageObj.title = "Hold Records Added";
-                messageObj.message =
-                  "The hold record has been successfully added to <TOTAL> participant(s).";
+                messageObj.message = "The hold record has been successfully added to <TOTAL> participant(s).";
               } else if ("note" == type) {
                 inputList = this.noteInputList;
                 messageObj.title = "Note Records Added";
-                messageObj.message =
-                  "The note record has been successfully added to <TOTAL> participant(s).";
+                messageObj.message = "The note record has been successfully added to <TOTAL> participant(s).";
               } else if ("participant" == type) {
                 inputList = this.participantInputList.filter(input => input.active);
                 model = CnParticipantModelFactory.root;
                 messageObj.title = "Participant Details Updated";
                 messageObj.message =
                   "The listed details have been successfully updated on " +
-                  identifierList.length +
-                  " participant records.";
+                  identifierList.length + " participant records.";
               } else if ("proxy" == type) {
                 inputList = this.proxyInputList;
                 model = CnProxyModelFactory.root;
                 messageObj.title = "Proxy Records Added";
-                messageObj.message =
-                  "The proxy record has been successfully added to <TOTAL> participant(s).";
+                messageObj.message = "The proxy record has been successfully added to <TOTAL> participant(s).";
               } else if ("study" == type) {
                 // handle the study id specially
-                var element =
-                  cenozo.getScopeByQuerySelector("#studyId").innerForm.name;
+                var element = cenozo.getScopeByQuerySelector("#studyId").innerForm.name;
                 element.$error.format = false;
                 cenozo.updateFormElement(element, true);
                 error = error || element.$invalid;
                 messageObj.title = "Study Eligibility Updated";
                 messageObj.message =
                   "The participant list has been " +
-                  ("add" == this.studyOperation
-                    ? "added to "
-                    : "removed from ") +
-                  'the "' +
-                  this.studyList.findByProperty("id", this.studyId).name +
-                  '" ' +
-                  "study";
+                  ("add" == this.studyOperation ? "added to " : "removed from ") +
+                  'the "' + this.studyList.findByProperty("id", this.studyId).name + '" study';
               } else
                 throw new Error(
                   'Called addRecords() with invalid type "' + type + '".'
                 );
 
               if (inputList) {
-                inputList.forEach((input) => {
+                inputList.forEach(input => {
                   var element = cenozo.getFormElement(input.column);
                   if (element) {
                     var valid = model.testFormat(input.column, input.value);
@@ -2185,22 +1967,14 @@ cenozoApp.defineModule({
                   identifier_list: identifierList,
                 };
                 if ("collection" == type) {
-                  data.collection = {
-                    id: this.collectionId,
-                    operation: this.collectionOperation,
-                  };
+                  data.collection = { id: this.collectionId, operation: this.collectionOperation };
                 } else if ("note" == type) {
                   data.note = this.note;
                 } else if ("participant" == type) {
                   data.input_list = {};
-                  inputList.forEach(
-                    (input) => (data.input_list[input.column] = input.value)
-                  );
+                  inputList.forEach(input => (data.input_list[input.column] = input.value));
                 } else if ("study" == type) {
-                  data.study = {
-                    id: this.studyId,
-                    operation: this.studyOperation,
-                  };
+                  data.study = { id: this.studyId, operation: this.studyOperation };
                 } else {
                   data[type] = inputList.reduce((record, input) => {
                     record[input.column] = input.value;
@@ -2215,10 +1989,7 @@ cenozoApp.defineModule({
                 }).post();
 
                 // some messages have a <TOTAL> in them, so fill it in (the number of records created)
-                messageObj.message = messageObj.message.replace(
-                  "<TOTAL>",
-                  response.data
-                );
+                messageObj.message = messageObj.message.replace( "<TOTAL>", response.data );
                 var messageModal = CnModalMessageFactory.instance(messageObj);
                 await messageModal.show();
               }
@@ -2230,7 +2001,7 @@ cenozoApp.defineModule({
             list.forEach((column, index, array) => {
               // find this column's input details in the module's input group list
               var input = null;
-              module.inputGroupList.some((group) => {
+              module.inputGroupList.some(group => {
                 for (var groupListColumn in group.inputList) {
                   if (column == groupListColumn) {
                     input = group.inputList[groupListColumn];
@@ -2248,10 +2019,7 @@ cenozoApp.defineModule({
                   min: input.min,
                   max: input.max,
                   active: false,
-                  value:
-                    null == metadata[column].default
-                      ? null
-                      : String(metadata[column].default),
+                  value: null == metadata[column].default ? null : String(metadata[column].default),
                   required: metadata[column].required,
                   max_length: metadata[column].max_length,
                   enumList: angular.copy(metadata[column].enumList),
@@ -2264,10 +2032,7 @@ cenozoApp.defineModule({
                 } else if ("enum" == array[index].type) {
                   if (!array[index].required) {
                     // enums which are not required should have an empty value
-                    array[index].enumList.unshift({
-                      value: "",
-                      name: "(empty)",
-                    });
+                    array[index].enumList.unshift({ value: "", name: "(empty)" });
                   }
 
                   // always select the first value, whatever it is
@@ -2286,21 +2051,55 @@ cenozoApp.defineModule({
             await CnParticipantModelFactory.root.metadata.getPromise();
             object.participantInputList = processInputList(
               [
-                "honorific",
-                "sex",
-                "current_sex",
-                "language_id",
                 "availability_type_id",
-                "preferred_site_id",
-                "out_of_area",
                 "email",
                 "email2",
+                "honorific",
                 "mass_email",
                 "note",
+                "out_of_area",
+                "language_id",
+                "preferred_site_id",
+                "sex",
+                "current_sex",
               ],
               object.module,
               CnParticipantModelFactory.root.metadata.columnList
             );
+
+            // manually add the relation type if
+            if (CnSession.application.useRelation) {
+              const relationTypeIdItem = {
+                column: "relation_type_id",
+                title: "Relation Type",
+                type: "enum",
+                min: undefined,
+                max: undefined,
+                active: false,
+                value: "",
+                required: false,
+                max_length: null,
+                enumList: []
+              };
+
+              const response = await CnHttpFactory.instance({
+                path: 'relation_type',
+                data: {
+                  select: { column: ["id", "name"] },
+                  modifier: { order: "name" },
+                },
+              }).query();
+
+              relationTypeIdItem.enumList = response.data.reduce((list, item) => {
+                list.push({ value: item.id, name: item.name });
+                return list;
+              }, []);
+
+              relationTypeIdItem.enumList.unshift({ value: "", name: "(empty)" });
+
+              const index = object.participantInputList.findIndexByProperty("column", "sex");
+              object.participantInputList.splice(index, 0, relationTypeIdItem);
+            }
 
             // add the placeholder to the column list
             object.participantInputList.unshift({
@@ -2325,11 +2124,7 @@ cenozoApp.defineModule({
                 modifier: {
                   where: [
                     { column: "collection.active", operator: "=", value: true },
-                    {
-                      column: "collection.locked",
-                      operator: "=",
-                      value: false,
-                    },
+                    { column: "collection.locked", operator: "=", value: false },
                   ],
                 },
               },
@@ -2368,16 +2163,11 @@ cenozoApp.defineModule({
             // populate the study input list right away
             var response = await CnHttpFactory.instance({
               path: "study",
-              data: {
-                select: { column: ["id", "name"] },
-              },
+              data: { select: { column: ["id", "name"] } },
             }).query();
 
             object.studyList = response.data;
-            object.studyList.unshift({
-              id: undefined,
-              name: "(Select Study)",
-            });
+            object.studyList.unshift({ id: undefined, name: "(Select Study)" });
           }
 
           // this is a contructor function so don't await the init() function
@@ -2404,16 +2194,12 @@ cenozoApp.defineModule({
             CnSession.setBreadcrumbTrail([
               {
                 title: "Participants",
-                go: async function () {
-                  await $state.go("participant.list");
-                },
+                go: async function () { await $state.go("participant.list"); },
               },
               {
                 title: String($state.params.identifier).split("=").pop(),
                 go: async function () {
-                  await $state.go("participant.view", {
-                    identifier: $state.params.identifier,
-                  });
+                  await $state.go("participant.view", { identifier: $state.params.identifier });
                 },
               },
               {
