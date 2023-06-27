@@ -1603,6 +1603,7 @@ cenozoApp.defineModule({
             parentModel: CnParticipantModelFactory.root,
             addressModel: CnAddressModelFactory.root,
             phoneModel: CnPhoneModelFactory.root,
+            useRelation: CnSession.application.useRelation,
             sourceList: [],
             cohortList: [],
             relationTypeList: [],

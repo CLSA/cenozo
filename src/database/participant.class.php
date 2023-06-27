@@ -934,41 +934,44 @@ class participant extends record
         return 'No relationship type specified.';
       }
 
-      if( is_null( $db_primary_participant ) && !is_null( $db_relation_type ) )
+      if( !is_null( $db_relation_type ) )
       {
-        static::db()->rollback_savepoint( $savepoint_name );
-        return 'No relationship index specified.';
-      }
+        if( is_null( $db_primary_participant ) )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return 'No relationship index specified.';
+        }
 
-      // only create the relation if it doesn't already exist
-      $db_relation = $relation_class_name::get_unique_record(
-        ['primary_participant_id', 'relation_type_id'],
-        [$db_primary_participant->id, $db_relation_type->id]
-      );
-
-      if( !is_null( $db_relation ) )
-      {
-        static::db()->rollback_savepoint( $savepoint_name );
-        return sprintf(
-          'Participant Index "%s" already has a relationship type "%s" with participant "%s".',
-          $data['relationship_index'],
-          $data['relationship_type'],
-          $db_relation->get_participant()->uid
+        // only create the relation if it doesn't already exist
+        $db_relation = $relation_class_name::get_unique_record(
+          ['primary_participant_id', 'relation_type_id'],
+          [$db_primary_participant->id, $db_relation_type->id]
         );
-      }
 
-      try
-      {
-        $db_relation = lib::create( 'database\relation' );
-        $db_relation->primary_participant_id = $db_primary_participant->id;
-        $db_relation->participant_id = $db_participant->id;
-        $db_relation->relation_type_id = $db_relation_type->id;
-        $db_relation->save();
-      }
-      catch( \cenozo\exception\database $e )
-      {
-        static::db()->rollback_savepoint( $savepoint_name );
-        return 'Unable to create relationship.';
+        if( !is_null( $db_relation ) )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return sprintf(
+            'Participant Index "%s" already has a relationship type "%s" with participant "%s".',
+            $data['relationship_index'],
+            $data['relationship_type'],
+            $db_relation->get_participant()->uid
+          );
+        }
+
+        try
+        {
+          $db_relation = lib::create( 'database\relation' );
+          $db_relation->primary_participant_id = $db_primary_participant->id;
+          $db_relation->participant_id = $db_participant->id;
+          $db_relation->relation_type_id = $db_relation_type->id;
+          $db_relation->save();
+        }
+        catch( \cenozo\exception\database $e )
+        {
+          static::db()->rollback_savepoint( $savepoint_name );
+          return 'Unable to create relationship.';
+        }
       }
     }
 

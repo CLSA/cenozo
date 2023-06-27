@@ -26,6 +26,7 @@
         Columns can be in any order.
       </p>
       <h4>Participant Details</h4>
+      <div>{{ model.useRelation ? "Y" : "N" }}<br> {{ 0 < model.relationTypeList.length ? "Y" : "N" }}</div>
       <table class="table table-striped">
         <thead class="bg-info">
           <tr>
@@ -54,13 +55,13 @@
           </tr>
           <tr ng-if="model.useRelation && 0 < model.relationTypeList.length">
             <td class="allow-select">relationship_index</td>
-            <td>"(empty)"</td>
-            <td class="text-left">Must be an existing UID, or "self" if this participant is the relationship Index.</td>
+            <td>(empty)</td>
+            <td class="text-left">Must be an existing UID, or "self" if this participant is the relationship Index. Can only be left blank if the relationship_type column is also blank.</td>
           </tr>
           <tr ng-if="model.useRelation && 0 < model.relationTypeList.length">
             <td class="allow-select">relationship_type</td>
-            <td>"(empty)"</td>
-            <td class="text-left">Must be one of the following: {{ model.relationTypeList.join( ', ' ) }}</td>
+            <td>(empty)</td>
+            <td class="text-left">Must be one of the following: {{ model.relationTypeList.join( ', ' ) }}.  Can only be left blank if the relationship_index column is also blank.</td>
           </tr>
           <tr>
             <td class="allow-select">honorific</td>
