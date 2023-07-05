@@ -3,7 +3,7 @@
   <div class="container-fluid bg-info rounded-bottom">
     <div class="btn-toolbar vertical-spacer" role="toolbar">
       <button
-        ng-repeat="child in model.viewModel.getChildList()"
+        ng-repeat="child in model.viewModel.getChildList() | orderBy: 'title'"
         ng-click="model.viewModel.setTab( child.subject.snake )"
         ng-bind-html="model.viewModel.getChildTitle( child )"
         class="btn btn-group"

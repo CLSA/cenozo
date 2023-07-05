@@ -6493,7 +6493,7 @@
               .filter((child) => {
                 var name = child.subject.camel + "Model";
                 return this[name] && this[name].listModel;
-              });
+              }).map((child) => { child.title = this.getChildTitle(child); return child; });
           });
 
           /**
