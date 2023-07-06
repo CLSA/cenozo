@@ -65,11 +65,11 @@ class theme_manager extends \cenozo\singleton
     // add the color if it doesn't exist
     if( !array_key_exists( $fraction, $this->theme_color_list[$type] ) )
     {
-      $r = $fraction * $this->base_theme_color[$type]['r'];
+      $r = intval( $fraction * $this->base_theme_color[$type]['r'] );
       if( 0 > $r ) $r = 0; else if( 255 < $r ) $r = 255;
-      $g = $fraction * $this->base_theme_color[$type]['g'];
+      $g = intval( $fraction * $this->base_theme_color[$type]['g'] );
       if( 0 > $g ) $g = 0; else if( 255 < $g ) $g = 255;
-      $b = $fraction * $this->base_theme_color[$type]['b'];
+      $b = intval( $fraction * $this->base_theme_color[$type]['b'] );
       if( 0 > $b ) $b = 0; else if( 255 < $b ) $b = 255;
 
       $this->theme_color_list[$type][$fraction] = sprintf( '#%s%s%s', dechex( $r ), dechex( $g ), dechex( $b ) );
