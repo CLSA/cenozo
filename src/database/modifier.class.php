@@ -516,7 +516,7 @@ class modifier extends \cenozo\base_object
    */
   public function has_group( $column )
   {
-    return array_key_exists( $column, $this->group_list );
+    return in_array( $column, $this->group_list );
   }
 
   /**
