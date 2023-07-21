@@ -123,7 +123,6 @@ cenozoApp.defineModule({
             },
 
             reset: function () {
-              this.uploadReadReady = false;
               this.working = false;
               this.file = null;
               this.fileCheckResults = null;
@@ -137,31 +136,28 @@ cenozoApp.defineModule({
             },
 
             checkImport: function () {
-              if (!this.uploadReadReady) {
-                // need to wait for cnUpload to do its thing
-                var self = this;
-                $rootScope.$on("cnUpload read", async function () {
-                  self.working = true;
-                  self.uploadReadReady = true;
+              // need to wait for cnUpload to do its thing
+              var self = this;
+              const removeFn = $rootScope.$on("cnUpload read", async function () {
+                removeFn(); // only run once
+                self.working = true;
+                var data = new FormData();
+                data.append("file", self.file);
 
-                  var data = new FormData();
-                  data.append("file", self.file);
+                // check the imported file
+                try {
+                  var response = await CnHttpFactory.instance({
+                    path:
+                      self.parentModel.getServiceResourcePath() +
+                      "?import=check",
+                    data: self.file,
+                  }).patch();
 
-                  // check the imported file
-                  try {
-                    var response = await CnHttpFactory.instance({
-                      path:
-                        self.parentModel.getServiceResourcePath() +
-                        "?import=check",
-                      data: self.file,
-                    }).patch();
-
-                    self.fileCheckResults = angular.fromJson(response.data);
-                  } finally {
-                    self.working = false;
-                  }
-                });
-              }
+                  self.fileCheckResults = angular.fromJson(response.data);
+                } finally {
+                  self.working = false;
+                }
+              });
             },
 
             applyImport: async function () {
