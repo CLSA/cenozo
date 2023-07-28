@@ -277,10 +277,7 @@ abstract class base_report extends \cenozo\base_object
     {
       $this->db_report->stage = 'failed';
       $this->db_report->save();
-
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Failed to create file for %s report id %d.', $db_report_type->name, $this->db_report->id ),
-        __METHOD__, $e );
+      throw $e;
     }
   }
 
