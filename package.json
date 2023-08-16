@@ -1,23 +1,24 @@
 {
   "name": "cenozo",
   "description": "An Angular+PHP framework used to build logistics web applications for scientific studies.",
-  "version": "2.4.0",
+  "version": "2.9",
   "author": {
-    "name": "Patrick Emond",
+    "name": "Patrick D. Emond",
     "email": "emondpd@mcmaster.ca"
   },
   "license": "GPL",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/patrickdemond/cenozo"
+    "url": "https://github.com/clsa/cenozo"
   },
   "dependencies": {
+    "@uirouter/core": "latest",
     "@uirouter/angularjs": "latest",
-    "angular": "latest",
+    "angular": "^1.6.10",
     "angular-animate": "latest",
     "angular-bootstrap-colorpicker": "latest",
-    "angular-chart.js": "latest",
+    "angular-chart.js": "^1.1.0",
     "angular-sanitize": "latest",
     "angular-ui-bootstrap": "latest",
     "bootstrap": "3.x",
