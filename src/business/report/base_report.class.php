@@ -140,7 +140,9 @@ abstract class base_report extends \cenozo\base_object
           if( 0 < count( $table['header'] ) )
           {
             $cells = array_map(
-              function( $value ) { return sprintf( '"%s"', str_replace( '"', '""', $value ) ); },
+              function( $value ) {
+                return sprintf( '"%s"', is_null( $value ) ?  '' : str_replace( '"', '""', $value ) );
+              },
               $table['header']
             );
             $data .= implode( ',', $cells )."\n";
@@ -150,7 +152,9 @@ abstract class base_report extends \cenozo\base_object
           foreach( $table['contents'] as $content )
           {
             $cells = array_map(
-              function( $value ) { return sprintf( '"%s"', str_replace( '"', '""', $value ) ); },
+              function( $value ) {
+                return sprintf( '"%s"', is_null( $value ) ?  '' : str_replace( '"', '""', $value ) );
+              },
               $content
             );
             $data .= implode( ',', $cells )."\n";
@@ -167,7 +171,9 @@ abstract class base_report extends \cenozo\base_object
           if( 0 < count( $table['footer'] ) )
           {
             $cells = array_map(
-              function( $value ) { return sprintf( '"%s"', str_replace( '"', '""', $value ) ); },
+              function( $value ) {
+                return sprintf( '"%s"', is_null( $value ) ?  '' : str_replace( '"', '""', $value ) );
+              },
               $table['footer']
             );
             $data .= implode( ',', $cells )."\n";
