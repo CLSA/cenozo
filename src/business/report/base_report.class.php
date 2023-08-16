@@ -211,7 +211,7 @@ abstract class base_report extends \cenozo\base_object
         $modifier->where( 'report_restriction.restriction_type', '!=', 'identifier_list' );
         $modifier->order( 'report_restriction.rank' );
         $rows = $this->db_report->get_report_type()->get_report_restriction_list( $select, $modifier );
-        $settings = array();
+        $settings = [];
         foreach( $rows as $index => $setting )
         {
           $value = $setting['Value'];
@@ -493,7 +493,7 @@ abstract class base_report extends \cenozo\base_object
    * @param array $footer The footer of the table (for each column).
    * @access public
    */
-  protected function add_table( $title = NULL, $header = array(), $contents = array(), $footer = array() )
+  protected function add_table( $title = NULL, $header = [], $contents = [], $footer = [] )
   {
     array_push( $this->report_tables,
       array( 'title' => $title,
@@ -509,15 +509,15 @@ abstract class base_report extends \cenozo\base_object
    * @param array $rows The result set returned from calling an active record's select command
    * @access public
    */
-  protected function add_table_from_select( $title = NULL, $rows )
+  protected function add_table_from_select( $title = NULL, $rows = [] )
   {
     // set up the content
-    $content = array();
+    $content = [];
     $row = NULL;
     foreach( $rows as $row ) $content[] = array_values( $row );
 
     // set up the header
-    $header = array();
+    $header = [];
     if( !is_null( $row ) )
       foreach( $row as $column => $value ) $header[] = ucwords( str_replace( '_', ' ', $column ) );
 
@@ -633,5 +633,5 @@ abstract class base_report extends \cenozo\base_object
    * @var array $report_tables
    * @access private
    */
-  private $report_tables = array();
+  private $report_tables = [];
 }
