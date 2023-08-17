@@ -6,11 +6,7 @@
  */
 
 namespace cenozo\business;
-use cenozo\lib, cenozo\log;
-
-include PHPEXCEL_PATH.'/Classes/PHPExcel.php';
-include PHPEXCEL_PATH.'/Classes/PHPExcel/Writer/Excel2007.php';
-include PHPEXCEL_PATH.'/Classes/PHPExcel/Writer/OpenDocument.php';
+use cenozo\lib, cenozo\log, \PhpOffice\PhpSpreadsheet;
 
 /**
  * Creates a spreadsheet.
@@ -25,18 +21,8 @@ class spreadsheet extends \cenozo\base_object
    */
   public function __construct( $filename = NULL )
   {
-    if( !is_null( $filename ) )
-    {
-      $reader = new \PHPExcel_Reader_Excel5();
-      $this->php_excel = $reader->load( $filename );
-      $this->php_excel->setActiveSheetIndex( 0 );
-    }
-    else
-    {
-      $this->php_excel = new \PHPExcel();
-    }
-
-    $this->php_excel->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
+    $this->php_spreadsheet = new PhpSpreadsheet\Spreadsheet();
+    $this->php_spreadsheet->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
   }
 
   /**
@@ -89,9 +75,9 @@ class spreadsheet extends \cenozo\base_object
   {
     if( !is_null( $worksheet ) )
     {
-      $sheet = $this->php_excel->createSheet();
+      $sheet = $this->php_spreadsheet->createSheet();
       $sheet->setTitle( $worksheet );
-      $this->php_excel->setActiveSheetIndexByName( $worksheet );
+      $this->php_spreadsheet->setActiveSheetIndexByName( $worksheet );
     }
 
     $row = 1;
@@ -109,7 +95,7 @@ class spreadsheet extends \cenozo\base_object
 
     $this->set_cell( 'A'.$row, $string );
 
-    $this->php_excel->setActiveSheetIndex( 0 );
+    $this->php_spreadsheet->setActiveSheetIndex( 0 );
   }
 
   /**
@@ -123,9 +109,9 @@ class spreadsheet extends \cenozo\base_object
   {
     if( !is_null( $worksheet ) )
     {
-      $sheet = $this->php_excel->createSheet();
+      $sheet = $this->php_spreadsheet->createSheet();
       $sheet->setTitle( $worksheet );
-      $this->php_excel->setActiveSheetIndexByName( $worksheet );
+      $this->php_spreadsheet->setActiveSheetIndexByName( $worksheet );
     }
 
     $util_class_name = lib::get_class_name( 'util' );
@@ -224,7 +210,7 @@ class spreadsheet extends \cenozo\base_object
       $row++;
     }
 
-    $this->php_excel->setActiveSheetIndex( 0 );
+    $this->php_spreadsheet->setActiveSheetIndex( 0 );
   }
 
   /**
@@ -238,9 +224,9 @@ class spreadsheet extends \cenozo\base_object
   {
     if( !is_null( $worksheet ) )
     {
-      $sheet = $this->php_excel->createSheet();
+      $sheet = $this->php_spreadsheet->createSheet();
       $sheet->setTitle( $worksheet );
-      $this->php_excel->setActiveSheetIndexByName( $worksheet );
+      $this->php_spreadsheet->setActiveSheetIndexByName( $worksheet );
     }
 
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -409,7 +395,7 @@ class spreadsheet extends \cenozo\base_object
       }
     }
 
-    $this->php_excel->setActiveSheetIndex( 0 );
+    $this->php_spreadsheet->setActiveSheetIndex( 0 );
   }
 
   /**
@@ -467,7 +453,7 @@ class spreadsheet extends \cenozo\base_object
    */
   public function get_cell_value( $coordinate )
   {
-    return $this->php_excel->getActiveSheet()->getCell( $coordinate )->getValue();
+    return $this->php_spreadsheet->getActiveSheet()->getCell( $coordinate )->getValue();
   }
 
   /**
@@ -478,7 +464,7 @@ class spreadsheet extends \cenozo\base_object
    *               (which will be displayed as is) or an equation which should always start with =
    *               (ie: =A1+A2)
    * @param boolean $autosize Whether to autoset the cell's column or not.
-   * @return PHPExcel Cell object
+   * @return PhpSpreadsheet Cell object
    * @access public
    */
   public function set_cell( $coordinate, $value, $autosize = true )
@@ -488,8 +474,8 @@ class spreadsheet extends \cenozo\base_object
     try
     {
       // set the cell's value
-      $cell_obj = $this->php_excel->getActiveSheet()->setCellValue( $coordinate, $value, true );
-      $style_obj = $this->php_excel->getActiveSheet()->getStyle( $coordinate );
+      $cell_obj = $this->php_spreadsheet->getActiveSheet()->setCellValue( $coordinate, $value );
+      $style_obj = $this->php_spreadsheet->getActiveSheet()->getStyle( $coordinate );
 
       // set the cell's format
       if( !is_null( $this->current_format['bold'] ) )
@@ -500,13 +486,13 @@ class spreadsheet extends \cenozo\base_object
         $style_obj->getFont()->setSize( $this->current_format['size'] );
       if( !is_null( $this->current_format['foreground_color'] ) )
       {
-        $color = new \PHPExcel_Style_Color;
+        $color = new PhpSpreadsheet\Style\Color;
         $color->setRGB( $this->current_format['foreground_color'] );
         $style_obj->getFont()->setColor( $color );
       }
       if( !is_null( $this->current_format['background_color'] ) )
       {
-        $style_obj->getFill()->setFillType( \PHPExcel_Style_Fill::FILL_SOLID );
+        $style_obj->getFill()->setFillType( PhpSpreadsheet\Style\Fill::FILL_SOLID );
         $style_obj->getFill()->getStartColor()->setRGB(
           $this->current_format['background_color'] );
       }
@@ -516,9 +502,9 @@ class spreadsheet extends \cenozo\base_object
         $style_obj->getAlignment()->setVertical( $this->current_format['vertical_alignment'] );
 
       // set the auto size property
-      $this->php_excel->getActiveSheet()->getColumnDimension( $column )->setAutoSize( $autosize );
+      $this->php_spreadsheet->getActiveSheet()->getColumnDimension( $column )->setAutoSize( $autosize );
       if( !is_null( $this->current_format['size'] ) )
-        $this->php_excel->getActiveSheet()->getRowDimension( $row )->setRowHeight(
+        $this->php_spreadsheet->getActiveSheet()->getRowDimension( $row )->setRowHeight(
           1.66 * $this->current_format['size'] );
     }
     catch( \Exception $e )
@@ -539,7 +525,7 @@ class spreadsheet extends \cenozo\base_object
   {
     try
     {
-      $this->php_excel->getActiveSheet()->mergeCells( $range );
+      $this->php_spreadsheet->getActiveSheet()->mergeCells( $range );
     }
     catch( \Exception $e )
     {
@@ -555,7 +541,7 @@ class spreadsheet extends \cenozo\base_object
    */
   public function remove_column( $column, $number = 1 )
   {
-    $this->php_excel->getActiveSheet()->removeColumn( $column, $number );
+    $this->php_spreadsheet->getActiveSheet()->removeColumn( $column, $number );
   }
 
   /**
@@ -566,7 +552,7 @@ class spreadsheet extends \cenozo\base_object
    */
   public function remove_row( $row, $number = 1 )
   {
-    $this->php_excel->getActiveSheet()->removeRow( $row, $number );
+    $this->php_spreadsheet->getActiveSheet()->removeRow( $row, $number );
   }
 
   /**
@@ -581,11 +567,11 @@ class spreadsheet extends \cenozo\base_object
     // create the desired file writer type
     if( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == $mime_type )
     {
-      $writer = new \PHPExcel_Writer_Excel2007( $this->php_excel );
+      $writer = new PhpSpreadsheet\Writer\Xlsx( $this->php_spreadsheet );
     }
     else // if( 'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
     {
-      $writer = new \PHPExcel_Writer_OpenDocument( $this->php_excel );
+      $writer = new PhpSpreadsheet\Writer\Ods( $this->php_spreadsheet );
     }
 
     ob_start();
@@ -603,14 +589,14 @@ class spreadsheet extends \cenozo\base_object
    */
   public function set_orientation( $orientation )
   {
-    $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_DEFAULT;
+    $type = PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_DEFAULT;
 
     if( 'portrait' == $orientation )
-      $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
+      $type = PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE;
     else if( 'landscape' == $orientation )
-      $type = \PHPExcel_Worksheet_PageSetup::ORIENTATION_LANDSCAPE;
+      $type = PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE;
 
-    $this->php_excel->getActiveSheet()->getPageSetup()->setOrientation( $type );
+    $this->php_spreadsheet->getActiveSheet()->getPageSetup()->setOrientation( $type );
   }
 
   /**
@@ -639,11 +625,11 @@ class spreadsheet extends \cenozo\base_object
                                      'vertical_alignment' => NULL );
 
   /**
-   * The PHPExcel object used to create excel files
-   * @var PHPExcel object
+   * The PhpSpreadsheet object used to create excel files
+   * @var PhpSpreadsheet object
    * @access protected
    */
-  protected $php_excel = NULL;
+  protected $php_spreadsheet = NULL;
 
   /**
    * Defines which user to use when determining timezones for time-based data.

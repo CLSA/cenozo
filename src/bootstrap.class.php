@@ -74,8 +74,9 @@ final class bootstrap
     session_name( 'CENOZO_SESSID' );
     session_start();
 
-    // include the autoloader and error code files (search for app_path::util first)
+    // include the autoloaders and error code files (search for app_path::util first)
     require_once CENOZO_SRC_PATH.'/lib.class.php';
+    require_once CENOZO_SRC_PATH.'/vendor/autoload.php';
     require_once CENOZO_SRC_PATH.'/exception/error_codes.inc.php';
     if( file_exists( APP_SRC_PATH.'/exception/error_codes.inc.php' ) )
       require_once APP_SRC_PATH.'/exception/error_codes.inc.php';

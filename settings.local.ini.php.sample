@@ -25,12 +25,6 @@ else if( array_key_exists( 'HTTP_HOST', $_SERVER ) )
   $host = $_SERVER['HTTP_HOST'];
 if( !is_null( $host ) ) $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to/cenozo', $host );
 
-// the location of the PHPExcel library
-$settings['path']['PHPEXCEL'] = '/path/to/PHPExcel';
-
-// the location of the PDF-writing mikehaertl libraries (only add if using the pdf module)
-$settings['path']['MIKEHAERTL'] = '/path/to/mikehaertl';
-
 // utility account
 $settings['utility']['password'] = 'set password to utility account here'; 
 

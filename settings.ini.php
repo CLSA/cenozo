@@ -120,9 +120,6 @@ $settings['path']['FORM'] = str_replace( 'settings.ini.php', 'doc/form', __FILE_
 // the location of the temporary files
 $settings['path']['TEMP'] = sprintf( '%s/doc/tmp', $this->settings['path']['APPLICATION'] );
 
-// the url of PHPExcel
-$settings['path']['PHPEXCEL'] = str_replace( 'settings.ini.php', '../PHPExcel', __FILE__ );
-
 // utility account
 $settings['utility']['username'] = 'cenozo';
 $settings['utility']['password'] = '';

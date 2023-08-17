@@ -6,14 +6,7 @@
  */
 
 namespace cenozo\business;
-use cenozo\lib, cenozo\log;
-
-require_once MIKEHAERTL_PATH.'/php-shellcommand/src/Command.php';
-require_once MIKEHAERTL_PATH.'/php-tmpfile/src/File.php';
-require_once MIKEHAERTL_PATH.'/php-pdftk/src/Command.php';
-require_once MIKEHAERTL_PATH.'/php-pdftk/src/Pdf.php';
-require_once MIKEHAERTL_PATH.'/php-pdftk/src/FdfFile.php';
-require_once MIKEHAERTL_PATH.'/php-pdftk/src/XfdfFile.php';
+use cenozo\lib, cenozo\log, \mikehaertl\pdftk;
 
 /**
  * Writes fillable PDF files
@@ -35,7 +28,7 @@ class pdf_writer extends \cenozo\base_object
         __METHOD__ );
     }
 
-    $this->pdf = new \mikehaertl\pdftk\Pdf();
+    $this->pdf = new pdftk\Pdf();
   }
 
   /**
@@ -106,7 +99,7 @@ class pdf_writer extends \cenozo\base_object
 
   /**
    * The PDF resource which does all the work
-   * @var \mikehaertl\pdftk\Pdf
+   * @var pdftk\Pdf
    * @access protected
    */
   protected $pdf = NULL;
