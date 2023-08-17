@@ -1,12 +1,16 @@
-PHPExcel
 pdftk: apt-get install pdftk
 mysqli: apt-get install php-mysql
 mbstring: apt-get install php7.2-mbstring
 php-zip: apt-get install php-zip php7.2-zip (Used by PHPExcel)
+php-xml: apt-get install php-xml
+php-gd: apt-get install php-gd
 sendmail: apt-get install sendmail
 curl: apt-get install php7.2-curl
 intl: apt-get install php7.2-intl
 samba-tool: apt-get install samba
+
+Download Composer: https://getcomposer.org/download/
+Install dependencies: composer install
 
 Add the following to /etc/mysql/my.cnf:
 [mysqld]
