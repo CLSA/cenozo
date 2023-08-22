@@ -31,7 +31,7 @@ class voip_call extends \cenozo\base_object
     }
 
     $this->channel = $call_object['Channel'];
-    $this->bridge = $bridge_object['Channel'];
+    $this->bridge = array_key_exists( 'Channel', $bridge_object ) ? $bridge_object['Channel'] : NULL;
     $this->state = $call_object['ChannelStateDesc'];
     $this->number = $call_object['EffectiveConnectedLineNum'];
     $this->time = $call_object['Seconds'];
