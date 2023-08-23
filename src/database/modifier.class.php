@@ -963,7 +963,7 @@ class modifier extends \cenozo\base_object
             '%s %s %s',
             $item['column'],
             $item['operator'],
-            $db->format_string( $item['value'] )
+            $item['format'] ? $db->format_string( $item['value'] ) : $item['value']
           );
         }
         else
