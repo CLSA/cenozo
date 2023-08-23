@@ -896,9 +896,9 @@ class modifier extends \cenozo\base_object
       if( array_key_exists( 'bracket', $item ) )
       {
         $open_bracket = $item['bracket'];
-        $statement = $open_bracket
-                   ? ( $item['not'] ? 'NOT ' : '' ).'('
-                   : ( $last_open_bracket ? 'true )' : ')' );
+        $statement = $open_bracket ?
+          ( ( $item['not'] ? 'NOT ' : '' ).'(' ) :
+          ( $last_open_bracket ? 'true )' : ')' );
       }
       else
       {
@@ -921,9 +921,8 @@ class modifier extends \cenozo\base_object
                 else $value = $db->format_string( $value );
               }
 
-              $statement .= $first_value
-                        ? sprintf( '%s %s( ', $item['column'], $item['operator'] )
-                        : ', ';
+              $statement .= $first_value ?
+                sprintf( '%s %s( ', $item['column'], $item['operator'] ) : ', ';
               $statement .= $value;
               $first_value = false;
             }
@@ -931,9 +930,11 @@ class modifier extends \cenozo\base_object
             if( $first_value )
             {
               // if there are no values then make an empty list
-              $statement .= sprintf( '%s %s( SELECT * FROM( SELECT 0 ) AS temp_empty_list WHERE 0 )',
-                                     $item['column'],
-                                     $item['operator'] );
+              $statement .= sprintf(
+                '%s %s( SELECT * FROM( SELECT 0 ) AS temp_empty_list WHERE 0 )',
+                $item['column'],
+                $item['operator']
+              );
             }
             else $statement .= ' )';
           }
@@ -948,11 +949,22 @@ class modifier extends \cenozo\base_object
               else $value = $db->format_string( $value );
             }
 
-            $statement = sprintf( '%s %s( %s )',
-                                $item['column'],
-                                $item['operator'],
-                                $value );
+            $statement = sprintf(
+              '%s %s( %s )',
+              $item['column'],
+              $item['operator'],
+              $value
+            );
           }
+        }
+        else if( preg_match( '/LIKE/', $item['operator'] ) )
+        {
+          $statement = sprintf(
+            '%s %s %s',
+            $item['column'],
+            $item['operator'],
+            $db->format_string( $item['value'] )
+          );
         }
         else
         {
@@ -975,10 +987,12 @@ class modifier extends \cenozo\base_object
           }
           else
           {
-            $statement = sprintf( '%s %s %s',
-                                $item['column'],
-                                $item['operator'],
-                                $value );
+            $statement = sprintf(
+              '%s %s %s',
+              $item['column'],
+              $item['operator'],
+              $value
+            );
           }
         }
       }
