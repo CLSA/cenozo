@@ -149,10 +149,11 @@ class data_manager extends \cenozo\singleton
    * 
    * @param database\participant
    * @param string $key The key string defining which data to return
+   * @param string $warning If provided this variable will get warning messages
    * @return string
    * @access public
    */
-  public function get_participant_value( $db_participant, $key )
+  public function get_participant_value( $db_participant, $key, &$warning = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
@@ -486,7 +487,16 @@ class data_manager extends \cenozo\singleton
               {
                 $values = $opal_manager->get_values( $datasource, $table, $db_participant );
                 $variable_cache_class_name::overwrite_values( $db_participant, $values );
-                $value = $values[$variable];
+                if( array_key_exists( $variable, $values ) ) $value = $values[$variable];
+                else
+                {
+                  $warning = sprintf(
+                    'Opal cache for participant %s exists but requested variable "%s" does not exist.',
+                    $db_participant->uid,
+                    $variable
+                  );
+                  log::warning( $warning );
+                }
               }
               else
               {
@@ -505,7 +515,11 @@ class data_manager extends \cenozo\singleton
         catch( \cenozo\exception\base_exception $e )
         {
           // ignore argument exceptions (data not found in Opal) and report the rest
-          if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
+          if( 'argument' != $e->get_type() )
+          {
+            $warning = $e->get_message();
+            log::warning( $warning );
+          }
         }
       }
     }
