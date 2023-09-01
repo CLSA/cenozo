@@ -356,6 +356,7 @@ class ui extends \cenozo\base_object
       else if( 'equipment_type' == $module->get_subject() )
       {
         $module->add_child( 'equipment' );
+        $module->add_action( 'upload', '/{identifier}' );
       }
       else if( 'event' == $module->get_subject() )
       {

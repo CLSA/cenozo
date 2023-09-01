@@ -1,0 +1,112 @@
+<div class="container-fluid bg-primary rounded-top">
+  <h4>
+    <div class="pull-right">
+      <i class="glyphicon glyphicon-question-sign glyph-hover btn-primary btn-header"
+         ng-class="{'glyph-disabled':!model.module.hasNotation()}"
+         ng-if="model.isRole('administrator') || model.module.hasNotation()"
+         uib-tooltip="Click to view documentation"
+         tooltip-placement="left"
+         ng-click="model.showNotation(); $event.stopPropagation()"></i>
+    </div>
+    Upload {{ model.viewModel.parentName }} Equipment Data
+  </h4>
+</div>
+<form name="form" class="form-horizontal" novalidate>
+  <div class="spacer">
+    <p style="margin-top: 1em">
+      This utility allows you to upload equipment data from a CSV file.
+      The file must conform to one of the following options:
+    </p>
+    <div class="container-fluid">
+      <h4>Option #1: three rows (used to upload new equipment)</h4>
+      <ul>
+        <li>Serial Number (must not belong to any other equipment type)</li>
+        <li>Site Name (may be blank)</li>
+        <li>Equipment Note (may be blank)</li>
+      </ul>
+    </div>
+    <div class="container-fluid">
+      <h4>Option #2: eight rows (used to upload equipment that has already been loaned)</h4>
+      <ul>
+        <li>Serial Number (must not belong to any other equipment type)</li>
+        <li>Site Name (may be blank)</li>
+        <li>Equipment Note (may be blank)</li>
+        <li>UID (must be a pre-existing UID)</li>
+        <li>Lost (considered lost if value is 1, y, yes or true)</li>
+        <li>Start Date &amp; Time in UTC (YYYY-MM-DD hh:mm format)</li>
+        <li>End Date &amp; Time in UTC (YYYY-MM-DD hh:mm format, may be blank)</li>
+        <li>Loan Note (may be blank)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="form-body">
+    <div class="form-group">
+      <label for="name" class="control-label col-sm-2">Data File</label>
+      <div class="col-sm-10">
+        <input
+          id="name"
+          class="col-sm-10 form-control"
+          type="file"
+          ng-model="model.viewModel.file"
+          cn-upload="model.viewModel.file"
+          onchange="angular.element(this).scope().model.viewModel.checkData()"
+          ng-disabled="model.viewModel.working"
+          ng-required="true"></select>
+      </div>
+    </div>
+  </div>
+  <div ng-if="model.viewModel.summary" class="container-fluid">
+    <div class="panel panel-info">
+      <div class="panel-heading"><h4>Upload Summary</h4></div>
+      <div class="panel-body">
+        <h4>Equipment Data</h4>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">New records</label>
+          <div class="col-sm-9 form-text">{{ model.viewModel.summary.equipment.new }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Updated records</label>
+          <div class="col-sm-9 form-text">{{ model.viewModel.summary.equipment.update }}</div>
+        </div>
+        <h4>Loan Data</h4>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">New records</label>
+          <div class="col-sm-9 form-text">{{ model.viewModel.summary.loan.new }}</div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Updated records</label>
+          <div class="col-sm-9 form-text">{{ model.viewModel.summary.loan.update }}</div>
+        </div>
+        <h4>Unused Rows</h4>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">No changes required</label>
+          <div class="col-sm-9 form-text">{{ model.viewModel.summary.unchanged }}</div>
+        </div>
+        <div class="form-group" ng-if="0 < model.viewModel.summary.invalid.length">
+          <label class="col-sm-3 control-label">Invalid rows</label>
+          <div class="col-sm-9 form-text">
+            <div ng-repeat="error in model.viewModel.summary.invalid" ng-bind-html="error"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-footer text-right rounded-bottom bg-info">
+    <button type="button" class="btn btn-default" ng-click="model.viewModel.cancel()">Cancel</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      ng-disabled="
+        !model.viewModel.file ||
+        model.viewModel.working ||
+        0 < model.viewModel.summary.invalid.length || (
+          0 == model.viewModel.summary.equipment.new &&
+          0 == model.viewModel.summary.equipment.update &&
+          0 == model.viewModel.summary.loan.new &&
+          0 == model.viewModel.summary.loan.update
+        )
+      "
+      ng-click="model.viewModel.applyData()"
+    >Upload</button>
+  </div>
+</form>
