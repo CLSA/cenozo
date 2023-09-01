@@ -113,13 +113,10 @@ cenozoApp.defineModule({
         var object = function (parentModel, root) {
           CnBaseViewFactory.construct( this, parentModel, root );
 
-          // the equipment type name may be in the identifier
-          const nameMatch = $state.params.identifier.match( /^name=(.+)$/ );
           angular.extend(this, {
             working: false,
             file: null,
             summary: null,
-            parentName: angular.isArray( nameMatch ) && 2 <= nameMatch.length ? nameMatch[1] : null,
 
             cancel: async function () {
               this.summary = null;
