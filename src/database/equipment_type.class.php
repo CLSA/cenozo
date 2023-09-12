@@ -67,7 +67,7 @@ class equipment_type extends record
 
       $serial_number = $row[0];
       $site = $row[1];
-      $note = str_replace( '\n', "\n", $row[2] );
+      $note = $row[2] ? str_replace( '\n', "\n", $row[2] ) : NULL;
 
       $uid = NULL;
       $lost = NULL;
