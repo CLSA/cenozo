@@ -40,14 +40,16 @@ class script extends record
    * 
    * @param database\participant $db_participant The event's participant
    * @param datetime $datetime The event's datetime
+   * @param database\site $db_site Override the current site when recording the event
    * @param database\user $db_user Override the current user when recording the event
    * @access public
    */
-  public function add_started_event( $db_participant, $datetime, $db_user = NULL )
+  public function add_started_event( $db_participant, $datetime, $db_site = NULL, $db_user = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
     $db_site = $session->get_site();
+    if( is_null( $db_site ) ) $db_site = $session->get_site();
     if( is_null( $db_user ) ) $db_user = $session->get_user();
 
     if( !is_null( $this->started_event_type_id ) )
@@ -80,14 +82,15 @@ class script extends record
    * 
    * @param database\participant $db_participant The event's participant
    * @param datetime $datetime The event's datetime
+   * @param database\site $db_site Override the current site when recording the event
    * @param database\user $db_user Override the current user when recording the event
    * @access public
    */
-  public function add_finished_event( $db_participant, $datetime, $db_user = NULL )
+  public function add_finished_event( $db_participant, $datetime, $db_site = NULL, $db_user = NULL )
   {
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
-    $db_site = $session->get_site();
+    if( is_null( $db_site ) ) $db_site = $session->get_site();
     if( is_null( $db_user ) ) $db_user = $session->get_user();
 
     if( !is_null( $this->finished_event_type_id ) )
