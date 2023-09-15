@@ -10734,6 +10734,9 @@
         decorator: $provide.decorator,
       });
 
+      // add data to anchor href whitelist
+      $compileProvider.aHrefSanitizationWhitelist( /^\s*(https?|ftp|mailto|file|data):/ );
+
       // load the 404 state when a state is not found for the provided path
       $urlRouterProvider.otherwise(async function ($injector, $location) {
         await $injector.get("$state").go("error.404");
