@@ -129,6 +129,16 @@ cenozoApp.defineModule({
       });
     }
 
+    module.addExtraOperation("list", {
+      title: "Find Unlisted User",
+      operation: async function ($state, model) {
+        await model.selectUnlistedUser();
+      },
+      isIncluded: function ($state, model) {
+        return model.isRole("administrator", "coordinator", "supervisor");
+      },
+    });
+
     module.addExtraOperation("view", {
       title: "Listen to Call",
       classes: "btn-warning",
@@ -428,13 +438,19 @@ cenozoApp.defineModule({
       "CnUserViewFactory",
       "CnSession",
       "CnHttpFactory",
+      "CnModalInputFactory",
+      "CnModalMessageFactory",
+      "$state",
       function (
         CnBaseModelFactory,
         CnUserListFactory,
         CnUserAddFactory,
         CnUserViewFactory,
         CnSession,
-        CnHttpFactory
+        CnHttpFactory,
+        CnModalInputFactory,
+        CnModalMessageFactory,
+        $state
       ) {
         var object = function (root) {
           CnBaseModelFactory.construct(this, module);
@@ -454,6 +470,52 @@ cenozoApp.defineModule({
             " Once it reaches " +
             CnSession.application.loginFailureLimit +
             " the user will automatically be deactivated.  Reactivating the user will reset the counter to 0.";
+
+          // Navigate to a user based on a username
+          this.selectUnlistedUser = async function () {
+            // keep asking for a username until one is found, or the user cancels
+            let username = null;
+            let searching = true;
+            while (searching) {
+              const response = await CnModalInputFactory.instance({
+                title: "Find Unlisted User",
+                message: "Please provide the username of the user you wish to find:",
+                value: username,
+              }).show();
+              username = response;
+
+              // if no username is provided (empty string or modal was cancelled) then stop searching
+              if (!username) break;
+
+              // make sure the user exists
+              try {
+                await CnHttpFactory.instance({
+                  path: "user/name=" + username,
+                  onError: async function (error) {
+                    if (404 == error.status) {
+                      // user not found, so try again
+                    } else {
+                      CnModalMessageFactory.httpError(error);
+                      searching = false; // there was an unknown error so stop searching
+                    }
+                  },
+                }).get();
+
+                $state.go("user.view", { identifier: "name=" + username });
+                searching = false; // we found the user so stop searching
+              } catch (error) {
+                // ignore errors
+              }
+
+              if (searching && username) {
+                await CnModalMessageFactory.instance({
+                  title: "User Not Found",
+                  message: 'Cannot find user with name "' + username + '".',
+                  error: true,
+                }).show();
+              }
+            }
+          };
 
           // extend getMetadata
           this.getMetadata = async function () {
