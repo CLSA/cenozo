@@ -4948,59 +4948,34 @@
 
   /**
    * Creates objects which can be used to make audio recordings
-   * @param function onComplete The function (with arguments recorder and encoding) to run after a recording has completed.
    */
   cenozo.factory("CnAudioRecordingFactory", [
     "CnModalMessageFactory",
     "$interval",
-    function (CnModalMessageFactory, $interval) {
+    "$timeout",
+    function (CnModalMessageFactory, $interval, $timeout) {
       var object = function (params) {
         angular.extend(this, {
-          timeLimit: 60, // seconds
-          encodeAfterRecord: false,
-          progressInterval: 1000, // miliseconds (only used when encoding after recording
-          encoding: "wav", // wav, ogg or mp3
-          bufferSize: undefined, // defaults to browser's default
-          onComplete: function (recorder, blob) {}, // what to do after the recording is done (stored in blob)
-          onTimeout: function (recorder) {},
-          onInputVolumeUpdate: function (value) {},
+          timeLimit: 60000, // miliseconds
+          onComplete: function (blob) {}, // what to do after the recording is done (stored in blob)
+          onTimeout: function () {}, // what to do when the recording reaches its time limit
         });
         angular.extend(this, params);
 
         angular.extend(this, {
+          timeoutPromise: null,
           audioContext: null,
           audioIn: null,
-          mixer: null,
           analyser: null,
-          audioRecorder: null,
+          mediaRecorder: null,
           inputVolume: 0,
           inputVolumePromise: null,
           recordingInProgress: false,
           initialize: function() {
+            this.timeoutPromise = null;
             if( null == this.audioContext ) {
               this.audioContext = new AudioContext();
               this.analyser = this.audioContext.createAnalyser();
-              this.mixer = this.audioContext.createGain();
-              this.mixer.connect(this.audioContext.destination);
-              this.audioRecorder = new WebAudioRecorder(this.mixer, {
-                workerDir:
-                  window.cenozo.libUrl + "/web-audio-recorder-js/lib-minified/",
-                onEncoderLoading: function (recorder, encoding) {}, // we have to define this
-              });
-              this.audioRecorder.setOptions({
-                timeLimit: this.timeLimit,
-                encodeAfterRecord: this.encodeAfterRecord,
-                progressInterval: this.progressInterval,
-                bufferSize: this.bufferSize,
-              });
-              this.audioRecorder.setEncoding(this.encoding);
-              angular.extend(this.audioRecorder, {
-                onComplete: (recorder, blob) => this.onComplete(recorder, blob),
-                onTimeout: (recorder) => {
-                  this.onTimeout(recorder);
-                  this.stop();
-                },
-              });
             }
           },
           start: async function () {
@@ -5008,7 +4983,7 @@
               this.initialize();
 
               // connect to the first media device and start recording
-              await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+              await navigator.mediaDevices.getUserMedia({audio: true});
               var deviceResponse = await navigator.mediaDevices.enumerateDevices();
               if (0 == deviceResponse.length || !deviceResponse[0].deviceId)
                 throw new Error("No audio media device found.");
@@ -5017,10 +4992,27 @@
                 audio: { deviceId: { exact: deviceResponse[0].deviceId } },
               });
               this.audioIn = this.audioContext.createMediaStreamSource(stream);
-              this.audioIn.connect(this.mixer);
               this.audioIn.connect(this.analyser);
               this.recordingInProgress = true;
-              this.audioRecorder.startRecording();
+              this.mediaRecorder = new MediaRecorder(stream);
+
+              let chunks = [];
+              this.mediaRecorder.ondataavailable = (event) => {
+                chunks.push(event.data);
+              }
+              this.mediaRecorder.onstop = (event) => {
+                const blob = new Blob(chunks, {"type": "audio/wav"});
+                this.onComplete(blob);
+                chunks = [];
+              };
+
+              this.mediaRecorder.start();
+
+              // automatically stop after the time limit has elapsed
+              this.timeoutPromise = $timeout(() => {
+                this.onTimeout();
+                this.stop();
+              }, this.timeLimit);
 
               // start recording the audio level
               this.inputVolumePromise = $interval(() => {
@@ -5029,14 +5021,11 @@
                   var dataArray = new Uint8Array(bufferLength);
                   this.analyser.getByteFrequencyData(dataArray);
                   var total = 0;
-                  for (var i = 0; i < 255; i++) {
-                    total += dataArray[i] * dataArray[i];
-                  }
+                  for (var i = 0; i < 255; i++) { total += dataArray[i] * dataArray[i]; }
                   this.inputVolume = Math.sqrt(total / bufferLength) / 128;
                 } else {
                   this.inputVolume = 0;
                 }
-                this.onInputVolumeUpdate(this.inputVolume);
               }, 20);
             } catch (err) {
               CnModalMessageFactory.instance({
@@ -5048,18 +5037,20 @@
             }
           },
           stop: function () {
+            // cancel the timeout
+            $timeout.cancel(this.timeoutPromise);
+
             if (this.inputVolumePromise) {
               $interval.cancel(this.inputVolumePromise);
               this.inputVolumePromise = null;
             }
             this.inputVolume = 0;
-            this.onInputVolumeUpdate(this.inputVolume); // show that the mic is now off
-            this.audioRecorder.finishRecording();
+            this.mediaRecorder.stop();
             this.audioIn.disconnect();
             this.recordingInProgress = false;
           },
           cancel: function () {
-            this.audioRecorder.cancelRecording();
+            this.mediaRecorder.stop();
             this.audioIn.disconnect();
             this.recordingInProgress = false;
           },
