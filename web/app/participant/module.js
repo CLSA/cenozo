@@ -1443,7 +1443,11 @@ cenozoApp.defineModule({
             },
 
             launchScript: function (script) {
-              script.launcher.launch({ show_hidden: 1, username: CnSession.user.name });
+              script.launcher.launch({
+                show_hidden: 1,
+                site: CnSession.site.name,
+                username: CnSession.user.name,
+              });
 
               // check for when the window gets focus back and update the script details
               var win = angular.element($window).on("focus", async () => {
