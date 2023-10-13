@@ -823,4 +823,24 @@ class util
 
     return $date_string;
   }
+
+  /** 
+   * Helper function to solve issue with using scandir on NFS drives
+   * 
+   * Note that using scandir on an NFS drive sometimes doesn't show new files.  This is described here:
+   * https://unix.stackexchange.com/questions/154938/linux-does-not-see-a-file-until-i-ls-on-that-directory
+   * The solution is to run ls on the folder before calling scandir.
+   * NOTE: This command is LINUX only and will not work under WINDOWS
+   * @param string $directory
+   * @param int $sorting_order
+   * @param ?resource $context
+   * @return array|false
+   */
+  public static function scandir( $directory, $sorting_order = SCANDIR_SORT_ASCENDING, $context = null )
+  {
+    exec( sprintf( 'ls %s', $directory ) );
+    return is_null( $context ) ?
+      scandir( $directory, $sorting_order ) :
+      scandir( $directory, $sorting_order, $context );
+  }
 }
