@@ -53,11 +53,18 @@
         <div class="col-sm-2 text-center"><strong>{{ item.column.title }}</strong></div>
         <div class="col-sm-4 col-slim-right">
           <select class="form-control"
-                  ng-if="model.viewModel.subtypeList[item.table_name]"
+                  ng-if="'auxiliary' != item.table_name && model.viewModel.subtypeList[item.table_name]"
                   ng-model="item.subtype"
                   ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
                   ng-disabled="item.isUpdating"
                   ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList[item.table_name]">
+          </select>
+          <select class="form-control"
+                  ng-if="'is_in_collection'==item.column.key"
+                  ng-model="item.subtype"
+                  ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
+                  ng-disabled="item.isUpdating"
+                  ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList.collection">
           </select>
         </div>
         <div class="col-sm-2 col-slim-left">

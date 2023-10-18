@@ -40,7 +40,13 @@ class export_column extends has_rank
           'has_alternate', 'has_decedent', 'has_emergency',
           'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
         );
-        if( in_array( $this->column_name, $check_array ) )
+
+        if( 'is_in_collection' == $this->column_name )
+        {
+          $column_name = sprintf( 'IF( %s.total, "yes", "no" )', 'is_in_collection_'.$this->subtype );
+          $table_prefix = false;
+        }
+        else if( in_array( $this->column_name, $check_array ) )
         {
           $column_name = sprintf( 'IF( %s.total, "yes", "no" )', $this->column_name );
           $table_prefix = false;
@@ -140,7 +146,36 @@ class export_column extends has_rank
         'has_alternate', 'has_decedent', 'has_emergency',
         'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
       );
-      if( in_array( $this->column_name, $check_array ) )
+      if( 'is_in_collection' == $this->column_name )
+      {
+        $join_table_name = 'is_in_collection_'.$this->subtype;
+        if( !$modifier->has_join( $join_table_name ) )
+        {
+          $collection_sel = lib::create( 'database\select' );
+          $collection_sel->from( 'participant' );
+          $collection_sel->add_column( 'id', 'participant_id' );
+          $collection_sel->add_column( 'collection_id IS NOT NULL', 'total', false );
+          $collection_mod = lib::create( 'database\modifier' );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'participant.id', '=', 'collection_has_participant.participant_id', false );
+          $join_mod->where( 'collection_has_participant.collection_id', '=', $this->subtype );
+          $collection_mod->join_modifier( 'collection_has_participant', $join_mod, 'left' );
+          $sql = sprintf(
+            'CREATE TEMPORARY TABLE IF NOT EXISTS %s ('."\n".
+            '  participant_id INT UNSIGNED NOT NULL,'."\n".
+            '  total INT UNSIGNED NOT NULL,'."\n".
+            '  PRIMARY KEY( participant_id )'."\n".
+            ')'."\n".
+            '%s %s',
+            $join_table_name,
+            $collection_sel->get_sql(),
+            $collection_mod->get_sql()
+          );
+          static::db()->execute( $sql );
+          $modifier->join( $join_table_name, 'participant.id', $join_table_name.'.participant_id' );
+        }
+      }
+      else if( in_array( $this->column_name, $check_array ) )
       {
         $matches = array();
         preg_match( '/has_([^_]+)(_with_consent)?/', $this->column_name, $matches );
@@ -551,7 +586,8 @@ class export_column extends has_rank
     {
       $check_array = array(
         'has_alternate', 'has_decedent', 'has_emergency',
-        'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent'
+        'has_informant', 'has_informant_with_consent', 'has_proxy', 'has_proxy_with_consent',
+        'is_in_collection'
       );
       if( in_array( $this->column_name, $check_array ) )
       {
@@ -594,7 +630,9 @@ class export_column extends has_rank
     }
     else if( 'auxiliary' == $this->table_name )
     {
-      $alias_parts = explode( '_', $this->column_name );
+      $alias_parts = 'is_in_collection' == $this->column_name
+                   ? ['is', 'in', sprintf( '"%s"', lib::create( 'database\collection', $this->subtype )->name )]
+                   : explode( '_', $this->column_name );
     }
     else if( 'collection' == $this->table_name )
     {

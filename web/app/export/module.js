@@ -240,7 +240,9 @@ cenozoApp.defineModule({
 
                   // mark that the table/subtype is in use
                   if (null != item.subtype) {
-                    this.subtypeList[item.table_name].findByProperty("key", item.subtype).inUse = true;
+                    let subtype = 'auxiliary' == item.table_name && 'is_in_collection' == item.column_name ?
+                      'collection' : item.table_name;
+                    this.subtypeList[subtype].findByProperty("key", item.subtype).inUse = true;
                   }
 
                   // load the restriction list
@@ -406,6 +408,13 @@ cenozoApp.defineModule({
                     ],
                     required: true,
                   },
+                  {
+                    key: "is_in_collection",
+                    title: "Is In Collection",
+                    type: "enum",
+                    enumList: [{ key: undefined, title: "Loading..." }],
+                    required: true,
+                  },
                 ],
               },
               participant: {
@@ -492,6 +501,7 @@ cenozoApp.defineModule({
                   { key: "has_informant_with_consent", title: "Has Information Provider With Consent" },
                   { key: "has_proxy", title: "Has Decision Maker" },
                   { key: "has_proxy_with_consent", title: "Has Decision Maker With Consent" },
+                  { key: "is_in_collection", title: "Is In Collection" },
                 ],
               },
               participant: {
@@ -571,6 +581,7 @@ cenozoApp.defineModule({
               event: [],
               stratum: [],
               study: [],
+              auxiliary: [],
             },
 
             addRestriction: async function (tableName, key) {
@@ -704,8 +715,10 @@ cenozoApp.defineModule({
             addColumn: async function (tableName, key) {
               var column = this.tableColumnList[tableName].list.findByProperty("key", key);
               if (column) {
-                var subtypeObject = angular.isDefined(this.subtypeList[tableName])
-                  ? this.subtypeList[tableName][0]
+                let subtype = 'auxiliary' == tableName && 'is_in_collection' == column.key ?
+                  'collection' : tableName;
+                var subtypeObject = angular.isDefined(this.subtypeList[subtype])
+                  ? this.subtypeList[subtype][0]
                   : null;
 
                 var response = await CnHttpFactory.instance({
@@ -756,7 +769,7 @@ cenozoApp.defineModule({
               // if updating the subtype and the column had a unique table/subtype then get a list of all
               // restrictions which have the same table/subtype so that the can also be updated
               var updateRestrictionList = [];
-              if ("subtype" == key) {
+              if ("subtype" == key && 'auxiliary' != tableName) {
                 // check if this column had a unique table/subtype
                 var hasUniqueTableSubtype = !this.columnList.some((column) => {
                   return (
