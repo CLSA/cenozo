@@ -9645,39 +9645,44 @@
           } else {
             title = "Server Error";
             message +=
-              "due to a server-based error. Please provide the resource and error code to support.";
+              "due to a server-based error. Please provide the following details to support:";
           }
           if (type && 306 != type) title += " (" + type + ")";
           message += "\n";
 
           var small = "";
           if (angular.isDefined(error.config) && 306 != type) {
+            let hrefParts = $window.location.href.split('?');
             // add the url as a small message
-            var re = new RegExp("^" + cenozoApp.baseUrl + "/(api/?)?");
             small =
-              '    Resource: "' +
-              error.config.method +
-              ":" +
-              error.config.url.replace(re, "") +
-              '"';
+              '<div class="container-fluid vertical-spacer">' +
+              "<div><b>URL:</b> " + hrefParts[0] + "</div>" +
+              "<div><b>Date &amp; Time</b>: " + moment().format() + "</div>" +
+              (1 < hrefParts.length ?  ("<div><b>Query:</b> " + decodeURI(hrefParts[1]) + "</div>") : "");
 
-            if (angular.isDefined(error.config.params))
+            if ("string" == cenozo.getType(error.data) && 0 < error.data.length && ![306,406].includes(type)){
               small +=
-                "\n    Parameters: " + angular.toJson(error.config.params);
+                "<div><b>Error Code:</b> " +
+                error.data.substr(0,20) + (error.data.length > 20 ? "..." : "") +
+                "</div>";
+            }
+
+            small +=
+              "<div><b>Resource:</b> " +
+              error.config.method + ":" +
+              error.config.url.replace(new RegExp("^" + cenozoApp.baseUrl + "/(api/?)?"),"") +
+              "</div>" +
+              "<div><b>Parameters:</b> " + angular.toJson(error.config.params,2) + "</div>" +
+              "</div>";
           }
-          if (
-            "string" == cenozo.getType(error.data) &&
-            0 < error.data.length &&
-            20 > error.data.length &&
-            306 != type &&
-            406 != type
-          )
-            small += "\n    Error Code: " + error.data;
+
           var modal = new object({
             title: title,
             message: message,
             small: small,
+            html: true,
             error: true,
+            size: "lg",
           });
           return modal.show();
         },
