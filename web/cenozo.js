@@ -9682,7 +9682,7 @@
             small: small,
             html: true,
             error: true,
-            size: "lg",
+            size: 0 < small.length ? "lg" : null,
           });
           return modal.show();
         },
