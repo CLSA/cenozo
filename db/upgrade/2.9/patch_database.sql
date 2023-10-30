@@ -5,6 +5,7 @@ SET AUTOCOMMIT=0;
 SOURCE relation_type.sql
 SOURCE relation.sql
 SOURCE equipment_loan.sql
+SOURCE log_entry.sql
 
 SOURCE update_version_number.sql
 

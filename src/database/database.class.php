@@ -892,7 +892,7 @@ class database extends \cenozo\base_object
    * @return string
    * @access protected
    */
-  protected function add_database_names( $input )
+  public function add_database_names( $input )
   {
     $split_words =
       array( 'DUPLICATE KEY UPDATE', 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'INTO',

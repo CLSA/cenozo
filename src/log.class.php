@@ -295,6 +295,142 @@ final class log extends singleton
   }
 
   /**
+   * Parses the log file into an array of objects
+   * @return array()
+   * @access public
+   */
+  public static function parse()
+  {
+    function format_line( $message, $maxlen )
+    {
+      return sprintf(
+        '%s%s',
+        substr( $message, 0, $maxlen ),
+        $maxlen < strlen( $message ) ? ' (truncated)' : ''
+      );
+    }
+
+    $re = 
+      '/^'. // start of line
+      '(20[0-9][0-9]-[01][0-9]-[0-3][0-9]) +'. // date
+      '\([A-Z][a-z][a-z]\) +'. // day of week
+      '([0-2][0-9]:[0-5][0-9]:[0-5][0-9]) +'. // time
+      '\[([a-z]+)\] +'. // log type
+      '(<[^>]*> +)?'. // user/role (not always present)
+      '(.*)'. // entry text
+      '/'; // end of line
+      
+    $entry_list = [];
+    $entry = NULL;
+    $tracing = false;
+    $stack_trace = [];
+    foreach( explode( "\n", file_get_contents( LOG_FILE_PATH ) ) as $line )
+    {
+      // remove Windows control characters
+      $line = str_ireplace( "\x0D", '', $line );
+
+      // see if this is the start of a new log entry
+      $m1 = [];
+      if( preg_match( $re, $line, $m1 ) )
+      {
+        // add the last entry to the list
+        if( !is_null( $entry ) )
+        {
+          // add the stack to the entry (if one exists)
+          if( 0 < count( $stack_trace ) ) $entry['trace'] = $stack_trace;
+          $entry_list[] = $entry;
+        }
+
+        // clear out the stack from the last entry
+        $tracing = false;
+        $stack_trace = [];
+
+        // determine the user and role
+        $user = trim( $m1[4], ' <>' );
+        $role = NULL;
+        $site = NULL;
+        $m2 = [];
+        if( preg_match( '/^([^@]+)@([^@]+)$/', $user, $m2 ) )
+        {
+          // check for user:role syntax
+          $m3 = [];
+          if( preg_match( '/^([^:]*):([^:]*)$/', $m2[1], $m3 ) )
+          {
+            $user = $m3[1];
+            $role = $m3[2];
+          }
+          else
+          {
+            $user = $m2[1];
+          }
+          $site = $m2[2];
+        }
+        else if( 'cenozo' == $user )
+        {
+          $role = 'administrator';
+        }
+
+        // create the new entry
+        $entry = [
+          'date' => $m1[1],
+          'time' => $m1[2],
+          'type' => $m1[3],
+          'user' => 0 == strlen( $user ) || 'unknown' == $user ? NULL : $user,
+          'role' => 0 == strlen( $role ) || 'unknown' == $role ? NULL : $role,
+          'site' => 0 == strlen( $site ) || 'unknown' == $site ? NULL : $site,
+          'service' => NULL,
+          'lines' => [],
+          'trace' => NULL,
+        ];
+
+        // parse the message for special details
+        $message = 0 == strlen( $m1[5] ) && array_key_exists( 6, $m1 ) ? $m1[6] : $m1[5];
+        $m4 = [];
+        if( preg_match( '/For service "([^"]+)":/', $message, $m4 ) )
+        {
+          $entry['service'] = $m4[1];
+        }
+        else
+        {
+          // truncate lines
+          $entry['lines'][] = format_line( $message, self::MAX_LOG_PARSE_LENGTH );
+        }
+      }
+      else if( $tracing )
+      {
+        if( 'Stack trace:' == $line )
+        {
+          // the trace continues, ignore this line
+        }
+        else if( 0 < strlen( trim( $line ) ) )
+        {
+          $stack_trace[] = format_line( $line, self::MAX_LOG_PARSE_LENGTH );
+        }
+      }
+      else if( 'Stack trace:' == $line )
+      {
+        $tracing = true;
+        $stack_trace = [];
+      }
+      else if( 0 < strlen( $line ) && !is_null( $line ) )
+      {
+        // this is not a new log entry, so just add it to the last entry's list of lines (truncated)
+        $entry['lines'][] = format_line( $line, self::MAX_LOG_PARSE_LENGTH );
+      }
+    }
+
+    // don't forget to add the very last entry
+    if( !is_null( $entry ) )
+    {
+      // add the stack to the entry (if one exists)
+      if( 0 < count( $stack_trace ) ) $entry['trace'] = $stack_trace;
+      $entry_list[] = $entry;
+    }
+
+    return $entry_list;
+  }
+
+  /**
    * A error handling function that uses the log class as the error handler
    * @ignore
    */
@@ -407,6 +543,12 @@ final class log extends singleton
    * @static
    */
   private static $emergency_memory = NULL;
+
+  /**
+   * The max length of a string that goes into the data returned when parsing the log file
+   * @const integer
+   */
+  const MAX_LOG_PARSE_LENGTH = 2048;
 }
 
 // define a custom error handlers

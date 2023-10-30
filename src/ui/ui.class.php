@@ -96,7 +96,7 @@ class ui extends \cenozo\base_object
       else ksort( $report_items );
 
       // create the json strings for the interface
-      $module_array = array();
+      $module_array = [];
       foreach( $this->module_list as $module ) $module_array[$module->get_subject()] = $module->as_array();
       $framework_module_string = $util_class_name::json_encode( $framework_module_list );
       $module_string = $util_class_name::json_encode( $module_array );
@@ -104,7 +104,7 @@ class ui extends \cenozo\base_object
       $utility_item_string = $util_class_name::json_encode( $utility_items );
       $report_item_string = $util_class_name::json_encode( $report_items );
 
-      // empty actions will show as [] in json strings, convert to empty objects {}
+      // empty actions will show as array in json strings, convert to empty objects {}
       $module_string = str_replace( '"actions":[]', '"actions":{}', $module_string );
 
       // build the interface
@@ -125,35 +125,35 @@ class ui extends \cenozo\base_object
   protected function get_framework_module_list()
   {
     $setting_manager = lib::create( 'business\setting_manager' );
-    $list = array(
+    $list = [
       'access', 'activity', 'address', 'alternate', 'alternate_consent', 'alternate_consent_type',
       'alternate_type', 'application', 'application_type', 'availability_type', 'callback', 'cohort',
       'collection', 'consent', 'consent_type', 'event', 'event_mail', 'event_type', 'event_type_mail',
       'export', 'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold',
-      'hold_type', 'identifier', 'jurisdiction', 'language', 'mail', 'notation', 'overview', 'participant',
-      'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site', 'relation',
-      'relation_type', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
+      'hold_type', 'identifier', 'jurisdiction', 'language', 'log_entry', 'mail', 'notation', 'overview',
+      'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site',
+      'relation', 'relation_type', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
       'search_result', 'site', 'source', 'stratum', 'study', 'study_phase', 'system_message', 'trace',
       'trace_type', 'user', 'writelog'
-    );
+    ];
 
     if( $setting_manager->get_setting( 'module', 'equipment' ) )
-      $list = array_merge( $list, array( 'equipment', 'equipment_loan', 'equipment_type' ) );
+      $list = array_merge( $list, [ 'equipment', 'equipment_loan', 'equipment_type' ] );
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
-      $list = array_merge( $list, array( 'assignment', 'interview', 'phone_call' ) );
+      $list = array_merge( $list, [ 'assignment', 'interview', 'phone_call' ] );
 
     if( $setting_manager->get_setting( 'module', 'recording' ) )
-      $list = array_merge( $list, array( 'recording', 'recording_file' ) );
+      $list = array_merge( $list, [ 'recording', 'recording_file' ] );
 
     if( $setting_manager->get_setting( 'module', 'relation' ) )
-      $list = array_merge( $list, array( 'relation', 'relation_type' ) );
+      $list = array_merge( $list, [ 'relation', 'relation_type' ] );
 
     if( $setting_manager->get_setting( 'module', 'script' ) )
-      $list = array_merge( $list, array( 'script' ) );
+      $list = array_merge( $list, [ 'script' ] );
 
     if( $setting_manager->get_setting( 'module', 'voip' ) )
-      $list = array_merge( $list, array( 'webphone' ) );
+      $list = array_merge( $list, [ 'webphone' ] );
 
     return $list;
   }
@@ -199,7 +199,7 @@ class ui extends \cenozo\base_object
       $module = $this->assert_module( $service['subject'] );
 
       // Check that modules are activated before using them
-      if( in_array( $module->get_subject(), array( 'equipment', 'equipment_loan', 'equipment_type' ) ) )
+      if( in_array( $module->get_subject(), [ 'equipment', 'equipment_loan', 'equipment_type' ] ) )
       {
         if( !$use_equipment_module )
         {
@@ -213,7 +213,7 @@ class ui extends \cenozo\base_object
 
       // Note that we ignore the subject "interview" since it is a common enough term that it may be used
       // distinct from the interview module.
-      if( in_array( $module->get_subject(), array( 'assignment', 'phone_call' ) ) )
+      if( in_array( $module->get_subject(), [ 'assignment', 'phone_call' ] ) )
       {
         if( !$use_interview_module )
         {
@@ -225,7 +225,7 @@ class ui extends \cenozo\base_object
         }
       }
       
-      if( in_array( $module->get_subject(), array( 'recording', 'recording_file' ) ) )
+      if( in_array( $module->get_subject(), [ 'recording', 'recording_file' ] ) )
       {
         if( !$use_recording_module )
         {
@@ -238,7 +238,7 @@ class ui extends \cenozo\base_object
       }
       
       // Check that modules are activated before using them
-      if( in_array( $module->get_subject(), array( 'relation', 'relation_type' ) ) )
+      if( in_array( $module->get_subject(), [ 'relation', 'relation_type' ] ) )
       {
         if( !$use_relation_module )
         {
@@ -250,7 +250,7 @@ class ui extends \cenozo\base_object
         }
       }
 
-      if( in_array( $module->get_subject(), array( 'script' ) ) )
+      if( in_array( $module->get_subject(), [ 'script' ] ) )
       {
         if( !$use_script_module )
         {
@@ -500,7 +500,7 @@ class ui extends \cenozo\base_object
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
-    $extended = in_array( $db_role->name, array( 'administrator', 'curator', 'helpline' ) );
+    $extended = in_array( $db_role->name, [ 'administrator', 'curator', 'helpline' ] );
     $grouping_list = $session->get_application()->get_cohort_groupings();
 
     $this->add_listitem( 'Activities', 'activity' );
@@ -561,14 +561,23 @@ class ui extends \cenozo\base_object
     $db_role = lib::create( 'business\session' )->get_role();
     $db_site = lib::create( 'business\session' )->get_site();
 
-    $list = array();
+    $list = [];
 
-    if( 3 <= $db_role->tier && $setting_manager->get_setting( 'general', 'participant_import' ) )
-      $list['Participant Import'] = array( 'subject' => 'participant', 'action' => 'import' );
     if( 3 <= $db_role->tier )
-      $list['Participant Multiedit'] = array( 'subject' => 'participant', 'action' => 'multiedit' );
-    if( 3 <= $db_role->tier )
-      $list['Participant Export'] = array( 'subject' => 'export', 'action' => 'list' );
+    {
+      $list['Application Log'] = array(
+        'subject' => 'log_entry',
+        'action' => 'list',
+        'query' => '?{page}&{restrict}&{order}&{reverse}'
+      );
+      $list['Participant Export'] = [ 'subject' => 'export', 'action' => 'list' ];
+      $list['Participant Multiedit'] = [ 'subject' => 'participant', 'action' => 'multiedit' ];
+      if( $setting_manager->get_setting( 'general', 'participant_import' ) )
+      {
+        $list['Participant Import'] = [ 'subject' => 'participant', 'action' => 'import' ];
+      }
+    }
+    
     $list['Participant Search'] = array(
       'subject' => 'search_result',
       'action' => 'list',
@@ -577,11 +586,15 @@ class ui extends \cenozo\base_object
       'subject' => 'user',
       'action' => 'overview',
       'query' => '?{page}&{restrict}&{order}&{reverse}' );
+    
     if( $setting_manager->get_setting( 'module', 'voip' ) && $setting_manager->get_setting( 'voip', 'enabled' ) )
+    {
       $list['Webphone'] = array(
         'subject' => 'webphone',
         'action' => 'status',
         'target' => 'webphone' );
+    }
+    
     if( array_key_exists( 'callback', $this->module_list ) )
     {
       $list['Callback Calendar'] = array(
@@ -590,6 +603,7 @@ class ui extends \cenozo\base_object
         'query' => '/{identifier}',
         'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
     }
+    
     if( 2 <= $db_role->tier || 'helpline' == $db_role->name )
     {
       $list['Tracing'] = array(
@@ -609,7 +623,7 @@ class ui extends \cenozo\base_object
    */
   protected function get_report_items()
   {
-    $report_list = array();
+    $report_list = [];
 
     $session = lib::create( 'business\session' );
     $db_application_type = $session->get_application()->get_application_type();
@@ -689,11 +703,11 @@ class ui extends \cenozo\base_object
    * The UI's module list
    * @var array
    */
-  protected $module_list = array();
+  protected $module_list = [];
 
   /**
    * The UI's listtiem list
    * @var array
    */
-  protected $listitem_list = array();
+  protected $listitem_list = [];
 }
