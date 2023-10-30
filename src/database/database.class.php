@@ -894,11 +894,11 @@ class database extends \cenozo\base_object
    */
   public function add_database_names( $input )
   {
-    $split_words =
-      array( 'DUPLICATE KEY UPDATE', 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'INTO',
-             'FROM', 'LEFT JOIN', 'RIGHT JOIN', 'STRAIGHT JOIN', 'CROSS JOIN', 'JOIN', 'VALUES',
-             'VALUE', 'SET', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT', 'PROCEDURE', 'INTO',
-             'FOR', 'ON' );
+    $split_words = array(
+      'DUPLICATE KEY UPDATE', 'UPDATE', 'INSERT', 'REPLACE', 'SELECT', 'DELETE', 'TRUNCATE', 'INTO', 'FROM',
+      'LEFT JOIN', 'RIGHT JOIN', 'STRAIGHT JOIN', 'CROSS JOIN', 'JOIN', 'VALUES', 'VALUE', 'SET', 'WHERE',
+      'GROUP', 'HAVING', 'ORDER', 'LIMIT', 'PROCEDURE', 'INTO', 'FOR', 'ON'
+    );
 
     // split the sql based on the words above, then process each piece one at a time
     // note on the regular expression:
@@ -921,6 +921,7 @@ class database extends \cenozo\base_object
       $in_update = false;
       $in_insert = false;
       $in_replace = false;
+      $in_truncate = false;
       $in_from = false;
       $in_join = false;
       $in_single_quote = false;
@@ -951,6 +952,11 @@ class database extends \cenozo\base_object
             $in_update = true;
             $output .= $piece;
           }
+          else if( 'TRUNCATE' == $piece_upper )
+          {
+            $in_truncate = true;
+            $output .= $piece;
+          }
           else if( 'INTO' == $piece_upper )
           {
             $in_insert = true;
@@ -972,7 +978,7 @@ class database extends \cenozo\base_object
             $output .= $piece;
           }
           // not an opening boundary, so if we're not in a boundary so there's nothing to do
-          else if( !( $in_update || $in_insert || $in_replace || $in_from || $in_join ) )
+          else if( !( $in_update || $in_insert || $in_replace || $in_truncate || $in_from || $in_join ) )
           {
             $output .= $piece;
           }
