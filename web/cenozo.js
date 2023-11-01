@@ -2978,17 +2978,6 @@
                     }
 
                     if (valid) {
-                      // convert size types and write record property from formatted record
-                      if (null != $scope.input && "size" == $scope.input.type)
-                        $scope.model.viewModel.record[property] = $filter(
-                          "cnSize"
-                        )(
-                          $scope.model.viewModel.formattedRecord[property].join(
-                            " "
-                          ),
-                          true
-                        );
-
                       // validation passed, proceed with patch
                       var data = {};
                       data[property] = $scope.model.viewModel.record[property];
