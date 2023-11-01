@@ -803,10 +803,11 @@ class database extends \cenozo\base_object
    * is returned.
    * @param string $string The string to format for use in a query.
    * @param boolean $json Whether the string being encoded is in JSON format
+   * @param boolean $allow_backtick Whether to allow backticks in strings
    * @return string
    * @access public
    */
-  public function format_string( $string, $json = false )
+  public function format_string( $string, $json = false, $allow_backtick = false )
   {
     // NULL values are returned as a MySQL NULL value
     if( is_null( $string ) ) return 'NULL';
@@ -816,9 +817,25 @@ class database extends \cenozo\base_object
 
     // trim whitespace from the begining and end of the string and replace unusual characters
     if( is_string( $string ) ) $string = trim( str_replace(
-      array( ' ', '`', '“', '”', "’'", '¸', '–' ),
+      array(
+        ' ',
+        '`',
+        '“',
+        '”',
+        "’'",
+        '¸',
+        '–'
+      ),
       // note that when converting double quotes in a JSON string they must be escaped by two backslashes
-      array( ' ', "'", $json ? '\\"' : '"', $json ? '\\"' : '"', $json ? '\\"' : '"', ',', '-' ),
+      array(
+        ' ',
+        $allow_backtick ? "`" : "'",
+        $json ? '\\"' : '"',
+        $json ? '\\"' : '"',
+        $json ? '\\"' : '"',
+        ',',
+        '-'
+      ),
       $string
     ) );
 

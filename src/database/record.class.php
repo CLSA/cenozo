@@ -216,7 +216,14 @@ abstract class record extends \cenozo\base_object
         }
         else if( 'date' == $type ) $value = static::db()->format_date( $value );
         else if( 'time' == $type && $util_class_name::string_matches_int( $value ) ) $value = sprintf( 'SEC_TO_TIME( %d )', $value );
-        else $value = static::db()->format_string( $value, static::db()->get_column_json( $table_name, $column ) );
+        else
+        {
+          $value = static::db()->format_string(
+            $value,
+            static::db()->get_column_json( $table_name, $column ),
+            in_array( $column, static::$allow_backtick_column_list )
+          );
+        }
 
         $set_list[$column] = $value;
       }
@@ -1645,4 +1652,13 @@ abstract class record extends \cenozo\base_object
    * @access private
    */
   private static $primary_unique_key_list = array();
+
+  /**
+   * An array of columns belonging to this table that are allowed to have backticks.  Only string-based columns
+   * should be included in the list.
+   * @var array(string)
+   * @access protected
+   * @static
+   */
+  protected static $allow_backtick_column_list = [];
 }
