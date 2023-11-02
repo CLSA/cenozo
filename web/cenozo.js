@@ -2224,6 +2224,7 @@
         restrict: "E",
         scope: {
           model: "=",
+          disabled: "=",
           footerAtTop: "@",
           removeInputs: "@",
           notationType: "@",
@@ -2471,6 +2472,7 @@
           record: "=",
           formattedRecord: "=",
           input: "=",
+          disabled: "=",
           noHelpIndicator: "=",
           model: "=",
           first: "=",
@@ -2887,6 +2889,7 @@
         restrict: "E",
         scope: {
           model: "=",
+          disabled: "=",
           simple: "@",
           footerAtTop: "@",
           removeInputs: "@",
@@ -3255,6 +3258,7 @@
         scope: {
           input: "=",
           model: "=",
+          disabled: "=",
           first: "=",
           noCols: "=",
           noHelpIndicator: "=",

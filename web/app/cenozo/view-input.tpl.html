@@ -26,6 +26,7 @@
             type="text"
             autocomplete="off"
             maxlength="{{ input.maxLength ? input.maxLength : model.metadata.columnList[input.key].max_length }}"
+            ng-disabled="disabled"
             ng-readonly="!model.getEditEnabled() ||
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"
@@ -38,9 +39,10 @@
             </div>
             <div class="col-sm-11">
               <cn-slider
-                disabled="!model.getEditEnabled() ||
-                          true === input.isConstant( state, model ) ||
-                          'view' == input.isConstant( state, model )"
+                ng-disabled="disabled ||
+                             !model.getEditEnabled() ||
+                             true === input.isConstant( state, model ) ||
+                             'view' == input.isConstant( state, model )"
                 on-blur="model.getEditEnabled() &&
                          true !== input.isConstant( state, model ) &&
                          'view' !== input.isConstant( state, model ) && patch()"
@@ -63,6 +65,7 @@
                 class="form-control"
                 type="text"
                 autocomplete="off"
+                ng-disabled="disabled"
                 ng-readonly="!model.getEditEnabled() ||
                              true === input.isConstant( state, model ) ||
                              'view' == input.isConstant( state, model )"
@@ -77,7 +80,8 @@
                                  'view' !== input.isConstant( state, model ) &&
                                  patch()"
                       class="form-control"
-                      ng-disabled="!model.getEditEnabled() ||
+                      ng-disabled="disabled ||
+                                   !model.getEditEnabled() ||
                                    true === input.isConstant( state, model ) ||
                                    'view' == input.isConstant( state, model )"
                       ng-required="model.metadata.columnList[input.key].required">
@@ -106,6 +110,7 @@
             placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
                          }}type the first few letters to search possible values)"
             autocomplete="off"
+            ng-disabled="disabled"
             ng-readonly="!model.getEditEnabled() ||
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"></input>
@@ -124,6 +129,7 @@
             placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
                          }}type the first few letters to search possible values)"
             autocomplete="off"
+            ng-disabled="disabled"
             ng-readonly="!model.getEditEnabled() ||
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"></input>
@@ -137,6 +143,7 @@
                       true !== input.isConstant( state, model ) &&
                       'view' != input.isConstant( state, model ) &&
                       selectDatetime()"
+            ng-disabled="disabled"
             ng-readonly="!model.getEditEnabled() ||
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"
@@ -157,6 +164,7 @@
             colorpicker-close-on-select
             autocomplete="off"
             spellcheck="false"
+            ng-disabled="disabled"
             ng-readonly="!model.getEditEnabled() ||
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"
@@ -172,8 +180,11 @@
                        'view' !== input.isConstant( state, model ) &&
                        patch()"
             class="form-control"
-            ng-disabled="true === input.isConstant( state, model ) || 'view' == input.isConstant( state, model ) ||
-                         !model.getEditEnabled() || !input.enumList || 1 >= input.enumList.length"
+            ng-disabled="disabled ||
+                         true === input.isConstant( state, model ) ||
+                         'view' == input.isConstant( state, model ) ||
+                         !model.getEditEnabled() ||
+                         !input.enumList || 1 >= input.enumList.length"
             ng-required="model.metadata.columnList[input.key].required"></select>
           <textarea ng-switch-when="text"
             cn-elastic
@@ -187,6 +198,7 @@
                        patch()"
             class="form-control"
             maxlength="{{ input.maxLength ? input.maxLength : model.metadata.columnList[input.key].max_length }}"
+            ng-disabled="disabled"
             ng-readonly="!model.getEditEnabled() ||
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"
@@ -264,7 +276,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'sunday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Sunday
@@ -278,7 +291,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'monday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Monday
@@ -292,7 +306,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'tuesday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Tuesday
@@ -306,7 +321,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'wednesday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Wednesday
@@ -320,7 +336,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'thursday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Thursday
@@ -334,7 +351,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'friday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Friday
@@ -348,7 +366,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'saturday' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> Saturday
@@ -364,7 +383,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'january' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> January
@@ -378,7 +398,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'february' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> February
@@ -392,7 +413,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'march' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> March
@@ -406,7 +428,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'april' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> April
@@ -420,7 +443,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'may' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> May
@@ -434,7 +458,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'june' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> June
@@ -450,7 +475,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'july' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> July
@@ -464,7 +490,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'august' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> August
@@ -478,7 +505,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'september' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> September
@@ -492,7 +520,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'october' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> October
@@ -506,7 +535,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'november' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> November
@@ -520,7 +550,8 @@
                              true !== input.isConstant( state, model ) &&
                              'view' !== input.isConstant( state, model ) &&
                              patch( 'december' )"
-                  ng-disabled="!model.getEditEnabled() ||
+                  ng-disabled="disabled ||
+                               !model.getEditEnabled() ||
                                true === input.isConstant( state, model ) ||
                                'view' == input.isConstant( state, model )"
                   type="checkbox"></input> December

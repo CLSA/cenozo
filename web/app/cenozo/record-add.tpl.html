@@ -11,7 +11,7 @@
     {{ model.addModel.heading }}
   </h4>
 </div>
-<form name="form" class="form-horizontal" novalidate><fieldset ng-disabled="!isComplete">
+<form name="form" class="form-horizontal" novalidate>
   <div class="form-footer text-right bg-info" ng-if="footerAtTop">
     <cn-extra-operation-button-group model="model" class="pull-left" type="add">
     </cn-extra-operation-button-group>
@@ -33,6 +33,7 @@
         record="record"
         formatted-record="formattedRecord"
         model="model"
+        disabled="!isComplete"
         input="input"
         first="group.title.length && $first">
       </cn-add-input>
@@ -46,4 +47,4 @@
       <i class="glyphicon glyphicon-cloud-upload"></i> {{ getSaveText() }}
     </button>
   </div>
-</fieldset></form>
+</form>

@@ -34,7 +34,7 @@
       <span ng-if="!isComplete">(Loading&hellip;)</span>
     </h4>
   </div>
-  <form name="form" class="form-horizontal" novalidate><fieldset ng-disabled="!isComplete">
+  <form name="form" class="form-horizontal" novalidate>
     <div class="form-footer text-right bg-info" ng-if="footerAtTop">
       <cn-extra-operation-button-group class="pull-left" model="model" type="view">
       </cn-extra-operation-button-group>
@@ -85,6 +85,7 @@
             ng-repeat="input in group.inputArray"
             ng-if="true != input.isExcluded( $state, model ) && 'view' != input.isExcluded( $state, model ) && 'hidden' != input.type"
             model="model"
+            disabled="!isComplete"
             input="input"
             first="group.title.length && $first"
             parent-form="innerForm">
@@ -119,5 +120,5 @@
         </button>
       </div>
     </div>
-  </fieldset></form>
+  </form>
 </div>
