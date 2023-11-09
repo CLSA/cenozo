@@ -211,25 +211,39 @@
                    style="height: 40px;",
                    class="full-width" />
           </div>
-          <div ng-switch-when="base64"
-               ng-attr-id="{{ input.key }}"
-               name="name"
-               class="vertical-spacer">
-            <div ng-if="'application/pdf' == model.viewModel.record[input.key].mime_type">
-              <a download="{{
-                   model.viewModel.record.title ? model.viewModel.record.title :
-                   model.viewModel.record.name ? model.viewModel.record.name :
-                   (model.module.name.singular + '_' + model.viewModel.record.id)
-                 }}.pdf"
-                 ng-href="data:application/pdf;base64,{{ model.viewModel.record[input.key].data }}">Download</a>
-              ({{ (model.viewModel.record[input.key].data.length/1024).toFixed(2) }} KB)
-            </div>
-            <div ng-if="'audio/' == model.viewModel.record[input.key].mime_type.substr(0,6)">
-              (Audio files cannot be previewed)
-            </div>
-            <img ng-if="'image/' == model.viewModel.record[input.key].mime_type.substr(0,6)"
-                 ng-src="data:{{ model.viewModel.record[input.key].mime_type }};base64,{{ model.viewModel.record[input.key].data }}"
-                 class="full-width" />
+          <div
+            ng-switch-when="base64"
+            ng-attr-id="{{ input.key }}"
+            name="name"
+            class="vertical-spacer">
+            <span
+              class="horizontal-spacer">
+              <a download="{{ input.getFilename( state, model ) }}"
+                 ng-show="0 < model.viewModel.record[input.key].size"
+                 ng-href="{{ model.viewModel.record[input.key].data }}"
+                 ng-bind-html="input.getFilename( state, model )"></a>
+              ({{ model.viewModel.record[input.key].size | cnSize }})
+            </span>
+            <img
+              ng-if="'data:image/' == model.viewModel.record[input.key].data.substr(0,11)"
+              ng-src="{{ model.viewModel.record[input.key].data }}"
+              class="full-width" />
+            <span
+              style="display: inline-block"
+              class="horizontal-spacer"
+              uib-tooltip-html="'Click here to upload a replacement file.'"
+              ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )">
+              <input
+                type="file"
+                class="btn btn-default"
+                style="margin-top: -6px"
+                ng-if="model.getEditEnabled() &&
+                       true !== input.isConstant( state, model ) &&
+                       'view' !== input.isConstant( state, model )"
+                ng-model="file.file"
+                accept="{{ input.mimeType }}"
+                cn-upload="file.upload()"></input>
+            </span>
           </div>
           <div ng-switch-when="file"
                ng-attr-id="{{ input.key }}"

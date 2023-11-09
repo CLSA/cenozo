@@ -535,7 +535,8 @@ class participant extends record
   }
 
   /**
-   * TODO
+   * Returns an associative list of the default site for all applications for this participant
+   * @return array[application_id => site_id]
    */
   public function get_default_site_list()
   {

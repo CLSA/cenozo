@@ -557,6 +557,32 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Execute multiple queries
+   * @param string $sql
+   * @return results
+   * @access public
+   */
+  public function multi_query( $sql, $add_database_names = true )
+  {
+    if( $add_database_names ) $sql = $this->add_database_names( $sql );
+
+    if( false === $this->connection->multi_query( $sql ) )
+      throw lib::create( 'exception\database', $this->connection->error, $sql, $this->connection->errno );
+
+    $results = [];
+    do {
+      if( $result = $this->connection->store_result() )
+      {
+        $rows = [];
+        while( $row = $result->fetch_assoc() ) $rows[] = $row;
+        $results[] = $rows;
+      }
+    } while ( $this->connection->next_result() );
+
+    return $results;
+  }
+
+  /**
    * Database convenience method.
    * 
    * Execute SQL statement $sql and return derived class of ADORecordSet if successful. Note that a

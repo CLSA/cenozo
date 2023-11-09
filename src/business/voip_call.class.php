@@ -161,7 +161,8 @@ class voip_call extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Listen to the call
+   * @access public
    */
   public function spy()
   {

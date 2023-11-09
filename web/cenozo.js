@@ -562,6 +562,9 @@
              *   hourStep: when using the datetime type this can be used to define the hour step value
              *   minuteStep: when using the datetime type this can be used to define the minute step value
              *   secondStep: when using the datetime type this can be used to define the second step value
+             *   mimeType: when using the base64 type this can be used to restrict the file type
+             *   getFilename: when using the base64 type this function should return the full file's name
+             *     This function will be passed two arguments: $state and model.
              *   action: { adds an action button to the input
              *     id: The id to give the button
              *     title: The button's title
@@ -602,91 +605,78 @@
                 input.key = key;
 
                 // process the isConstant function
-                input.isConstant = this.processInputFunction(
-                  input.isConstant,
-                  false
-                );
-                if (null == input.isConstant)
+                input.isConstant = this.processInputFunction(input.isConstant, false);
+                if (null == input.isConstant) {
                   throw new Error(
-                    'Input "' +
-                      input.key +
-                      '" has invalid isConstant value (must be a function, boolean, "add" or "view").'
+                    'Input "' + input.key +
+                    '" has invalid isConstant value (must be a function, boolean, "add" or "view").'
                   );
+                }
 
                 // process the isExcluded function
-                input.isExcluded = this.processInputFunction(
-                  input.isExcluded,
-                  false
-                );
-                if (null === input.isExcluded)
+                input.isExcluded = this.processInputFunction(input.isExcluded, false);
+                if (null === input.isExcluded) {
                   throw new Error(
-                    'Input "' +
-                      input.key +
-                      '" has invalid isExcluded value (must be a function, boolean, "add" or "view").'
+                    'Input "' + input.key +
+                    '" has invalid isExcluded value (must be a function, boolean, "add" or "view").'
                   );
+                }
+
+                // add the getFilename to base64 types if one is not provided
+                if ("base64" == input.type && angular.isUndefined(input.getFilename)) {
+                  input.getFilename = function ($state, model) {
+                    // start with the record's title, name or module name
+                    let name = model.viewModel.record.title ? model.viewModel.record.title :
+                               model.viewModel.record.name ? model.viewModel.record.name :
+                               (model.module.subject.snake + '_' + model.viewModel.record.id);
+
+                    // add an extension, if we can
+                    let file = model.viewModel.record[input.key];
+                    if (file && file.mime_type) {
+                      let extension = file.mime_type.match( /[a-zA-Z0-9]+$/ );
+                      if (angular.isArray(extension)) name += ("." + extension[0]);
+                    }
+
+                    return name;
+                  }
+                }
 
                 // process the action if one exists
                 if (angular.isDefined(input.action)) {
-                  if (angular.isUndefined(input.action.id))
-                    input.action.id = input.action.title;
-                  input.action.isIncluded = this.processInputFunction(
-                    input.action.isIncluded,
-                    true
-                  );
-                  if (null == input.action.isIncluded)
+                  if (angular.isUndefined(input.action.id)) input.action.id = input.action.title;
+                  input.action.isIncluded = this.processInputFunction(input.action.isIncluded, true);
+                  if (null == input.action.isIncluded) {
                     throw new Error(
-                      'Input "' +
-                        input.key +
-                        '" has action, "' +
-                        input.action.title +
-                        '" with invalid isIncluded value (must be a function, boolean, "add" or "view").'
+                      'Input "' + input.key + '" has action, "' + input.action.title +
+                      '" with invalid isIncluded value (must be a function, boolean, "add" or "view").'
                     );
+                  }
 
-                  input.action.isDisabled = this.processInputFunction(
-                    input.action.isDisabled,
-                    false
-                  );
-                  if (null == input.action.isDisabled)
+                  input.action.isDisabled = this.processInputFunction(input.action.isDisabled, false);
+                  if (null == input.action.isDisabled) {
                     throw new Error(
-                      'Input "' +
-                        input.key +
-                        '" has action, "' +
-                        input.action.title +
-                        '" with invalid isDisabled value (must be a function, boolean, "add" or "view").'
+                      'Input "' + input.key + '" has action, "' + input.action.title +
+                      '" with invalid isDisabled value (must be a function, boolean, "add" or "view").'
                     );
+                  }
                 }
 
                 // create the group if it doesn't exist
-                var group = this.inputGroupList.findByProperty(
-                  "title",
-                  groupTitle
-                );
+                var group = this.inputGroupList.findByProperty("title", groupTitle);
                 if (!group) {
-                  group = {
-                    title: groupTitle,
-                    expanded: false,
-                    inputList: {},
-                  };
+                  group = { title: groupTitle, expanded: false, inputList: {}, };
                   this.inputGroupList.push(group);
                 }
 
-                if (null != afterKey)
-                  cenozo.insertPropertyAfter(
-                    group.inputList,
-                    afterKey,
-                    key,
-                    input
-                  );
+                if (null != afterKey) cenozo.insertPropertyAfter(group.inputList, afterKey, key, input);
                 else group.inputList[key] = input;
               }
             },
             addInputGroup: function (title, inputList, expanded) {
               if (0 == title.length) expanded = true;
               else if (angular.isUndefined(expanded)) expanded = false;
-              for (var key in inputList)
-                this.addInput(title, key, inputList[key]);
-              this.inputGroupList.findByProperty("title", title).collapsed =
-                !expanded;
+              for (var key in inputList) this.addInput(title, key, inputList[key]);
+              this.inputGroupList.findByProperty("title", title).collapsed = !expanded;
             },
             getInput: function (key) {
               var input = null;
@@ -1318,7 +1308,8 @@
       );
       // note, we can't use array functions in the results of querySelectorAll()
       for (var i = 0; i < elementList.length; i++) {
-        fn(cenozo.getFormElement(elementList[i].id));
+        const element = cenozo.getFormElement(elementList[i].id);
+        if (element) fn(element);
       }
     },
 
@@ -3287,43 +3278,30 @@
                 var width = 12;
 
                 // convert old-form "included" expression to isIncluded function
-                if (
-                  angular.isUndefined($scope.input.isIncluded) &&
-                  angular.isDefined($scope.input.included)
-                )
+                if (angular.isUndefined($scope.input.isIncluded) && angular.isDefined($scope.input.included)) {
                   $scope.input.isIncluded = $scope.input.included;
-                $scope.input.isIncluded =
-                  $scope.model.module.processInputFunction(
-                    $scope.input.isIncluded,
-                    true
-                  );
+                }
+                $scope.input.isIncluded = $scope.model.module.processInputFunction(
+                  $scope.input.isIncluded,
+                  true
+                );
 
                 // convert old-form "constant" expression to isConstant function
-                if (
-                  angular.isUndefined($scope.input.isConstant) &&
-                  angular.isDefined($scope.input.constant)
-                )
+                if (angular.isUndefined($scope.input.isConstant) && angular.isDefined($scope.input.constant)) {
                   $scope.input.isConstant = $scope.input.constant;
-                $scope.input.isConstant =
-                  $scope.model.module.processInputFunction(
-                    $scope.input.isConstant,
-                    false
-                  );
-
-                var constant = $scope.input.isConstant(
-                  $scope.state,
-                  $scope.model
+                }
+                $scope.input.isConstant = $scope.model.module.processInputFunction(
+                  $scope.input.isConstant,
+                  false
                 );
-                if (
-                  $scope.input.action &&
-                  $scope.input.isIncluded($scope.state, $scope.model)
-                )
-                  width -= 2;
+
+                var constant = $scope.input.isConstant($scope.state, $scope.model);
+                if ($scope.input.action && $scope.input.isIncluded($scope.state, $scope.model)) width -= 2;
                 if (
                   $scope.model.getEditEnabled() &&
                   true !== constant &&
                   "view" != constant &&
-                  "file" != $scope.input.type &&
+                  !["base64", "file"].includes($scope.input.type) &&
                   !$scope.changed &&
                   viewModel.record[$scope.input.key] !=
                     viewModel.backupRecord[$scope.input.key] &&
@@ -3332,8 +3310,8 @@
                     !viewModel.record[$scope.input.key] &&
                     !viewModel.backupRecord[$scope.input.key]
                   )
-                )
-                  width--;
+                ) width--;
+
                 return 12 > width ? "col-slim-left col-sm-" + width : "";
               },
 
@@ -5108,13 +5086,16 @@
             "onAdd",
             async function (record) {
               var self = this;
-              if (!this.parentModel.getAddEnabled())
+              if (!this.parentModel.getAddEnabled()) {
                 throw new Error("Calling onAdd() but add is not enabled.");
+              }
 
-              // add uploaded filename details to the record
-              this.fileList.forEach(
-                (file) => (record[file.key] = file.getFilename())
-              );
+              // add uploaded filename details to the record if the input exists and has type "file"
+              this.fileList.filter( file => {
+                var input = self.parentModel.module.getInput(file.key);
+                return (input && "file" == input.type);
+              }).forEach(file => (record[file.key] = file.getFilename()));
+
               var httpObj = {
                 path: this.parentModel.getServiceCollectionPath(),
                 data: record,
@@ -5133,12 +5114,9 @@
               });
 
               this.fileList.forEach((file) => {
-                if (null != file.file)
-                  file.upload(
-                    this.parentModel.getServiceResourcePath(
-                      record.getIdentifier()
-                    )
-                  );
+                if (null != file.file) {
+                  file.upload(this.parentModel.getServiceResourcePath(record.getIdentifier()));
+                }
               });
 
               this.afterAddFunctions.forEach((fn) => fn(record));
@@ -5292,8 +5270,8 @@
           cenozo.addExtendableFunction(
             object,
             "configureFileInput",
-            function (key, format) {
-              if (angular.isUndefined(format)) format = "unknown";
+            function (key, mimeType) {
+              if (angular.isUndefined(mimeType)) mimeType = "application/octet-stream";
 
               // replace any existing file details
               var index = this.fileList.findIndexByProperty("key", key);
@@ -5318,13 +5296,23 @@
                   await CnHttpFactory.instance({
                     path: path + "?file=" + obj.key,
                     data: obj.file,
-                    format: format,
+                    mimeType: mimeType,
                   }).patch();
                   obj.uploading = false;
                 },
               });
             }
           );
+
+          // configure all base64 input types
+          object.parentModel.module.inputGroupList.forEach((group) => {
+            for (var column in group.inputList) {
+              var input = group.inputList[column];
+              if ("base64" == input.type) {
+                object.configureFileInput(column, input.mimeType);
+              }
+            }
+          });
         },
       };
     },
@@ -6722,6 +6710,22 @@
           );
 
           /**
+           * Deletes the data in a base64 column
+           */
+          cenozo.addExtendableFunction(
+            object,
+            "deleteBase64Data",
+            async function (column) {
+              if (!this.parentModel.getEditEnabled())
+                throw new Error("Calling deleteBase64Data() but edit is not enabled.");
+
+              let data = {};
+              data[column] = null;
+              await this.onPatch(data);
+            }
+          );
+
+          /**
            * Add a function to be executed after onView is complete
            *
            * @param function
@@ -6889,8 +6893,8 @@
           cenozo.addExtendableFunction(
             object,
             "configureFileInput",
-            function (key, format) {
-              if (angular.isUndefined(format)) format = "unknown";
+            function (key, mimeType) {
+              if (angular.isUndefined(mimeType)) mimeType = "application/octet-stream";
 
               // replace any existing file details
               var index = this.fileList.findIndexByProperty("key", key);
@@ -6904,23 +6908,20 @@
                 uploading: false,
                 updateFileSize: async function () {
                   var obj = this;
-                  obj.size = null;
-                  var response = await CnHttpFactory.instance({
-                    path:
-                      self.parentModel.getServiceResourcePath() +
-                      "?file=" +
-                      obj.key,
-                  }).get();
-                  obj.size = response.data;
+                  var input = self.parentModel.module.getInput(obj.key);
+                  if (input && "file" == input.type) {
+                    obj.size = null;
+                    var response = await CnHttpFactory.instance({
+                      path: self.parentModel.getServiceResourcePath() + "?file=" + obj.key,
+                    }).get();
+                    obj.size = response.data;
+                  }
                 },
                 download: async function () {
                   var obj = this;
                   await CnHttpFactory.instance({
-                    path:
-                      self.parentModel.getServiceResourcePath() +
-                      "?file=" +
-                      obj.key,
-                    format: format,
+                    path: self.parentModel.getServiceResourcePath() + "?file=" + obj.key,
+                    mimeType: mimeType,
                   }).file();
                 },
                 remove: async function () {
@@ -6945,21 +6946,27 @@
                   patchObj[obj.key] = fileDetails.name;
 
                   try {
-                    await CnHttpFactory.instance({
-                      path: self.parentModel.getServiceResourcePath(),
-                      data: patchObj,
-                    }).patch();
+                    var input = self.parentModel.module.getInput(obj.key);
+                    if (input && "base64" == input.type) {
+                      self.record[obj.key].data = await cenozo.convertBlobToBase64(obj.file);
+                      // Size of base64 encoded file is (n * (3/4)) - y
+                      // where y is 2 if base64 ends with "==" and 1 if base64 ends with "="
+                      const base64Len = self.record[obj.key].data ? self.record[obj.key].data.length : 0;
+                      self.record[obj.key].size = 0 < base64Len ? Math.ceil((3/4) * base64Len) - 1 : 0;
+                    } else {
+                      await CnHttpFactory.instance({
+                        path: self.parentModel.getServiceResourcePath(),
+                        data: patchObj,
+                      }).patch();
 
-                    self.record[obj.key] = fileDetails.name;
+                      self.record[obj.key] = fileDetails.name;
+                    }
 
                     // upload the file
                     await CnHttpFactory.instance({
-                      path:
-                        self.parentModel.getServiceResourcePath() +
-                        "?file=" +
-                        obj.key,
+                      path: self.parentModel.getServiceResourcePath() + "?file=" + obj.key,
                       data: obj.file,
-                      format: format,
+                      mimeType: mimeType,
                     }).patch();
 
                     await obj.updateFileSize();
@@ -7038,6 +7045,16 @@
               });
             }
           );
+
+          // configure all base64 input types
+          object.parentModel.module.inputGroupList.forEach((group) => {
+            for (var column in group.inputList) {
+              var input = group.inputList[column];
+              if ("base64" == input.type) {
+                object.configureFileInput(column, input.mimeType);
+              }
+            }
+          });
         },
       };
     },
@@ -8663,6 +8680,7 @@
           redirected: false,
           onError: CnModalMessageFactory.httpError,
           guid: cenozo.generateGUID(),
+          mimeType: null,
           format: "json",
           noActivity: true,
         });
@@ -8708,15 +8726,11 @@
                 } else CnModalMessageFactory.httpError(error);
               };
             }
-            if ("json" === this.format) this.format = "pdf";
-            if (angular.isUndefined(this.data.download) || !this.data.download)
-              this.data.download = true;
+            if (angular.isUndefined(this.data.download) || !this.data.download) this.data.download = true;
 
             var response = await this.get();
             saveAs(
-              new Blob([response.data], {
-                type: response.headers("Content-Type").replace(/"(.*)"/, "$1"),
-              }),
+              new Blob([response.data], { type: response.headers("Content-Type").replace(/"(.*)"/, "$1"), }),
               response.headers("Content-Disposition").match(/filename=(.*);/)[1]
             );
 
@@ -8729,10 +8743,9 @@
               .split("\n")
               .splice(1, 8) // the first line is this (http) function, so ignore it
               .map((x, index) =>
-                x
-                  .trim()
-                  .replace(/^at /, "  " + index + ") ") // Chrome
-                  .replace(/^([^@]*)@(.*)/, "  " + index + ") $1 ($2)")
+                x.trim()
+                 .replace(/^at /, "  " + index + ") ") // Chrome
+                 .replace(/^([^@]*)@(.*)/, "  " + index + ") $1 ($2)")
               ) // Firefox
               .join("\n");
 
@@ -8777,27 +8790,15 @@
                           (err.message =
                             "The server reports that you are no longer logged in as:\n" +
                             "\n" +
-                            "        site: " +
-                            login.site +
-                            "\n" +
-                            "        user: " +
-                            login.user +
-                            "\n" +
-                            "        role: " +
-                            login.role +
-                            "\n" +
+                            "        site: " + login.site + "\n" +
+                            "        user: " + login.user + "\n" +
+                            "        role: " + login.role + "\n" +
                             "\n" +
                             "The application will now be reloaded after which you will be logged in as:\n" +
                             "\n" +
-                            "        site: " +
-                            site +
-                            "\n" +
-                            "        user: " +
-                            user +
-                            "\n" +
-                            "        role: " +
-                            role +
-                            "\n" +
+                            "        site: " + site + "\n" +
+                            "        user: " + user + "\n" +
+                            "        role: " + role + "\n" +
                             "\n" +
                             "This should only happen as a result of accessing the application from a different " +
                             "browser window.  If this message persists then please contact support as someone " +
@@ -8824,35 +8825,37 @@
               else object.params = this.data;
             }
 
-            const formatList = [ "csv", "jpeg", "ods", "pdf", "txt", "unknown", "wav", "xlsx", "zip" ];
-            if (formatList.includes(this.format)) {
-              var format = null;
-              if ("csv" == this.format) format = "text/csv;charset=utf-8";
-              else if ("jpeg" == this.format) format = "image/jpeg";
-              else if ("ods" == this.format)
-                format =
+            // convert format to mimeType
+            if (null == this.mimeType) {
+              const formatList = [ "csv", "jpeg", "ods", "pdf", "txt", "unknown", "wav", "xlsx", "zip" ];
+              if (formatList.includes(this.format)) {
+                if ("csv" == this.format) this.mimeType = "text/csv;charset=utf-8";
+                else if ("jpeg" == this.format) this.mimeType = "image/jpeg";
+                else if ("ods" == this.format) this.mimeType =
                   "application/vnd.oasis.opendocument.spreadsheet;charset=utf-8";
-              else if ("pdf" == this.format) format = "application/pdf";
-              else if ("txt" == this.format) format = "text/plain";
-              else if ("unknown" == this.format)
-                format = "application/octet-stream";
-              else if ("wav" == this.format) format = "audio/wav";
-              else if ("xlsx" == this.format)
-                format =
+                else if ("pdf" == this.format) this.mimeType = "application/pdf";
+                else if ("txt" == this.format) this.mimeType = "text/plain";
+                else if ("unknown" == this.format) this.mimeType = "application/octet-stream";
+                else if ("wav" == this.format) this.mimeType = "audio/wav";
+                else if ("xlsx" == this.format) this.mimeType =
                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
-              else if ("zip" == this.format) format = "application/zip";
-
-              if ("PATCH" == method) {
-                object.headers = { "Content-Type": format };
-              } else if ("GET" == method) {
-                object.headers = { Accept: format };
-                object.responseType = "arraybuffer";
+                else if ("zip" == this.format) this.mimeType = "application/zip";
               }
-            } else {
-              object.headers = {};
             }
 
-            if ("GET" == method || "HEAD" == method) object.headers["No-Activity"] = this.noActivity;
+            object.headers = {};
+            if (null != this.mimeType ) {
+              if ("GET" == method) {
+                object.headers["Accept"] = this.mimeType;
+                object.responseType = "arraybuffer";
+              } else if ("PATCH" == method) {
+                object.headers["Content-Type"] = this.mimeType;
+              }
+            }
+
+            if (["GET", "HEAD"].includes(method)) {
+              object.headers["No-Activity"] = this.noActivity;
+            }
 
             if (angular.isDefined(object.params)) {
               if (angular.isDefined(object.params.select)) {

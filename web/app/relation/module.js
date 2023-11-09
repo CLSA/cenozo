@@ -149,7 +149,7 @@ cenozoApp.defineModule({
             getAddEnabled: function() {
               // don't allow adding relations when viewing a participant that is not the primary
               if ("participant" == this.getSubjectFromState()) {
-                // TODO
+                // TODO: implement
               }
               return this.$$getAddEnabled();
             },

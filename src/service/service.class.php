@@ -690,6 +690,7 @@ abstract class service extends \cenozo\base_object
       'application/vnd.oasis.opendocument.spreadsheet',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'text/csv',
+      'text/sql',
       'text/plain'
     );
   }
@@ -774,6 +775,7 @@ abstract class service extends \cenozo\base_object
     else if( 'application/vnd.oasis.opendocument.spreadsheet' == $mime_type )
       $filename .= '.ods';
     else if( 'text/csv' == $mime_type ) $filename .= '.csv';
+    else if( 'text/sql' == $mime_type ) $filename .= '.sql';
     else if( 'text/plain' == $mime_type ) $filename .= '.txt';
 
     return $filename;
@@ -821,7 +823,7 @@ abstract class service extends \cenozo\base_object
         {
           $this->encoded_data = $util_class_name::get_data_as_csv( $this->encoded_data );
         }
-        else if( 'text/plain' == $mime_type )
+        else if( in_array( $mime_type, ['text/plain', 'text/sql'] ) )
         {
           $this->encoded_data = $util_class_name::convert_charset( $this->encoded_data );
         }
@@ -1060,6 +1062,14 @@ abstract class service extends \cenozo\base_object
    * @access private
    */
   private $temporary_login = false;
+
+  /**
+   * An associative array of all columns that are base64 encoded
+   * @var array[column_name => mime_type] $base64_column_list
+   * @access protected
+   * @static
+   */
+  protected static $base64_column_list = [];
 
   /**
    * A list of all valid methods (as keys) and whether they are write services (as value)
