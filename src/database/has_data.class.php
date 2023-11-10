@@ -32,7 +32,7 @@ abstract class has_data extends \cenozo\database\record
    */
   public function create_data_file( $column_name = 'data' )
   {
-    if( !in_array( $column_name, static::$data_column_list ) )
+    if( !array_key_exists( $column_name, static::$data_column_list ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name );
 
     return file_put_contents(
@@ -47,7 +47,7 @@ abstract class has_data extends \cenozo\database\record
    */
   public function delete_data_file( $column_name = 'data' )
   {
-    if( !in_array( $column_name, static::$data_column_list ) )
+    if( !array_key_exists( $column_name, static::$data_column_list ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name );
 
     $filename = $this->get_data_filename( $column_name );
@@ -62,23 +62,24 @@ abstract class has_data extends \cenozo\database\record
    */
   public function get_data_filename( $column_name = 'data' )
   {
-    if( !in_array( $column_name, static::$data_column_list ) )
+    if( !array_key_exists( $column_name, static::$data_column_list ) )
       throw lib::create( 'exception\argument', 'column_name', $column_name );
 
     return sprintf(
-      '%s/%s_%s_%d.pdf',
+      '%s/%s_%s_%d.%s',
       TEMP_PATH,
       static::get_table_name(),
       $column_name,
-      $this->id
+      $this->id,
+      static::$data_column_list[$column_name]
     );
   }
 
   /**
-   * The names of all columns containing base64 encoded data
-   * @var array(string) An array of all column names
+   * An associative array of all columns containing base64 encoded data (column => file-extension)
+   * @var array(filename => extension) An array of all column name/extension pairs
    * @access protected
    * @static
    */
-  protected static $data_column_list = ['data'];
+  protected static $data_column_list = ['data' => 'pdf'];
 }

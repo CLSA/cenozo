@@ -128,13 +128,13 @@ class ui extends \cenozo\base_object
     $list = [
       'access', 'activity', 'address', 'alternate', 'alternate_consent', 'alternate_consent_type',
       'alternate_type', 'application', 'application_type', 'availability_type', 'callback', 'cohort',
-      'collection', 'consent', 'consent_type', 'event', 'event_mail', 'event_type', 'event_type_mail',
-      'export', 'export_file', 'failed_login', 'form', 'form_association', 'form_type', 'hin', 'hold',
-      'hold_type', 'identifier', 'jurisdiction', 'language', 'log_entry', 'mail', 'notation', 'overview',
-      'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region', 'region_site',
-      'relation', 'relation_type', 'role', 'report', 'report_restriction', 'report_schedule', 'report_type',
-      'search_result', 'site', 'source', 'stratum', 'study', 'study_phase', 'system_message', 'trace',
-      'trace_type', 'user', 'writelog'
+      'collection', 'consent', 'consent_type', 'custom_report', 'event', 'event_mail', 'event_type',
+      'event_type_mail', 'export', 'export_file', 'failed_login', 'form', 'form_association', 'form_type',
+      'hin', 'hold', 'hold_type', 'identifier', 'jurisdiction', 'language', 'log_entry', 'mail', 'notation',
+      'overview', 'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region',
+      'region_site', 'relation', 'relation_type', 'role', 'report', 'report_restriction', 'report_schedule',
+      'report_type', 'search_result', 'site', 'source', 'stratum', 'study', 'study_phase', 'system_message',
+      'trace', 'trace_type', 'user', 'writelog'
     ];
 
     if( $setting_manager->get_setting( 'module', 'equipment' ) )
@@ -348,6 +348,10 @@ class ui extends \cenozo\base_object
       {
         $module->add_child( 'role' );
         $module->add_child( 'participant' );
+      }
+      else if( 'custom_report' == $module->get_subject() )
+      {
+        $module->add_choose( 'role' );
       }
       else if( 'equipment' == $module->get_subject() )
       {
@@ -637,6 +641,18 @@ class ui extends \cenozo\base_object
     $modifier->where( 'role_has_report_type.role_id', '=', $db_role->id );
     foreach( $db_application_type->get_report_type_list( $select, $modifier ) as $report_type )
       $report_list[$report_type['title']] = $report_type['name'];
+
+    if( 'administrator' == $db_role->name ) $report_list['Custom Reports'] = 'custom_report';
+    else
+    {
+      // only show the custom reports if the role has access to any
+      $custom_report_class_name = lib::get_class_name( 'database\custom_report' );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->join( 'role_has_custom_report', 'custom_report.id', 'role_has_custom_report.custom_report_id' );
+      $modifier->where( 'role_has_custom_report.role_id', '=', $db_role->id );
+      if( 0 < $custom_report_class_name::count( $modifier ) )
+        $report_list['Custom Reports'] = 'custom_report';
+    }
 
     return $report_list;
   }

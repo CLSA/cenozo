@@ -33,6 +33,12 @@ class module extends \cenozo\service\site_restricted_module
     $modifier->join( 'application_type_has_role', 'role.id', 'application_type_has_role.role_id' );
     $modifier->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
 
+    // when getting the role list for the custom_report module, never include the admin record
+    if( 'custom_report' == $this->get_parent_subject() )
+    {
+      $modifier->where( 'role.name', '!=', 'administrator' );
+    }
+
     // add the total number of related records
     if( $select->has_column( 'site_count' ) ||
         $select->has_column( 'user_count' ) ||

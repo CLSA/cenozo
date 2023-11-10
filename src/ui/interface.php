@@ -200,10 +200,17 @@
                     <h4 class="text-center">Reports</h4>
                   </li>
                   <li ng-repeat="(title,name) in reports">
+                    {{ name }}
                     <a class="btn btn-default btn-default btn-menu full-width"
+                       ng-if="'custom_report' != name"
                        ng-class="getListItemClass( $first, $last )"
                        ui-sref-active="btn-warning"
                        ui-sref="report_type.view({identifier:'name={{name}}'})">{{ title }}</a>
+                    <a class="btn btn-default btn-default btn-menu full-width"
+                       ng-if="'custom_report' == name"
+                       ng-class="getListItemClass( $first, $last )"
+                       ui-sref-active="btn-warning"
+                       ui-sref="custom_report.list">{{ title }}</a>
                   </li>
                 </ul>
               </div>

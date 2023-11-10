@@ -675,7 +675,9 @@ class util
    * This method will alter the data including:
    *   convert datetime formats
    *   converts timezones
+   * @param array $data Associative array where keys are column names and values are column values
    * @param database\user $db_user Which user to use when determining datetime formats
+   * @param boolean $transpose Whether to transpose the data
    * @return string (with newlines)
    * @static
    * @access public
