@@ -57,6 +57,10 @@ class custom_report extends \cenozo\database\has_data
   {
     if( 'report' != $column_name ) return parent::create_data_file( $column_name );
 
+    $setting_manager = lib::create( 'business\setting_manager' );
+    ini_set( 'memory_limit', '1G' );
+    set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
+
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
