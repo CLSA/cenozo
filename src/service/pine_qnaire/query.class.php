@@ -39,8 +39,8 @@ class query extends \cenozo\service\query
       if( $cenozo_manager->exists() )
       {
         $url = 'qnaire?no_activity=1';
-        if( !is_null( $sel_string ) ) $url .= '&'.$sel_string;
-        if( !is_null( $mod_string ) ) $url .= '&'.$mod_string;
+        if( !is_null( $sel_string ) ) $url .= '&select='.$sel_string;
+        if( !is_null( $mod_string ) ) $url .= '&modifier='.$mod_string;
 
         // get data from pine and pass it along
         $data = $cenozo_manager->get( $url );
