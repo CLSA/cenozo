@@ -9620,7 +9620,7 @@
           if (306 == type && angular.isDefined(error.data)) {
             title = "Please Note";
             try {
-              message = angular.fromJson(error.data);
+              message = error.data;
             } catch (e) {
               // the data isn't JSON encoded so use it directly
               message = error.data;
