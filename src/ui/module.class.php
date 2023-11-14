@@ -104,6 +104,7 @@ class module extends \cenozo\base_object
   /**
    * Adds (or replaces) a child to the module
    * 
+   * @param string $name The child's subject name
    * @param string|int $before May be the name of an existing child or an index
    */
   public function add_child( $name, $before = NULL )
@@ -161,6 +162,17 @@ class module extends \cenozo\base_object
     {
       $this->child_list[] = $name;
     }
+  }
+
+  /**
+   * Removes a child from the module
+   * 
+   * @param string $name The child's subject name
+   */
+  public function remove_child( $name )
+  {
+    $index = array_search( $name, $this->child_list );
+    if( false !== $index ) array_splice( $this->child_list, $index, 1 );
   }
 
   /**
@@ -223,6 +235,17 @@ class module extends \cenozo\base_object
     {
       $this->choose_list[] = $name;
     }
+  }
+
+  /**
+   * Removes a choose from the module
+   * 
+   * @param string $name The choose's subject name
+   */
+  public function remove_choose( $name )
+  {
+    $index = array_search( $name, $this->choose_list );
+    if( false !== $index ) array_splice( $this->choose_list, $index, 1 );
   }
 
   /**
