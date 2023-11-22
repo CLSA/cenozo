@@ -6908,14 +6908,11 @@
                 uploading: false,
                 updateFileSize: async function () {
                   var obj = this;
-                  var input = self.parentModel.module.getInput(obj.key);
-                  if (input && "file" == input.type) {
-                    obj.size = null;
-                    var response = await CnHttpFactory.instance({
-                      path: self.parentModel.getServiceResourcePath() + "?file=" + obj.key,
-                    }).get();
-                    obj.size = response.data;
-                  }
+                  obj.size = null;
+                  var response = await CnHttpFactory.instance({
+                    path: self.parentModel.getServiceResourcePath() + "?file=" + obj.key,
+                  }).get();
+                  obj.size = response.data;
                 },
                 download: async function () {
                   var obj = this;
@@ -9619,12 +9616,9 @@
 
           if (306 == type && angular.isDefined(error.data)) {
             title = "Please Note";
-            try {
-              message = error.data;
-            } catch (e) {
-              // the data isn't JSON encoded so use it directly
-              message = error.data;
-            }
+            message = error.data;
+            // try parsing as JSON, is possible
+            try { message = JSON.parse(message); } catch (error) {}
           } else if (403 == type) {
             title = "Permission Denied";
             message +=
