@@ -70,6 +70,7 @@ cenozoApp.defineModule({
               self.downloadFile = function () {
                 return CnHttpFactory.instance({
                   path: "form/" + self.record.getIdentifier(),
+                  format: "pdf",
                 }).file();
               };
             }
