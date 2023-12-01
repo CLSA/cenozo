@@ -39,6 +39,7 @@ cenozoApp.defineModule({
           title: "User",
         },
         note: {
+          column: "trace.note",
           title: "Note",
         },
       },
