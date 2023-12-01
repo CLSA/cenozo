@@ -55,6 +55,7 @@ class query extends \cenozo\service\query
       $this->select->add_table_column(
         'collection', 'IFNULL( GROUP_CONCAT( collection.name ), "" )', 'collections', false );
 
+      $this->select->add_table_column( 'participant', 'date_of_birth' );
       $this->select->add_table_column( 'participant', 'date_of_death_accuracy' );
       $this->select->add_table_column( 'participant', 'date_of_death' );
 
