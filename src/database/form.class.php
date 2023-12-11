@@ -217,15 +217,16 @@ class form extends record
     $alternate_list = $alternate_class_name::select_objects( $alternate_mod );
     $db_alternate = current( $alternate_list );
 
+    $new_alternate = false;
     if( !$db_alternate )
     { // create a new alternate if no match was found
       $db_alternate = lib::create( 'database\alternate' );
+      $new_alternate = true;
     }
     else
     {
-      // replace any address and phone numbers
+      // replace any addresses (we'll look for duplicate phone numbers below)
       foreach( $db_alternate->get_address_object_list() as $db_address ) $db_address->delete();
-      foreach( $db_alternate->get_phone_object_list() as $db_phone ) $db_phone->delete();
     }
 
     $db_alternate->active = true;
@@ -289,15 +290,51 @@ class form extends record
     $db_address->save();
 
     // import data to the phone table
-    $db_phone = lib::create( 'database\phone' );
-    $db_phone->alternate_id = $db_alternate->id;
+    $db_phone = NULL;
+    if( !$new_alternate )
+    {
+      // see if the number already exists
+      $phone_mod = lib::create( 'database\modifier' );
+      $phone_mod->where( 'number', '=', $data['phone'] );
+      $phone_mod->where(
+        'international',
+        '=',
+        array_key_exists( 'phone_international', $data ) ? $data['phone_international'] : false
+      );
+      $phone_mod->order( 'rank' );
+      $phone_list = $db_alternate->get_phone_object_list( $phone_mod );
+
+      if( 1 == count( $phone_list ) ) $db_phone = current( $phone_list );
+      else if( 1 < count( $phone_list ) )
+      {
+        // use the first active number
+        foreach( $phone_list as $record )
+        {
+          if( $record->active )
+          {
+            $db_phone = $record;
+            break;
+          }
+        }
+
+        // if none are active then just use the first one
+        if( is_null( $db_phone ) ) $db_phone = current( $phone_list );
+      }
+    }
+
+    if( is_null( $db_phone ) )
+    {
+      $db_phone = lib::create( 'database\phone' );
+      $db_phone->alternate_id = $db_alternate->id;
+      $db_phone->type = 'other';
+      $db_phone->rank = 1;
+      $db_phone->international = array_key_exists( 'phone_international', $data )
+                               ? $data['phone_international']
+                               : false;
+      $db_phone->number = $data['phone'];
+    }
+
     $db_phone->active = true;
-    $db_phone->rank = 1;
-    $db_phone->type = 'other';
-    $db_phone->international = array_key_exists( 'phone_international', $data )
-                             ? $data['phone_international']
-                             : false;
-    $db_phone->number = $data['phone'];
     $db_phone->note = $data['phone_note'];
     $db_phone->save();
 
