@@ -16,17 +16,11 @@ class patch extends \cenozo\service\patch
   /**
    * Override parent method
    */
-  public function get_file_as_array()
+  protected function prepare()
   {
-    // remove password from the patch array
-    $patch_array = parent::get_file_as_array();
-    if( array_key_exists( 'password', $patch_array ) )
-    {
-      $this->update_password = true;
-      unset( $patch_array['password'] );
-    }
+    $this->extract_parameter_list[] = 'password';
 
-    return $patch_array;
+    parent::prepare();
   }
 
   /**
@@ -77,7 +71,7 @@ class patch extends \cenozo\service\patch
     $db_user = $this->get_leaf_record();
 
     // process the preferred site, if it exists
-    if( $this->update_password )
+    if( $this->get_argument( 'password', false ) )
     {
       $session = lib::create( 'business\session' );
       $setting_manager = lib::create( 'business\setting_manager' );
@@ -98,11 +92,4 @@ class patch extends \cenozo\service\patch
       $db_user->save();
     }
   }
-
-  /**
-   * Whether to update the user's preferred site
-   * @var boolean
-   * @access protected
-   */
-  protected $update_password = false;
 }

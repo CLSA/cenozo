@@ -16,37 +16,16 @@ class patch extends \cenozo\service\patch
   /**
    * Override parent method
    */
-  public function get_file_as_array()
+  protected function prepare()
   {
-    // remove preferred_site_id from the patch array
-    $patch_array = parent::get_file_as_array();
-    if( array_key_exists( 'preferred_site_id', $patch_array ) )
-    {
-      $this->preferred_site_id = $patch_array['preferred_site_id'];
-      $this->update_preferred_site = true;
-      unset( $patch_array['preferred_site_id'] );
-    }
+    $this->extract_parameter_list = array_merge(
+      $this->extract_parameter_list,
+      ['preferred_site_id', 'reverse_withdraw', 'reverse_proxy_initiation', 'explain_last_trace']
+    );
 
-    if( array_key_exists( 'reverse_withdraw', $patch_array ) )
-    {
-      $this->reverse_withdraw = true;
-      unset( $patch_array['reverse_withdraw'] );
-    }
-
-    if( array_key_exists( 'reverse_proxy_initiation', $patch_array ) )
-    {
-      $this->reverse_proxy_initiation = true;
-      unset( $patch_array['reverse_proxy_initiation'] );
-    }
-
-    if( array_key_exists( 'explain_last_trace', $patch_array ) )
-    {
-      $this->explain_last_trace = $patch_array['explain_last_trace'];
-      unset( $patch_array['explain_last_trace'] );
-    }
-
-    return $patch_array;
+    parent::prepare();
   }
+
 
   /**
    * Override parent method
@@ -57,12 +36,10 @@ class patch extends \cenozo\service\patch
 
     if( $this->may_continue() )
     {
-      $this->get_file_as_array(); // make sure to process the site array before the following checks
-
       $db_role = lib::create( 'business\session' )->get_role();
 
       // make sure that only tier 2+ roles can reverse a withdraw
-      if( $this->reverse_withdraw && 2 > $db_role->tier ) $this->status->set_code( 403 );
+      if( $this->get_argument( 'reverse_withdraw', false ) && 2 > $db_role->tier ) $this->status->set_code( 403 );
 
       // only admins can change the date of birth
       $patch_array = parent::get_file_as_array();
@@ -77,17 +54,33 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
+    $survey_manager = lib::create( 'business\survey_manager' );
+    $db_participant = $this->get_leaf_record();
+
     // process the preferred site, if it exists
-    if( $this->update_preferred_site ) $this->set_preferred_site();
+    $preferred_site_id = $this->get_argument( 'preferred_site_id', 'NONE' );
+    if( 'NONE' != $preferred_site_id ) $this->set_preferred_site();
 
     // reverse the participant's withdraw, if needed
-    if( $this->reverse_withdraw ) $this->reverse_withdraw();
+    if( $this->get_argument( 'reverse_withdraw', false ) )
+    {
+      $survey_manager->reverse_withdraw( $db_participant );
+    }
 
     // reverse the participant's proxy, if needed
-    if( $this->reverse_proxy_initiation ) $this->reverse_proxy_initiation();
+    if( $this->get_argument( 'reverse_proxy_initiation', false ) )
+    {
+      $survey_manager->reverse_proxy_initiation( $db_participant );
+    }
 
     // explain the participant's last trace, if needed
-    if( $this->explain_last_trace ) $this->explain_last_trace();
+    $explain_last_trace = $this->get_argument( 'explain_last_trace', false );
+    if( false !== $explain_last_trace )
+    {
+      $db_trace = $db_participant->get_last_trace();
+      foreach( $explain_last_trace as $column => $value ) $db_trace->$column = $value;
+      $db_trace->save();
+    }
   }
 
   /**
@@ -97,70 +90,7 @@ class patch extends \cenozo\service\patch
   {
     $this->get_leaf_record()->set_preferred_site(
       lib::create( 'business\session' )->get_application(),
-      $this->preferred_site_id );
+      $this->get_argument( 'preferred_site_id' )
+    );
   }
-
-  /**
-   * Reverses the participant's withdraw state
-   */
-  protected function reverse_withdraw()
-  {
-    $survey_manager = lib::create( 'business\survey_manager' );
-    $survey_manager->reverse_withdraw( $this->get_leaf_record() );
-  }
-
-  /**
-   * Reverses the participant's proxy state
-   */
-  protected function reverse_proxy_initiation()
-  {
-    $survey_manager = lib::create( 'business\survey_manager' );
-    $survey_manager->reverse_proxy_initiation( $this->get_leaf_record() );
-  }
-
-  /**
-   * Sets the reason for the last trace
-   */
-  protected function explain_last_trace()
-  {
-    $db_trace = $this->get_leaf_record()->get_last_trace();
-    foreach( $this->explain_last_trace as $column => $value )
-      $db_trace->$column = $value;
-    $db_trace->save();
-  }
-
-  /**
-   * Whether to update the participant's preferred site
-   * @var boolean
-   * @access protected
-   */
-  protected $update_preferred_site = false;
-
-  /**
-   * What to change the participant's preferred site to
-   * @var int
-   * @access protected
-   */
-  protected $preferred_site_id;
-
-  /**
-   * Whether to reverse a participant's withdraw
-   * @var boolean
-   * @access protected
-   */
-  protected $reverse_withdraw;
-
-  /**
-   * Whether to reverse a participant's proxy
-   * @var boolean
-   * @access protected
-   */
-  protected $reverse_proxy_initiation;
-
-  /**
-   * Used to define the reason for this participant's last trace
-   * @var object
-   * @access protected
-   */
-  protected $explain_last_trace;
 }

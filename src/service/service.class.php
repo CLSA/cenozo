@@ -33,6 +33,7 @@ abstract class service extends \cenozo\base_object
     $this->method = strtoupper( $method );
     $this->arguments = $args;
     if( !is_array( $this->arguments ) ) $this->arguments = array();
+
     $this->file = $file;
 
     // now process the path and mime type
@@ -108,6 +109,35 @@ abstract class service extends \cenozo\base_object
     $db_user = $session->get_user();
     $db_site = $session->get_site();
     $db_role = $session->get_role();
+
+    // extract parameters from the input file and store in the arguments array
+    if( 0 < count( $this->extract_parameter_list ) )
+    {
+      $this->get_file_as_object();
+      if( is_object( $this->file_as_object ) )
+      {
+        foreach( $this->extract_parameter_list as $param )
+        {
+          if( property_exists( $this->file_as_object, $param ) )
+          {
+            // do not overwrite existing parameters
+            if( array_key_exists( $param, $this->arguments ) )
+            {
+              log::warning( sprintf(
+                'Removing input file parameter "%s" but not overwriting existing argument by the same name.',
+                $param
+              ) );
+            }
+            else
+            {
+              $this->arguments[$param] = $this->file_as_object->$param;
+            }
+
+            unset( $this->file_as_object->$param );
+          }
+        }
+      }
+    }
 
     // go through all collection/resource pairs
     foreach( $this->collection_name_list as $index => $subject )
@@ -1050,6 +1080,18 @@ abstract class service extends \cenozo\base_object
   private $resource_cache = array();
 
   /**
+   * A list of parameters to extract from the input file and store as arguments instead
+   * 
+   * When the service's file can be expressed as an array or object, this method will remove all
+   * parameters in this list and store it in the arguments array so they can be accessed using the
+   * get_argument() method instead.
+   * @var array[string]
+   * @access protected
+   * @static
+   */
+  protected $extract_parameter_list = [];
+  
+  /**
    * Whether to check if the user's access has permission to perform this service
    * @var boolean
    * @access private
@@ -1082,5 +1124,6 @@ abstract class service extends \cenozo\base_object
     'GET' => false,
     'HEAD' => false,
     'PATCH' => true,
-    'POST' => true );
+    'POST' => true
+  );
 }
