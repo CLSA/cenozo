@@ -217,9 +217,6 @@ class module extends \cenozo\service\site_restricted_participant_module
     if( $select->has_table_columns( 'availability_type' ) )
       $modifier->left_join( 'availability_type', 'participant.availability_type_id', 'availability_type.id' );
 
-    if( $select->has_table_columns( 'next_of_kin' ) )
-      $modifier->left_join( 'next_of_kin', 'participant.id', 'next_of_kin.participant_id' );
-
     $db_participant = $this->get_resource();
     if( !is_null( $db_participant ) )
     {

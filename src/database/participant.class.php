@@ -92,17 +92,6 @@ class participant extends record
   }
 
   /**
-   * Get this participant's next_of_kin record
-   * @return next_of_kin
-   * @access public
-   */
-  public function get_next_of_kin()
-  {
-    $next_of_kin_list = $this->get_next_of_kin_object_list();
-    return count( $next_of_kin_list ) ? current( $next_of_kin_list ) : NULL;
-  }
-
-  /**
    * Get this participant's last hin record
    * @return hin
    * @access public
