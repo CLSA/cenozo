@@ -23,6 +23,10 @@ cenozoApp.defineModule({
           column: "equipment_type.name",
           title: "Equipment Type",
         },
+        active: {
+          title: "Active",
+          type: "boolean",
+        },
         site: {
           column: "site.name",
           title: "Site",
@@ -54,6 +58,11 @@ cenozoApp.defineModule({
         type: "enum",
         isConstant: "view",
         isExcluded: function ($state, model) { return "equipment_type" == model.getSubjectFromState(); },
+      },
+      active: {
+        title: "Active",
+        type: "boolean",
+        help: 'Only active equipment can be selected by Pine\'s equipment type questions.',
       },
       site_id: {
         title: "Site",
