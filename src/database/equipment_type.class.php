@@ -158,6 +158,20 @@ class equipment_type extends record
 
       if( is_null( $db_equipment ) )
       {
+        // restrict new equipment to the serial number regex (if there is on)
+        if( !is_null( $this->regex ) )
+        {
+          if( 0 == preg_match( sprintf( '/%s/', $this->regex ), $serial_number ) )
+          {
+            $result_data['invalid'][] = sprintf(
+              'Line %d: serial number "%s" does not match the correct format',
+              $index + 1,
+              $serial_number
+            );
+            continue;
+          }
+        }
+
         $db_equipment = lib::create( 'database\equipment' );
         $db_equipment->equipment_type_id = $this->id;
         $db_equipment->serial_number = $serial_number;

@@ -47,6 +47,10 @@ cenozoApp.defineModule({
         title: "Name",
         type: "string",
       },
+      regex: {
+        title: "Format",
+        type: "string",
+      },
       description: {
         title: "Description",
         type: "text",
