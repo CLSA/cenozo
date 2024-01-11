@@ -3,12 +3,6 @@ DELIMITER //
 CREATE PROCEDURE patch_equipment()
   BEGIN
 
-    SELECT COUNT(*) INTO @test
-    FROM information_schema.COLUMNS
-    WHERE table_schema = DATABASE()
-    AND table_name = "equipment"
-    AND column_name = "equipment";
-
     SELECT "Adding new active column to equipment table" AS "";
 
     SELECT COUNT(*) INTO @test
