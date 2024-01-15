@@ -3,24 +3,25 @@
     <button class="btn btn-default"
             type="button"
             id="{{ op.id }}"
-            ng-if="op.isIncluded( state, model )"
-            ng-disabled="op.isDisabled( state, model )"
+            ng-if="op.isIncluded(state, model)"
+            ng-disabled="op.isDisabled(state, model)"
             ng-class="op.classes"
             uib-tooltip="{{ op.help }}"
             tooltip-placement="{{ 'list' == op.type ? 'left' : 'right' }}"
             data-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
-            ng-click="op.operation( state, model )"
-            ng-bind-html="op.title + ( op.operations ? ' <span class=\'caret\'></span>' : '' )">
+            ng-click="op.operation(state, model)"
+            ng-bind-html="op.title + (op.operations ? ' <span class=\'caret\'></span>' : '')">
     </button>
-    <ul class="dropdown-menu" ng-if="op.operations" aria-labelledby="{{ op.id }}">
+    <ul class="dropdown-menu" ng-if="op.isIncluded(state, model)" aria-labelledby="{{ op.id }}">
       <li ng-repeat="subOp in op.operations"
-          ng-if="subOp.isIncluded( state, model )"
-          ng-class="subOp.classes + ( subOp.isDisabled( state, model ) ? ' disabled' : '' )">
+          ng-if="subOp.isIncluded(state, model)"
+          ng-class="subOp.classes + (subOp.isDisabled(state, model) ? ' disabled' : '')">
         <a id="{{ subOp.id }}"
+           class="btn"
            uib-tooltip="{{ subOp.help }}"
-           ng-click="subOp.isDisabled( state, model ) ? $event.stopPropagation() : subOp.operation( state, model )"
+           ng-click="subOp.isDisabled(state, model) ? $event.stopPropagation() : subOp.operation(state, model)"
            tooltip-placement="right"
            ng-bind-html="subOp.title"></a>
       </li>

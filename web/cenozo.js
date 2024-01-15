@@ -474,35 +474,21 @@
               // we require the main module.js
               var modules = [this.getFileUrl("module.js")];
               // if this is a framework module then also require the application's module extention
-              if (this.framework)
-                modules.push(
-                  cenozoApp.getFileUrl(this.subject.snake, "module.extend.js")
-                );
+              if (this.framework) {
+                modules.push(cenozoApp.getFileUrl(this.subject.snake, "module.extend.js"));
+              }
               return modules;
             },
             // a function used to validate and process input functions
             processInputFunction: function (fn, defaultValue) {
-              if (angular.isUndefined(fn))
-                return function () {
-                  return defaultValue;
-                };
-              else if (angular.isFunction(fn)) return fn;
-              else if (true === fn)
-                return function () {
-                  return true;
-                };
-              else if (false === fn)
-                return function () {
-                  return false;
-                };
-              else if ("add" === fn)
-                return function () {
-                  return "add";
-                };
-              else if ("view" === fn)
-                return function () {
-                  return "view";
-                };
+              // apply the default if nothing is provided
+              if (angular.isUndefined(fn)) fn = defaultValue;
+
+              if (angular.isFunction(fn)) return fn;
+              else if (true === fn) return function () { return true; };
+              else if (false === fn) return function () { return false; };
+              else if ("add" === fn) return function () { return "add"; };
+              else if ("view" === fn) return function () { return "view"; };
               return null;
             },
             /**
@@ -761,7 +747,10 @@
                 extraGroup.classes = "";
               extraGroup.isIncluded = this.processInputFunction(
                 extraGroup.isIncluded,
-                true
+                function ($state, model) {
+                  // only include if at least one sub-operation is included
+                  return this.operations && this.operations.some(op => op.isIncluded($state, model));
+                }
               );
               extraGroup.isDisabled = this.processInputFunction(
                 extraGroup.isDisabled,
