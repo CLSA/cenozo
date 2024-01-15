@@ -749,7 +749,7 @@
                 extraGroup.isIncluded,
                 function ($state, model) {
                   // only include if at least one sub-operation is included
-                  return this.operations && this.operations.some(op => op.isIncluded($state, model));
+                  return this.operations.some(op => op.isIncluded($state, model));
                 }
               );
               extraGroup.isDisabled = this.processInputFunction(

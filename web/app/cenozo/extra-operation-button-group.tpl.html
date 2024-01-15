@@ -14,7 +14,7 @@
             ng-click="op.operation(state, model)"
             ng-bind-html="op.title + (op.operations ? ' <span class=\'caret\'></span>' : '')">
     </button>
-    <ul class="dropdown-menu" ng-if="op.isIncluded(state, model)" aria-labelledby="{{ op.id }}">
+    <ul class="dropdown-menu" ng-if="op.operations && op.isIncluded(state, model)" aria-labelledby="{{ op.id }}">
       <li ng-repeat="subOp in op.operations"
           ng-if="subOp.isIncluded(state, model)"
           ng-class="subOp.classes + (subOp.isDisabled(state, model) ? ' disabled' : '')">
