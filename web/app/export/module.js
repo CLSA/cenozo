@@ -170,12 +170,18 @@ cenozoApp.defineModule({
             // create a custom child list that includes the column and restriction dialogs
             customChildList: null,
             getChildList: function () {
+              // while there are no children do nothing
+              const list = this.$$getChildList();
+              if (0 == list.length) return [];
+
+              // once we have at least one child create the custom list with the column and restriction children
               if (null == this.customChildList) {
-                this.customChildList = this.$$getChildList().concat([
+                this.customChildList = list.concat([
                   { subject: { camel: "column", snake: "column" } },
                   { subject: { camel: "restriction", snake: "restriction" } },
                 ]);
               }
+
               return this.customChildList;
             },
 
