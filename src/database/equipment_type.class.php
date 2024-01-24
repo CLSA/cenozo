@@ -163,19 +163,18 @@ class equipment_type extends record
           $result_data['invalid'][] = sprintf( 'Line %d: uid cannot be empty', $rindex + 1, $row[$cindex] );
           continue;
         }
-        
+
         if( is_null( $row_data['lost'] ) )
         {
           $result_data['invalid'][] = sprintf( 'Line %d: lost cannot be empty', $rindex + 1, $row[$cindex] );
           continue;
         }
-        
+
         if( is_null( $row_data['start_datetime'] ) )
         {
           $result_data['invalid'][] = sprintf( 'Line %d: start datetime cannot be empty', $rindex + 1, $row[$cindex] );
           continue;
         }
-        
       }
 
       $create_new_loan = false;
