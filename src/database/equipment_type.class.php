@@ -87,12 +87,28 @@ class equipment_type extends record
 
       foreach( $columns as $cindex => $column )
       {
-        if( 'active' == $column ) $row_data['active'] = preg_match( '/^1|y|yes|true$/', $row[$cindex] );
-        else if( 'serial_number' == $column ) $row_data['serial_number'] = $row[$cindex];
+        // ignore empty values (the default, set above, will be used)
+        if( is_null( $row[$cindex] ) ) continue;
+
+        if( 'serial_number' == $column ) $row_data['serial_number'] = $row[$cindex];
         else if( 'site' == $column ) $row_data['site'] = $row[$cindex];
-        else if( 'note' == $column && $row[$cindex] ) $row_data['note'] = str_replace( '\n', "\n", $row[$cindex] );
         else if( 'uid' == $column ) $row_data['uid'] = $row[$cindex];
-        else if( 'lost' == $column ) $row_data['lost'] = preg_match( '/^1|y|yes|true$/', $row[$cindex] );
+        else if( 'active' == $column )
+        {
+          $row_data['active'] = $row_data['active'] = $row[$cindex];
+          if( is_string( $row_data['active'] ) )
+            $row_data['active'] = preg_match( '/^1|y|yes|true$/', $row_data['active'] );
+        }
+        else if( 'lost' == $column )
+        {
+          $row_data['lost'] = $row_data['lost'] = $row[$cindex];
+          if( is_string( $row_data['lost'] ) )
+            $row_data['lost'] = preg_match( '/^1|y|yes|true$/', $row_data['lost'] );
+        }
+        else if( 'note' == $column && $row[$cindex] )
+        {
+          $row_data['note'] = str_replace( '\n', "\n", $row[$cindex] );
+        }
         else if( 'loan_note' == $column && $row[$cindex] )
         {
           $row_data['loan_note'] = str_replace( '\n', "\n", $row[$cindex] );
@@ -135,7 +151,7 @@ class equipment_type extends record
       // now check that all mandatory data is valid
       if( is_null( $row_data['serial_number'] ) )
       {
-        $result_data['invalid'][] = sprintf( 'Line %d: serial number cannot be empty', $rindex + 1, $row[5] );
+        $result_data['invalid'][] = sprintf( 'Line %d: serial number cannot be empty', $rindex + 1, $row[$cindex] );
         continue;
       }
 
@@ -144,19 +160,19 @@ class equipment_type extends record
       {
         if( is_null( $row_data['uid'] ) )
         {
-          $result_data['invalid'][] = sprintf( 'Line %d: uid cannot be empty', $rindex + 1, $row[5] );
+          $result_data['invalid'][] = sprintf( 'Line %d: uid cannot be empty', $rindex + 1, $row[$cindex] );
           continue;
         }
         
         if( is_null( $row_data['lost'] ) )
         {
-          $result_data['invalid'][] = sprintf( 'Line %d: lost cannot be empty', $rindex + 1, $row[5] );
+          $result_data['invalid'][] = sprintf( 'Line %d: lost cannot be empty', $rindex + 1, $row[$cindex] );
           continue;
         }
         
         if( is_null( $row_data['start_datetime'] ) )
         {
-          $result_data['invalid'][] = sprintf( 'Line %d: start datetime cannot be empty', $rindex + 1, $row[5] );
+          $result_data['invalid'][] = sprintf( 'Line %d: start datetime cannot be empty', $rindex + 1, $row[$cindex] );
           continue;
         }
         
@@ -230,13 +246,17 @@ class equipment_type extends record
         );
         continue;
       }
-      else if( $site_id != $db_equipment->site_id || $row_data['note'] != $db_equipment->note )
-      {
+      else if(
+        $site_id != $db_equipment->site_id ||
+        $row_data['active'] != $db_equipment->active ||
+        $row_data['note'] != $db_equipment->note
+      ) {
         $result_data['equipment']['update']++;
         $unchanged = false;
       }
 
       $db_equipment->site_id = $site_id;
+      $db_equipment->active = $row_data['active'];
       $db_equipment->note = $row_data['note'];
       if( $apply ) $db_equipment->save();
 
