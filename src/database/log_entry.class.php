@@ -57,14 +57,17 @@ class log_entry extends record
       );
     }
 
-    static::db()->execute(
-      sprintf(
-        '%s (application_id,datetime,type,user,role,site,service,description,stack_trace) '.
-        'VALUES %s',
-        static::db()->add_database_names( 'INSERT INTO log_entry' ),
-        implode( ',', $rows )
-      ),
-      false
-    );
+    if( 0 < count( $rows ) )
+    {
+      static::db()->execute(
+        sprintf(
+          '%s (application_id,datetime,type,user,role,site,service,description,stack_trace) '.
+          'VALUES %s',
+          static::db()->add_database_names( 'INSERT INTO log_entry' ),
+          implode( ',', $rows )
+        ),
+        false
+      );
+    }
   }
 }
