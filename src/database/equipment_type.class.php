@@ -16,20 +16,22 @@ class equipment_type extends record
   /**
    * Applies data from a CSV file which defines equipment and loan records.
    * 
-   * The data must contain either 3 columns:
-   *   serial number,
-   *   site name (may be blank)
-   *   equipment note (may be blank)
+   * The data must contain either 3-4 columns:
+   *   serial number
+   *   active (optional, may be blank, default is "true")
+   *   site name (optional, may be blank)
+   *   equipment note (optional, may be blank)
    * 
-   * Or 8 columns:
+   * Or 8-9 columns:
    *   serial number,
-   *   site name (may be blank)
-   *   equipment note (may be blank)
-   *   uid (must be a pre-existing UID)
-   *   lost (1/y/yes/true if lost, any other value set lost = false)
-   *   start_datetime (YYYY-MM-DD format)
-   *   end_datetime (may be blank, YYYY-MM-DD format)
-   *   loan_note (may be blank)
+   *   active (optional, may be blank, default is "true")
+   *   site name (optional, may be blank)
+   *   equipment note (optional, may be blank)
+   *   uid (mandatory, must be a pre-existing UID)
+   *   lost (mandatory, 1/y/yes/true if lost, any other value set lost = false)
+   *   start_datetime (mandatory, YYYY-MM-DD format)
+   *   end_datetime (optional, may be blank, YYYY-MM-DD format)
+   *   loan_note (optional, may be blank)
    * 
    * @param array $data An array of equipment data
    * @param boolean $apply Whether to apply or evaluate the patch
@@ -46,94 +48,134 @@ class equipment_type extends record
     $equipment_class_name = lib::get_class_name( 'database\equipment' );
     $equipment_loan_class_name = lib::get_class_name( 'database\equipment_loan' );
 
-    $result_data = array(
-      'equipment' => array(
+    $result_data = [
+      'equipment' => [
         'new' => 0,
         'update' => 0
-      ),
-      'loan' => array(
+      ],
+      'loan' => [
         'new' => 0,
         'update' => 0
-      ),
+      ],
       'unchanged' => 0,
       'invalid' => []
-    );
+    ];
+    $columns = [];
 
-    foreach( $data as $index => $row )
+    foreach( $data as $rindex => $row )
     {
       $unchanged = true;
-      // skip the header row
-      if( 0 == $index && 'serial_number' == $row[0] ) continue;
-
-      $serial_number = $row[0];
-      $site = $row[1];
-      $note = $row[2] ? str_replace( '\n', "\n", $row[2] ) : NULL;
-
-      $uid = NULL;
-      $lost = NULL;
-      $start_datetime_obj = NULL;
-      $end_datetime_obj = NULL;
-      $loan_note = NULL;
-
-      if( 8 <= count( $row ) )
+      // read the header row
+      if( 0 == $rindex )
       {
-        $uid = $row[3];
-        $lost = preg_match( '/^1|y|yes|true$/', $row[4] );
+        $columns = $row;
+        continue;
+      }
 
-        if( !$row[5] )
+      // default row data values
+      $row_data = [
+        'active' => true,
+        'serial_number' => NULL,
+        'site' => NULL,
+        'note' => NULL,
+        'uid' => NULL,
+        'lost' => NULL,
+        'start_datetime' => NULL,
+        'end_datetime' => NULL,
+        'loan_note' => NULL,
+      ];
+
+      foreach( $columns as $cindex => $column )
+      {
+        if( 'active' == $column ) $row_data['active'] = preg_match( '/^1|y|yes|true$/', $row[$cindex] );
+        else if( 'serial_number' == $column ) $row_data['serial_number'] = $row[$cindex];
+        else if( 'site' == $column ) $row_data['site'] = $row[$cindex];
+        else if( 'note' == $column && $row[$cindex] ) $row_data['note'] = str_replace( '\n', "\n", $row[$cindex] );
+        else if( 'uid' == $column ) $row_data['uid'] = $row[$cindex];
+        else if( 'lost' == $column ) $row_data['lost'] = preg_match( '/^1|y|yes|true$/', $row[$cindex] );
+        else if( 'loan_note' == $column && $row[$cindex] )
         {
-          $result_data['invalid'][] = sprintf(
-            'Line %d: start datetime cannot be empty',
-            $index + 1,
-            $row[5]
-          );
+          $row_data['loan_note'] = str_replace( '\n', "\n", $row[$cindex] );
+        }
+        else if( 'start_datetime' == $column )
+        {
+          try
+          {
+            $row_data['start_datetime'] = $util_class_name::get_datetime_object( $row[$cindex] );
+          }
+          catch( \Exception $e )
+          {
+            $result_data['invalid'][] = sprintf(
+              'Line %d: start datetime "%s" is invalid',
+              $rindex + 1,
+              $row[$cindex]
+            );
+            continue;
+          }
+        }
+        else if( 'end_datetime' == $column && $row[$cindex] )
+        {
+          try
+          {
+            $row_data['end_datetime'] = $util_class_name::get_datetime_object( $row[$cindex] );
+          }
+          catch( \Exception $e )
+          {
+            $result_data['invalid'][] = sprintf(
+              'Line %d: end datetime "%s" is invalid',
+              $rindex + 1,
+              $row[$cindex]
+            );
+            continue;
+          }
+        }
+        // ignore columns with invalid names
+      }
+
+      // now check that all mandatory data is valid
+      if( is_null( $row_data['serial_number'] ) )
+      {
+        $result_data['invalid'][] = sprintf( 'Line %d: serial number cannot be empty', $rindex + 1, $row[5] );
+        continue;
+      }
+
+      // only check for uid/lost/start_datetime data if any of those columns are included in the header
+      if( 0 < count( array_intersect( $columns, ['uid', 'lost', 'start_datetime'] ) ) )
+      {
+        if( is_null( $row_data['uid'] ) )
+        {
+          $result_data['invalid'][] = sprintf( 'Line %d: uid cannot be empty', $rindex + 1, $row[5] );
           continue;
         }
-
-        try
+        
+        if( is_null( $row_data['lost'] ) )
         {
-          $start_datetime_obj = $util_class_name::get_datetime_object( $row[5] );
-        }
-        catch( \Exception $e )
-        {
-          $result_data['invalid'][] = sprintf(
-            'Line %d: start datetime "%s" is invalid',
-            $index + 1,
-            $row[5]
-          );
+          $result_data['invalid'][] = sprintf( 'Line %d: lost cannot be empty', $rindex + 1, $row[5] );
           continue;
         }
-
-        try
+        
+        if( is_null( $row_data['start_datetime'] ) )
         {
-          $end_datetime_obj = $row[6] ? $util_class_name::get_datetime_object( $row[6] ) : NULL;
-        }
-        catch( \Exception $e )
-        {
-          $result_data['invalid'][] = sprintf(
-            'Line %d: end datetime "%s" is invalid',
-            $index + 1,
-            $row[6]
-          );
+          $result_data['invalid'][] = sprintf( 'Line %d: start datetime cannot be empty', $rindex + 1, $row[5] );
           continue;
         }
-        $loan_note = $row[7] ? str_replace( '\n', "\n", $row[7] ) : NULL;
+        
       }
 
       $create_new_loan = false;
       $edit_existing_loan = false;
 
-      $db_equipment = $equipment_class_name::get_unique_record( 'serial_number', $serial_number );
+      $db_equipment = $equipment_class_name::get_unique_record( 'serial_number', $row_data['serial_number'] );
       $site_id = NULL;
-      if( $site )
+      if( $row_data['site'] )
       {
-        $db_site = $site_class_name::get_unique_record( 'name', $site );
+        $db_site = $site_class_name::get_unique_record( 'name', $row_data['site'] );
         if( is_null( $db_site ) )
         {
           $result_data['invalid'][] = sprintf(
             'Line %d: site name "%s" doesn\'t exist',
             $index + 1,
-            $site
+            $row_data['site']
           );
           continue;
         }
@@ -142,15 +184,15 @@ class equipment_type extends record
 
       // see if the loan data has changed
       $db_participant = NULL;
-      if( !is_null( $uid ) )
+      if( !is_null( $row_data['uid'] ) )
       {
-        $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
+        $db_participant = $participant_class_name::get_unique_record( 'uid', $row_data['uid'] );
         if( is_null( $db_participant ) )
         {
           $result_data['invalid'][] = sprintf(
             'Line %d: invalid UID "%s"',
             $index + 1,
-            $uid
+            $row_data['uid']
           );
           continue;
         }
@@ -161,12 +203,12 @@ class equipment_type extends record
         // restrict new equipment to the serial number regex (if there is on)
         if( !is_null( $this->regex ) )
         {
-          if( 0 == preg_match( sprintf( '/%s/', $this->regex ), $serial_number ) )
+          if( 0 == preg_match( sprintf( '/%s/', $this->regex ), $row_data['serial_number'] ) )
           {
             $result_data['invalid'][] = sprintf(
               'Line %d: serial number "%s" does not match the correct format',
               $index + 1,
-              $serial_number
+              $row_data['serial_number']
             );
             continue;
           }
@@ -174,7 +216,7 @@ class equipment_type extends record
 
         $db_equipment = lib::create( 'database\equipment' );
         $db_equipment->equipment_type_id = $this->id;
-        $db_equipment->serial_number = $serial_number;
+        $db_equipment->serial_number = $row_data['serial_number'];
         $result_data['equipment']['new']++;
         $unchanged = false;
       }
@@ -183,19 +225,19 @@ class equipment_type extends record
         $result_data['invalid'][] = sprintf(
           'Line %d: serial number "%s" already exists and belongs to another equipment type (%s)',
           $index + 1,
-          $serial_number,
+          $row_data['serial_number'],
           $db_equipment->get_equipment_type()->name
         );
         continue;
       }
-      else if( $site_id != $db_equipment->site_id || $note != $db_equipment->note )
+      else if( $site_id != $db_equipment->site_id || $row_data['note'] != $db_equipment->note )
       {
         $result_data['equipment']['update']++;
         $unchanged = false;
       }
 
       $db_equipment->site_id = $site_id;
-      $db_equipment->note = $note;
+      $db_equipment->note = $row_data['note'];
       if( $apply ) $db_equipment->save();
 
       if( !is_null( $db_participant ) )
@@ -210,7 +252,7 @@ class equipment_type extends record
           // no loan exists, so add a new one
           $create_new_loan = true;
         }
-        else if( $uid != $db_equipment_loan->get_participant()->uid )
+        else if( $row_data['uid'] != $db_equipment_loan->get_participant()->uid )
         {
           // a loan exists but it doesn't match the UID, so close it (if open) and create a new loan
           if( is_null( $db_equipment_loan->end_datetime ) ) $edit_existing_loan = true;
@@ -220,9 +262,9 @@ class equipment_type extends record
         {
           // Update the loan if the start, end or note isn't the same as the data
           if(
-            $start_datetime_obj != $db_equipment_loan->start_datetime ||
-            $end_datetime_obj != $db_equipment_loan->end_datetime ||
-            $loan_note != $db_equipment_loan->note
+            $row_data['start_datetime'] != $db_equipment_loan->start_datetime ||
+            $row_data['end_datetime'] != $db_equipment_loan->end_datetime ||
+            $row_data['loan_note'] != $db_equipment_loan->note
           ) {
             $edit_existing_loan = true;
           }
@@ -232,10 +274,10 @@ class equipment_type extends record
         {
           if( $apply )
           {
-            $db_equipment_loan->lost = $lost;
-            $db_equipment_loan->start_datetime = $start_datetime_obj;
-            $db_equipment_loan->end_datetime = $end_datetime_obj;
-            $db_equipment_loan->note = $loan_note;
+            $db_equipment_loan->lost = $row_data['lost'];
+            $db_equipment_loan->start_datetime = $row_data['start_datetime'];
+            $db_equipment_loan->end_datetime = $row_data['end_datetime'];
+            $db_equipment_loan->note = $row_data['loan_note'];
             $db_equipment_loan->save();
           }
           $result_data['loan']['update']++;
@@ -249,10 +291,10 @@ class equipment_type extends record
             $db_equipment_loan = lib::create( 'database\equipment_loan' );
             $db_equipment_loan->participant_id = $db_participant->id;
             $db_equipment_loan->equipment_id = $db_equipment->id;
-            $db_equipment_loan->lost = $lost;
-            $db_equipment_loan->start_datetime = $start_datetime_obj;
-            $db_equipment_loan->end_datetime = $end_datetime_obj;
-            $db_equipment_loan->note = $loan_note;
+            $db_equipment_loan->lost = $row_data['lost'];
+            $db_equipment_loan->start_datetime = $row_data['start_datetime'];
+            $db_equipment_loan->end_datetime = $row_data['end_datetime'];
+            $db_equipment_loan->note = $row_data['loan_note'];
             $db_equipment_loan->save();
           }
           $result_data['loan']['new']++;
