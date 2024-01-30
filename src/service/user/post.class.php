@@ -18,6 +18,8 @@ class post extends \cenozo\service\post
    */
   protected function execute()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     parent::execute();
 
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -44,10 +46,13 @@ class post extends \cenozo\service\post
       }
 
       // add the user to ldap
+      $default_pw = $setting_manager->get_setting( 'general', 'default_password' );
+      $db_user->password = $util_class_name::encrypt( $default_pw );
+      $db_user->save();
+
       $ldap_manager = lib::create( 'business\ldap_manager' );
       try
       {
-        $default_pw = $setting_manager->get_setting( 'general', 'default_password' );
         $ldap_manager->new_user( $db_user->name, $db_user->first_name, $db_user->last_name, $default_pw );
       }
       catch( \cenozo\exception\ldap $e )

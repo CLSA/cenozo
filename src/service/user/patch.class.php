@@ -66,6 +66,9 @@ class patch extends \cenozo\service\patch
    */
   protected function execute()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+    $user_class_name = lib::get_class_name( 'database\user' );
+
     parent::execute();
 
     $db_user = $this->get_leaf_record();
@@ -79,6 +82,11 @@ class patch extends \cenozo\service\patch
 
       $default_password = $setting_manager->get_setting( 'general', 'default_password' );
       $ldap_manager->set_user_password( $db_user->name, $default_password );
+      if( $user_class_name::column_exists( 'password' ) )
+      {
+        $db_user->password = $util_class_name::encrypt( $password->requested );
+        $db_user->save();
+      }
 
       // just incase the user is resetting their own password
       if( $session->get_user()->id == $db_user->id ) $session->set_no_password( $default_password );
