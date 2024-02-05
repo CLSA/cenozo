@@ -36,6 +36,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       record_address: {
         title: "Record Address",

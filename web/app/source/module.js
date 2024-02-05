@@ -30,6 +30,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       override_stratum: {
         title: "Override Stratum Restrictions",

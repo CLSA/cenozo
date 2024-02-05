@@ -46,6 +46,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       regex: {
         title: "Format",

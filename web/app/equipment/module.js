@@ -72,6 +72,7 @@ cenozoApp.defineModule({
       serial_number: {
         title: "Serial Number",
         type: "string",
+        format: "identifier",
       },
       status: {
         title: "Status",

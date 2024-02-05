@@ -50,6 +50,7 @@ cenozoApp.defineModule({
       title: {
         title: "Title",
         type: "string",
+        format: "identifier",
       },
       alternate_consent_type_id: {
         title: "Alternate Consent Type",

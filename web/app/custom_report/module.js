@@ -28,6 +28,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       data: {
         title: "SQL Report",

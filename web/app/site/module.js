@@ -42,6 +42,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       timezone: {
         title: "Time Zone",

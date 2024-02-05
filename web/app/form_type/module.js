@@ -30,6 +30,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       title: {
         title: "Title",

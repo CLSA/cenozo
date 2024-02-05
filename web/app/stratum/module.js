@@ -55,7 +55,11 @@ cenozoApp.defineModule({
     });
 
     module.addInputGroup("", {
-      name: { title: "Name", type: "string" },
+      name: {
+        title: "Name",
+        type: "string",
+        format: "identifier",
+      },
       participant_count: {
         title: "Total Participants",
         type: "string",

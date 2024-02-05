@@ -53,6 +53,7 @@ cenozoApp.defineModule({
       title: {
         title: "Title",
         type: "string",
+        format: "identifier",
       },
       user_id: {
         title: "Owner",

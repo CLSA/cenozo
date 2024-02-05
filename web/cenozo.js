@@ -522,6 +522,7 @@
              *     float: will only accept float and integers
              *     alphanum: will only accept numbers and letters
              *     alpha_num: will only accept numbers, letters and underscores
+             *     identifier: will not accept characters that do not belong in an identifier (;=/)
              *     email: requires a valid email address (<name>@<domain>.<type>)
              *     seconds: takes input in number of seconds and displays as 0d 0:00:00 format
              *   regex: A regular expression that the input must match
@@ -2966,18 +2967,14 @@
                       data[property] = $scope.model.viewModel.record[property];
 
                       // get the identifier now (in case it is changed before it is used below)
-                      var identifier =
-                        $scope.model.viewModel.record.getIdentifier();
+                      var identifier = $scope.model.viewModel.record.getIdentifier();
 
                       try {
                         await $scope.model.viewModel.onPatch(data);
 
                         // if the data in the identifier was patched then reload with the new url
                         if (identifier.split(/[;=]/).includes(property)) {
-                          $scope.model.setQueryParameter(
-                            "identifier",
-                            identifier
-                          );
+                          $scope.model.setQueryParameter("identifier", identifier);
                           await $scope.model.reloadState();
                         } else {
                           var currentElement = cenozo.getFormElement(property);
@@ -4507,10 +4504,7 @@
             // process site records
             this.siteList = response.data.site_list;
             this.siteList.forEach(
-              (site) =>
-                (site.getIdentifier = function () {
-                  return "name=" + this.name;
-                })
+              site => { site.getIdentifier = function () { return "name=" + encodeURIComponent(this.name); } }
             );
 
             // process hold-type records
@@ -5097,9 +5091,7 @@
 
               angular.extend(record, {
                 id: response.data,
-                getIdentifier: function () {
-                  return self.parentModel.getIdentifierFromRecord(record);
-                },
+                getIdentifier: function () { return self.parentModel.getIdentifierFromRecord(record); },
               });
 
               this.fileList.forEach((file) => {
@@ -5389,11 +5381,7 @@
                   "Calling onDelete() but delete is not enabled."
                 );
 
-              var httpObj = {
-                path: this.parentModel.getServiceResourcePath(
-                  record.getIdentifier()
-                ),
-              };
+              var httpObj = { path: this.parentModel.getServiceResourcePath(record.getIdentifier()) };
               var self = this;
               httpObj.onError = function (error) {
                 self.onDeleteError(error);
@@ -6794,29 +6782,19 @@
                   await this.parentModel.metadata.getPromise();
 
                   // create enum for rank columns
-                  if (
-                    angular.isDefined(this.parentModel.metadata.columnList.rank)
-                  ) {
+                  if (angular.isDefined(this.parentModel.metadata.columnList.rank)) {
                     // add the parent subject and identifier to the service
                     var path = this.parentModel.getServiceCollectionPath();
                     var parent = this.parentModel.getParentIdentifier();
-                    if (
-                      angular.isDefined(parent.subject) &&
-                      angular.isDefined(parent.identifier)
-                    )
-                      path = [parent.subject, parent.identifier, path].join(
-                        "/"
-                      );
+                    if (angular.isDefined(parent.subject) && angular.isDefined(parent.identifier))
+                      path = [parent.subject, parent.identifier, path].join("/");
 
                     var subResponse = await CnHttpFactory.instance({
                       path: path,
                       data: {
                         select: {
                           column: {
-                            column:
-                              "MAX(" +
-                              this.parentModel.module.subject.snake +
-                              ".rank)",
+                            column: "MAX(" + this.parentModel.module.subject.snake + ".rank)",
                             alias: "max",
                             table_prefix: false,
                           },
@@ -6828,16 +6806,9 @@
                     if (0 < subResponse.data.length) {
                       this.parentModel.metadata.columnList.rank.enumList = [];
                       if (null !== subResponse.data[0].max) {
-                        for (
-                          var rank = 1;
-                          rank <= parseInt(subResponse.data[0].max);
-                          rank++
-                        ) {
+                        for (var rank = 1; rank <= parseInt(subResponse.data[0].max); rank++) {
                           this.parentModel.metadata.columnList.rank.enumList.push(
-                            {
-                              value: rank,
-                              name: $filter("cnOrdinal")(rank),
-                            }
+                            { value: rank, name: $filter("cnOrdinal")(rank) }
                           );
                         }
                       }
@@ -6851,12 +6822,8 @@
                       var exclude =
                         angular.isDefined(input.isExcluded) &&
                         input.isExcluded($state, this.parentModel);
-                      if (
-                        ["boolean", "enum", "rank"].includes(input.type) &&
-                        null === this.record[column]
-                      ) {
-                        var metadata =
-                          this.parentModel.metadata.columnList[column];
+                      if (["boolean", "enum", "rank"].includes(input.type) && null === this.record[column]) {
+                        var metadata = this.parentModel.metadata.columnList[column];
                         if (angular.isDefined(metadata) && !metadata.required) {
                           this.record[column] = "";
                           this.backupRecord[column] = "";
@@ -7077,8 +7044,7 @@
             object,
             "getIdentifierFromRecord",
             function (record, valueOnly) {
-              var valueOnly = angular.isUndefined(valueOnly)
-                ? false
+              var valueOnly = angular.isUndefined(valueOnly) ? false
                 : valueOnly;
               var column = angular.isDefined(object.module.identifier.column)
                 ? object.module.identifier.column
@@ -7092,9 +7058,7 @@
                 var columns = angular.isArray(column) ? column : [column];
                 // for each column
                 identifier = columns
-                  .map((col) =>
-                    valueOnly ? String(record[col]) : col + "=" + record[col]
-                  )
+                  .map((col) => valueOnly ? String(record[col]) : col + "=" + encodeURIComponent(record[col]))
                   .join(";");
               }
               return identifier;
@@ -7265,11 +7229,8 @@
                   object.module.identifier.parent.some((item) => {
                     if (object.viewModel.record[item.alias]) {
                       response.subject = item.subject;
-                      if (angular.isDefined(item.friendly))
-                        response.friendly = item.friendly;
-                      response.identifier = item.getIdentifier(
-                        object.viewModel.record
-                      );
+                      if (angular.isDefined(item.friendly)) response.friendly = item.friendly;
+                      response.identifier = item.getIdentifier(object.viewModel.record);
                       return true; // stop processing
                     }
                   });
@@ -8094,20 +8055,17 @@
                 // determine the regex
                 var re = undefined;
                 if ("integer" == input.format) re = /^-?[0-9]+$/;
-                else if ("float" == input.format)
-                  re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
+                else if ("float" == input.format) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
                 else if ("alphanum" == input.format) re = /^[a-zA-Z0-9]+$/;
                 else if ("alpha_num" == input.format) re = /^[a-zA-Z0-9_]+$/;
-                else if ("email" == input.format)
-                  re = /^[^ ,]+@[^ ,]+\.[^ ,]+$/;
+                else if ("identifier" == input.format) re = /^[^;=\/]+$/;
+                else if ("email" == input.format) re = /^[^ ,]+@[^ ,]+\.[^ ,]+$/;
 
                 // test the regex, min and max values
                 if (angular.isDefined(re) && !re.test(value)) return false;
-                if (angular.isDefined(input.minValue) && input.minValue > value)
-                  return false;
-                if (angular.isDefined(input.maxValue) && input.maxValue < value)
-                  return false;
               }
+              if (angular.isDefined(input.minValue) && input.minValue > value) return false;
+              if (angular.isDefined(input.maxValue) && input.maxValue < value) return false;
 
               // check regex (note: escape character "\" must by typed FOUR times: \\\\
               if (angular.isDefined(input.regex)) {
@@ -8204,8 +8162,9 @@
               item.getIdentifier = function (record) {
                 var columnParts = this.column.split(".");
                 var identifier = record[this.alias];
-                if (2 == columnParts.length)
-                  identifier = columnParts[1] + "=" + identifier;
+                if (2 == columnParts.length) {
+                  identifier = columnParts[1] + "=" + encodeURIComponent(identifier);
+                }
                 return identifier;
               };
             });
@@ -8735,8 +8694,7 @@
               ) // Firefox
               .join("\n");
 
-            if (angular.isUndefined(cancelOnTransition))
-              cancelOnTransition = false;
+            if (angular.isUndefined(cancelOnTransition)) cancelOnTransition = false;
             var self = this;
             var object = {
               url: cenozoApp.baseUrl + "/api/" + this.path,

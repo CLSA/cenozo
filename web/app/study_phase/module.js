@@ -31,10 +31,12 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       code: {
         title: "Code",
         type: "string",
+        format: "identifier",
       },
       rank: {
         title: "Rank",

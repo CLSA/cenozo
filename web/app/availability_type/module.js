@@ -26,6 +26,7 @@ cenozoApp.defineModule({
       name: {
         title: "Name",
         type: "string",
+        format: "identifier",
       },
       participant_count: {
         title: "Participants",

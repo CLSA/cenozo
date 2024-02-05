@@ -49,7 +49,11 @@ cenozoApp.defineModule({
           where: ["participant.first_name", "participant.last_name", "uid"],
         },
       },
-      value: { type: "string", title: "Value" },
+      value: {
+        type: "string",
+        title: "Value",
+        format: "identifier",
+      },
       locked: { column: "identifier.locked", type: "hidden" },
     });
 
