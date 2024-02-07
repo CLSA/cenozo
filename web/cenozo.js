@@ -4504,7 +4504,7 @@
             // process site records
             this.siteList = response.data.site_list;
             this.siteList.forEach(
-              site => { site.getIdentifier = function () { return "name=" + encodeURIComponent(this.name); } }
+              site => { site.getIdentifier = function () { return "name=" + this.name; } }
             );
 
             // process hold-type records
