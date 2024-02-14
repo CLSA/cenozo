@@ -189,7 +189,7 @@ class equipment_type extends record
         {
           $result_data['invalid'][] = sprintf(
             'Line %d: site name "%s" doesn\'t exist',
-            $index + 1,
+            $rindex + 1,
             $row_data['site']
           );
           continue;
@@ -206,7 +206,7 @@ class equipment_type extends record
         {
           $result_data['invalid'][] = sprintf(
             'Line %d: invalid UID "%s"',
-            $index + 1,
+            $rindex + 1,
             $row_data['uid']
           );
           continue;
@@ -222,7 +222,7 @@ class equipment_type extends record
           {
             $result_data['invalid'][] = sprintf(
               'Line %d: serial number "%s" does not match the correct format',
-              $index + 1,
+              $rindex + 1,
               $row_data['serial_number']
             );
             continue;
@@ -239,7 +239,7 @@ class equipment_type extends record
       {
         $result_data['invalid'][] = sprintf(
           'Line %d: serial number "%s" already exists and belongs to another equipment type (%s)',
-          $index + 1,
+          $rindex + 1,
           $row_data['serial_number'],
           $db_equipment->get_equipment_type()->name
         );
