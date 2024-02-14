@@ -21,6 +21,15 @@ class log_entry extends record
     $util_class_name = lib::get_class_name( 'util' );
     $application_id = lib::create( 'business\session' )->get_application()->id;
 
+    // see if the log file has new entries
+    $obj = $util_class_name::get_datetime_object();
+    $log_datetime = $obj->setTimestamp( filemtime( LOG_FILE_PATH ) )->format( 'Y-m-d H:i:s' );
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'datetime', '>=', $log_datetime );
+    $modifier->where( 'application_id', '=', $application_id );
+    if( 0 < static::count( $modifier ) ) return;
+
     // the log records times in the server's local timezone, so we need to convert to UTC
     $system_time_zone = system( 'date +%:z' );
     $datetime_string = sprintf( 'CONVERT_TZ(%%s,"%s","UTC")', $system_time_zone );

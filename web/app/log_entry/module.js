@@ -44,7 +44,7 @@ cenozoApp.defineModule({
         title: "Application",
         type: "string",
         isExcluded: function($state, model) {
-          return ~model.showAllApplications();
+          return model.showAllApplications();
         },
       },
       datetime: {
@@ -83,6 +83,9 @@ cenozoApp.defineModule({
 
     module.addExtraOperation("list", {
       title: "Update Log",
+      isIncluded: function($state, model) {
+        return model.showAllApplications();
+      },
       operation: async function ($state, model) {
         model.listModel.isLoading = true;
         try {

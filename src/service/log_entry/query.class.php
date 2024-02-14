@@ -15,14 +15,10 @@ class query extends \cenozo\service\query
    */
   protected function execute()
   {
-    if( $this->get_argument( 'update', false ) )
-    {
-      $log_entry_class_name = lib::get_class_name( 'database\log_entry' );
-      $log_entry_class_name::update();
-    }
-    else
-    {
-      parent::execute();
-    }
+    // update the log if it's out of date
+    $log_entry_class_name = lib::get_class_name( 'database\log_entry' );
+    $log_entry_class_name::update();
+
+    parent::execute();
   }
 }
