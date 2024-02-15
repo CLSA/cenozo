@@ -6417,7 +6417,7 @@
                 var model = getFactory(factoryName).instance();
                 // rewrite get*Enabled functions
                 model.$$getChooseEnabled = function () {
-                  return true;
+                  return angular.isDefined(parentModel.module.actions.edit);
                 };
                 model.$$getAddEnabled = function () {
                   return false;
