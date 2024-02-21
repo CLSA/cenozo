@@ -624,14 +624,33 @@ class data_manager extends \cenozo\singleton
     }
     else if( 'study' == $subject )
     {
-      // participant.study.<name>
-      if( 2 != count( $parts ) )
+      if( !( 2 == count( $parts ) || 3 == count( $parts ) ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
       $study_name = $parts[1];
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'study.name', '=', $study_name );
-      $value = 0 < $db_participant->get_study_count( $modifier ) ? 1 : 0;
+
+      if( 2 == count( $parts ) )
+      {
+        // participant.study.<name>
+        // determine if the participant belongs to the study
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'study.name', '=', $study_name );
+        $value = 0 < $db_participant->get_study_count( $modifier ) ? 1 : 0;
+      }
+      else if( 3 == count( $parts ) && 'stratum' == $parts[2] )
+      {
+        // participant.study.<name>.stratum
+        // determine which stratum the participant belongs to for the given study
+        $study_class_name = lib::get_class_name( 'database\study' );
+        $db_study = $study_class_name::get_unique_record( 'name', $study_name );
+
+        $select = lib::create( 'database\select' );
+        $select->add_table_column( 'stratum', 'name' );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'stratum.study_id', '=', $db_study->id );
+        $stratum_list = $db_participant->get_stratum_list( $select, $modifier );
+        if( 0 < count( $stratum_list ) ) $value = current( $stratum_list )['name'];
+      }
     }
 
     return $value;
