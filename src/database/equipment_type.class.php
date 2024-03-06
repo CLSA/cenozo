@@ -69,6 +69,7 @@ class equipment_type extends record
       if( 0 == $rindex )
       {
         $columns = $row;
+        foreach( $columns as $cindex => $column ) $columns[$cindex] = trim( $column, '\'" ' );
         continue;
       }
 
