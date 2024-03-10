@@ -120,6 +120,7 @@ pre { white-space: pre-wrap; }
 .col-slim-right { padding-right: 0px; }
 .nopadding { padding: 0px; }
 .tooltip-inner { max-width:350px; }
+.tooltip-1000wide .tooltip-inner { max-width: 1000px; }
 .popover {
   max-width:none;
   white-space:pre;

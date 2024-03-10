@@ -10678,7 +10678,8 @@
 
       // set the default tooltip delay
       $uibTooltipProvider.options({
-        popupDelay: 500,
+        popupDelay: 350,
+        popupCloseDelay: 500,
         placement: "auto top",
         appendToBody: true,
       });
