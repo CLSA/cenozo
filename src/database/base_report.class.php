@@ -132,8 +132,7 @@ abstract class base_report extends \cenozo\database\record
 
       $sql = sprintf(
         'INSERT INTO %s_has_report_restriction'."\n".
-        'SET create_timestamp = NULL,'."\n".
-        '    %s_id = %s,'."\n".
+        'SET %s_id = %s,'."\n".
         '    report_restriction_id = %s,'."\n".
         '    value = %s',
         $subject_name,

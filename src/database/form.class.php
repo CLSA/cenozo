@@ -387,8 +387,7 @@ class form extends record
 
     static::db()->execute( sprintf(
       'INSERT IGNORE INTO form_association'."\n".
-      'SET create_timestamp = NULL,'."\n".
-      '    form_id = %s,'."\n".
+      'SET form_id = %s,'."\n".
       '    subject = %s,'."\n".
       '    record_id = %s',
       static::db()->format_string( $this->id ),

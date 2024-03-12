@@ -44,15 +44,22 @@ class user extends record
 
     $value_list = array();
     foreach( $site_id_list as $id )
-      $value_list[] = sprintf( '(NULL, %s, %s, %s)',
-                               static::db()->format_string( $id ),
-                               static::db()->format_string( $role_id ),
-                               static::db()->format_string( $this->id ) );
+    {
+      $value_list[] = sprintf(
+        '(%s, %s, %s)',
+        static::db()->format_string( $id ),
+        static::db()->format_string( $role_id ),
+        static::db()->format_string( $this->id )
+      );
+    }
 
     static::db()->execute(
-      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id)'."\n".
-               'VALUES %s',
-               implode( ",\n       ", $values ) ) );
+      sprintf(
+        'INSERT IGNORE INTO access (site_id, role_id, user_id)'."\n".
+        'VALUES %s',
+        implode( ",\n       ", $values )
+      )
+    );
   }
 
   /**

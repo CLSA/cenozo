@@ -14,15 +14,6 @@ use cenozo\lib, cenozo\log;
 class activity extends record
 {
   /**
-   * Extends parent constructor
-   */
-  public function __construct( $id = NULL )
-  {
-    parent::__construct( $id );
-    $this->write_timestamps = false;
-  }
-
-  /**
    * Update's the current user's activity based on the current session.
    * 
    * If there are any activity records for the current application and user which do not match

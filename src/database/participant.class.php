@@ -392,8 +392,7 @@ class participant extends record
     // if a row already exists
     static::db()->execute( sprintf(
       'INSERT INTO application_has_participant'."\n".
-      'SET create_timestamp = NULL,'."\n".
-      '    application_id = %s,'."\n".
+      'SET application_id = %s,'."\n".
       '    participant_id = %s,'."\n".
       '    preferred_site_id = %s'."\n".
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
@@ -1064,10 +1063,9 @@ class participant extends record
     // now add this participant to mastodon
     static::db()->execute( sprintf(
       'INSERT INTO application_has_participant '.
-      'SET application_id = %s, participant_id = %s, create_timestamp = %s',
+      'SET application_id = %s, participant_id = %s',
       static::db()->format_string( $db_application->id ),
-      static::db()->format_string( $db_participant->id ),
-      static::db()->format_string( NULL )
+      static::db()->format_string( $db_participant->id )
     ) );
 
     static::db()->commit_savepoint( $savepoint_name );
@@ -1305,10 +1303,9 @@ class participant extends record
         $select->from( 'participant' );
         $select->add_constant( $db_application->id, 'application_id' );
         $select->add_column( 'id' );
-        $select->add_constant( NULL, 'create_timestamp' );
         $select->add_constant( $preferred_site_id, 'preferred_site_id' );
         $sql = sprintf(
-          'INSERT INTO application_has_participant( application_id, participant_id, create_timestamp, preferred_site_id ) '.
+          'INSERT INTO application_has_participant( application_id, participant_id, preferred_site_id ) '.
           '%s %s '.
           'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
           $select->get_sql(),
@@ -1338,7 +1335,6 @@ class participant extends record
       {
         $select = lib::create( 'database\select' );
         $select->from( 'participant' );
-        $select->add_constant( NULL, 'create_timestamp' );
         $select->add_column(
           'IFNULL( relation.primary_participant_id, participant.id )',
           'primary_participant_id',
@@ -1362,7 +1358,7 @@ class participant extends record
         $modifier->where( 'existing_relation.id', '=', NULL );
 
         $sql = sprintf(
-          'INSERT INTO relation( create_timestamp, primary_participant_id, participant_id, relation_type_id ) '.
+          'INSERT INTO relation( primary_participant_id, participant_id, relation_type_id ) '.
           '%s %s '.
           'ON DUPLICATE KEY UPDATE relation_type_id = VALUES( relation_type_id )',
           $select->get_sql(),

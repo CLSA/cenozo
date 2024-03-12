@@ -45,7 +45,9 @@ abstract class record extends \cenozo\base_object
       $this->passive_column_values[$column] = NULL;
 
       if( 'start_datetime' == $column || 'CURRENT_TIMESTAMP' == $default )
+      {
         $this->active_column_values[$column] = $util_class_name::get_datetime_object();
+      }
       else if( !is_null( $default ) )
       {
         $type = static::db()->get_column_variable_type( $table_name, $column );
@@ -194,9 +196,6 @@ abstract class record extends \cenozo\base_object
 
     // building the SET list since it is identical for inserts and updates
     $set_list = [];
-
-    // add the create_timestamp column if this is a new record
-    if( $this->write_timestamps && $new ) $set_list['create_timestamp'] = static::db()->format_string( NULL );
 
     // now add the rest of the columns
     foreach( $this->active_column_values as $column => $value )
@@ -1033,22 +1032,23 @@ abstract class record extends \cenozo\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( $this->write_timestamps
-                          ? '(NULL, %s, %s)'
-                          : '(%s, %s)',
-                          static::db()->format_string( $primary_key_value ),
-                          static::db()->format_string( $foreign_key_value ) );
+      $values .= sprintf(
+        '(%s, %s)',
+        static::db()->format_string( $primary_key_value ),
+        static::db()->format_string( $foreign_key_value )
+      );
       $first = false;
     }
 
     static::db()->execute(
-      sprintf( $this->write_timestamps
-               ? 'REPLACE INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
-               : 'REPLACE INTO %s (%s_id, %s_id) VALUES %s',
-               $joining_table_name,
-               $table_name,
-               $record_type,
-               $values ) );
+      sprintf(
+        'REPLACE INTO %s (%s_id, %s_id) VALUES %s',
+        $joining_table_name,
+        $table_name,
+        $record_type,
+        $values
+      )
+    );
   }
 
   /**
@@ -1627,15 +1627,6 @@ abstract class record extends \cenozo\base_object
    * @access private
    */
   private $record_cache = array();
-
-  /**
-   * Determines whether or not to include create_timestamp and update_timestamp when writing
-   * records to the database.
-   * @var boolean
-   * @static
-   * @access protected
-   */
-  protected $write_timestamps = true;
 
   /**
    * The name of the table's primary key column.

@@ -110,15 +110,16 @@ abstract class has_note extends record
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
 
     $sql = sprintf(
-      'INSERT INTO note( create_timestamp, %s, user_id, datetime, note ) '.
-      "\n".'SELECT NULL, id, %s, %s, %s '.
+      'INSERT INTO note( %s, user_id, datetime, note ) '.
+      "\n".'SELECT id, %s, %s, %s '.
       "\n".'FROM %s %s',
       $subject_key_name,
       static::db()->format_string( $db_user->id ),
       static::db()->format_datetime( $util_class_name::get_datetime_object() ),
       static::db()->format_string( $note ),
       $table_name,
-      $modifier->get_sql() );
+      $modifier->get_sql()
+    );
     static::db()->execute( $sql );
   }
 }

@@ -203,7 +203,6 @@ class application extends record
     $participant_sel->from( 'participant' );
     $participant_sel->add_table_column( 'application', 'id', 'application_id' );
     $participant_sel->add_column( 'id', 'participant_id' );
-    $participant_sel->add_constant( NULL, 'create_timestamp' );
     $participant_sel->add_constant( is_null( $db_site ) ? NULL : $db_site->id, 'preferred_site_id' );
 
     $participant_mod->join(
@@ -220,7 +219,7 @@ class application extends record
     // if a row already exists
     $sql = sprintf(
       'INSERT INTO application_has_participant( '.
-        "application_id, participant_id, create_timestamp, preferred_site_id )\n".
+        "application_id, participant_id, preferred_site_id )\n".
       "%s%s\n".
       'ON DUPLICATE KEY UPDATE preferred_site_id = VALUES( preferred_site_id )',
       $participant_sel->get_sql(),
