@@ -280,19 +280,6 @@ class util
   }
 
   /**
-   * Encrypts a string (one-way) using the whirlpool algorithm
-   * 
-   * @param string $string
-   * @return string
-   * @access public
-   * @static
-   */
-  public static function encrypt( $string )
-  {
-    return hash( 'whirlpool', $string );
-  }
-
-  /**
    * Validate's a user/password pair, returning true if the password is a match and false if not
    * 
    * @param string $username
@@ -307,61 +294,70 @@ class util
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $ldap_manager = lib::create( 'business\ldap_manager' );
+    $db_user = $user_class_name::get_unique_record( 'name', $username );
 
-    $valid = false;
-
+    $valid = NULL;
     if( $ldap_manager->get_enabled() )
     { // ldap enabled, check the user/pass using the ldap manager
-      $valid = $ldap_manager->validate_user( $username, $password );
-    }
-    else
-    { // ldap not enabled, check the user/pass in the db
-      $db_user = $user_class_name::get_unique_record( 'name', $username );
-      if( !is_null( $db_user ) ) $valid = self::encrypt( $password ) === $db_user->password;
-    }
-
-    if( $count_failure )
-    {
-      $db_user = $user_class_name::get_unique_record( 'name', $username );
-      if( !is_null( $db_user ) )
+      try
       {
-        // if valid then reset the user's login failure count
-        if( $valid )
-        {
-          $db_user->login_failures = 0;
-        }
-        else
-        // if invalid then increment the user's login failure count and deactivate them if they go
-        // over the login failure limit
-        {
-          $db_failed_login = lib::create( 'database\failed_login' );
-          $db_failed_login->user_id = $db_user->id;
-          $db_failed_login->application_id = lib::create( 'business\session' )->get_application()->id;
-          $db_failed_login->address = $_SERVER['REMOTE_ADDR'];
-          $db_failed_login->datetime = static::get_datetime_object();
-          $db_failed_login->save();
-
-          $db_user->login_failures++;
-          if( $db_user->active )
-          {
-            $login_failure_limit = $setting_manager->get_setting( 'general', 'login_failure_limit' );
-            if( $login_failure_limit <= $db_user->login_failures )
-            {
-              log::info( sprintf(
-                'Deactivating user "%s" since they have passed the login failure limit of %d.',
-                $db_user->name,
-                $login_failure_limit
-              ) );
-              $db_user->active = false;
-            }
-          }
-        }
-
-        $db_user->save();
+        $valid = $ldap_manager->validate_user( $username, $password );
+      }
+      catch( \cenozo\exception\base_exception $e )
+      {
+        log::warning( $e->get_raw_message() );
       }
     }
 
-    return $valid;
+    if( is_null( $valid ) )
+    { // either ldap is not enabled or it failed, check the user/pass in the database
+      if( !is_null( $db_user ) )
+      {
+        $valid = 'whirlpool' == $db_user->password_type ?
+          hash( 'whirlpool', $password ) === $db_user->password :
+          password_verify( $password, $db_user->password );
+      }
+    }
+
+    if( !is_null( $valid ) && !is_null( $db_user ) && $count_failure )
+    {
+      // if valid then store the password hash in the database and reset the user's login failure count
+      if( $valid )
+      {
+        // only update if not yet stored as bcrypt hash
+        if( 'bcrypt' != $db_user->password_type ) $db_user->password = $password; // hashed in database\user
+
+        $db_user->login_failures = 0;
+      }
+      else // if invalid then increment the user's login failure count and deactivate if necessary
+      {
+        $db_failed_login = lib::create( 'database\failed_login' );
+        $db_failed_login->user_id = $db_user->id;
+        $db_failed_login->application_id = lib::create( 'business\session' )->get_application()->id;
+        $db_failed_login->address = $_SERVER['REMOTE_ADDR'];
+        $db_failed_login->datetime = static::get_datetime_object();
+        $db_failed_login->save();
+
+        $db_user->login_failures++;
+        if( $db_user->active )
+        {
+          $login_failure_limit = $setting_manager->get_setting( 'general', 'login_failure_limit' );
+          if( $login_failure_limit <= $db_user->login_failures )
+          {
+            log::info( sprintf(
+              'Deactivating user "%s" since they have passed the login failure limit of %d.',
+              $db_user->name,
+              $login_failure_limit
+            ) );
+            $db_user->active = false;
+          }
+        }
+      }
+
+      $db_user->save();
+    }
+
+    return is_null( $valid ) ? false : $valid;
   }
 
   /**
@@ -400,74 +396,6 @@ class util
   public static function md5_hash( $string )
   {
     return '{MD5}'.base64_encode( pack( 'H*', md5( $string ) ) );
-  }
-
-  /**
-   * Encodes a string using a NTLM hash.
-   * 
-   * @param string $string The string to encode
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function ntlm_hash( $string )
-  {
-    // Convert the password from UTF8 to UTF16 (little endian), encrypt with the MD4 hash and
-    // make it uppercase (not necessary, but it's common to do so with NTLM hashes)
-    return strtoupper( hash( 'md4', iconv( 'UTF-8', 'UTF-16LE', $string ) ) );
-  }
-
-  /**
-   * Encodes a string using a LM hash.
-   * 
-   * @param string $string The string to encode
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function lm_hash( $string )
-  {
-    $string = strtoupper( substr( $string, 0, 14 ) );
-
-    $part_1 = self::des_encrypt( substr( $string, 0, 7 ) );
-    $part_2 = self::des_encrypt( substr( $string, 7, 7 ) );
-
-    return strtoupper( $part_1.$part_2 );
-  }
-
-  /**
-   * Encrypts a string using the DES standard
-   * 
-   * @param string $string The string to encode
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function des_encrypt( $string )
-  {
-    $key = array();
-    $tmp = array();
-    $length = strlen( $string );
-
-    for( $i = 0; $i < 7; ++$i ) $tmp[] = $i < $length ? ord( $string[$i] ) : 0;
-
-    $key[] = $tmp[0] & 254;
-    $key[] = ( $tmp[0] << 7 ) | ( $tmp[1] >> 1 );
-    $key[] = ( $tmp[1] << 6 ) | ( $tmp[2] >> 2 );
-    $key[] = ( $tmp[2] << 5 ) | ( $tmp[3] >> 3 );
-    $key[] = ( $tmp[3] << 4 ) | ( $tmp[4] >> 4 );
-    $key[] = ( $tmp[4] << 3 ) | ( $tmp[5] >> 5 );
-    $key[] = ( $tmp[5] << 2 ) | ( $tmp[6] >> 6 );
-    $key[] = $tmp[6] << 1;
-
-    $key0 = '';
-
-    foreach( $key as $k ) $key0 .= chr( $k );
-    $crypt = mcrypt_encrypt(
-      MCRYPT_DES, $key0, 'KGS!@#$%', MCRYPT_MODE_ECB,
-      mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_DES, MCRYPT_MODE_ECB ), MCRYPT_RAND ) );
-
-    return bin2hex( $crypt );
   }
 
   /**

@@ -9,6 +9,7 @@ SOURCE equipment.sql
 SOURCE equipment_loan.sql
 SOURCE log_entry.sql
 SOURCE next_of_kin.sql
+SOURCE user.sql
 SOURCE timestamps.sql
 
 SOURCE update_version_number.sql

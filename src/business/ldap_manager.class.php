@@ -103,7 +103,7 @@ class ldap_manager extends \cenozo\singleton
 
       try
       {
-        $result = $util_class_name::exec_timeout( $command );
+        $result = $util_class_name::exec_timeout( $command, $this->timeout );
       }
       catch( \cenozo\exception\runtime $e )
       {
@@ -177,7 +177,7 @@ class ldap_manager extends \cenozo\singleton
 
       try
       {
-        $result = $util_class_name::exec_timeout( $command );
+        $result = $util_class_name::exec_timeout( $command, $this->timeout );
       }
       catch( \cenozo\exception\runtime $e )
       {
@@ -230,7 +230,7 @@ class ldap_manager extends \cenozo\singleton
 
       try
       {
-        $result = $util_class_name::exec_timeout( $command );
+        $result = $util_class_name::exec_timeout( $command, $this->timeout );
       }
       catch( \cenozo\exception\runtime $e )
       {
@@ -316,8 +316,8 @@ class ldap_manager extends \cenozo\singleton
       try
       {
         // run twice to fix the double-password issue
-        $util_class_name::exec_timeout( $command );
-        $result = $util_class_name::exec_timeout( $command );
+        $util_class_name::exec_timeout( $command, $this->timeout );
+        $result = $util_class_name::exec_timeout( $command, $this->timeout );
       }
       catch( \cenozo\exception\runtime $e )
       {
@@ -435,5 +435,5 @@ class ldap_manager extends \cenozo\singleton
    * @var integer $timeout
    * @access protected
    */
-  protected $timeout = 10;
+  protected $timeout = NULL;
 }

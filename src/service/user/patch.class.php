@@ -82,7 +82,8 @@ class patch extends \cenozo\service\patch
 
       $default_password = $setting_manager->get_setting( 'general', 'default_password' );
       $ldap_manager->set_user_password( $db_user->name, $default_password );
-      $db_user->password = $util_class_name::encrypt( $default_password );
+
+      $db_user->password = $default_password; // hashed in database\user
       $db_user->save();
 
       // just incase the user is resetting their own password

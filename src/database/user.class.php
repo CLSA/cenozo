@@ -14,6 +14,19 @@ use cenozo\lib, cenozo\log;
 class user extends record
 {
   /**
+   * Override parent method
+   */
+  public function __set( $column_name, $value )
+  {
+    if( $column_name == 'password' )
+    {
+      $value = password_hash( $value, PASSWORD_BCRYPT );
+      parent::__set( 'password_type', 'bcrypt' );
+    }
+    parent::__set( $column_name, $value );
+  }
+
+  /**
    * Override parent method if identifier is 0 (get record from session)
    */
   public static function get_record_from_identifier( $identifier )
