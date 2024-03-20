@@ -773,4 +773,21 @@ class util
       scandir( $directory, $sorting_order ) :
       scandir( $directory, $sorting_order, $context );
   }
+
+  /**
+   * Used to translate file sizes into a human readable description
+   * 
+   * @param integer $size
+   * @param string $unit Force a particular unit type (automatic if left blank)
+   * @return string
+   */
+  public static function human_file_size( $size, $unit = "" )
+  {
+    if( ( !$unit && $size >= 1<<50 ) || $unit == "PB" ) return number_format( $size / ( 1<<50 ), 2 )."PB";
+    if( ( !$unit && $size >= 1<<40 ) || $unit == "TB" ) return number_format( $size / ( 1<<40 ), 2 )."TB";
+    if( ( !$unit && $size >= 1<<30 ) || $unit == "GB" ) return number_format( $size / ( 1<<30 ), 2 )."GB";
+    if( ( !$unit && $size >= 1<<20 ) || $unit == "MB" ) return number_format( $size / ( 1<<20 ), 2 )."MB";
+    if( ( !$unit && $size >= 1<<10 ) || $unit == "KB" ) return number_format( $size / ( 1<<10 ), 2 )."KB";
+    return number_format( $size )." bytes";
+  }
 }
