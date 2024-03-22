@@ -30,11 +30,15 @@ class voip_manager extends \cenozo\singleton
 
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
-    $this->domain = $setting_manager->get_setting( 'voip', 'domain' );
-    $this->ami_port = $setting_manager->get_setting( 'voip', 'ami_port' );
-    $this->username = $setting_manager->get_setting( 'voip', 'username' );
-    $this->password = $setting_manager->get_setting( 'voip', 'password' );
-    $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
+
+    if( $this->enabled )
+    {
+      $this->domain = $setting_manager->get_setting( 'voip', 'domain' );
+      $this->ami_port = $setting_manager->get_setting( 'voip', 'ami_port' );
+      $this->username = $setting_manager->get_setting( 'voip', 'username' );
+      $this->password = $setting_manager->get_setting( 'voip', 'password' );
+      $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
+    }
   }
 
   /**
