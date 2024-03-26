@@ -20,7 +20,7 @@ class head extends \cenozo\service\head
   {
     parent::setup();
 
-    $this->columns['create_events'] = array(
+    $this->columns['create_event_types'] = array(
       'data_type' => 'tinyint',
       'default' => '1',
       'required' => '1'
