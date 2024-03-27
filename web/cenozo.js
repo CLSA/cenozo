@@ -6150,15 +6150,19 @@
                   // check if we should highlight the row (by default no)
                   item.$highlight = false;
                   for (var name in highlightCondition) {
-                    item.$highlight = item[name] == highlightCondition[name];
-                    if (!item.$highlight) break; // don't highlight if any condition doesn't match
+                    if(item[name] == highlightCondition[name]) {
+                      item.$highlight = true;
+                      break;
+                    }
                   }
 
                   // check if we should caution the row (by default no)
                   item.$caution = false;
                   for (var name in cautionCondition) {
-                    item.$caution = item[name] == cautionCondition[name];
-                    if (!item.$caution) break; // don't caution if any condition doesn't match
+                    if(item[name] == cautionCondition[name]) {
+                      item.$caution = true;
+                      break;
+                    }
                   }
                 });
                 this.cache = this.cache.concat(response.data);
