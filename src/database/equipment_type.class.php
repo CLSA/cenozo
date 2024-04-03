@@ -39,7 +39,7 @@ class equipment_type extends record
    */
   public function import_from_array( $data, $apply = false )
   {
-    ini_set( 'memory_limit', '1G' );
+    ini_set( 'memory_limit', '-1' );
     set_time_limit( 900 ); // 15 minutes max
 
     $util_class_name = lib::get_class_name( 'util' );

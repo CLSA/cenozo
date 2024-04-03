@@ -36,7 +36,7 @@ class export_file extends record
     }
 
     $setting_manager = lib::create( 'business\setting_manager' );
-    ini_set( 'memory_limit', '1G' );
+    ini_set( 'memory_limit', '-1' );
     set_time_limit( $setting_manager->get_setting( 'report', 'time_limit' ) );
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
