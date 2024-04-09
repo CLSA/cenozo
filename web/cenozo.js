@@ -6045,24 +6045,6 @@
                 this.minOffset = null;
               }
 
-              // determine if there is a row highlight condition
-              var highlightCondition = {};
-              for (var column in this.parentModel.columnList) {
-                var highlight = this.parentModel.columnList[column].highlight;
-                if (angular.isDefined(highlight)) {
-                  highlightCondition[column] = highlight;
-                }
-              }
-
-              // determine if there is a row caution condition
-              var cautionCondition = {};
-              for (var column in this.parentModel.columnList) {
-                var caution = this.parentModel.columnList[column].caution;
-                if (angular.isDefined(caution)) {
-                  cautionCondition[column] = caution;
-                }
-              }
-
               // set up the restrict, offset and sorting
               if (this.parentModel.hasQueryParameter("restrict")) {
                 var restrict = this.parentModel.getQueryParameter("restrict");
@@ -6129,6 +6111,20 @@
                 self.onListError(error);
               };
 
+              // determine if there is a row highlight condition
+              var highlightCondition = {};
+              for (var column in this.parentModel.columnList) {
+                var highlight = this.parentModel.columnList[column].highlight;
+                if (angular.isDefined(highlight)) {
+                  highlightCondition[column] = {
+                    highlight: highlight,
+                    color:
+                      this.parentModel.columnList[column].highlightColor ?
+                      this.parentModel.columnList[column].highlightColor : "#fff2ae"
+                  };
+                }
+              }
+
               try {
                 var response = await CnHttpFactory.instance(httpObj).query();
 
@@ -6148,21 +6144,20 @@
                   };
 
                   // check if we should highlight the row (by default no)
-                  item.$highlight = false;
+                  var highlightList = [];
                   for (var name in highlightCondition) {
-                    if(item[name] == highlightCondition[name]) {
-                      item.$highlight = true;
-                      break;
+                    if(item[name] == highlightCondition[name].highlight) {
+                      highlightList.push(highlightCondition[name].color);
                     }
                   }
 
-                  // check if we should caution the row (by default no)
-                  item.$caution = false;
-                  for (var name in cautionCondition) {
-                    if(item[name] == cautionCondition[name]) {
-                      item.$caution = true;
-                      break;
-                    }
+                  if (0 < highlightList.length) {
+                    item.style = {
+                      "font-weight": 'bold',
+                      "background": 1 < highlightList.length ?
+                        "repeating-linear-gradient(45deg" + ("," + highlightList.join(",")).repeat(15) + ")" :
+                        highlightList[0]
+                    };
                   }
                 });
                 this.cache = this.cache.concat(response.data);

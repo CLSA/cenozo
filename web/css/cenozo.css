@@ -43,27 +43,6 @@ pre { white-space: pre-wrap; }
 .hover-rows > div:hover { background-color: #d0d0d0; }
 .table-striped > tbody > tr:nth-of-type(odd) { background-color: #e9e9e9; }
 .table-hover > tbody > tr:hover { background-color: #d0d0d0; }
-.highlight { background-color: #fcf8e3 !important; font-weight: bold !important; }
-.highlight-no-bold { background-color: #fcf8e3 !important; }
-.caution { background-color: #ffc299 !important; font-weight: bold !important; }
-.caution-no-bold { background-color: #ffc299 !important; }
-.highlight-and-caution {
-  background: repeating-linear-gradient(
-    0deg,
-    #fcf8e3,
-    #ffc299,
-    #fcf8e3
-  );
-  font-weight: bold !important;
-}
-.highlight-and-caution-no-bold {
-  background: repeating-linear-gradient(
-    0deg,
-    #fcf8e3,
-    #ffc299,
-    #fcf8e3
-  );
-}
 .invert {
   background: black;
   color: white;

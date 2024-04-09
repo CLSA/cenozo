@@ -137,12 +137,8 @@
                                     model.listModel.minOffset, model.listModel.cache.length )
                        | limitTo: model.listModel.paginationModel.itemsPerPage"
             ng-click="model.listModel.chooseMode ? chooseRecord( record ) : selectRecord( record )"
-            ng-class="{
-              success:model.listModel.chooseMode && record.chosen,
-              highlight:!record.$caution && record.$highlight,
-              caution:record.$caution && !record.$highlight,
-              'highlight-and-caution':record.$caution && record.$highlight
-            }">
+            ng-class="{ success:model.listModel.chooseMode && record.chosen }"
+            ng-style="record.style">
             <td ng-repeat="column in dataArray"
                 ng-if="undefined === column.isIncluded || column.isIncluded( $state, model )"
                 ng-style="{
