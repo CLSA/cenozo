@@ -1211,32 +1211,13 @@ cenozoApp.defineModule({
                 ? CnHttpFactory.instance({
                     path: "application",
                     data: {
-                      select: {
-                        column: [
-                          "id",
-                          "name",
-                          "title",
-                          "release_based",
-                          {
-                            table: "application_type",
-                            column: "name",
-                            alias: "type",
-                          },
-                        ],
-                      },
+                      select: { column: ["id", "name", "title"] },
                       modifier: {
-                        join: [
-                          {
-                            table: "application_type",
-                            onleft: "application_type.id",
-                            onright: "application.application_type_id",
-                          },
-                        ],
                         where: [
                           {
-                            column: "application_type.name",
-                            operator: "!=",
-                            value: "mastodon",
+                            column: "application.site_based",
+                            operator: "=",
+                            value: true,
                           },
                         ],
                         order: ["application.title"],
