@@ -7020,11 +7020,12 @@
   cenozo.factory("CnBaseModelFactory", [
     "$state",
     "$filter",
+    "$window",
     "CnSession",
     "CnHttpFactory",
     "CnModalTextFactory",
     "CnModalMessageFactory",
-    function ($state, $filter, CnSession, CnHttpFactory, CnModalTextFactory, CnModalMessageFactory) {
+    function ($state, $filter, $window, CnSession, CnHttpFactory, CnModalTextFactory, CnModalMessageFactory) {
       return {
         construct: function (object, module) {
           /**
@@ -7526,19 +7527,23 @@
            *
            * @param boolean reload Whether to force reload the state
            * @param boolean notify Whether to send notification of a state change
+           * @param boolean location
+           * @param boolean scrollTop Whether to scroll to the top of the page after transitioning
            */
           cenozo.addExtendableFunction(
             object,
             "reloadState",
-            async function (reload, notify, location) {
+            async function (reload, notify, location, scrollTop) {
               if (angular.isUndefined(reload)) reload = false;
               if (angular.isUndefined(notify)) notify = true;
               if (angular.isUndefined(location)) location = true;
+              if (angular.isUndefined(scrollTop)) scrollTop = false;
               await $state.transitionTo($state.current, $state.params, {
                 reload: reload,
                 notify: notify,
                 location: location,
               });
+              if (scrollTop) $window.scrollTo(0, 0);
             }
           );
 
