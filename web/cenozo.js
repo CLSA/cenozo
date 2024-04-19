@@ -5094,11 +5094,12 @@
                 getIdentifier: function () { return self.parentModel.getIdentifierFromRecord(record); },
               });
 
-              this.fileList.forEach((file) => {
-                if (null != file.file) {
-                  file.upload(this.parentModel.getServiceResourcePath(record.getIdentifier()));
-                }
-              });
+              // upload all files
+              await Promise.all(
+                this.fileList
+                  .filter(file => null != file.file)
+                  .map(file => file.upload(this.parentModel.getServiceResourcePath(record.getIdentifier())))
+              );
 
               this.afterAddFunctions.forEach((fn) => fn(record));
             }
@@ -5269,6 +5270,7 @@
                   var fileDetails = data.get("file");
                   return fileDetails.name;
                 },
+                postUpload: async function () {}, // redefine this to do something after a file is uploaded
                 upload: async function (path) {
                   var obj = this;
                   obj.uploading = true;
@@ -5279,6 +5281,9 @@
                     data: obj.file,
                     mimeType: mimeType,
                   }).patch();
+
+                  await obj.postUpload();
+
                   obj.uploading = false;
                 },
               });
@@ -6886,6 +6891,7 @@
                   self.record[obj.key] = null;
                   await obj.updateFileSize();
                 },
+                postUpload: async function () {}, // redefine this to do something after a file is uploaded
                 upload: async function () {
                   var obj = this;
                   obj.uploading = true;
@@ -6921,6 +6927,7 @@
                       mimeType: mimeType,
                     }).patch();
 
+                    await obj.postUpload();
                     await obj.updateFileSize();
 
                     var element = cenozo.getFormElement(key);
