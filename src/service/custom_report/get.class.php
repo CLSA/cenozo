@@ -11,11 +11,6 @@ use cenozo\lib, cenozo\log;
 class get extends \cenozo\service\downloadable
 {
   /**
-   * Extend parent property
-   */
-  protected static $base64_column_list = ['data' => 'text/sql'];
-
-  /**
    * Replace parent method
    * 
    * When the client calls for a file we return the custom_report's file

@@ -51,17 +51,18 @@ class patch extends write
       }
     }
 
-    if( 0 < count( static::$base64_column_list ) )
+    $base64_column_list = $this->get_leaf_module()->get_base64_column_list();
+    if( 0 < count( $base64_column_list ) )
     {
       $file = $this->get_argument( 'file', NULL );
       if( !is_null( $file ) )
       {
-        if( !array_key_exists( $file, static::$base64_column_list ) )
+        if( !array_key_exists( $file, $base64_column_list ) )
         {
           throw lib::create( 'exception\argument', 'file', $file, __METHOD__ );
         }
 
-        $mime_type = static::$base64_column_list[$file];
+        $mime_type = $base64_column_list[$file];
         if( in_array( $content_type, [$mime_type, 'application/octet-stream'] ) )
         {
           try

@@ -11,11 +11,6 @@ use cenozo\lib, cenozo\log;
 class patch extends \cenozo\service\patch
 {
   /**
-   * Extend parent property
-   */
-  protected static $base64_column_list = ['data' => 'text/sql'];
-
-  /**
    * Extend parent method
    */
   public function validate()

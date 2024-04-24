@@ -372,7 +372,9 @@ abstract class service extends \cenozo\base_object
           $this->collection_name_list[] = $part;
           try
           {
+            // create the module
             $this->module_list[] = lib::create( sprintf( 'service\%s\module', $part ), $module_index, $this );
+
           }
           catch( \cenozo\exception\runtime $e )
           {
@@ -1104,14 +1106,6 @@ abstract class service extends \cenozo\base_object
    * @access private
    */
   private $temporary_login = false;
-
-  /**
-   * An associative array of all columns that are base64 encoded
-   * @var array[column_name => mime_type] $base64_column_list
-   * @access protected
-   * @static
-   */
-  protected static $base64_column_list = [];
 
   /**
    * A list of all valid methods (as keys) and whether they are write services (as value)

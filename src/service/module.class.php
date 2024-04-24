@@ -245,6 +245,16 @@ abstract class module extends \cenozo\base_object
   }
 
   /**
+   * Returns the module's base64 column list (an associative array of all columns that are base64 encoded)
+   * 
+   * @access public
+   */
+  public function get_base64_column_list()
+  {
+    return static::$base64_column_list;
+  }
+
+  /**
    * Returns information about the parent service
    * 
    * @access protected
@@ -410,6 +420,14 @@ abstract class module extends \cenozo\base_object
       $select->add_table_column( $join_table_name, $column_name );
     }
   }
+
+  /**
+   * An associative array of all columns that are base64 encoded
+   * @var array[column_name => mime_type] $base64_column_list
+   * @access protected
+   * @static
+   */
+  protected static $base64_column_list = [];
 
   /**
    * The module's index

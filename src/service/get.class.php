@@ -47,7 +47,7 @@ class get extends read
       $data = $leaf_record->get_column_values( $this->select, $this->modifier );
 
       // convert base64 data to include mime type
-      foreach( static::$base64_column_list as $column => $mime_type )
+      foreach( $this->get_leaf_module()->get_base64_column_list() as $column => $mime_type )
       {
         $base64_len = strlen( $data[$column] );
         $data[$column] = array(
