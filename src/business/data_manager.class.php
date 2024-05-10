@@ -587,6 +587,48 @@ class data_manager extends \cenozo\singleton
         }
       }
     }
+    else if( 'relation' == $subject )
+    {
+      $relation_type_class_name = lib::get_class_name( 'database\relation_type' );
+      $relation_class_name = lib::get_class_name( 'database\relation' );
+      $participant_class_name = lib::get_class_name( 'database\participant' );
+
+      if( 2 == count( $parts ) && 'type' == $parts[1] )
+      {
+        // participant.relation.type
+        // return the participant's relation type
+        $db_relation = $relation_class_name::get_unique_record( 'participant_id', $db_participant->id );
+        if( !is_null( $db_relation ) ) $value = $db_relation->get_relation_type()->name;
+      }
+      else if( 3 == count( $parts ) )
+      {
+        // participant.relation.<type>.<column>
+        $relation_type = $parts[1];
+        $column = $parts[2];
+
+        // make sure the column exists in the participant table
+        if( !$participant_class_name::column_exists( $column ) )
+          throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+        $db_relation_type = $relation_type_class_name::get_unique_record( 'name', $relation_type );
+        if( !is_null( $db_relation_type ) )
+        {
+          // get the primary participant in the relation group
+          $db_relation = $relation_class_name::get_unique_record( 'participant_id', $db_participant->id );
+
+          if( !is_null( $db_relation ) )
+          {
+            // now find the participant in that group with the selected relation type
+            $db_other_relation = $relation_class_name::get_unique_record(
+              ['primary_participant_id', 'relation_type_id'],
+              [$db_relation->primary_participant_id, $db_relation_type->id]
+            );
+            if( !is_null( $db_other_relation ) ) $value = $db_other_relation->get_participant()->$column;
+          }
+        }
+      }
+      else throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+    }
     else if( 'site' == $subject )
     {
       $application_class_name = lib::get_class_name( 'database\application' );
