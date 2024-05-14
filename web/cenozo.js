@@ -1041,7 +1041,17 @@
       return await blobToBase64(blob);
     },
 
-    convertBase64ToBlob: function (data, contentType = '', sliceSize = 512) {
+    // Convert base64 data to a blob
+    // Note that the input data may or may not include the content type.  For example,
+    // data:application/octet-stream;base64,<base64 data starts here>
+    convertBase64ToBlob: function (data, contentType = "", sliceSize = 512) {
+      // see if the contentType is in the data
+      const match = data.match(/^data:[^;]+;[^,]+,(.+)/);
+      if (null != match) {
+        data = match[1];
+        if ("" == contentType) contentType = match[0];
+      }
+
       const byteCharacters = atob(data);
       const byteArrays = [];
 
@@ -4544,18 +4554,17 @@
                     const stateNameParts = $state.current.name.split(".");
                     type = stateNameParts[1];
                   }
-                  return angular.isDefined( this.notationList[type] ) ? this.notationList[type] : '';
+                  return angular.isDefined( this.notationList[type] ) ? this.notationList[type] : "";
                 },
 
                 setNotation: async function( type, notation ) {
                   // if not provided then get the type from the state action
-                  if( angular.isUndefined( type ) ) {
+                  if (angular.isUndefined(type)) {
                     const stateNameParts = $state.current.name.split(".");
                     type = stateNameParts[1];
                   }
-                  const currentNotation = angular.isDefined( this.notationList[type] )
-                                        ? this.notationList[type]
-                                        : '';
+                  const currentNotation =
+                    angular.isDefined(this.notationList[type]) ? this.notationList[type] : "";
                   if( notation !== currentNotation ) {
                     const appTypeId = this.framework ? null : self.application.applicationTypeId;
                     const path = "notation/application_type_id=" + appTypeId +
