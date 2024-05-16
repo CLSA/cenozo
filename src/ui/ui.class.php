@@ -152,9 +152,6 @@ class ui extends \cenozo\base_object
     if( $setting_manager->get_setting( 'module', 'script' ) )
       $list = array_merge( $list, [ 'script' ] );
 
-    if( $setting_manager->get_setting( 'module', 'voip' ) )
-      $list = array_merge( $list, [ 'webphone' ] );
-
     return $list;
   }
 
@@ -590,14 +587,6 @@ class ui extends \cenozo\base_object
       'subject' => 'user',
       'action' => 'overview',
       'query' => '?{page}&{restrict}&{order}&{reverse}' );
-    
-    if( $setting_manager->get_setting( 'module', 'voip' ) && $setting_manager->get_setting( 'voip', 'enabled' ) )
-    {
-      $list['Webphone'] = array(
-        'subject' => 'webphone',
-        'action' => 'status',
-        'target' => 'webphone' );
-    }
     
     if( array_key_exists( 'callback', $this->module_list ) )
     {

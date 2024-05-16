@@ -4383,6 +4383,7 @@
     "CnModalMessageFactory",
     "CnModalPasswordFactory",
     "CnModalAccountFactory",
+    "CnModalWebphoneFactory",
     "CnModalSiteRoleFactory",
     function (
       $state,
@@ -4394,6 +4395,7 @@
       CnModalMessageFactory,
       CnModalPasswordFactory,
       CnModalAccountFactory,
+      CnModalWebphoneFactory,
       CnModalSiteRoleFactory
     ) {
       return new (function () {
@@ -4660,7 +4662,6 @@
             }
 
             // load the voip data (ignored if voip is disabled)
-            this.voip = { enabled: false, info: false };
             this.updateVoip();
           },
 
@@ -4670,10 +4671,13 @@
               var response = await CnHttpFactory.instance({
                 path: "voip/0",
                 onError: function () {
-                  this.voip = { enabled: true, info: null, call: null };
+                  this.voip = { enabled: true, info: null, call: null, lastUpdate: null };
                 },
               }).get();
               this.voip = response.data;
+              this.voip.lastUpdate = moment().tz(this.user.timezone);
+            } else {
+              this.voip = { enabled: false, info: false, lastUpdate: null };
             }
           },
 
@@ -4717,6 +4721,10 @@
               title: "Password Changed",
               message: "Your password has been successfully changed.",
             }).show();
+          },
+
+          showWebphoneModal: async function () {
+            await CnModalWebphoneFactory.instance(this).show();
           },
 
           showSiteRoleModal: async function () {
@@ -10199,6 +10207,247 @@
         },
       };
     },
+  ]);
+
+  /* ############################################################################################## */
+
+  /**
+   * A factory for showing the user's webphone status
+   */
+  cenozo.service("CnModalWebphoneFactory", [
+    "$uibModal",
+    "$interval",
+    "CnHttpFactory",
+    "CnModalMessageFactory",
+    function ($uibModal, $interval, CnHttpFactory, CnModalMessageFactory) {
+      var object = function (CnSession) {
+        angular.extend(this, {
+          updating: false,
+          session: CnSession,
+          useRecording: CnSession.moduleList.includes("recording"),
+          lastLanguageId: null,
+          playbackVolume: "0",
+          voipOperation: null,
+          timerValue: null,
+          timerPromise: null,
+          updateVoipPromise: null,
+
+          updateVoip: async function () {
+            if (!this.updating) {
+              this.updating = true;
+              try {
+                await this.session.updateVoip();
+              } finally {
+                this.updating = false;
+              }
+            }
+          },
+
+          show: async function () {
+            await this.updateVoip();
+            this.updateVoipPromise = $interval(() => this.updateVoip(), 5000);
+
+            const self = this;
+            return $uibModal.open({
+              backdrop: "static",
+              keyboard: true,
+              modalFade: true,
+              size: "lg",
+              templateUrl: cenozo.getFileUrl("cenozo", "modal-webphone.tpl.html"),
+              controller: [
+                "$scope",
+                "$uibModalInstance",
+                function ($scope, $uibModalInstance) {
+                  angular.extend($scope, {
+                    model: self,
+                    tab: "server",
+                    applicationName: self.session.application.title,
+                    close: function () { $uibModalInstance.close(); },
+                  });
+
+                  // stop all interval functions when the modal is closed
+                  $scope.$on("modal.closing", () => {
+                    if (null != self.timerPromise) {
+                      $interval.cancel(self.timerPromise);
+                      self.timerPromise = null;
+                    }
+                    if (null != self.updateVoipPromise) {
+                      $interval.cancel(self.updateVoipPromise);
+                      self.updateVoipPromise = null;
+                    }
+                  });
+                },
+              ],
+            }).result;
+          },
+        });
+
+        if (this.useRecording) {
+          angular.extend(this, {
+            recordingList: [],
+            activeRecording: null,
+            activeRecordingFile: null,
+
+            startRecording: async function () {
+              this.voipOperation = null == this.activeRecordingFile ? "recording" : "playing";
+              var data = {
+                operation: null == this.activeRecordingFile ? "start_recording" : "play_sound",
+                recording_id: this.activeRecording.id,
+                volume: parseInt(this.playbackVolume),
+              };
+              if (this.activeRecording.record) {
+                data.recording_id = this.activeRecording.id;
+              } else {
+                data.recording_file_id = this.activeRecordingFile.id;
+              }
+
+              try {
+                var self = this;
+                await CnHttpFactory.instance({
+                  path: "voip/0",
+                  data: data,
+                  onError: function (error) {
+                    self.voipOperation = null;
+                    if (404 == error.status) {
+                      // 404 means there is no active call
+                      CnModalMessageFactory.instance({
+                        title: "No Active Call",
+                        message:
+                          "The system was unable to start the recording since you do not appear to be " +
+                          "in a phone call.",
+                        error: true,
+                      }).show();
+                    } else CnModalMessageFactory.httpError(error);
+                  },
+                }).patch();
+              } catch (error) {
+                // handled by onError above
+              }
+
+              // start the timer
+              if (null != this.timerValue && null == this.timerPromise) {
+                this.timerPromise = $interval(async () => {
+                  this.timerValue++;
+
+                  if (null == this.activeRecording.timer) {
+                    this.timerValue = null;
+                    await this.stopRecording();
+                  } else if (this.activeRecording.timer <= this.timerValue) {
+                    this.timerValue = this.activeRecording.timer;
+                    try {
+                      await CnHttpFactory.instance({
+                        path: "voip/0",
+                        data: {
+                          operation: "play_sound",
+                          filename: "beep",
+                          volume: parseInt(this.playbackVolume),
+                        },
+                        onError: function () {}, // ignore all errors
+                      }).patch();
+                    } catch (error) {
+                      // handled by onError above
+                    }
+                    await this.stopRecording();
+                  }
+                }, 1000);
+              }
+            },
+
+            selectRecording: function () {
+              if (0 == this.activeRecording.fileList.length) {
+                this.activeRecordingFile = null;
+              } else {
+                // try and find the matching language
+                var newRecording =
+                  this.activeRecording.fileList.findByProperty("language_id", this.lastLanguageId);
+                if (null == newRecording) newRecording = this.activeRecording.fileList[0];
+                this.activeRecordingFile = newRecording;
+              }
+
+              // stop the timer
+              this.timerValue = 0;
+              if (null != this.timerPromise) {
+                $interval.cancel(this.timerPromise);
+                this.timerPromise = null;
+              }
+            },
+
+            selectRecordingFile: function () {
+              if (this.activeRecordingFile) this.lastLanguageId = this.activeRecordingFile.language_id;
+            },
+
+            stopRecording: async function () {
+              // stop the timer
+              if (null != this.timerPromise) {
+                $interval.cancel(this.timerPromise);
+                this.timerPromise = null;
+              }
+
+              try {
+                await CnHttpFactory.instance({
+                  path: "voip/0",
+                  data: { operation: "stop_recording" },
+                  onError: function () { this.voipOperation = null; },
+                }).patch();
+              } catch (error) {
+                // handled by onError above
+              }
+              this.voipOperation = null;
+            },
+          });
+
+          async function init(object) {
+            // get the recording and recording-file lists
+            var response = await CnHttpFactory.instance({ path: "recording" }).get();
+
+            object.recordingList = response.data.map((recording) => ({
+              id: recording.id,
+              name: recording.rank + ". " + recording.name,
+              record: recording.record,
+              timer: recording.timer,
+              fileList: [],
+            }));
+
+            var response = await CnHttpFactory.instance({
+              path: "recording_file",
+              data: {
+                select: {
+                  column: [
+                    "id",
+                    "recording_id",
+                    { table: "language", column: "id", alias: "language_id" },
+                    { table: "language", column: "name", alias: "language" },
+                  ],
+                },
+              },
+            }).get();
+
+            response.data.forEach((file) => {
+              object.recordingList
+                .findByProperty("id", file.recording_id)
+                .fileList.push({ id: file.id, language_id: file.language_id, name: file.language });
+            });
+
+            // now select a default recording and language
+            if (0 < object.recordingList.length) {
+              object.activeRecording = object.recordingList[0];
+              if (0 < object.activeRecording.fileList.length) {
+                object.activeRecordingFile = object.activeRecording.fileList[0];
+                object.lastLanguageId = object.activeRecordingFile.language_id;
+              }
+            }
+          }
+
+          init(this);
+        }
+      };
+
+      return {
+        instance: function (session) {
+          return new object(session);
+        },
+      };
+    }
   ]);
 
   /* ############################################################################################## */

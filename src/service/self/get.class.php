@@ -33,7 +33,6 @@ class get extends \cenozo\service\service
     $user_class_name = lib::get_class_name( 'database\user' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $script_class_name = lib::get_class_name( 'database\script' );
-    $webphone_class_name = lib::get_class_name( 'database\webphone' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $application_class_name = lib::get_class_name( 'database\application' );
     $notation_class_name = lib::get_class_name( 'database\notation' );
@@ -241,22 +240,6 @@ class get extends \cenozo\service\service
         $setting_manager->get_setting( 'general', 'default_postcode' );
       $pseudo_record['application']['use_relation'] =
         $setting_manager->get_setting( 'general', 'use_relation' );
-
-      if( $pseudo_record['application']['voip_enabled'] )
-      {
-        // see if our ip/site has a special webphone
-        $db_webphone = $webphone_class_name::get_unique_record(
-          array( 'ip', 'site_id' ),
-          array( $_SERVER['REMOTE_ADDR'], $db_site->id )
-        );
-
-        $pseudo_record['application']['webphone_url'] = sprintf(
-          '/%s/?domain=%s&id=%d',
-          is_null( $db_webphone ) ? 'webphone' : $db_webphone->webphone,
-          $setting_manager->get_setting( 'voip', 'domain' ),
-          10000000 + $db_user->id
-        );
-      }
 
       // include the number of active users for the site
       $activity_mod = lib::create( 'database\modifier' );

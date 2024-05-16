@@ -507,3 +507,5 @@ cn-slider div.bubble.limit, [cn-slider] div.bubble.limit { color: #777; }
 .float-left { float: left; }
 .float-right { float: right; }
 
+.webphone-off { color: darkred; }
+.webphone-on { color: lightgreen; }

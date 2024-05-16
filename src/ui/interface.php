@@ -244,6 +244,18 @@
             <li class="navbar-item navbar-link siterole" ng-click="session.showSiteRoleModal()">
               {{ session.role.name | cnUCWords }} @ {{ session.site.name }}
             </li>
+            <li
+              class="navbar-item navbar-link"
+              ng-click="session.showWebphoneModal()"
+              ng-if="session.application.voipEnabled"
+            >
+              <i
+                id="webphone"
+                class="glyphicon glyphicon-earphone"
+                style="zoom: 1.2;"
+                ng-class="'Reachable' == session.voip.info.status ? 'webphone-on' : 'webphone-off'"
+              ></i>
+            </li>
             <li class="navbar-item navbar-link clock"
                 ng-click="operationList.findByProperty( 'title', 'Timezone' ).execute()">
               <i class="glyphicon glyphicon-time"></i> {{ session.time }}
