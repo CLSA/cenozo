@@ -54,7 +54,6 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
-    $survey_manager = lib::create( 'business\survey_manager' );
     $db_participant = $this->get_leaf_record();
 
     // process the preferred site, if it exists
@@ -64,12 +63,14 @@ class patch extends \cenozo\service\patch
     // reverse the participant's withdraw, if needed
     if( $this->get_argument( 'reverse_withdraw', false ) )
     {
+      $survey_manager = lib::create( 'business\survey_manager' );
       $survey_manager->reverse_withdraw( $db_participant );
     }
 
     // reverse the participant's proxy, if needed
     if( $this->get_argument( 'reverse_proxy_initiation', false ) )
     {
+      $survey_manager = lib::create( 'business\survey_manager' );
       $survey_manager->reverse_proxy_initiation( $db_participant );
     }
 

@@ -19,11 +19,9 @@ class withdraw extends \cenozo\business\overview\base_overview
   protected function build( $modifier = NULL )
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $survey_manager_class_name = lib::get_class_name( 'business\survey_manager' );
 
     $setting_manager = lib::create( 'business\setting_manager' );
     $withdraw_option_and_delink = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
-    $survey_manager = lib::create( 'business\survey_manager' );
     $session = lib::create( 'business\session' );
     $db = $session->get_database();
     $db_application = $session->get_application();
@@ -73,6 +71,7 @@ class withdraw extends \cenozo\business\overview\base_overview
 
     if( $withdraw_option_and_delink )
     {
+      $survey_manager = lib::create( 'business\survey_manager' );
       $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
       $select->add_column( 'IFNULL( option_and_delink.option, "no data" )', 'option', false );
