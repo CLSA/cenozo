@@ -22,7 +22,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
-    $survey_manager = lib::create( 'business\survey_manager' );
     $setting_manager = lib::create( 'business\setting_manager' );
 
     $db_participation_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
@@ -135,6 +134,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     // add the special withdraw option column using a left join
     if( $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' ) )
     { 
+      $survey_manager = lib::create( 'business\survey_manager' );
       $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
       $select->add_column( 'IF( option_and_delink.uid IS NULL, "no", "yes" )', 'Script', false );
