@@ -54,9 +54,9 @@ class export_column extends has_rank
       }
       else if( 'participant' == $this->table_name )
       {
-        if( 'relation_index' == $column_name )
+        if( 'index_participant' == $column_name )
         {
-          $column_name = 'relation_index.uid';
+          $column_name = 'index_participant.uid';
           $table_prefix = false;
         }
         else if( 'relation_type' == $column_name )
@@ -348,7 +348,7 @@ class export_column extends has_rank
       'proxy' == $this->table_name ||
       'trace' == $this->table_name || (
         'participant' == $this->table_name && (
-          'relation_index' == $this->column_name ||
+          'index_participant' == $this->column_name ||
           'relation_type' == $this->column_name ||
           'status' == $this->column_name
         )
@@ -361,19 +361,19 @@ class export_column extends has_rank
           $modifier->left_join( 'exclusion', 'participant.exclusion_id', 'exclusion.id' );
         }
 
-        if( 'relation_index' == $this->column_name || 'relation_type' == $this->column_name )
+        if( 'index_participant' == $this->column_name || 'relation_type' == $this->column_name )
         {
           if( !$modifier->has_join( 'relation' ) )
             $modifier->left_join( 'relation', 'participant.id', 'relation.participant_id' );
           if( !$modifier->has_join( 'relation_type' ) )
             $modifier->left_join( 'relation_type', 'relation.relation_type_id', 'relation_type.id' );
-          if( 'relation_index' == $this->column_name && !$modifier->has_join( 'relation_index' ) )
+          if( 'index_participant' == $this->column_name && !$modifier->has_join( 'index_participant' ) )
           {
             $modifier->left_join(
               'participant',
               'relation.primary_participant_id',
-              'relation_index.id',
-              'relation_index'
+              'index_participant.id',
+              'index_participant'
             );
           }
         }

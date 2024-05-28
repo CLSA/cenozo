@@ -43,7 +43,5 @@ class query extends \cenozo\service\query
     $this->select->apply_aliases_to_modifier( $modifier );
 
     return $relation_class_name::select( $select, $modifier );
-
-
   }
 }

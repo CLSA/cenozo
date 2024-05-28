@@ -33,17 +33,7 @@ class module extends \cenozo\service\module
     if( $select->has_column( 'full_relation_type' ) )
     {
       $select->add_column(
-        'IFNULL( '.
-          'CONCAT( '.
-            'relation_type.name, '.
-            'IF( '.
-              'relation.primary_participant_id = relation.participant_id, '.
-              '" (Index)", '.
-              '"" '.
-            ') '.
-          '),'.
-          '"(none)" '.
-        ')',
+        'IFNULL( relation_type.name, "(none)" )',
         'full_relation_type',
         false
       );
