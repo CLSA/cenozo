@@ -1,6 +1,6 @@
 cenozoApp.defineModule({
   name: "relation_type",
-  models: ["add", "list", "view"],
+  models: ["list", "view"],
   create: (module) => {
     angular.extend(module, {
       identifier: { column: "name" },
@@ -10,6 +10,7 @@ cenozoApp.defineModule({
         possessive: "relationship type's",
       },
       columnList: {
+        rank: { title: "Rank" },
         name: { title: "Name" },
         relation_count: {
           title: "Participants",
@@ -17,12 +18,16 @@ cenozoApp.defineModule({
         },
       },
       defaultOrder: {
-        column: "name",
+        column: "rank",
         reverse: false,
       },
     });
 
     module.addInputGroup("", {
+      rank: {
+        title: "Rank",
+        type: "rank",
+      },
       name: {
         title: "Name",
         type: "string",

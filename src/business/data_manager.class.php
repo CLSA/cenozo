@@ -602,7 +602,9 @@ class data_manager extends \cenozo\singleton
       }
       else if( 3 == count( $parts ) )
       {
-        // participant.relation.<type>.<column>
+        // participant.relation.<rank>.<column> Find relation by rank
+        // participant.relation.<name>.<column> Find relation by name
+        // participant.relation.relative(diff).<column> Find relation relative to current participant (by diff)
         $relation_type = $parts[1];
         $column = $parts[2];
 
@@ -610,15 +612,34 @@ class data_manager extends \cenozo\singleton
         if( !$participant_class_name::column_exists( $column ) )
           throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-        $db_relation_type = $relation_type_class_name::get_unique_record( 'name', $relation_type );
-        if( !is_null( $db_relation_type ) )
+        // get this participant's relation
+        $db_relation = $relation_class_name::get_unique_record( 'participant_id', $db_participant->id );
+        if( !is_null( $db_relation ) )
         {
-          // get the primary participant in the relation group
-          $db_relation = $relation_class_name::get_unique_record( 'participant_id', $db_participant->id );
-
-          if( !is_null( $db_relation ) )
+          // now determine the type of relation
+          if( $util_class_name::string_matches_int( $relation_type ) )
           {
-            // now find the participant in that group with the selected relation type
+            $db_relation_type = $relation_type_class_name::get_unique_record( 'rank', $relation_type );
+          }
+          else if( 1 == preg_match( '/^relative\((-?[0-9]+)\)$/', $relation_type, $matches ) )
+          {
+            $diff = $matches[1];
+
+            // get the participant's relation and go up/down $diff ranks
+            $db_participant_relation_type = $db_relation->get_relation_type();
+            $db_relation_type = $relation_type_class_name::get_unique_record(
+              'rank',
+              $db_relation->get_relation_type()->rank + $diff
+            );
+          }
+          else
+          {
+            $db_relation_type = $relation_type_class_name::get_unique_record( 'name', $relation_type );
+          }
+
+          if( !is_null( $db_relation_type ) )
+          {
+            // get the participant based on the desired relation type
             $db_other_relation = $relation_class_name::get_unique_record(
               ['primary_participant_id', 'relation_type_id'],
               [$db_relation->primary_participant_id, $db_relation_type->id]

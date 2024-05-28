@@ -2090,8 +2090,12 @@ cenozoApp.defineModule({
               const response = await CnHttpFactory.instance({
                 path: 'relation_type',
                 data: {
-                  select: { column: ["id", "name"] },
-                  modifier: { order: "name" },
+                  select: { column: ["id", "rank", "name"] },
+                  modifier: {
+                    // do not allow changing a participant to the index
+                    where: { column: "name", operator: "!=", value: "Index" },
+                    order: "rank",
+                  },
                 },
               }).query();
 

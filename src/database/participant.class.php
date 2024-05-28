@@ -1319,17 +1319,25 @@ class participant extends record
     // set the relation type, if necessary
     if( false !== $relation_type_id && $setting_manager->get_setting( 'general', 'use_relation' ) )
     {
+      $relation_type_class_name = lib::get_class_name( 'database\relation_type' );
+      $index_relation_type_id = $relation_type_class_name::get_unique_record( 'name', 'Index' );
       if( '' === $relation_type_id )
       {
         $select = lib::create( 'database\select' );
         $select->from( 'participant' );
         $select->add_column( 'id' );
 
-        $sql = sprintf(
-          'DELETE FROM relation WHERE participant_id IN (%s%s)',
-          $select->get_sql(),
-          $modifier->get_sql()
+        // include the selected participants, but exclude any index participants
+        $sub_mod = lib::create( 'database\modifier' );
+        $sub_mod->where(
+          'participant_id',
+          'IN',
+          sprintf( '(%s%s)', $select->get_sql(), $modifier->get_sql() ),
+          false
         );
+        $sub_mod->where( 'relation_type_id', '!=', $index_relation_type_id );
+
+        $sql = sprintf( 'DELETE FROM relation %s', $sub_mod->get_sql() );
       }
       else
       {
@@ -1356,6 +1364,9 @@ class participant extends record
         $join_mod->where( 'existing_relation.participant_id', '!=', 'participant.id', false );
         $modifier->join_modifier( 'relation', $join_mod, 'left', 'existing_relation' );
         $modifier->where( 'existing_relation.id', '=', NULL );
+
+        // make sure that the index can't be changed
+        $modifier->where( 'relation.relation_type_id', '!=', $index_relation_type_id );
 
         $sql = sprintf(
           'INSERT INTO relation( primary_participant_id, participant_id, relation_type_id ) '.

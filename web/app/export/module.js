@@ -1049,7 +1049,7 @@ cenozoApp.defineModule({
                 if (relationModule) {
                   let index = columnList.list.findIndexByProperty("key", "override_stratum");
                   if(null == index) index = columnList.list.length-1;
-                  columnList.list.splice(index+1, 0, { key: "relation_index", title: "Relation Index" });
+                  columnList.list.splice(index+1, 0, { key: "index_participant", title: "Index Participant" });
                   columnList.list.splice(index+2, 0, { key: "relation_type", title: "Relation Type" });
                 }
 

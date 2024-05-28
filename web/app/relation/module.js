@@ -1,7 +1,7 @@
 cenozoApp.defineModule({
   name: "relation",
   dependencies: "relation_type",
-  models: ["add", "list"],
+  models: ["list"],
   create: (module) => {
     angular.extend(module, {
       identifier: {
@@ -46,38 +46,8 @@ cenozoApp.defineModule({
         participant_id: { type: "hidden" }
       },
       defaultOrder: {
-        column: "relation_type.name",
+        column: "relation_type.rank",
         reverse: false,
-      },
-    });
-
-    module.addInputGroup("", {
-      primary_participant_id: {
-        column: "primary_participant.id",
-        title: "Index Participant",
-        type: "lookup-typeahead",
-        typeahead: {
-          table: "participant",
-          select: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
-          where: ["participant.first_name", "participant.last_name", "uid"],
-        },
-        isConstant: function ($state, model) {
-          return "participant" == model.getSubjectFromState();
-        },
-      },
-      participant_id: {
-        column: "participant.id",
-        title: "Related Participant",
-        type: "lookup-typeahead",
-        typeahead: {
-          table: "participant",
-          select: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
-          where: ["participant.first_name", "participant.last_name", "uid"],
-        },
-      },
-      relation_type_id: {
-        title: "Relation Type",
-        type: "enum",
       },
     });
 
@@ -104,26 +74,17 @@ cenozoApp.defineModule({
     /* ############################################################################################## */
     cenozo.providers.factory("CnRelationModelFactory", [
       "CnBaseModelFactory",
-      "CnRelationAddFactory",
       "CnRelationListFactory",
       "CnHttpFactory",
       function (
         CnBaseModelFactory,
-        CnRelationAddFactory,
         CnRelationListFactory,
         CnHttpFactory
       ) {
         var object = function (root) {
           CnBaseModelFactory.construct(this, module);
           angular.extend(this, {
-            addModel: CnRelationAddFactory.instance(this),
             listModel: CnRelationListFactory.instance(this),
-
-            getAddEnabled: function() {
-              // Need to override parent method since we don't care if the role doesn't have edit access
-              // on the parent model
-              return angular.isDefined(this.module.actions.add);
-            },
 
             getDataArray: function (removeList, type) {
               // override the default behaviour for list types if the parent state is participant
@@ -144,14 +105,6 @@ cenozoApp.defineModule({
               }
 
               return data;
-            },
-
-            getAddEnabled: function() {
-              // don't allow adding relations when viewing a participant that is not the primary
-              if ("participant" == this.getSubjectFromState()) {
-                // TODO: implement
-              }
-              return this.$$getAddEnabled();
             },
 
             // extend getMetadata

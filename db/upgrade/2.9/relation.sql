@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS relation (
   INDEX fk_primary_participant_id (primary_participant_id ASC),
   INDEX fk_participant_id (participant_id ASC),
   INDEX fk_relation_type_id (relation_type_id ASC),
-  UNIQUE INDEX uq_primary_participant_id_participant_id (primary_participant_id ASC, participant_id ASC),
   UNIQUE INDEX uq_primary_participant_id_relation_type_id (primary_participant_id ASC, relation_type_id ASC),
   UNIQUE INDEX uq_participant_id (participant_id ASC),
   CONSTRAINT fk_relation_primary_participant_id
