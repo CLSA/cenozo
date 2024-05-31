@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS relation (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+ALTER TABLE relation DROP INDEX IF EXISTS uq_primary_participant_id_participant_id;
+
 DELIMITER $$
 
 DROP TRIGGER IF EXISTS relation_BEFORE_INSERT$$
