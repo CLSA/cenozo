@@ -42,6 +42,7 @@ cenozoApp.defineModule({
           title: "On Loan",
         },
         note: {
+          column: "equipment.note",
           title: "Note",
           type: "text",
         },
