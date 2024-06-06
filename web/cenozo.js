@@ -546,9 +546,14 @@
              *     minLength: the minimum length before a search is performed (default 2),
              *     modifier: a pre-defined modifier that will be combined with the where array
              *   }
-             *   hourStep: when using the datetime type this can be used to define the hour step value
-             *   minuteStep: when using the datetime type this can be used to define the minute step value
-             *   secondStep: when using the datetime type this can be used to define the second step value
+             *   The following parameters are options when using the datetime type:
+             *     hourStep: optionally defines the hour step value
+             *     minuteStep: optionally defines the minute step value
+             *     secondStep: optionally defines the second step value
+             *     min: set the soonest possible date/time
+             *     max: set the latest possible date/time
+             *   minValue: set the lowest possible value (only valid for ordinal types)
+             *   maxValue: set the highest possible value (only valid for ordinal types)
              *   mimeType: when using the base64 type this can be used to restrict the file type
              *   getFilename: when using the base64 type this function should return the full file's name
              *     This function will be passed two arguments: $state and model.
@@ -2515,18 +2520,10 @@
                     ? $scope.record[$scope.input.max]
                     : $scope.input.max,
                   pickerType: $scope.input.type,
-                  emptyAllowed:
-                    !$scope.model.metadata.columnList[$scope.input.key]
-                      .required,
-                  hourStep: angular.isDefined($scope.input.hourStep)
-                    ? $scope.input.hourStep
-                    : 1,
-                  minuteStep: angular.isDefined($scope.input.minuteStep)
-                    ? $scope.input.minuteStep
-                    : 1,
-                  secondStep: angular.isDefined($scope.input.secondStep)
-                    ? $scope.input.secondStep
-                    : 1,
+                  emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+                  hourStep: angular.isDefined($scope.input.hourStep) ? $scope.input.hourStep : 1,
+                  minuteStep: angular.isDefined($scope.input.minuteStep) ? $scope.input.minuteStep : 1,
+                  secondStep: angular.isDefined($scope.input.secondStep) ? $scope.input.secondStep : 1,
                 }).show();
 
                 if (false !== response) {
@@ -3413,14 +3410,10 @@
                   var response = await CnModalDatetimeFactory.instance({
                     title: $scope.input.title,
                     date: $scope.model.viewModel.record[$scope.input.key],
-                    minDate: angular.isDefined(
-                      $scope.model.viewModel.record[$scope.input.min]
-                    )
+                    minDate: angular.isDefined($scope.model.viewModel.record[$scope.input.min])
                       ? $scope.model.viewModel.record[$scope.input.min]
                       : $scope.input.min,
-                    maxDate: angular.isDefined(
-                      $scope.model.viewModel.record[$scope.input.max]
-                    )
+                    maxDate: angular.isDefined($scope.model.viewModel.record[$scope.input.max])
                       ? $scope.model.viewModel.record[$scope.input.max]
                       : $scope.input.max,
                     pickerType: $scope.input.type,
@@ -5119,6 +5112,8 @@
               );
 
               this.afterAddFunctions.forEach((fn) => fn(record));
+
+              return response;
             }
           );
 
@@ -6613,8 +6608,10 @@
                 self.onPatchError(error);
               };
 
-              await CnHttpFactory.instance(httpObj).patch();
+              const response = await CnHttpFactory.instance(httpObj).patch();
               this.afterPatchFunctions.forEach((fn) => fn());
+
+              return response;
             }
           );
 
@@ -9093,18 +9090,46 @@
 
         moment.locale(this.locale);
 
+        // if the min date is "after now" then change the date test type
+        this.minDateAllowBoundary = true;
+        if ("after now" == this.minDate) {
+          this.minDateAllowBoundary = false;
+          this.minDate = "now";
+        }
+
+        // if the max date is "before now" then change the date test type
+        this.maxDateAllowBoundary = true;
+        if ("before now" == this.maxDate) {
+          this.maxDateAllowBoundary = false;
+          this.maxDate = "now";
+        }
+
         // service vars/functions which cannot be defined by the constructor's params
 
         // functions
         angular.extend(this, {
           getMinDate: function () {
-            return "now" === this.minDate
-              ? cenozo.isDatetimeType(this.pickerType, "timezone")
-                ? moment().tz(CnSession.user.timezone)
-                : moment()
-              : null === this.minDate
-              ? null
-              : angular.copy(this.minDate);
+            if ("now" === this.minDate) {
+              const minDate =
+                cenozo.isDatetimeType(this.pickerType, "timezone") ?
+                moment().tz(CnSession.user.timezone) :
+                moment();
+
+              // adjust date if the boundary is not allowed
+              if (!this.minDateAllowBoundary) {
+                let unit =
+                  "yearmonth" == this.pickerType ? "months" :
+                  "date" == this.pickerType ? "days" :
+                  ["datetime", "time", "time_notz"].includes(this.pickerType) ? "minutes" :
+                  "seconds";
+                minDate.add(1, unit);
+              }
+
+              return minDate;
+            }
+
+            // all other min values are straight forward
+            return null === this.minDate ? null : angular.copy(this.minDate);
           },
           isBeforeMinDate: function (date, granularity) {
             if (angular.isUndefined(granularity)) granularity = "second";
@@ -9112,13 +9137,27 @@
             return null !== minDate && date.isBefore(minDate, granularity);
           },
           getMaxDate: function () {
-            return "now" === this.maxDate
-              ? cenozo.isDatetimeType(this.pickerType, "timezone")
-                ? moment().tz(CnSession.user.timezone)
-                : moment()
-              : null === this.maxDate
-              ? null
-              : angular.copy(this.maxDate);
+            if ("now" === this.maxDate) {
+              const maxDate =
+                cenozo.isDatetimeType(this.pickerType, "timezone") ?
+                moment().tz(CnSession.user.timezone) :
+                moment();
+
+              // adjust date if the boundary is not allowed
+              if (!this.maxDateAllowBoundary) {
+                let unit =
+                  "yearmonth" == this.pickerType ? "months" :
+                  "date" == this.pickerType ? "days" :
+                  ["datetime", "time", "time_notz"].includes(this.pickerType) ? "minutes" :
+                  "seconds";
+                maxDate.add(1, unit);
+              }
+
+              return maxDate;
+            }
+
+            // all other max values are straight forward
+            return null === this.maxDate ? null : angular.copy(this.maxDate);
           },
           isAfterMaxDate: function (date, granularity) {
             if (angular.isUndefined(granularity)) granularity = "second";
@@ -9146,38 +9185,21 @@
           updateSlidersFromDate: function (date) {
             this.hourSliderValue = date.format("H");
             this.minuteSliderValue = date.format("m");
-            this.secondSliderValue = cenozo.isDatetimeType(
-              this.pickerType,
-              "second"
-            )
-              ? date.format("s")
-              : 0;
+            this.secondSliderValue = cenozo.isDatetimeType(this.pickerType, "second") ? date.format("s") : 0;
           },
           updateDateFromSliders: function () {
             // only change the time if the current day is within the min/max boundaries
-            if (
-              !this.isBeforeMinDate(this.date, "day") &&
-              !this.isAfterMaxDate(this.date, "day")
-            ) {
+            if (!this.isBeforeMinDate(this.date, "day") && !this.isAfterMaxDate(this.date, "day")) {
               this.date
                 .hour(this.hourSliderValue)
                 .minute(this.minuteSliderValue)
-                .second(
-                  cenozo.isDatetimeType(this.pickerType, "second")
-                    ? this.secondSliderValue
-                    : 0
-                );
+                .second(cenozo.isDatetimeType(this.pickerType, "second") ? this.secondSliderValue : 0);
               this.date = this.resolveDate(this.date);
             }
             this.updateSlidersFromDate(this.date);
           },
           prevMode: function () {
-            this.mode =
-              "year" == this.mode
-                ? "month"
-                : "yearmonth" == this.pickerType
-                ? "month"
-                : "day";
+            this.mode = "year" == this.mode ? "month" : "yearmonth" == this.pickerType ? "month" : "day";
             this.update();
           },
           nextMode: function () {
@@ -9199,8 +9221,7 @@
               this.date = cenozo.isDatetimeType(this.pickerType, "timezone")
                 ? moment().tz(CnSession.user.timezone)
                 : moment();
-              if (!cenozo.isDatetimeType(this.pickerType, "second"))
-                this.date.second(0);
+              if (!cenozo.isDatetimeType(this.pickerType, "second")) this.date.second(0);
               this.updateSlidersFromDate(this.date);
             } else if ("today" == when) {
               this.date = cenozo.isDatetimeType(this.pickerType, "timezone")
@@ -9217,10 +9238,7 @@
                     : moment();
                   this.updateDateFromSliders();
                 }
-                this.date
-                  .year(when.year())
-                  .month(when.month())
-                  .date(when.date());
+                this.date.year(when.year()).month(when.month()).date(when.date());
                 this.updateDateFromSliders();
               }
             }
@@ -9230,15 +9248,14 @@
           },
           updateDisplayTime: function () {
             this.displayTime =
-              null === this.date
-                ? "(empty)"
-                : this.date.format(
-                    CnSession.getTimeFormat(
-                      cenozo.isDatetimeType(this.pickerType, "second"),
-                      !cenozo.isDatetimeType(this.pickerType, "time") &&
-                        cenozo.isDatetimeType(this.pickerType, "timezone")
-                    )
-                  );
+              null === this.date ? "(empty)" :
+              this.date.format(
+                CnSession.getTimeFormat(
+                  cenozo.isDatetimeType(this.pickerType, "second"),
+                  !cenozo.isDatetimeType(this.pickerType, "time") &&
+                  cenozo.isDatetimeType(this.pickerType, "timezone")
+                )
+              );
           },
           update: function () {
             if ("time" != this.pickerType && "time_notz" != this.pickerType) {
@@ -9249,11 +9266,7 @@
                 // get forward dates
                 var date = moment(this.viewingDate);
                 date.hour(12).minute(0).second(0);
-                for (
-                  ;
-                  date.month() == this.viewingDate.month() || 0 < date.day();
-                  date.add(1, "days")
-                ) {
+                for (; date.month() == this.viewingDate.month() || 0 < date.day(); date.add(1, "days")) {
                   var cellDate = moment(date);
                   cellList.push({
                     date: cellDate,
@@ -9272,11 +9285,7 @@
                 // get backward dates
                 var date = moment(this.viewingDate).subtract(1, "days");
                 date.hour(12).minute(0).second(0);
-                for (
-                  ;
-                  date.month() == this.viewingDate.month() || 6 > date.day();
-                  date.subtract(1, "days")
-                ) {
+                for (; date.month() == this.viewingDate.month() || 6 > date.day(); date.subtract(1, "days")) {
                   var cellDate = moment(date);
                   cellList.unshift({
                     date: cellDate,
@@ -9331,8 +9340,7 @@
                   cellList.push({
                     date: cellDate,
                     label: cellDate.format("YYYY"),
-                    current:
-                      null !== this.date && this.date.isSame(cellDate, "year"),
+                    current: null !== this.date && this.date.isSame(cellDate, "year"),
                     offMonth: false,
                     weekend: false,
                     disabled: !this.isDateAllowed(cellDate, "year"),
@@ -9354,10 +9362,7 @@
               backdrop: "static",
               keyboard: false,
               modalFade: true,
-              templateUrl: cenozo.getFileUrl(
-                "cenozo",
-                "modal-datetime.tpl.html"
-              ),
+              templateUrl: cenozo.getFileUrl("cenozo", "modal-datetime.tpl.html"),
               controller: [
                 "$scope",
                 "$uibModalInstance",
@@ -9371,21 +9376,13 @@
                       var response = null;
                       if (null !== $scope.model.date) {
                         var format =
-                          "yearmonth" == self.pickerType
-                            ? "YYYY-MM"
-                            : "time" == self.pickerType ||
-                              "time_notz" == self.pickerType
-                            ? "HH:mm"
-                            : "timesecond" == self.pickerType ||
-                              "timesecond_notz" == self.pickerType
-                            ? "HH:mm:ss"
-                            : undefined;
-                        response = cenozo.isDatetimeType(
-                          self.pickerType,
-                          "timezone"
-                        )
-                          ? $scope.model.date.tz("utc").format(format)
-                          : $scope.model.date.format(format);
+                          "yearmonth" == self.pickerType ? "YYYY-MM" :
+                          "time" == self.pickerType || "time_notz" == self.pickerType ? "HH:mm" :
+                          "timesecond" == self.pickerType || "timesecond_notz" == self.pickerType ? "HH:mm:ss" :
+                          undefined;
+                        response = cenozo.isDatetimeType(self.pickerType, "timezone") ?
+                          $scope.model.date.tz("utc").format(format) :
+                          $scope.model.date.format(format);
                       }
                       $uibModalInstance.close(response);
                     },
@@ -9419,34 +9416,31 @@
         });
 
         // process the boundary dates
-        if (angular.isUndefined(this.minDate) || null === this.minDate)
+        if (angular.isUndefined(this.minDate) || null === this.minDate) {
           this.minDate = null;
-        else if ("now" !== this.minDate) {
-          if (/^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test(this.minDate))
-            this.minDate =
-              moment().format("YYYY-MM-DD") + "T" + this.minDate + "Z";
+        } else if ("now" !== this.minDate) {
+          if (/^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test(this.minDate)) {
+            this.minDate = moment().format("YYYY-MM-DD") + "T" + this.minDate + "Z";
+          }
           this.minDate = moment(new Date(this.minDate));
-          if (cenozo.isDatetimeType(this.pickerType, "timezone"))
+          if (cenozo.isDatetimeType(this.pickerType, "timezone")) {
             this.minDate.tz(CnSession.user.timezone);
+          }
         }
-        if (angular.isUndefined(this.maxDate) || null === this.maxDate)
+        if (angular.isUndefined(this.maxDate) || null === this.maxDate) {
           this.maxDate = null;
-        else if ("now" !== this.maxDate) {
+        } else if ("now" !== this.maxDate) {
           if (/^[0-9][0-9]?:[0-9][0-9](:[0-9][0-9])?/.test(this.maxDate)) {
-            this.maxDate =
-              moment().format("YYYY-MM-DD") + "T" + this.maxDate + "Z";
+            this.maxDate = moment().format("YYYY-MM-DD") + "T" + this.maxDate + "Z";
           }
           this.maxDate = moment(new Date(this.maxDate));
-          if (cenozo.isDatetimeType(this.pickerType, "timezone"))
+          if (cenozo.isDatetimeType(this.pickerType, "timezone")) {
             this.maxDate.tz(CnSession.user.timezone);
+          }
         }
 
         // treat invalid dates as null dates
-        if (
-          angular.isString(this.date) &&
-          "0000-00-00" == this.date.substring(0, 10)
-        )
-          this.date = null;
+        if (angular.isString(this.date) && "0000-00-00" == this.date.substring(0, 10)) this.date = null;
 
         // process the input (starting) date
         if (null === this.date) {
@@ -9472,17 +9466,14 @@
             this.date = moment(new Date(this.date));
           }
 
-          if (cenozo.isDatetimeType(this.pickerType, "timezone"))
-            this.date.tz(CnSession.user.timezone);
+          if (cenozo.isDatetimeType(this.pickerType, "timezone")) this.date.tz(CnSession.user.timezone);
           this.viewingDate = moment(this.date);
         }
 
         // for the time picker we might have to adjust the min/max dates
         if (cenozo.isDatetimeType(this.pickerType, "time")) {
-          if ("moment" == cenozo.getType(this.minDate))
-            this.minDate.date(this.date.date());
-          if ("moment" == cenozo.getType(this.maxDate))
-            this.maxDate.date(this.date.date());
+          if ("moment" == cenozo.getType(this.minDate)) this.minDate.date(this.date.date());
+          if ("moment" == cenozo.getType(this.maxDate)) this.maxDate.date(this.date.date());
         }
 
         this.modeTitle = "";
