@@ -1976,10 +1976,7 @@
           heading: "@",
         },
         link: function (scope, element, attrs) {
-          scope.templateUrl = cenozo.getFileUrl(
-            "cenozo",
-            "chart-" + attrs.type + ".tpl.html"
-          );
+          scope.templateUrl = cenozo.getFileUrl("cenozo", "chart-" + attrs.type + ".tpl.html");
         },
         controller: [
           "$scope",
@@ -2309,32 +2306,23 @@
                   var meta = $scope.model.metadata.columnList[input.key];
 
                   // make the default typeahead min-length 2
-                  if (angular.isDefined(input.typeahead)) {
-                    if (angular.isUndefined(input.typeahead.minLength))
-                      input.typeahead.minLength = 2;
+                  if (angular.isDefined(input.typeahead) && angular.isUndefined(input.typeahead.minLength)) {
+                    input.typeahead.minLength = 2;
                   }
 
-                  if (
-                    angular.isDefined(meta) &&
-                    angular.isDefined(meta.enumList)
-                  ) {
+                  if (angular.isDefined(meta) && angular.isDefined(meta.enumList)) {
                     // process the input's enum-list
                     var enumList = angular.copy(meta.enumList);
 
                     // add additional rank
                     var newRank = enumList.length + 1;
                     if ("rank" == input.key)
-                      enumList.push({
-                        value: newRank,
-                        name: $filter("cnOrdinal")(newRank),
-                      });
+                      enumList.push({ value: newRank, name: $filter("cnOrdinal")(newRank) });
 
                     if (!input.multi && (!meta.required || 1 < enumList.length)) {
                       // only add the empty value if one doesn't already exist
                       if (null == enumList.findByProperty("value", undefined)) {
-                        var name = meta.required
-                          ? "(Select " + input.title + ")"
-                          : "(empty)";
+                        var name = meta.required ? "(Select " + input.title + ")" : "(empty)";
                         if (null == enumList.findByProperty("name", name)) {
                           enumList.unshift({ value: undefined, name: name });
                         }
@@ -2357,17 +2345,14 @@
                     ) {
                       // do nothing (the typeahead has requested to start empty)
                     } else {
-                      var defaultValue = $scope.model.module.getInput(
-                        input.key
-                      ).default;
+                      var defaultValue = $scope.model.module.getInput(input.key).default;
                       if (
                         angular.isObject(defaultValue) &&
                         angular.isDefined(defaultValue.id) &&
                         angular.isDefined(defaultValue.formatted)
                       ) {
                         $scope.record[input.key] = defaultValue.id;
-                        $scope.formattedRecord[input.key] =
-                          defaultValue.formatted;
+                        $scope.formattedRecord[input.key] = defaultValue.formatted;
                       } else {
                         // apply parent values to lookup-typeaheads
                         var parent = $scope.model.getParentIdentifier();
@@ -2378,25 +2363,19 @@
                           parent.subject == input.typeahead.table
                         ) {
                           var response = await CnHttpFactory.instance({
-                            path:
-                              input.typeahead.table + "/" + parent.identifier,
+                            path: input.typeahead.table + "/" + parent.identifier,
                             data: {
                               select: {
                                 column: [
                                   "id",
-                                  {
-                                    column: input.typeahead.select,
-                                    alias: "value",
-                                    table_prefix: false,
-                                  },
+                                  { column: input.typeahead.select, alias: "value", table_prefix: false },
                                 ],
                               },
                             },
                           }).get();
 
                           $scope.record[input.key] = response.data.id;
-                          $scope.formattedRecord[input.key] =
-                            response.data.value;
+                          $scope.formattedRecord[input.key] = response.data.value;
                         }
                       }
                     }
@@ -2407,6 +2386,9 @@
               });
             } finally {
               $scope.isComplete = true;
+
+              // emit that the directive is complete
+              $scope.$emit($scope.directive + " complete", $scope);
             }
           },
         ],
@@ -2804,8 +2786,10 @@
             $scope.$emit($scope.directive + " ready", $scope);
 
             await $scope.model.listModel.onList(true);
-            if ("list" == $scope.model.getActionFromState())
-              $scope.model.setupBreadcrumbTrail();
+            if ("list" == $scope.model.getActionFromState()) $scope.model.setupBreadcrumbTrail();
+
+            // emit that the directive is complete
+            $scope.$emit($scope.directive + " complete", $scope);
           },
         ],
         link: function (scope, element, attrs) {
@@ -3080,8 +3064,7 @@
 
             try {
               await $scope.model.viewModel.onView();
-              if ("view" == $scope.model.getActionFromState())
-                $scope.model.setupBreadcrumbTrail();
+              if ("view" == $scope.model.getActionFromState()) $scope.model.setupBreadcrumbTrail();
 
               // trigger a keyup to get cn-elastic to fire
               angular.element("textarea[cn-elastic]").trigger("elastic");
@@ -3096,33 +3079,20 @@
                       if (null != input) {
                         if (angular.isDefined(input.typeahead)) {
                           // make the default typeahead min-length 2
-                          if (angular.isUndefined(input.typeahead.minLength))
-                            input.typeahead.minLength = 2;
-                        } else if (
-                          ["boolean", "enum", "rank"].includes(input.type)
-                        ) {
+                          if (angular.isUndefined(input.typeahead.minLength)) input.typeahead.minLength = 2;
+                        } else if (["boolean", "enum", "rank"].includes(input.type)) {
                           input.enumList =
-                            "boolean" === input.type
-                              ? [
-                                  { value: true, name: "Yes" },
-                                  { value: false, name: "No" },
-                                ]
-                              : angular.copy(
-                                  $scope.model.metadata.columnList[key].enumList
-                                );
+                            "boolean" === input.type ?
+                            [{ value: true, name: "Yes" }, { value: false, name: "No" }] :
+                            angular.copy($scope.model.metadata.columnList[key].enumList);
                           // add the empty option if input is not required
                           if (
                             angular.isArray(input.enumList) &&
-                            !$scope.model.metadata.columnList[key].required
-                          )
-                            if (
-                              null ==
-                              input.enumList.findByProperty("name", "(empty)")
-                            )
-                              input.enumList.unshift({
-                                value: "",
-                                name: "(empty)",
-                              });
+                            !$scope.model.metadata.columnList[key].required &&
+                            null == input.enumList.findByProperty("name", "(empty)")
+                          ) {
+                            input.enumList.unshift({ value: "", name: "(empty)" });
+                          }
                         }
                       }
                     });
@@ -3130,6 +3100,9 @@
               }
             } finally {
               $scope.isComplete = true;
+
+              // emit that the directive is complete
+              $scope.$emit($scope.directive + " complete", $scope);
             }
           },
         ],
@@ -3417,18 +3390,10 @@
                       ? $scope.model.viewModel.record[$scope.input.max]
                       : $scope.input.max,
                     pickerType: $scope.input.type,
-                    emptyAllowed:
-                      !$scope.model.metadata.columnList[$scope.input.key]
-                        .required,
-                    hourStep: angular.isDefined($scope.input.hourStep)
-                      ? $scope.input.hourStep
-                      : 1,
-                    minuteStep: angular.isDefined($scope.input.minuteStep)
-                      ? $scope.input.minuteStep
-                      : 1,
-                    secondStep: angular.isDefined($scope.input.secondStep)
-                      ? $scope.input.secondStep
-                      : 1,
+                    emptyAllowed: !$scope.model.metadata.columnList[$scope.input.key].required,
+                    hourStep: angular.isDefined($scope.input.hourStep) ? $scope.input.hourStep : 1,
+                    minuteStep: angular.isDefined($scope.input.minuteStep) ? $scope.input.minuteStep : 1,
+                    secondStep: angular.isDefined($scope.input.secondStep) ? $scope.input.secondStep : 1,
                   }).show();
 
                   if (false !== response) {
