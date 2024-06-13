@@ -58,6 +58,7 @@ class get extends \cenozo\service\service
     $application_sel->add_column( 'name' );
     $application_sel->add_column( 'title' );
     $application_sel->add_column( 'version' );
+    $application_sel->add_column( 'url' );
     $application_sel->add_table_column( 'country', 'name', 'country' );
     $application_sel->add_table_column( 'study', 'name', 'study_name' );
     $application_sel->add_table_column( 'study', 'consent_type_id' );
