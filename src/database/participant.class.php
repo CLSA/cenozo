@@ -1173,6 +1173,7 @@ class participant extends record
       sort( $identifier_list );
 
       $select = lib::create( 'database\select' );
+      $select->set_distinct( true );
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
       // go through the list and remove invalid UIDs
