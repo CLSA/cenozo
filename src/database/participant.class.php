@@ -1380,7 +1380,7 @@ class participant extends record
       $affected_rows = static::db()->execute( $sql );
     }
 
-    if( $affected_rows && !$first )
+    if( !$first )
     {
       $sql .= ' '.$modifier->get_sql_without_joins();
       $affected_rows = static::db()->execute( $sql );

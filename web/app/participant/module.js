@@ -2061,7 +2061,6 @@ cenozoApp.defineModule({
                 "email2",
                 "honorific",
                 "mass_email",
-                "note",
                 "out_of_area",
                 "language_id",
                 "preferred_site_id",

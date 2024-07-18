@@ -79,6 +79,13 @@
                               ng-model="input.value"
                               class="form-control"
                               ng-required="input.required"></select>
+                      <textarea ng-switch-when="text"
+                                ng-attr-id="{{ input.column }}"
+                                name="name"
+                                ng-model="input.value"
+                                class="form-control"
+                                cn-elastic
+                                ng-required="input.required"></textarea>
                       <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
                         <span class="help-block" ng-if="innerForm.name.$error.required">
                           Cannot be blank
