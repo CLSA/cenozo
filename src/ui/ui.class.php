@@ -537,7 +537,7 @@ class ui extends \cenozo\base_object
       if( 3 <= $db_role->tier ) $this->add_listitem( 'Recordings', 'recording' );
     }
     if( $extended && in_array( 'region', $grouping_list ) ) $this->add_listitem( 'Region Sites', 'region_site' );
-    if( $setting_manager->get_setting( 'module', 'relation' ) )
+    if( $setting_manager->get_setting( 'general', 'use_relation' ) )
     {
       $this->add_listitem( 'Relationship Types', 'relation_type' );
     }
