@@ -2059,6 +2059,7 @@ cenozoApp.defineModule({
                 "availability_type_id",
                 "email",
                 "email2",
+                "global_note",
                 "honorific",
                 "mass_email",
                 "out_of_area",
