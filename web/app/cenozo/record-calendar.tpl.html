@@ -1,7 +1,7 @@
 <div class="record-calendar rounded">
   <div class="container-fluid bg-primary rounded-top"
        data-toggle="collapse"
-       data-target="#{{ model.module.subject.camel }}Calendar"
+       data-target="#{{ model.module.subject.camel }}Calendar_{{ uniqueId }}"
        ng-click="collapsed = !collapsed"
        style="cursor:pointer;">
     <h4>
@@ -22,7 +22,7 @@
              ng-class="model.calendarModel.isReportAllowed && !model.calendarModel.isReportLoading ?
                'btn-primary' : 'glyph-disabled'"
              ng-if="!model.calendarModel.isLoading && !model.calendarModel.chooseMode"
-             id="reportTypeList"
+             id="reportTypeList_{{ uniqueId }}"
              ng-click="toggleReportTypeDropdown(); $event.stopPropagation()"
              data-toggle="dropdown"
              uib-tooltip="{{ model.calendarModel.isReportAllowed
@@ -31,7 +31,7 @@
              tooltip-placement="left"></i>
           <ul ng-if="model.calendarModel.isReportAllowed && !model.calendarModel.isReportLoading"
               class="dropdown-menu dropdown-menu-right"
-              aria-labelledby="reportTypeList">
+              aria-labelledby="reportTypeList_{{ uniqueId }}">
             <li><a ng-click="getReport( 'csv' ); $event.stopPropagation()">CSV</a></li>
             <li ng-if="!model.calendarModel.isReportBig">
               <a ng-click="getReport( 'xlsx' ); $event.stopPropagation()">Excel</a>
@@ -54,7 +54,7 @@
       <span ng-if="model.calendarModel.isLoading">(Loading&hellip;)</span>
     </h4>
   </div>
-  <div id="{{ model.module.subject.camel }}Calendar" class="collapse in">
+  <div id="{{ model.module.subject.camel }}Calendar_{{ uniqueId }}" class="collapse in">
     <div class="container-fluid spacer calendar"></div>
   </div>
   <div class="form-footer text-right rounded-bottom bg-info">

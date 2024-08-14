@@ -2227,6 +2227,7 @@
           async function ($scope) {
             if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'add';
             angular.extend($scope, {
+              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnRecordAdd",
               record: {},
               test: [],
@@ -2459,6 +2460,7 @@
           "$scope",
           function ($scope) {
             angular.extend($scope, {
+              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnAddInput",
               state: $state,
 
@@ -2553,6 +2555,7 @@
           function ($scope, $element) {
             if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'calendar';
             angular.extend($scope, {
+              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnRecordCalendar",
               reportTypeListOpen: false,
               refresh: async function () {
@@ -2701,6 +2704,7 @@
           async function ($scope, $element) {
             if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'list';
             angular.extend($scope, {
+              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnRecordList",
               reportTypeListOpen: false,
               applyingChoose: false,
@@ -2874,6 +2878,7 @@
           async function ($scope) {
             if( angular.isUndefined( $scope.notationType ) ) $scope.notationType = 'view';
             angular.extend($scope, {
+              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnRecordView",
               isComplete: false,
               showTimestamps: 2 < CnSession.role.tier,
@@ -3225,6 +3230,7 @@
           "$scope",
           function ($scope) {
             angular.extend($scope, {
+              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnViewInput",
               state: $state,
               setChanged: function () {

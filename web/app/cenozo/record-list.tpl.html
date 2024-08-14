@@ -2,7 +2,7 @@
   <div class="container-fluid bg-primary rounded-top"
        ng-if="!simple"
        data-toggle="collapse"
-       data-target="#{{ model.module.subject.camel }}List"
+       data-target="#List_{{ uniqueId }}"
        ng-click="collapsed = !collapsed"
        style="cursor:pointer;">
     <h4>
@@ -23,7 +23,7 @@
              ng-class="model.listModel.isReportAllowed && !model.listModel.isReportLoading ?
                'btn-primary' : 'glyph-disabled'"
              ng-if="!model.listModel.isLoading && !model.listModel.chooseMode"
-             id="reportTypeList"
+             id="reportTypeList_{{ uniqueId }}"
              ng-click="toggleReportTypeDropdown(); $event.stopPropagation()"
              data-toggle="dropdown"
              uib-tooltip="{{ model.listModel.isReportAllowed
@@ -32,7 +32,7 @@
              tooltip-placement="left"></i>
           <ul ng-if="model.listModel.isReportAllowed && !model.listModel.isReportLoading"
               class="dropdown-menu dropdown-menu-right"
-              aria-labelledby="reportTypeList">
+              aria-labelledby="reportTypeList_{{ uniqueId }}">
             <li><a ng-click="getReport( 'csv' ); $event.stopPropagation()">CSV</a></li>
             <li ng-if="!model.listModel.isReportBig">
               <a ng-click="getReport( 'xlsx' ); $event.stopPropagation()">Excel</a>
@@ -50,7 +50,7 @@
       {{ model.listModel.heading }}
     </h4>
   </div>
-  <div class="collapse" ng-class="{'in':!initCollapsed}" id="{{ model.module.subject.camel }}List">
+  <div class="collapse" ng-class="{'in':!initCollapsed}" id="List_{{ uniqueId }}">
     <table class="table table-striped rounded"
            ng-class="{ 'table-hover':model.getViewEnabled() || model.chooseMode }">
       <thead class="bg-info">

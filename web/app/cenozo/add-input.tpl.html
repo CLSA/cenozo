@@ -2,7 +2,7 @@
   <div class="form-group"
        ng-class="{'first-form-group': first,
                   'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
-    <label for="{{ input.key }}"
+    <label for="{{ input.key }}_{{ uniqueId }}"
            class="control-label"
            ng-class="{ 'col-sm-3': !noCols }"
            uib-tooltip-html="input.help"
@@ -13,7 +13,7 @@
            ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
         <div ng-switch-when="div" ng-bind-html="input.getContent( state, model )" />
         <input ng-switch-when="string"
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-model="record[input.key]"
           cn-change="check()"
@@ -26,7 +26,7 @@
           ng-required="model.metadata.columnList[input.key].required"></input>
         <div ng-switch-when="size">
           <div class="col-sm-8 col-slim">
-            <input ng-attr-id="{{ input.key }}"
+            <input ng-attr-id="{{ input.key }}_{{ uniqueId }}"
               name="name"
               ng-model="formattedRecord[input.key][0]"
               cn-change="check()"
@@ -38,7 +38,7 @@
               ng-required="model.metadata.columnList[input.key].required"></input>
           </div>
           <div class="col-sm-4 col-slim">
-            <select ng-attr-id="{{ input.key }}"
+            <select ng-attr-id="{{ input.key }}_{{ uniqueId }}"
                     name="name"
                     ng-model="formattedRecord[input.key][1]"
                     ng-change="check()"
@@ -58,7 +58,7 @@
             </div>
           </div>
         <input ng-switch-when="typeahead"
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-model="record[input.key]"
           uib-typeahead="item for item in getTypeaheadValues( $viewValue )"
@@ -75,7 +75,7 @@
           ng-readonly="true === input.isConstant( state, model ) || 'add' == input.isConstant( state, model )"
           ng-required="model.metadata.columnList[input.key].required"></input>
         <input ng-switch-when="lookup-typeahead"
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-model="formattedRecord[input.key]"
           uib-typeahead="item.id as item.value for item in getTypeaheadValues( $viewValue )"
@@ -92,7 +92,7 @@
           ng-readonly="true === input.isConstant( state, model ) || 'add' == input.isConstant( state, model )"
           ng-required="model.metadata.columnList[input.key].required"></input>
         <input ng-switch-when="datetime"
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-model="record[input.key]"
           ng-required="model.metadata.columnList[input.key].required"
@@ -107,7 +107,7 @@
           ng-readonly="true === input.isConstant( state, model ) || 'add' == input.isConstant( state, model )"
           onkeydown="return false"></input>
         <input ng-switch-when="color"
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-model="record[input.key]"
           cn-change="check()"
@@ -123,7 +123,7 @@
           onkeydown="return false"></input>
         <select ng-switch-when="select"
           ng-if="!input.multi"
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-options="item.value as item.name disable when item.disabled for item in input.enumList"
           ng-model="record[input.key]"
@@ -137,7 +137,7 @@
         <select ng-switch-when="select"
           ng-if="input.multi"
           multiple
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-options="item.value as item.name disable when item.disabled for item in input.enumList"
           ng-model="record[input.key]"
@@ -151,7 +151,7 @@
           ng-required="model.metadata.columnList[input.key].required"></select>
         <textarea ng-switch-when="text"
           cn-elastic
-          ng-attr-id="{{ input.key }}"
+          ng-attr-id="{{ input.key }}_{{ uniqueId }}"
           name="name"
           ng-model="record[input.key]"
           cn-change="check()"
@@ -163,7 +163,7 @@
         <div ng-switch-when="file" ng-init="file=model.addModel.fileList.findByProperty( 'key', input.key )">
           <input
             type="file"
-            ng-attr-id="{{ input.key }}"
+            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
             name="name"
             class="form-control"
             ng-model="file.file"
@@ -172,9 +172,9 @@
         </div>
         <div ng-switch-when="days" class="row">
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="sunday">
+            <label class="checkbox" style="left: 20px" for="sunday_{{ uniqueId }}">
               <input
-                id="sunday"
+                id="sunday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.sunday"
                 ng-disabled="disabled ||
@@ -184,9 +184,9 @@
             </label>
           </div>
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="monday">
+            <label class="checkbox" style="left: 20px" for="monday_{{ uniqueId }}">
               <input
-                id="monday"
+                id="monday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.monday"
                 ng-disabled="disabled ||
@@ -196,9 +196,9 @@
             </label>
           </div>
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="tuesday">
+            <label class="checkbox" style="left: 20px" for="tuesday_{{ uniqueId }}">
               <input
-                id="tuesday"
+                id="tuesday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.tuesday"
                 ng-disabled="disabled ||
@@ -208,9 +208,9 @@
             </label>
           </div>
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="wednesday">
+            <label class="checkbox" style="left: 20px" for="wednesday_{{ uniqueId }}">
               <input
-                id="wednesday"
+                id="wednesday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.wednesday"
                 ng-disabled="disabled ||
@@ -220,9 +220,9 @@
             </label>
           </div>
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="thursday">
+            <label class="checkbox" style="left: 20px" for="thursday_{{ uniqueId }}">
               <input
-                id="thursday"
+                id="thursday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.thursday"
                 ng-disabled="disabled ||
@@ -232,9 +232,9 @@
             </label>
           </div>
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="friday">
+            <label class="checkbox" style="left: 20px" for="friday_{{ uniqueId }}">
               <input
-                id="friday"
+                id="friday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.friday"
                 ng-disabled="disabled ||
@@ -244,9 +244,9 @@
             </label>
           </div>
           <div class="col-sm-1" style="width: 14.28%">
-            <label class="checkbox" style="left: 20px" for="saturday">
+            <label class="checkbox" style="left: 20px" for="saturday_{{ uniqueId }}">
               <input
-                id="saturday"
+                id="saturday_{{ uniqueId }}"
                 name="name"
                 ng-model="record.saturday"
                 ng-disabled="disabled ||
@@ -258,9 +258,9 @@
         </div>
         <div ng-switch-when="months" class="row">
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="january">
+            <label class="checkbox" style="left: 20px" for="january_{{ uniqueId }}">
               <input
-                id="january"
+                id="january_{{ uniqueId }}"
                 name="name"
                 ng-model="record.january"
                 ng-disabled="disabled ||
@@ -270,9 +270,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="february">
+            <label class="checkbox" style="left: 20px" for="february_{{ uniqueId }}">
               <input
-                id="february"
+                id="february_{{ uniqueId }}"
                 name="name"
                 ng-model="record.february"
                 ng-disabled="disabled ||
@@ -282,9 +282,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="march">
+            <label class="checkbox" style="left: 20px" for="march_{{ uniqueId }}">
               <input
-                id="march"
+                id="march_{{ uniqueId }}"
                 name="name"
                 ng-model="record.march"
                 ng-disabled="disabled ||
@@ -294,9 +294,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="april">
+            <label class="checkbox" style="left: 20px" for="april_{{ uniqueId }}">
               <input
-                id="april"
+                id="april_{{ uniqueId }}"
                 name="name"
                 ng-model="record.april"
                 ng-disabled="disabled ||
@@ -306,9 +306,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="may">
+            <label class="checkbox" style="left: 20px" for="may_{{ uniqueId }}">
               <input
-                id="may"
+                id="may_{{ uniqueId }}"
                 name="name"
                 ng-model="record.may"
                 ng-disabled="disabled ||
@@ -318,9 +318,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="june">
+            <label class="checkbox" style="left: 20px" for="june_{{ uniqueId }}">
               <input
-                id="june"
+                id="june_{{ uniqueId }}"
                 name="name"
                 ng-model="record.june"
                 ng-disabled="disabled ||
@@ -332,9 +332,9 @@
         </div>
         <div ng-switch-when="months" class="row">
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="july">
+            <label class="checkbox" style="left: 20px" for="july_{{ uniqueId }}">
               <input
-                id="july"
+                id="july_{{ uniqueId }}"
                 name="name"
                 ng-model="record.july"
                 ng-disabled="disabled ||
@@ -344,9 +344,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="august">
+            <label class="checkbox" style="left: 20px" for="august_{{ uniqueId }}">
               <input
-                id="august"
+                id="august_{{ uniqueId }}"
                 name="name"
                 ng-model="record.august"
                 ng-disabled="disabled ||
@@ -356,9 +356,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="september">
+            <label class="checkbox" style="left: 20px" for="september_{{ uniqueId }}">
               <input
-                id="september"
+                id="september_{{ uniqueId }}"
                 name="name"
                 ng-model="record.september"
                 ng-disabled="disabled ||
@@ -368,9 +368,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="october">
+            <label class="checkbox" style="left: 20px" for="october_{{ uniqueId }}">
               <input
-                id="october"
+                id="october_{{ uniqueId }}"
                 name="name"
                 ng-model="record.october"
                 ng-disabled="disabled ||
@@ -380,9 +380,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="november">
+            <label class="checkbox" style="left: 20px" for="november_{{ uniqueId }}">
               <input
-                id="november"
+                id="november_{{ uniqueId }}"
                 name="name"
                 ng-model="record.november"
                 ng-disabled="disabled ||
@@ -392,9 +392,9 @@
             </label>
           </div>
           <div class="col-sm-2">
-            <label class="checkbox" style="left: 20px" for="december">
+            <label class="checkbox" style="left: 20px" for="december_{{ uniqueId }}">
               <input
-                id="december"
+                id="december_{{ uniqueId }}"
                 name="name"
                 ng-model="record.december"
                 ng-disabled="disabled ||

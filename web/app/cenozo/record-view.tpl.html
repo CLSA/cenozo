@@ -2,7 +2,7 @@
   <div class="container-fluid bg-primary rounded-top"
        ng-if="!simple"
        data-toggle="collapse"
-       data-target="#{{ model.module.subject.camel }}View"
+       data-target="#{{ model.module.subject.camel }}View_{{ uniqueId }}"
        ng-click="collapsed = !collapsed"
        uib-tooltip-html="
          '<div>Created on ' +
@@ -62,12 +62,12 @@
         </button>
       </div>
     </div>
-    <div ng-class="{'form-body':!simple, 'collapse':!simple, 'in':!initCollapsed}" id="{{ model.module.subject.camel }}View">
+    <div ng-class="{'form-body':!simple, 'collapse':!simple, 'in':!initCollapsed}" id="{{ model.module.subject.camel }}View_{{ uniqueId }}">
       <div ng-repeat="group in dataArray" ng-attr-name="{{ group.title }}" ng-if="groupHasVisibleInputs( group )">
         <div ng-if="0 < group.title.length"
              class="container-fluid bg-info"
              data-toggle="collapse"
-             data-target="#inputGroup{{ $index }}"
+             data-target="#inputGroup{{ $index }}_{{ uniqueId }}"
              ng-click="onGroupClick( group, $index )"
              style="margin-bottom:2px; cursor:pointer;">
           <h4>
@@ -80,7 +80,7 @@
             {{ group.title }}
           </h4>
         </div>
-        <div id="inputGroup{{ $index }}" class="collapse" ng-class="{'in':!group.initCollapsed}">
+        <div id="inputGroup{{ $index }}_{{ uniqueId }}" class="collapse" ng-class="{'in':!group.initCollapsed}">
           <cn-view-input
             ng-repeat="input in group.inputArray"
             ng-if="true != input.isExcluded( $state, model ) && 'view' != input.isExcluded( $state, model ) && 'hidden' != input.type"
