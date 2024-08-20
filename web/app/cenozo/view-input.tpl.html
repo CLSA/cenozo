@@ -3,7 +3,7 @@
        ng-class="{'form-group-condensed': condensed,
                   'first-form-group': first,
                   'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
-    <label for="{{ input.key }}_{{ uniqueId }}"
+    <label for="{{ input.key }}"
            class="control-label"
            ng-class="{ 'col-sm-3': !noCols }"
            uib-tooltip-html="input.help"
@@ -15,7 +15,7 @@
              ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
           <div ng-switch-when="div" ng-bind-html="input.getContent( state, model )" />
           <input ng-switch-when="string"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
             ng-change="setChanged()"
@@ -55,7 +55,7 @@
           </div>
           <div ng-switch-when="size">
             <div class="col-sm-8 col-slim">
-              <input ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+              <input ng-attr-id="{{ input.key }}"
                 name="name"
                 ng-model="model.viewModel.formattedRecord[input.key][0]"
                 ng-change="setChanged()"
@@ -72,7 +72,7 @@
                 ng-required="model.metadata.columnList[input.key].required"></input>
             </div>
             <div class="col-sm-4 col-slim">
-              <select ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+              <select ng-attr-id="{{ input.key }}"
                       name="name"
                       ng-model="model.viewModel.formattedRecord[input.key][1]"
                       ng-change="model.getEditEnabled() &&
@@ -96,7 +96,7 @@
             </div>
           </div>
           <input ng-switch-when="typeahead"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
             uib-typeahead="item for item in getTypeaheadValues( $viewValue )"
@@ -115,7 +115,7 @@
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"></input>
           <input ng-switch-when="lookup-typeahead"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.formattedRecord[input.key]"
             uib-typeahead="item.id as item.value for item in getTypeaheadValues( $viewValue )"
@@ -134,7 +134,7 @@
                          true === input.isConstant( state, model ) ||
                          'view' == input.isConstant( state, model )"></input>
           <input ng-switch-when="datetime"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.formattedRecord[input.key]"
             class="form-control"
@@ -149,7 +149,7 @@
                          'view' == input.isConstant( state, model )"
             onkeydown="return false"></input>
           <input ng-switch-when="color"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
             ng-change="model.getEditEnabled() &&
@@ -171,7 +171,7 @@
             ng-required="model.metadata.columnList[input.key].required"
             onkeydown="return false"></input>
           <select ng-switch-when="select"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-options="item.value as item.name disable when item.disabled for item in input.enumList"
             ng-model="model.viewModel.record[input.key]"
@@ -188,7 +188,7 @@
             ng-required="model.metadata.columnList[input.key].required"></select>
           <textarea ng-switch-when="text"
             cn-elastic
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
             ng-change="setChanged()"
@@ -204,7 +204,7 @@
                          'view' == input.isConstant( state, model )"
             ng-required="model.metadata.columnList[input.key].required"></textarea>
           <div ng-switch-when="audio_url"
-               ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+               ng-attr-id="{{ input.key }}"
                name="name">
             <audio ng-src="{{ model.viewModel.record[input.key] }}"
                    controls
@@ -213,7 +213,7 @@
           </div>
           <div
             ng-switch-when="base64"
-            ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+            ng-attr-id="{{ input.key }}"
             name="name"
             class="vertical-spacer">
             <span
@@ -246,7 +246,7 @@
             </span>
           </div>
           <div ng-switch-when="file"
-               ng-attr-id="{{ input.key }}_{{ uniqueId }}"
+               ng-attr-id="{{ input.key }}"
                name="name"
                class="vertical-spacer"
                ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )">
@@ -283,8 +283,8 @@
           </div>
           <div ng-switch-when="days" class="row">
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="sunday_{{ uniqueId }}">
-                <input id="sunday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="sunday">
+                <input id="sunday" name="name"
                   ng-model="model.viewModel.record.sunday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -298,8 +298,8 @@
               </label>
             </div>
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="monday_{{ uniqueId }}">
-                <input id="monday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="monday">
+                <input id="monday" name="name"
                   ng-model="model.viewModel.record.monday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -313,8 +313,8 @@
               </label>
             </div>
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="tuesday_{{ uniqueId }}">
-                <input id="tuesday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="tuesday">
+                <input id="tuesday" name="name"
                   ng-model="model.viewModel.record.tuesday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -328,8 +328,8 @@
               </label>
             </div>
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="wednesday_{{ uniqueId }}">
-                <input id="wednesday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="wednesday">
+                <input id="wednesday" name="name"
                   ng-model="model.viewModel.record.wednesday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -343,8 +343,8 @@
               </label>
             </div>
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="thursday_{{ uniqueId }}">
-                <input id="thursday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="thursday">
+                <input id="thursday" name="name"
                   ng-model="model.viewModel.record.thursday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -358,8 +358,8 @@
               </label>
             </div>
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="friday_{{ uniqueId }}">
-                <input id="friday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="friday">
+                <input id="friday" name="name"
                   ng-model="model.viewModel.record.friday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -373,8 +373,8 @@
               </label>
             </div>
             <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="saturday_{{ uniqueId }}">
-                <input id="saturday_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="saturday">
+                <input id="saturday" name="name"
                   ng-model="model.viewModel.record.saturday"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -390,8 +390,8 @@
           </div>
           <div ng-switch-when="months" class="row">
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="january_{{ uniqueId }}">
-                <input id="january_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="january">
+                <input id="january" name="name"
                   ng-model="model.viewModel.record.january"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -405,8 +405,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="february_{{ uniqueId }}">
-                <input id="february_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="february">
+                <input id="february" name="name"
                   ng-model="model.viewModel.record.february"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -420,8 +420,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="march_{{ uniqueId }}">
-                <input id="march_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="march">
+                <input id="march" name="name"
                   ng-model="model.viewModel.record.march"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -435,8 +435,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="april_{{ uniqueId }}">
-                <input id="april_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="april">
+                <input id="april" name="name"
                   ng-model="model.viewModel.record.april"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -450,8 +450,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="may_{{ uniqueId }}">
-                <input id="may_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="may">
+                <input id="may" name="name"
                   ng-model="model.viewModel.record.may"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -465,8 +465,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="june_{{ uniqueId }}">
-                <input id="june_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="june">
+                <input id="june" name="name"
                   ng-model="model.viewModel.record.june"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -482,8 +482,8 @@
           </div>
           <div ng-switch-when="months" class="row">
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="july_{{ uniqueId }}">
-                <input id="july_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="july">
+                <input id="july" name="name"
                   ng-model="model.viewModel.record.july"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -497,8 +497,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="august_{{ uniqueId }}">
-                <input id="august_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="august">
+                <input id="august" name="name"
                   ng-model="model.viewModel.record.august"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -512,8 +512,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="september_{{ uniqueId }}">
-                <input id="september_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="september">
+                <input id="september" name="name"
                   ng-model="model.viewModel.record.september"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -527,8 +527,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="october_{{ uniqueId }}">
-                <input id="october_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="october">
+                <input id="october" name="name"
                   ng-model="model.viewModel.record.october"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -542,8 +542,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="november_{{ uniqueId }}">
-                <input id="november_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="november">
+                <input id="november" name="name"
                   ng-model="model.viewModel.record.november"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -557,8 +557,8 @@
               </label>
             </div>
             <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="december_{{ uniqueId }}">
-                <input id="december_{{ uniqueId }}" name="name"
+              <label class="checkbox" style="left: 20px" for="december">
+                <input id="december" name="name"
                   ng-model="model.viewModel.record.december"
                   ng-change="model.getEditEnabled() &&
                              true !== input.isConstant( state, model ) &&
@@ -606,7 +606,7 @@
         <button
           class="btn btn-default full-width"
           type="button"
-          id="{{ input.action.id }}_{{ uniqueId }}"
+          id="{{ input.action.id }}"
           ng-class="input.action.classes"
           ng-disabled="input.action.isDisabled( state, model )"
           ng-click="input.action.operation( state, model )"

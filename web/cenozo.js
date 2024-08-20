@@ -2460,7 +2460,6 @@
           "$scope",
           function ($scope) {
             angular.extend($scope, {
-              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnAddInput",
               state: $state,
 
@@ -3230,7 +3229,6 @@
           "$scope",
           function ($scope) {
             angular.extend($scope, {
-              uniqueId: Math.round(Math.random()*10000000000),
               directive: "cnViewInput",
               state: $state,
               setChanged: function () {
