@@ -1,0 +1,26 @@
+<div ng-class="{ 'record-view': !simple, 'rounded': !simple, 'maximize': maximized }">
+  <div ng-if="!simple" class="container-fluid bg-primary rounded-top">
+    <h4>
+      <div class="pull-right">
+        <i
+          class="glyphicon glyph-hover btn-primary btn-header"
+          ng-if="allowMaximize"
+          ng-class="maximized ? 'glyphicon-resize-small' : 'glyphicon-resize-full'"
+          style="cursor:pointer;"
+          ng-click="maximized = !maximized"
+          uib-tooltip="Click to maximize chart"
+          tooltip-placement="left"
+        ></i>
+      </div>
+      {{ heading }}
+    </h4>
+  </div>
+  <div class="form-body" style="padding: 1em;">
+    <cn-loading ng-show="loading"></cn-loading>
+    <div ng-show="!loading" class="container-fluid" style="height: 75vh; width: 75vh;">
+      <canvas ng-attr-id="{{ identifier }}"></canvas>
+    </div>
+  </div>
+  <div ng-if="!simple" class="form-footer text-right rounded-bottom bg-info">
+  </div>
+</div>

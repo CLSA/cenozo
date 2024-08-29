@@ -21,12 +21,12 @@
   <script src="<?php print LIB_URL; ?>/@uirouter/angularjs/release/angular-ui-router.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/fullcalendar/dist/fullcalendar.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
   <script src="<?php print LIB_URL; ?>/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
-  <script src="<?php print LIB_URL; ?>/chart.js/dist/Chart.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
-  <script src="<?php print LIB_URL; ?>/angular-chart.js/dist/angular-chart.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
-  <script src="<?php print LIB_URL; ?>/file-saver/dist/FileSaver.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
-  <script src="<?php print LIB_URL; ?>/diff/dist/diff.js?build=<?php print CENOZO_BUILD; ?>"></script>
-  <script src="<?php print LIB_URL; ?>/jsonpath/jsonpath.min.js?build=<?php print CENOZO_BUILD; ?>"></script>
-
+<?php
+foreach( $optional_lib_list as $filename )
+{
+  printf( '  <script src="%s/%s?build=%s"></script>'."\n", LIB_URL, $filename, CENOZO_BUILD );
+}
+?>
   <script src="<?php print CENOZO_URL; ?>/cenozo<?php print $min; ?>.js?build=<?php print CENOZO_BUILD; ?>" id="cenozo"></script>
   <script src="<?php print ROOT_URL; ?>/app<?php print $min; ?>.js?build=<?php print APP_BUILD; ?>" id="app"></script>
   <script src="<?php print LIB_URL; ?>/requirejs/require.js?build=<?php print CENOZO_BUILD; ?>"></script>

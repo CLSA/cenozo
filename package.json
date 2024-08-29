@@ -18,7 +18,7 @@
     "angular": "^1.6.10",
     "angular-animate": "latest",
     "angular-bootstrap-colorpicker": "latest",
-    "angular-chart.js": "^1.1.0",
+    "chart.js": "4.4.4",
     "angular-sanitize": "latest",
     "angular-ui-bootstrap": "latest",
     "bootstrap": "3.x",

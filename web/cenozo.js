@@ -15,7 +15,6 @@
       "ngAnimate",
       "ngSanitize",
       "colorpicker.module",
-      "chart.js",
     ]);
   }
 
@@ -1966,24 +1965,84 @@
   cenozo.directive("cnChart", [
     function () {
       return {
-        template: '<div ng-include="templateUrl"></div>', // set below in the link function
+        templateUrl: cenozo.getFileUrl("cenozo", "chart.tpl.html"),
         restrict: "E",
         scope: {
-          type: "=",
-          plot: "=",
+          type: "@",
+          labels: "=",
+          data: "=",
           loading: "=",
           identifier: "@",
           heading: "@",
+          simple: "=",
         },
         link: function (scope, element, attrs) {
-          scope.templateUrl = cenozo.getFileUrl("cenozo", "chart-" + attrs.type + ".tpl.html");
+          // watch the model's heading in case it changes
+          scope.$watch("labels", function (newLabels, oldLabels) {
+            // make sure the chart has been created
+            scope.createChart();
+
+            if (null != scope.chart) {
+              // don't update when setting the initial empty values
+              if (0 < oldLabels.length || 0 < newLabels.length) {
+                scope.chart.config.data.labels = newLabels;
+                scope.chart.update();
+              }
+            }
+          });
+          scope.$watch("data", function (newData, oldData) {
+            // make sure the chart has been created
+            scope.createChart();
+
+            if (null != scope.chart) {
+              if (0 < oldData.length || 0 < newData.length) {
+                scope.chart.config.data.datasets[0].data = newData;
+                scope.chart.update();
+              }
+            }
+          });
         },
         controller: [
           "$scope",
           "$element",
           function ($scope, $element) {
-            $scope.directive = "cnChart";
-            $scope.maximized = false;
+            angular.extend($scope, {
+              directive: "cnChart",
+              maximized: false,
+              chart: null,
+              createChart: function() {
+                if (null == this.chart) {
+                  const context = $element.find("canvas");
+                  if (context) {
+                    try {
+                      $scope.chart = new Chart(context, {
+                        type: $scope.type,
+                        data: {
+                          labels: $scope.labels,
+                          datasets: [{
+                            data: $scope.data,
+                            backgroundColor: [
+                              "#ff0000", "#006400", "#00008b", "#ffc0cb", "#8a2be2", "#9acd32", "#7fff00",
+                              "#808080", "#ff8c00", "#808000", "#ff1493", "#ff00ff", "#0000ff", "#7f0000",
+                              "#3cb371", "#ffd700", "#800080", "#f0e68c", "#00ff7f", "#00bfff", "#ee82ee",
+                              "#b0e0e6", "#b03060", "#00ffff", "#4169e1", "#fa8072",
+                            ],
+                            hoverOffset: 50,
+                          }],
+                        },
+                        options: {
+                          animation: { duration: 500 },
+                        },
+                      });
+                    } catch (error) {
+                      $scope.chart = null;
+                    }
+                  }
+                }
+              },
+            });
+
+            $scope.createChart();
 
             // emit that the directive is ready
             $scope.$emit($scope.directive + " ready", $scope);

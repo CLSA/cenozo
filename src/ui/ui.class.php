@@ -107,6 +107,20 @@ class ui extends \cenozo\base_object
       // empty actions will show as array in json strings, convert to empty objects {}
       $module_string = str_replace( '"actions":[]', '"actions":{}', $module_string );
 
+      // determine which optional libs are installed
+      $optional_lib_list = [];
+      $file_list = [
+        'chart.js/dist/chart.umd.js',
+        'file-saver/dist/FileSaver.min.js',
+        'diff/dist/diff.js',
+        'jsonpath/jsonpath.min.js',
+      ];
+      foreach( $file_list as $file )
+      {
+        $filename = sprintf( '%s/lib/%s', WEB_PATH, $file );
+        if( file_exists( $filename ) ) $optional_lib_list[] = $file;
+      }
+
       // build the interface
       ob_start();
       include( CENOZO_PATH.'/src/ui/interface.php' );
