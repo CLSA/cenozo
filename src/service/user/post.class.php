@@ -45,9 +45,12 @@ class post extends \cenozo\service\post
         $db_user->add_language( $post_object->language_id );
       }
 
-      $default_password = $setting_manager->get_setting( 'general', 'default_password' );
-      $db_user->password = $default_password; // hashed in database\user
-      $db_user->save();
+      if( is_null( $db_user->password ) )
+      {
+        $default_password = $setting_manager->get_setting( 'general', 'default_password' );
+        $db_user->password = $default_password; // hashed in database\user
+        $db_user->save();
+      }
     }
   }
 }

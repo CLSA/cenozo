@@ -73,7 +73,7 @@ class patch extends \cenozo\service\patch
 
     $db_user = $this->get_leaf_record();
 
-    // process the preferred site, if it exists
+    // process the password argument (reset password)
     if( $this->get_argument( 'password', false ) )
     {
       $session = lib::create( 'business\session' );

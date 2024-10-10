@@ -23,15 +23,29 @@ class user extends record
       $value = password_hash( $value, PASSWORD_BCRYPT );
       parent::__set( 'password_type', 'bcrypt' );
     }
+    else if( $column_name == 'hashed_password' )
+    {
+      // the password is already hashed, so don't hash it again
+      $column_name = 'password';
+    }
+
     parent::__set( $column_name, $value );
   }
 
   public function save()
   {
+    $new_record = is_null( $this->id );
+
+    // note: if the dogwood manager isn't active then it will do nothing
+    $dogwood_manager = lib::create( 'business\dogwood_manager' );
+
+    // If this is a new user then create the account in dogwood.
+    // Note that if the account already exists it will set the record's password details
+    if( $new_record ) $dogwood_manager->create( $this );
+
     parent::save();
 
-    // this does nothing of no dogwood service has been set in the initialization settings
-    lib::create( 'business\dogwood_manager' )->update( $this );
+    if( !$new_record ) $dogwood_manager->update( $this );
   }
 
   /**

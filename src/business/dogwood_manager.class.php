@@ -32,7 +32,45 @@ class dogwood_manager extends \cenozo\singleton
   }
 
   /**
-   * Updates a user's account details from an existing database\user record (creating them if needed)
+   * Creates a new user account from a new (unsaved) database\user record
+   * 
+   * @param database\user $db_user
+   * @access public
+   */
+  public function create( $db_user )
+  {
+    if( !$this->enabled ) return;
+
+    $path = sprintf( 'organization/name=%s/account/username=%s', $this->organization, $db_user->name );
+    $data = new \stdClass;
+    if( $db_user->password ) $data->password = $db_user->password;
+    if( $db_user->password_type ) $data->password_type = $db_user->password_type;
+    $data->email = $db_user->email;
+
+    $response = NULL;
+    try
+    {
+      // first see if the account already exists (throwing exception caught below if not)
+      $response = $this->cenozo_manager->get( $path );
+
+      // the account already exists, so update the user record with the password details
+      $db_user->hashed_password = $response->password;
+      $db_user->password_type = $response->password_type;
+    }
+    catch( \cenozo\exception\runtime $e )
+    {
+      // if we get a 404 then the account doesn't exist, so try creating it
+      if( preg_match( '/Got response code 404/', $e->get_raw_message() ) )
+      {
+        $data->username = $db_user->name;
+        $data->password = 'unknown'; // the password is set by updating an existing record
+        $this->cenozo_manager->post( sprintf( 'organization/name=%s/account', $this->organization ), $data );
+      }
+    }
+  }
+
+  /**
+   * Updates a user's account details from an existing database\user record
    * 
    * @param database\user $db_user
    * @access public
@@ -43,25 +81,10 @@ class dogwood_manager extends \cenozo\singleton
 
     $path = sprintf( 'organization/name=%s/account/username=%s', $this->organization, $db_user->name );
     $data = new \stdClass;
-    $data->password = $db_user->password;
-    $data->password_type = $db_user->password_type;
+    if( $db_user->password ) $data->password = $db_user->password;
+    if( $db_user->password_type ) $data->password_type = $db_user->password_type;
     $data->email = $db_user->email;
-
-    // see if the account exists and create it if not
-    try
-    {
-      $response = $this->cenozo_manager->get( $path );
-      $this->cenozo_manager->patch( $path, $data );
-    }
-    catch( \cenozo\exception\runtime $e )
-    {
-      // if we get a 404 then the account may not exist, so try creating it
-      if( preg_match( '/Got response code 404/', $e->get_raw_message() ) )
-      {
-        $data->username = $db_user->name;
-        $this->cenozo_manager->post( $path, $data );
-      }
-    }
+    $this->cenozo_manager->patch( $path, $data );
   }
 
   /**
