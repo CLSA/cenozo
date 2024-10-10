@@ -129,15 +129,12 @@ $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 $settings['db']['prefix'] = '';
 
-// ldap settings
-$settings['ldap']['enabled'] = true;
-$settings['ldap']['server'] = 'localhost';
-$settings['ldap']['port'] = 389;
-$settings['ldap']['base'] = '';
-$settings['ldap']['username'] = '';
-$settings['ldap']['password'] = '';
-$settings['ldap']['type'] = 'samba'; // can be standard, active or samba
-$settings['ldap']['timeout'] = 5; // in seconds
+// dogwood authentication settings
+$settings['dogwood']['enabled'] = false;
+$settings['dogwood']['server'] = '';
+$settings['dogwood']['organization'] = '';
+$settings['dogwood']['username'] = '';
+$settings['dogwood']['password'] = '';
 
 // opal settings
 $settings['opal']['enabled'] = false;

@@ -293,24 +293,29 @@ class util
   {
     $user_class_name = lib::get_class_name( 'database\user' );
     $setting_manager = lib::create( 'business\setting_manager' );
-    $ldap_manager = lib::create( 'business\ldap_manager' );
+    $dogwood_manager = lib::create( 'business\dogwood_manager' );
     $db_user = $user_class_name::get_unique_record( 'name', $username );
 
     $valid = NULL;
-    if( $ldap_manager->get_enabled() )
-    { // ldap enabled, check the user/pass using the ldap manager
+    if( $dogwood_manager->get_enabled() )
+    {
       try
       {
-        $valid = $ldap_manager->validate_user( $username, $password );
+        $valid = $dogwood_manager->validate( $username, $password );
       }
-      catch( \cenozo\exception\base_exception $e )
+      catch( \cenozo\exception\runtime $e )
       {
-        log::warning( $e->get_raw_message() );
+        log::warning(
+          sprintf(
+            "Unable to reach dogwood service, failing back to local user records.\n%s",
+            $e->get_raw_message()
+          )
+        );
       }
     }
 
     if( is_null( $valid ) )
-    { // either ldap is not enabled or it failed, check the user/pass in the database
+    { // either dogwood is not enabled or it failed, check the user/pass in the database
       if( !is_null( $db_user ) )
       {
         $valid = 'whirlpool' == $db_user->password_type ?
@@ -342,7 +347,7 @@ class util
         if( $db_user->active )
         {
           $login_failure_limit = $setting_manager->get_setting( 'general', 'login_failure_limit' );
-          if( $login_failure_limit <= $db_user->login_failures )
+          if( $login_failure_limit && $login_failure_limit <= $db_user->login_failures )
           {
             log::info( sprintf(
               'Deactivating user "%s" since they have passed the login failure limit of %d.',

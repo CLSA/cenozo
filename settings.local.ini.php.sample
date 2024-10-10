@@ -32,13 +32,6 @@ $settings['utility']['password'] = 'set password to utility account here';
 $settings['db']['server'] = 'localhost';
 $settings['db']['database_prefix'] = '';
 
-// ldap settings
-$settings['ldap']['enabled'] = true;
-$settings['ldap']['server'] = 'localhost';
-$settings['ldap']['username'] = '';
-$settings['ldap']['password'] = '';
-$settings['ldap']['type'] = 'samba';
-
 // opal settings
 $settings['opal']['enabled'] = false;
 $settings['opal']['server'] = 'localhost';

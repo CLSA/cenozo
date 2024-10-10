@@ -29,7 +29,7 @@ class setting_manager extends \cenozo\singleton
     $this->read_settings( 'general', $args );
     $this->read_settings( 'mail', $args );
     $this->read_settings( 'module', $args );
-    $this->read_settings( 'ldap', $args );
+    $this->read_settings( 'dogwood', $args );
     $this->read_settings( 'opal', $args );
     $this->read_settings( 'failover_opal', $args );
     $this->read_settings( 'path', $args );

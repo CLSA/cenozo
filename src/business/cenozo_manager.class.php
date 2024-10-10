@@ -16,18 +16,35 @@ class cenozo_manager extends \cenozo\base_object
   /**
    * Constructor.
    * 
-   * @param database\application|string $db_application
+   * @param database\application|string $application
    * @access protected
    */
-  public function __construct( $db_application )
+  public function __construct( $application )
   {
-    if( is_string( $db_application ) )
+    if( is_string( $application ) )
     {
       $application_class_name = lib::get_class_name( 'database\application' );
-      $db_application = $application_class_name::get_unique_record( 'name', $db_application );
+      $application = $application_class_name::get_unique_record( 'name', $application );
     }
 
-    $this->db_application = $db_application;
+    if( !is_null( $application ) )
+    {
+      if( is_a( $application, lib::get_class_name( 'business\dogwood_manager' ) ) )
+      {
+        $this->url = $application->get_server();
+        $this->title = 'Dogwood';
+        $this->username = $application->get_username();
+        $this->password = $application->get_password();
+      }
+      else
+      {
+        $setting_manager = lib::create( 'business\setting_manager' );
+        $this->url = $application->url;
+        $this->title = $application->title;
+        $this->username = $setting_manager->get_setting( 'utility', 'username' );
+        $this->password = $setting_manager->get_setting( 'utility', 'password' );
+      }
+    }
   }
 
   /**
@@ -37,7 +54,7 @@ class cenozo_manager extends \cenozo\base_object
    */
   public function exists()
   {
-    return !is_null( $this->db_application );
+    return !is_null( $this->url );
   }
 
   /**
@@ -104,15 +121,17 @@ class cenozo_manager extends \cenozo\base_object
     if( !$this->exists() ) return NULL;
 
     $util_class_name = lib::get_class_name( 'util' );
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $user = $setting_manager->get_setting( 'utility', 'username' );
-    $pass = $setting_manager->get_setting( 'utility', 'password' );
-    $header_list = array( sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', $user, $pass ) ) ) );
+    $header_list = [
+      sprintf(
+        'Authorization: Basic %s',
+        base64_encode( sprintf( '%s:%s', $this->username, $this->password ) )
+      )
+    ];
 
     $code = 0;
 
     // prepare cURL request
-    $url = sprintf( '%s/api/%s', $this->db_application->url, $api_path );
+    $url = sprintf( '%s/api/%s', $this->url, $api_path );
 
     // set URL and other appropriate options
     $curl = curl_init();
@@ -145,7 +164,7 @@ class cenozo_manager extends \cenozo\base_object
         sprintf( 'Got error code %s when trying %s request to %s.  Message: %s',
                  curl_errno( $curl ),
                  $method,
-                 $this->db_application->title,
+                 $this->title,
                  curl_error( $curl ) ),
         __METHOD__ );
     }
@@ -162,24 +181,46 @@ class cenozo_manager extends \cenozo\base_object
         sprintf( 'Got response code %s when trying %s request to %s.  Response %s',
                  $code,
                  $method,
-                 $this->db_application->title,
+                 $this->title,
                  $response ),
         __METHOD__ );
     }
 
     return json_decode( $response );
   }
+
   /**
-   * The application to connect to
-   * @var database\application
-   * @access protected
+   * The cenozo application's base URL (including https://)
+   * @var 
+   * @access private
    */
-  protected $db_application = NULL;
+  private $url = NULL;
+
+  /**
+   * The cenozo application's title (used for logging)
+   * @var 
+   * @access private
+   */
+  private $title = NULL;
+
+  /**
+   * What username to use when connecting to the cenozo application
+   * @var 
+   * @access private
+   */
+  private $username = NULL;
+
+  /**
+   * What password to use when connecting to the cenozo application
+   * @var 
+   * @access private
+   */
+  private $password = NULL;
 
   /**
    * The number of seconds to wait before giving up on connecting to the application
    * @var integer
-   * @access protected
+   * @access private
    */
-  protected $timeout = 5;
+  private $timeout = 5;
 }

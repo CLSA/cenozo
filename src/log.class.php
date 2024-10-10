@@ -438,9 +438,6 @@ final class log extends singleton
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    // ignore ldap errors
-    if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
-
     $e = lib::create( 'exception\system', $message, $level );
     $message = sprintf( '(%s) : %s in %s on line %d',
                         $e->get_number(),

@@ -78,11 +78,7 @@ class patch extends \cenozo\service\patch
     {
       $session = lib::create( 'business\session' );
       $setting_manager = lib::create( 'business\setting_manager' );
-      $ldap_manager = lib::create( 'business\ldap_manager' );
-
       $default_password = $setting_manager->get_setting( 'general', 'default_password' );
-      $ldap_manager->set_user_password( $db_user->name, $default_password );
-
       $db_user->password = $default_password; // hashed in database\user
       $db_user->save();
 

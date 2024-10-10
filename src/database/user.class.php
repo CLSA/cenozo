@@ -26,6 +26,14 @@ class user extends record
     parent::__set( $column_name, $value );
   }
 
+  public function save()
+  {
+    parent::save();
+
+    // this does nothing of no dogwood service has been set in the initialization settings
+    lib::create( 'business\dogwood_manager' )->update( $this );
+  }
+
   /**
    * Override parent method if identifier is 0 (get record from session)
    */

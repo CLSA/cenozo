@@ -134,7 +134,6 @@ $output = <<<OUTPUT
  */
 define( 'ARGUMENT_CENOZO_BASE_ERRNO',   100000 );
 define( 'DATABASE_CENOZO_BASE_ERRNO',   200000 );
-define( 'LDAP_CENOZO_BASE_ERRNO',       300000 );
 define( 'NOTICE_CENOZO_BASE_ERRNO',     400000 );
 define( 'PERMISSION_CENOZO_BASE_ERRNO', 500000 );
 define( 'RUNTIME_CENOZO_BASE_ERRNO',    600000 );
@@ -155,12 +154,6 @@ $output .= <<<OUTPUT
  * "database" error codes
  * 
  * Since database errors already have codes this list is likely to stay empty.
- */
-
-/**
- * "ldap" error codes
- * 
- * Since ldap errors already have codes this list is likely to stay empty.
  */
 
 /**

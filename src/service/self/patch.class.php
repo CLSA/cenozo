@@ -120,12 +120,8 @@ class patch extends \cenozo\service\service
           }
           else
           {
-            $ldap_manager = lib::create( 'business\ldap_manager' );
-            $ldap_manager->set_user_password( $db_user->name, $password->requested );
-
             $db_user->password = $password->requested; // hashed in database\user
             $db_user->save();
-
             $session->set_no_password( $password->requested );
           }
         }
