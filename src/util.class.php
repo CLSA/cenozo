@@ -307,7 +307,8 @@ class util
       {
         log::warning(
           sprintf(
-            "Unable to reach dogwood service, failing back to local user records.\n%s",
+            "Unable to reach dogwood service for user \"%s\", failing back to local user records.\n%s",
+            $username,
             $e->get_raw_message()
           )
         );
