@@ -305,13 +305,17 @@ class util
       }
       catch( \cenozo\exception\runtime $e )
       {
-        log::warning(
-          sprintf(
-            "Unable to reach dogwood service for user \"%s\", failing back to local user records.\n%s",
-            $username,
-            $e->get_raw_message()
-          )
-        );
+        // report any non 404 error in the log (whether there is no match or there's an error finding a match)
+        if( !preg_match( '/response code 404/', $e->get_raw_message() ) )
+        {
+          log::warning(
+            sprintf(
+              "Unable to reach dogwood service for user \"%s\", failing back to local user records.\n%s",
+              $username,
+              $e->get_raw_message()
+            )
+          );
+        }
       }
     }
 
