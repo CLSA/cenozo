@@ -128,6 +128,8 @@ class cenozo_manager extends \cenozo\base_object
       )
     ];
 
+    if( $this->no_activity ) $header_list[] = 'No-Activity:true';
+
     $code = 0;
 
     // prepare cURL request
@@ -190,29 +192,36 @@ class cenozo_manager extends \cenozo\base_object
   }
 
   /**
+   * Determines whether to send the "No-Activity" header to cenozo
+   * @var boolean
+   * @access public
+   */
+  public $no_activity = false;
+
+  /**
    * The cenozo application's base URL (including https://)
-   * @var 
+   * @var string
    * @access private
    */
   private $url = NULL;
 
   /**
    * The cenozo application's title (used for logging)
-   * @var 
+   * @var string
    * @access private
    */
   private $title = NULL;
 
   /**
    * What username to use when connecting to the cenozo application
-   * @var 
+   * @var string
    * @access private
    */
   private $username = NULL;
 
   /**
    * What password to use when connecting to the cenozo application
-   * @var 
+   * @var string
    * @access private
    */
   private $password = NULL;

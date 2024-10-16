@@ -28,7 +28,11 @@ class dogwood_manager extends \cenozo\singleton
     $this->username = $setting_manager->get_setting( 'dogwood', 'username' );
     $this->password = $setting_manager->get_setting( 'dogwood', 'password' );
     
-    if( $this->enabled ) $this->cenozo_manager = lib::create( 'business\cenozo_manager', $this );
+    if( $this->enabled )
+    {
+      $this->cenozo_manager = lib::create( 'business\cenozo_manager', $this );
+      $this->cenozo_manager->no_activity = true;
+    }
   }
 
   /**
