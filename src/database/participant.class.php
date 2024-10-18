@@ -1250,8 +1250,8 @@ class participant extends record
     $affected_rows = 0;
     $preferred_site_id = false;
     $relation_type_id = false;
-    $sql = sprintf( 'UPDATE participant %s ', $modifier->get_join() );
-    $first = true;
+
+    $update_list = [];
     foreach( $columns as $column => $value )
     {
       // the preferred_site_id needs to be handled differently than others
@@ -1268,12 +1268,21 @@ class participant extends record
         if( !static::column_exists( $column ) )
           throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
 
-        $sql .= sprintf( '%s %s = %s',
-                         $first ? 'SET' : ',',
-                         $column,
-                         static::db()->format_string( $value ) );
-        $first = false;
+        $update_list[] = sprintf( '%s = %s', $column, static::db()->format_string( $value ) );
       }
+    }
+
+
+    if( 0 < count( $update_list ) )
+    {
+      $sql = sprintf(
+        'UPDATE participant %s SET %s %s',
+        $modifier->get_join(),
+        implode( ', ', $update_list ),
+        $modifier->get_sql_without_joins()
+      );
+      $affected = static::db()->execute( $sql );
+      if( $affected > $affected_rows ) $affected_rows = $affected;
     }
 
     // set the preferred site, if necessary
@@ -1282,24 +1291,32 @@ class participant extends record
       $db_application = lib::create( 'business\session' )->get_application();
       if( $db_application->release_based )
       {
-        // when the application is release based we only affect rows in the application_has_participant able which already exist
         $join_mod = lib::create( 'database\modifier' );
         $application_has_participant_mod = lib::create( 'database\modifier' );
-        $application_has_participant_mod->where( 'application_has_participant.participant_id', '=', 'participant.id', false );
-        $application_has_participant_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+        $application_has_participant_mod->where(
+          'application_has_participant.participant_id',
+          '=',
+          'participant.id',
+          false
+        );
+        $application_has_participant_mod->where(
+          'application_has_participant.application_id',
+          '=',
+          $db_application->id
+        );
         $join_mod->join_modifier( 'application_has_participant', $application_has_participant_mod );
 
-        $sql = sprintf( 'UPDATE participant %s %s'."\n".
-                        'SET preferred_site_id = %s %s',
-                        $modifier->get_join(),
-                        $join_mod->get_sql(),
-                        static::db()->format_string( $preferred_site_id ),
-                        $modifier->get_sql_without_joins() );
-
+        $sql = sprintf(
+          'UPDATE participant %s %s'."\n".
+          'SET preferred_site_id = %s %s',
+          $modifier->get_join(),
+          $join_mod->get_sql(),
+          static::db()->format_string( $preferred_site_id ),
+          $modifier->get_sql_without_joins()
+        );
       }
       else
       {
-        // when the application is not release based then create rows in application_has_participant if they don't already exist
         $select = lib::create( 'database\select' );
         $select->from( 'participant' );
         $select->add_constant( $db_application->id, 'application_id' );
@@ -1314,7 +1331,8 @@ class participant extends record
         );
       }
 
-      $affected_rows = static::db()->execute( $sql );
+      $affected = static::db()->execute( $sql );
+      if( $affected > $affected_rows ) $affected_rows = $affected;
     }
 
     // set the relation type, if necessary
@@ -1378,13 +1396,8 @@ class participant extends record
         );
       }
 
-      $affected_rows = static::db()->execute( $sql );
-    }
-
-    if( !$first )
-    {
-      $sql .= ' '.$modifier->get_sql_without_joins();
-      $affected_rows = static::db()->execute( $sql );
+      $affected = static::db()->execute( $sql );
+      if( $affected > $affected_rows ) $affected_rows = $affected;
     }
 
     return $affected_rows;
