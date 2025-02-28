@@ -249,7 +249,19 @@ cenozoApp.defineModule({
                   if (null != item.subtype) {
                     let subtype = 'auxiliary' == item.table_name && 'is_in_collection' == item.column_name ?
                       'collection' : item.table_name;
-                    this.subtypeList[subtype].findByProperty("key", item.subtype).inUse = true;
+                    let subtypeObj = this.subtypeList[subtype].findByProperty("key", item.subtype);
+                    if (angular.isObject(subtypeObj)) {
+                      this.subtypeList[subtype].findByProperty("key", item.subtype).inUse = true;
+                    } else {
+                      let subtypeName = subtype.replace(/_/g, " ").ucWords();
+                      return CnModalMessageFactory.instance({
+                        title: subtypeName + " Missing",
+                        message:
+                          "The export refers to a " + subtypeName + " which does not exist. " +
+                          "Please check the column and restriction lists below for an empty drop-down.",
+                        error: true,
+                      }).show();
+                    }
                   }
 
                   // load the restriction list
