@@ -233,9 +233,6 @@ cenozoApp.defineModule({
                   var columnObject = {
                     id: item.id,
                     table_name: item.table_name,
-                    table_title: "participant_identifier" == item.table_name
-                      ? "Identifier"
-                      : item.table_name.replace(/_/g, " ").ucWords(),
                     subtype: null == item.subtype ? null : item.subtype.toString(),
                     oldSubtype: null == item.subtype ? null : item.subtype.toString(),
                     column: this.tableColumnList[item.table_name].list.findByProperty("key", item.column_name),
@@ -352,89 +349,7 @@ cenozoApp.defineModule({
               auxiliary: {
                 isLoading: false,
                 promise: Promise.all([]),
-                list: [
-                  {
-                    key: undefined,
-                    title: "Selet a new auxiliary restriction...",
-                  },
-                  {
-                    key: "has_alternate",
-                    title: "Has Alternate Contact",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "has_decedent",
-                    title: "Has Decedent Responder",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "has_emergency",
-                    title: "Has Emergency Contact",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "has_informant",
-                    title: "Has Information Provider",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "has_informant_with_consent",
-                    title: "Has Information Provider With Consent",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "has_proxy",
-                    title: "Has Decision Maker",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "has_proxy_with_consent",
-                    title: "Has Decision Maker With Consent",
-                    type: "boolean",
-                    enumList: [
-                      { value: true, name: "Yes" },
-                      { value: false, name: "No" },
-                    ],
-                    required: true,
-                  },
-                  {
-                    key: "is_in_collection",
-                    title: "Is In Collection",
-                    type: "enum",
-                    enumList: [{ key: undefined, title: "Loading..." }],
-                    required: true,
-                  },
-                ],
+                list: [],
               },
               participant: {
                 isLoading: true,
@@ -457,11 +372,6 @@ cenozoApp.defineModule({
                 list: [{ key: undefined, title: "Loading..." }],
               },
               phone: {
-                isLoading: true,
-                promise: null,
-                list: [{ key: undefined, title: "Loading..." }],
-              },
-              collection: {
                 isLoading: true,
                 promise: null,
                 list: [{ key: undefined, title: "Loading..." }],
@@ -512,7 +422,7 @@ cenozoApp.defineModule({
               auxiliary: {
                 isLoading: false,
                 list: [
-                  { key: undefined, title: "Add a new auxiliary column..." },
+                  { key: undefined, title: "Add a new auxiliary participant column..." },
                   { key: "has_alternate", title: "Has Alternate Contact" },
                   { key: "has_decedent", title: "Has Decedent Responder" },
                   { key: "has_emergency", title: "Has Emergency Contact" },
@@ -520,7 +430,7 @@ cenozoApp.defineModule({
                   { key: "has_informant_with_consent", title: "Has Information Provider With Consent" },
                   { key: "has_proxy", title: "Has Decision Maker" },
                   { key: "has_proxy_with_consent", title: "Has Decision Maker With Consent" },
-                  { key: "is_in_collection", title: "Is In Collection" },
+                  { key: "is_in_collection", title: "In Collection" },
                 ],
               },
               participant: {
@@ -540,10 +450,6 @@ cenozoApp.defineModule({
                 list: [{ key: undefined, title: "Loading..." }],
               },
               phone: {
-                isLoading: true,
-                list: [{ key: undefined, title: "Loading..." }],
-              },
-              collection: {
                 isLoading: true,
                 list: [{ key: undefined, title: "Loading..." }],
               },
@@ -603,21 +509,33 @@ cenozoApp.defineModule({
               auxiliary: [],
             },
 
-            addRestriction: async function (tableName, key) {
-              // get a list of all subtypes from columns for this table
-              var subtypeList = this.columnList
-                .reduce((subtypeList, column) => {
-                  if (column.table_name == tableName && !subtypeList.includes(column.subtype)) {
-                    subtypeList.push(column.subtype);
-                  }
-                  return subtypeList;
-                }, [])
-                .sort();
+            getTableTitle: function (name) {
+              return (
+                "participant_identifier" == name ? "Identifier" :
+                "auxiliary" == name ? "Participant" :
+                name.replace(/_/g, " ").ucWords()
+              );
+            },
 
-              var item = {
+            addRestriction: async function (tableName, key) {
+              const restriction = this.tableRestrictionList[tableName].list.findByProperty("key", key);
+
+              let subtype = null;
+              if ("is_in_collection" == key || "auxiliary" != tableName) {
+                // get a list of all subtypes from columns for this table
+                let subtypeList = this.columnList.reduce((list, c) => {
+                  if (c.table_name == tableName && null != c.subtype && !list.includes(c.subtype)) {
+                    list.push(c.subtype);
+                  }
+                  return list;
+                }, []).sort();
+                if (0 < subtypeList.length) subtype = subtypeList[0];
+              }
+
+              let item = {
                 table_name: tableName,
-                subtype: subtypeList[0],
-                restriction: this.tableRestrictionList[tableName].list.findByProperty("key", key),
+                subtype: subtype,
+                restriction: restriction,
                 value: null,
                 logic: "and",
                 test: "<=>",
@@ -627,7 +545,7 @@ cenozoApp.defineModule({
               if ("boolean" == item.restriction.type) {
                 item.value = true;
               } else if (["dob", "dod", "datetime"].includes(item.restriction.type)) {
-                var datetime = moment();
+                let datetime = moment();
                 if ("dob" == item.restriction.type) datetime.subtract(50, "years");
                 item.value = datetime.format("datetime" != item.restriction.type ? "YYYY-MM-DD" : null);
                 item.formattedValue = CnSession.formatValue(item.value, item.restriction.type, true);
@@ -637,7 +555,7 @@ cenozoApp.defineModule({
                 item.value = "";
               }
 
-              var response = await CnHttpFactory.instance({
+              let response = await CnHttpFactory.instance({
                 path: "export/" + this.record.getIdentifier() + "/export_restriction",
                 data: {
                   table_name: item.table_name,
@@ -788,7 +706,7 @@ cenozoApp.defineModule({
               // if updating the subtype and the column had a unique table/subtype then get a list of all
               // restrictions which have the same table/subtype so that the can also be updated
               var updateRestrictionList = [];
-              if ("subtype" == key && 'auxiliary' != tableName) {
+              if ("subtype" == key) {
                 // check if this column had a unique table/subtype
                 var hasUniqueTableSubtype = !this.columnList.some((column) => {
                   return (
@@ -801,12 +719,6 @@ cenozoApp.defineModule({
                   updateRestrictionList = this.restrictionList.filter(
                     (restriction) => restriction.table_name == tableName && restriction.subtype == subtype
                   );
-                }
-
-                // also update the subtype list inUse property
-                if (null != workingColumn.subtype) {
-                  var subtypeObject = this.subtypeList[tableName].findByProperty("key", workingColumn.subtype);
-                  if (null != subtypeObject) subtypeObject.inUse = true;
                 }
               }
 
@@ -831,10 +743,26 @@ cenozoApp.defineModule({
                   })
                 );
               } finally {
+                if ("subtype" == key) {
+                  // now update the subtype list inUse property for both the old and new subtypes
+                  if (null != workingColumn.subtype) {
+                    const inUseSubtypeList = this.columnList
+                      .filter(item => tableName == item.table_name && null != item.subtype)
+                      .map(item => item.subtype);
+                    const workingTableName = "auxiliary" == tableName ? "collection" : tableName;
+
+                    this.subtypeList[workingTableName].forEach(item => {
+                      item.inUse = inUseSubtypeList.includes(item.key);
+                    });
+                  }
+                }
+
                 // we don't need the old subtype anymore, so let it match the new one in preperation
                 // for the next time that it gets changed
                 workingColumn.oldSubtype = workingColumn.subtype;
                 workingColumn.isUpdating = false;
+
+                if ("auxiliary" == tableName) this.buildAuxiliaryRestrictionList();
               }
             },
 
@@ -850,6 +778,8 @@ cenozoApp.defineModule({
                   column.table_name == tableName &&
                   column.subtype == subtype
               );
+
+              console.log(removeColumn);
 
               var proceed = true;
               if (hasUniqueTableSubtype) {
@@ -881,6 +811,7 @@ cenozoApp.defineModule({
                 this.columnList.splice(index, 1);
                 this.columnList.forEach((item, index) => { item.rank = index + 1; }); // re-rank
                 this.updateParticipantCount();
+                if ("auxiliary" == tableName) this.buildAuxiliaryRestrictionList();
               }
             },
 
@@ -890,25 +821,31 @@ cenozoApp.defineModule({
             },
 
             getSubtypeList: function (tableName) {
-              return this.subtypeList[tableName].filter((subtypeObject) => subtypeObject.inUse);
+              // the auxiliary table only refers to collections (for is_in_collection)
+              const workingTableName = "auxiliary" == tableName ? "collection" : tableName;
+              return this.subtypeList[workingTableName].filter(item => item.inUse);
             },
 
             showRestrictionList: function (tableName) {
               return this.columnList.some((column) => tableName == column.table_name);
             },
 
-            getRestrictionColumnList: function (columnRank) {
-              if (angular.isUndefined(columnRank)) return [];
+            buildAuxiliaryRestrictionList: function () {
+              this.tableRestrictionList.auxiliary.list = [
+                { key: undefined, title: "Select a new auxiliary participant restriction..." },
 
-              var type = this.columnList.findByProperty("rank", columnRank).type;
-              var test = this.columnList.reduce((list, item) => {
-                if (type === item.type && angular.isDefined(item.subtype)) {
-                  list.push(this.subtypeList[type].findByProperty("key", item.subtype));
-                }
-                return list;
-              }, []);
-
-              return test;
+                // build the list based on the current auxiliary column list
+                ... this.columnList.filter(item => "auxiliary" == item.table_name).map(item => ({
+                  key: item.column.key,
+                  title: "is_in_collection" == item.column.key ? "In Collection" : item.column.title,
+                  type: "boolean",
+                  enumList: [
+                    { value: true, name: "Yes" },
+                    { value: false, name: "No" },
+                  ],
+                  required: true,
+                }))
+              ];
             },
 
             // define functions which populate the restriction lists
@@ -1030,10 +967,12 @@ cenozoApp.defineModule({
                 restrictionType.promise = load();
               }
 
+              if ("auxiliary" == tableName) this.buildAuxiliaryRestrictionList();
+
               await restrictionType.promise;
             },
 
-            processMetadata: async function (subject) {
+            prepareTableColumns: async function (subject) {
               await this.modelList[subject].metadata.getPromise();
 
               var ignoreColumnList = ["address_id", "alternate_id", "participant_id", "preferred_site_id"];
@@ -1140,23 +1079,21 @@ cenozoApp.defineModule({
 
           async function init(object) {
             var promiseList = [
-              object.processMetadata("participant"),
-              object.processMetadata("participant_identifier"),
-              object.processMetadata("site"),
-              object.processMetadata("address"),
-              object.processMetadata("phone"),
-              object.processMetadata("collection"),
-              object.processMetadata("consent"),
-              object.processMetadata("event"),
-              object.processMetadata("hin"),
-              object.processMetadata("hold"),
-              object.processMetadata("proxy"),
-              object.processMetadata("stratum"),
-              object.processMetadata("study"),
-              object.processMetadata("trace"),
+              object.prepareTableColumns("participant"),
+              object.prepareTableColumns("participant_identifier"),
+              object.prepareTableColumns("site"),
+              object.prepareTableColumns("address"),
+              object.prepareTableColumns("phone"),
+              object.prepareTableColumns("consent"),
+              object.prepareTableColumns("event"),
+              object.prepareTableColumns("hin"),
+              object.prepareTableColumns("hold"),
+              object.prepareTableColumns("proxy"),
+              object.prepareTableColumns("stratum"),
+              object.prepareTableColumns("study"),
+              object.prepareTableColumns("trace"),
             ];
-            if (interviewModule)
-              promiseList.push(object.processMetadata("interview"));
+            if (interviewModule) promiseList.push(object.prepareTableColumns("interview"));
 
             await Promise.all(promiseList);
 

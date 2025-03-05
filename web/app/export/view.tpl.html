@@ -1,9 +1,11 @@
 <cn-record-view model="model"></cn-record-view>
 <cn-list-selector model="model"></cn-list-selector>
-<div ng-show="child.subject.snake == model.viewModel.tab"
-     ng-repeat="child in model.viewModel.getChildList()"
-     ng-if="'column' != child.subject.snake && 'restriction' != child.subject.snake"
-     class="vertical-spacer">
+<div
+  ng-show="child.subject.snake == model.viewModel.tab"
+  ng-repeat="child in model.viewModel.getChildList()"
+  ng-if="'column' != child.subject.snake && 'restriction' != child.subject.snake"
+  class="vertical-spacer"
+>
   <cn-record-list model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
 <div ng-show="'column' == model.viewModel.tab" class="record-view rounded vertical-spacer">
@@ -40,61 +42,66 @@
       <p ng-if="0 == model.viewModel.columnList.length">
         No columns selected.
       </p>
-      <div class="row vertical-spacer" ng-repeat="item in model.viewModel.columnList">
+      <div class="row vertical-spacer" style="line-height: 33px;" ng-repeat="item in model.viewModel.columnList">
         <div class="col-sm-2">
-          <select class="form-control"
-                  ng-model="item.rank"
-                  ng-change="model.viewModel.moveColumn( $index, item.rank-1 )"
-                  ng-disabled="item.isUpdating"
-                  ng-options="rank for rank in [] | cnRange:1:model.viewModel.columnList.length">
-          </select>
+          <select
+            class="form-control"
+            ng-model="item.rank"
+            ng-change="model.viewModel.moveColumn( $index, item.rank-1 )"
+            ng-disabled="item.isUpdating"
+            ng-options="rank for rank in [] | cnRange:1:model.viewModel.columnList.length"
+          ></select>
         </div>
-        <div class="col-sm-2 text-center"><strong>{{ item.table_title }}</strong></div>
+        <div class="col-sm-2 text-center"><strong>{{ model.viewModel.getTableTitle(item.table_name) }}</strong></div>
         <div class="col-sm-2 text-center"><strong>{{ item.column.title }}</strong></div>
         <div class="col-sm-4 col-slim-right">
-          <select class="form-control"
-                  ng-if="'auxiliary' != item.table_name && model.viewModel.subtypeList[item.table_name]"
-                  ng-model="item.subtype"
-                  ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
-                  ng-disabled="item.isUpdating"
-                  ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList[item.table_name]">
-          </select>
-          <select class="form-control"
-                  ng-if="'is_in_collection'==item.column.key"
-                  ng-model="item.subtype"
-                  ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
-                  ng-disabled="item.isUpdating"
-                  ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList.collection">
-          </select>
+          <select
+            class="form-control"
+            ng-if="'auxiliary' != item.table_name && model.viewModel.subtypeList[item.table_name]"
+            ng-model="item.subtype"
+            ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
+            ng-disabled="item.isUpdating"
+            ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList[item.table_name]"
+          ></select>
+          <select
+            class="form-control"
+            ng-if="'is_in_collection'==item.column.key"
+            ng-model="item.subtype"
+            ng-change="model.viewModel.updateColumn( item.id, 'subtype' )"
+            ng-disabled="item.isUpdating"
+            ng-options="obj.key as obj.name for obj in model.viewModel.subtypeList.collection"
+          ></select>
         </div>
         <div class="col-sm-2 col-slim-left">
           <div class="btn-group pull-right" style="white-space: nowrap;">
-            <button class="btn"
-                    uib-tooltip="Whether to include the column in the generated file."
-                    tooltip-placement="left"
-                    ng-click="model.viewModel.toggleInclude( $index )">
-              <i class="glyphicon"
-                 ng-class="item.include ? 'glyphicon-eye-open' : 'glyphicon-eye-close'"></i>
+            <button
+              class="btn"
+              uib-tooltip="Whether to include the column in the generated file."
+              tooltip-placement="left"
+              ng-click="model.viewModel.toggleInclude( $index )"
+            >
+              <i class="glyphicon" ng-class="item.include ? 'glyphicon-eye-open' : 'glyphicon-eye-close'"></i>
             </button>
-            <button class="btn btn-danger"
-                    uib-tooltip="Remove Column"
-                    tooltip-placement="left"
-                    ng-click="model.viewModel.removeColumn( $index )">
-              <i class="glyphicon glyphicon-remove"></i>
-            </button>
+            <button
+              class="btn btn-danger"
+              uib-tooltip="Remove Column"
+              tooltip-placement="left"
+              ng-click="model.viewModel.removeColumn( $index )"
+            ><i class="glyphicon glyphicon-remove"></i></button>
           </div>
         </div>
       </div>
       <hr />
       <div class="vertical-spacer" style="margin-bottom: 1em;">
         <span ng-repeat="(tableName, column) in model.viewModel.tableColumnList">
-          <select class="form-control"
-                  ng-disabled="column.isLoading"
-                  ng-model="model.viewModel.newColumn[tableName]"
-                  ng-change="model.viewModel.addColumn( tableName, model.viewModel.newColumn[tableName] )"
-                  ng-disabled="item.isUpdating"
-                  ng-options="o.key as o.title for o in column.list">
-          </select>
+          <select
+            class="form-control"
+            ng-disabled="column.isLoading"
+            ng-model="model.viewModel.newColumn[tableName]"
+            ng-change="model.viewModel.addColumn( tableName, model.viewModel.newColumn[tableName] )"
+            ng-disabled="item.isUpdating"
+            ng-options="o.key as o.title for o in column.list"
+          ></select>
         </span>
       </div>
     </div>
@@ -133,89 +140,123 @@
       <p ng-if="0 == model.viewModel.restrictionList.length">
         No restrictions selected.
       </p>
-      <div class="row vertical-spacer" ng-repeat="item in model.viewModel.restrictionList">
+      <div
+        class="row vertical-spacer"
+        style="line-height: 20px;"
+        ng-repeat="item in model.viewModel.restrictionList"
+      >
         <hr ng-if="0 < $index && 'or' == item.logic"/>
-        <div class="col-sm-2">
-          <select class="form-control"
-                  ng-model="item.logic"
-                  ng-if="0 < $index"
-                  ng-disabled="item.isUpdating"
-                  ng-change="model.viewModel.updateRestriction( item.id, 'logic' )">
+        <div class="col-sm-1">
+          <select
+            class="form-control"
+            ng-model="item.logic"
+            ng-if="0 < $index"
+            ng-disabled="item.isUpdating"
+            ng-change="model.viewModel.updateRestriction( item.id, 'logic' )"
+          >
             <option value="and">AND</option>
             <option value="or">OR</option>
           </select>
         </div>
-        <label class="col-sm-2 control-label text-center" ng-if="null == item.subtype">
-          {{ item.table_title }}
+        <label
+          ng-if="null == item.subtype || 'is_in_collection' == item.key"
+          class="col-sm-6 text-right"
+        >
+          {{ model.viewModel.getTableTitle(item.table_name) + " " + item.restriction.title }}
         </label>
-        <div class="col-sm-2 col-slim" ng-if="null != item.subtype">
-          <select class="form-control pull-right"
-                  ng-model="item.subtype"
-                  ng-change="model.viewModel.selectRestrictionColumn( $index )"
-                  ng-options="o.key as o.name for o in model.viewModel.getSubtypeList( item.table_name )">
-          </select>
+        <label
+          ng-if="null != item.subtype && 'is_in_collection' != item.key"
+          class="col-sm-1 text-center"
+        >
+          {{ "auxiliary" == item.table_name ? 'Collection' : model.viewModel.getTableTitle(item.table_name) }}
+        </label>
+        <div
+          ng-if="null != item.subtype && 'is_in_collection' != item.key"
+          class="col-sm-3 col-slim"
+        >
+          <select
+            class="form-control pull-right"
+            ng-model="item.subtype"
+            ng-change="model.viewModel.selectRestrictionColumn( $index )"
+            ng-options="o.key as o.name for o in model.viewModel.getSubtypeList( item.table_name )"
+          ></select>
         </div>
-        <label class="col-sm-1 control-label text-center">{{ item.restriction.title }}</label>
-        <div class="col-sm-2">
-          <select class="form-control"
-                  ng-model="item.test"
-                  ng-disabled="item.isUpdating"
-                  ng-change="model.viewModel.updateRestriction( item.id, 'test' )">
+        <label
+          ng-if="null != item.subtype && 'is_in_collection' != item.key"
+          class="col-sm-2 text-right"
+        >{{ 'is_in_collection' == item.column_name ? 'Has Participant' : item.restriction.title }}</label>
+        <div class="col-sm-1">
+          <select
+            class="form-control"
+            ng-model="item.test"
+            ng-disabled="item.isUpdating"
+            ng-change="model.viewModel.updateRestriction( item.id, 'test' )"
+          >
             <option value="&lt;=&gt;">is</option>
             <option value="&lt;&gt;">is not</option>
-            <option ng-if="'datetime' == (item.restriction.type|cnRestrictType) && null != item.value"
-                    value="&lt;">before</option>
-            <option ng-if="'datetime' == (item.restriction.type|cnRestrictType) && null != item.value"
-                    value="&gt;">after</option>
+            <option
+              ng-if="'datetime' == (item.restriction.type|cnRestrictType) && null != item.value"
+              value="&lt;"
+            >before</option>
+            <option
+              ng-if="'datetime' == (item.restriction.type|cnRestrictType) && null != item.value"
+              value="&gt;"
+            >after</option>
             <option value="like" ng-if="'string' == item.restriction.type">like</option>
             <option value="not like" ng-if="'string' == item.restriction.type">not like</option>
           </select>
         </div>
-        <div class="col-sm-4 col-slim-right">
-          <input ng-if="'string' == item.restriction.type"
-                 class="form-control"
-                 type="text"
-                 autocomplete="off"
-                 ng-model="item.value"
-                 ng-disabled="item.isUpdating"
-                 cn-change="model.viewModel.updateRestriction( item.id, 'value' )"
-                 maxlength="255"></input>
-          <input ng-if="'dob' == item.restriction.type ||
-                        'dod' == item.restriction.type ||
-                        'datetime' == item.restriction.type"
-                 class="form-control"
-                 type="text"
-                 ng-click="model.viewModel.selectDatetime( $index )"
-                 ng-model="item.formattedValue"
-                 ng-disabled="item.isUpdating"
-                 onkeydown="return false"></input>
-          <select ng-if="'application' == item.restriction.type ||
-                         'boolean' == item.restriction.type ||
-                         'enum' == item.restriction.type"
-                  class="form-control"
-                  ng-model="item.value"
-                  ng-disabled="item.isUpdating"
-                  ng-change="model.viewModel.updateRestriction( item.id, 'value' )"
-                  ng-options="o.value as o.name for o in item.restriction.enumList"></select>
+        <div class="col-sm-3 col-slim-right">
+          <input
+            ng-if="'string' == item.restriction.type"
+            class="form-control"
+            type="text"
+            autocomplete="off"
+            ng-model="item.value"
+            ng-disabled="item.isUpdating"
+            cn-change="model.viewModel.updateRestriction( item.id, 'value' )"
+            maxlength="255"
+          ></input>
+          <input
+            ng-if="['dob', 'dod', 'datetime'].includes(item.restriction.type)"
+            class="form-control"
+            type="text"
+            ng-click="model.viewModel.selectDatetime( $index )"
+            ng-model="item.formattedValue"
+            ng-disabled="item.isUpdating"
+            onkeydown="return false"
+          ></input>
+          <select
+            ng-if="['application', 'boolean', 'enum'].includes(item.restriction.type)"
+            class="form-control"
+            ng-model="item.value"
+            ng-disabled="item.isUpdating"
+            ng-change="model.viewModel.updateRestriction( item.id, 'value' )"
+            ng-options="o.value as o.name for o in item.restriction.enumList"
+          ></select>
         </div>
         <div class="col-sm-1">
-          <button class="btn btn-danger pull-right"
-                  uib-tooltip="Remove Restriction"
-                  tooltip-placement="left"
-                  ng-click="model.viewModel.removeRestriction( $index )">
-            <i class="glyphicon glyphicon-remove"></i>
-          </button>
+          <button
+            class="btn btn-danger pull-right"
+            uib-tooltip="Remove Restriction"
+            tooltip-placement="left"
+            ng-click="model.viewModel.removeRestriction( $index )"
+          ><i class="glyphicon glyphicon-remove"></i></button>
         </div>
       </div>
       <hr />
       <div class="vertical-spacer" style="margin-bottom: 1em;">
-        <div ng-repeat="(tableName, restriction) in model.viewModel.tableRestrictionList"
-             ng-if="model.viewModel.showRestrictionList( tableName )">
-          <select class="form-control"
-                  ng-disabled="restriction.isLoading"
-                  ng-model="model.viewModel.newRestriction"
-                  ng-change="model.viewModel.addRestriction( tableName, model.viewModel.newRestriction )"
-                  ng-options="o.key as o.title for o in restriction.list"></select>
+        <div
+          ng-repeat="(tableName, restriction) in model.viewModel.tableRestrictionList"
+          ng-if="model.viewModel.showRestrictionList( tableName )"
+        >
+          <select
+            class="form-control"
+            ng-disabled="restriction.isLoading"
+            ng-model="model.viewModel.newRestriction"
+            ng-change="model.viewModel.addRestriction( tableName, model.viewModel.newRestriction )"
+            ng-options="o.key as o.title for o in restriction.list"
+          ></select>
         </div>
       </div>
     </div>
