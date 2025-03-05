@@ -2,6 +2,8 @@
 -- We can get away with not implementing the more complicated conversion where more than one OR restriction exists
 -- because (fortunately) none existed in production at the time this patch was run
 
+SELECT "Modifying collection/is-in-collection columns and restrictions in exports" AS "";
+
 -- delete all table=collection restrictions
 DELETE FROM export_restriction WHERE table_name = "collection";
 
