@@ -235,4 +235,20 @@ class user extends record
   {
     return new \DateTimeZone( $this->timezone );
   }
+
+  public function update_ip_address( $ip )
+  {
+    if( $ip )
+    {
+      $util_class_name = lib::get_class_name( 'util' );
+      $sql = sprintf( 
+        'INSERT INTO user_ip_address( user_id, ip_address, datetime ) '.
+        'VALUES ( %s, %s, UTC_TIMESTAMP() ) '.
+        'ON DUPLICATE KEY UPDATE datetime = VALUES( datetime )',
+        static::db()->format_string( $this->id ),
+        static::db()->format_string( $ip )
+      );
+      static::db()->execute( $sql );
+    }
+  }
 }

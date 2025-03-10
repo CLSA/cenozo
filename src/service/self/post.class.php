@@ -40,6 +40,7 @@ class post extends \cenozo\service\service
    */
   protected function execute()
   {
+    $user_ip_address = lib::get_class_name( 'database\user_ip_address' );
     $session = lib::create( 'business\session' );
 
     $result = false;
@@ -50,7 +51,13 @@ class post extends \cenozo\service\service
     if( $session->check_authorization_header( $user, $pass ) )
     {
       $result = $session->login( $user );
-      if( $result ) $session->set_no_password( $pass );
+      if( $result )
+      {
+        $session->set_no_password( $pass );
+        log::debug( $_SERVER );
+        if( array_key_exists( 'REMOTE_ADDR', $_SERVER ) )
+          $session->get_user()->update_ip_address( $_SERVER['REMOTE_ADDR'] );
+      }
     }
 
     $this->status->set_code( $result ? 201 : 202 );

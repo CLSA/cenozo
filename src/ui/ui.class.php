@@ -113,7 +113,7 @@ class ui extends \cenozo\base_object
       'overview', 'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region',
       'region_site', 'relation', 'relation_type', 'role', 'report', 'report_restriction', 'report_schedule',
       'report_type', 'search_result', 'site', 'source', 'stratum', 'study', 'study_phase', 'system_message',
-      'trace', 'trace_type', 'user', 'writelog'
+      'trace', 'trace_type', 'user', 'user_ip_address', 'writelog'
     ];
 
     if( $setting_manager->get_setting( 'module', 'equipment' ) )
@@ -466,6 +466,7 @@ class ui extends \cenozo\base_object
         {
           $module->add_child( 'access' );
           $module->add_child( 'activity' );
+          $module->add_child( 'user_ip_address' );
           $module->add_child( 'failed_login' );
           $module->add_choose( 'language' );
         }
