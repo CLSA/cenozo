@@ -54,7 +54,6 @@ class post extends \cenozo\service\service
       if( $result )
       {
         $session->set_no_password( $pass );
-        log::debug( $_SERVER );
         if( array_key_exists( 'REMOTE_ADDR', $_SERVER ) )
           $session->get_user()->update_ip_address( $_SERVER['REMOTE_ADDR'] );
       }
