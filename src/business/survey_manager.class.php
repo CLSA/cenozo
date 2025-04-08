@@ -175,8 +175,11 @@ class survey_manager extends \cenozo\singleton
       {
         $delink = false;
         $option = 'default';
-        if( 'YES' == $obj->SHOW_OPTIONS )
-        {
+        if(
+          property_exists( $obj, 'SHOW_OPTIONS' ) &&
+          property_exists( $obj, 'SHOW_OPTION' ) &&
+          'YES' == $obj->SHOW_OPTIONS
+        ) {
           if( preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
           {
             $delink_options = array(
@@ -190,7 +193,7 @@ class survey_manager extends \cenozo\singleton
         $insert_record[] = sprintf(
           '( %s, %s, %s, %s, %d )',
           $db->format_string( $obj->uid ),
-          $db->format_string( $obj->SELECT_ALTERNATE ),
+          $db->format_string( property_exists( $obj, 'SELECT_ALTERNATE' ) ? $obj->SELECT_ALTERNATE : NULL ),
           $db->format_string( $option ),
           $db->format_string( property_exists( $obj, $hin_name ) ? $obj->$hin_name : NULL ),
           $db->format_string( $delink ),
