@@ -40,15 +40,52 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
     $this->add_application_identifier_columns( $select, $modifier );
-    $select->add_column( 'honorific', 'Honorific' );
-    $select->add_column( 'first_name', 'First Name' );
-    $select->add_column( 'last_name', 'Last Name' );
-    $select->add_column( 'address.address1', 'Address1', false );
-    $select->add_column( 'address.address2', 'Address2', false );
-    $select->add_column( 'address.city', 'City', false );
-    $select->add_column( 'region.abbreviation', 'Province/State', false );
-    $select->add_column( 'address.postcode', 'Postcode', false );
-    $select->add_column( 'country.name', 'Country', false );
+
+    if( $o_and_d )
+    {
+      // display the participant or the decision maker's details
+      $column_list = [
+        ['participant.honorific', 'NULL', 'Honorific'],
+        ['participant.first_name', 'dm.first_name', 'First Name'],
+        ['participant.last_name', 'dm.last_name', 'Last Name'],
+        ['address.address1', 'dm.address1', 'Address1'],
+        ['address.address2', 'dm.address2', 'Address2'],
+        ['address.city', 'dm.city', 'City'],
+        ['region.abbreviation', 'dm.region', 'Province/State'],
+        ['address.postcode', 'dm.postcode', 'Postcode'],
+        ['country.name', 'dm.country', 'Country'],
+      ];
+      foreach( $column_list as $column )
+      {
+        $select->add_column(
+          sprintf(
+            'IF( '.
+              'hold.id IS NULL AND option_and_delink.alternate IS NULL, '.
+              // show the participants details when not 3rd party or alternate
+              '%s, '.
+              // otherwise only show DMs (when there is only ONE DM available)
+              'IF( "DM" = option_and_delink.alternate, %s, NULL ) '.
+            ')',
+            $column[0],
+            $column[1],
+          ),
+          $column[2],
+          false
+        );
+      }
+    }
+    else
+    {
+      $select->add_column( 'honorific', 'Honorific' );
+      $select->add_column( 'first_name', 'First Name' );
+      $select->add_column( 'last_name', 'Last Name' );
+      $select->add_column( 'address.address1', 'Address1', false );
+      $select->add_column( 'address.address2', 'Address2', false );
+      $select->add_column( 'address.city', 'City', false );
+      $select->add_column( 'region.abbreviation', 'Province/State', false );
+      $select->add_column( 'address.postcode', 'Postcode', false );
+      $select->add_column( 'country.name', 'Country', false );
+    }
 
     if( $o_and_d )
     {
@@ -57,7 +94,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
       $select->add_column( 'IFNULL( option_and_delink.hin, "" )', 'HIN', false );
     }
 
-    $modifier->order( 'IF( hold.id IS NULL, "no", "yes" )' );
+    $modifier->order_desc( 'hold.id IS NULL AND option_and_delink.alternate IS NULL' );
     $modifier->order( 'uid' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
@@ -140,12 +177,59 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->or_where( 'not_mailed_event.datetime', '<', 'consent.datetime', false );
     $modifier->where_bracket( false );
 
-    // add the special withdraw option column using a left join
     if( $o_and_d )
     {
+      // add the special withdraw option column using a left join
       $survey_manager = lib::create( 'business\survey_manager' );
       $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
+
+      // join to the DM (proxy) if the participant has exactly one
+      $dm_sel = lib::create( 'database\select' );
+      $dm_sel->from( 'participant' );
+      $dm_sel->add_table_column( 'alternate', 'participant_id' );
+      $dm_sel->add_table_column( 'alternate', 'first_name' );
+      $dm_sel->add_table_column( 'alternate', 'last_name' );
+      $dm_sel->add_table_column( 'address', 'address1' );
+      $dm_sel->add_table_column( 'address', 'address2' );
+      $dm_sel->add_table_column( 'address', 'city' );
+      $dm_sel->add_table_column( 'region', 'abbreviation', 'region' );
+      $dm_sel->add_table_column( 'address', 'postcode' );
+      $dm_sel->add_table_column( 'country', 'name', 'country' );
+
+      $dm_mod = lib::create( 'database\modifier' );
+      $dm_mod->join( 'alternate', 'participant.id', 'alternate.participant_id' );
+      $dm_mod->join(
+        'alternate_has_alternate_type',
+        'alternate.id',
+        'alternate_has_alternate_type.alternate_id'
+      );
+      $dm_mod->join(
+        'alternate_type',
+        'alternate_has_alternate_type.alternate_type_id',
+        'alternate_type.id'
+      );
+      
+      $dm_mod->join( 'alternate_first_address', 'alternate.id', 'alternate_first_address.alternate_id' );
+      $dm_mod->join( 'address', 'alternate_first_address.address_id', 'address.id' );
+      $dm_mod->join( 'region', 'address.region_id', 'region.id' );
+      $dm_mod->join( 'country', 'region.country_id', 'country.id' );
+
+      $dm_mod->where( 'alternate_type.name', '=', 'proxy' );
+      $dm_mod->group( 'participant.id' );
+      $dm_mod->having( 'COUNT(*)', '=', 1 );
+
+      $participant_class_name::db()->execute( sprintf(
+        'CREATE TEMPORARY TABLE dm %s %s',
+        $dm_sel->get_sql(),
+        $dm_mod->get_sql()
+      ) );
+
+      $participant_class_name::db()->execute(
+        'ALTER TABLE dm ADD UNIQUE KEY uq_participant_id (participant_id)'
+      );
+
+      $modifier->left_join( 'dm', 'participant.id', 'dm.participant_id' );
     }
 
     // set up requirements
