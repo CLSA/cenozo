@@ -21,21 +21,15 @@ class withdraw_mailout extends \cenozo\business\report\base_report
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
-    $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $o_and_d = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
     $db_participation_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
-    $db_withdrawn_3rd_party_hold_type = $hold_type_class_name::get_unique_record(
-      array( 'type', 'name' ),
-      array( 'final', 'Withdrawn by 3rd party' )
-    );
 
     $select = lib::create( 'database\select' );
     $modifier = lib::create( 'database\modifier' );
 
     $select->from( 'participant' );
-    $select->add_column( 'IF( hold.id IS NULL, "no", "yes" )', '3rd Party', false );
     if( $o_and_d ) $select->add_column( 'IFNULL( option_and_delink.alternate, "" )', 'Alternate', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
@@ -60,10 +54,9 @@ class withdraw_mailout extends \cenozo\business\report\base_report
         $select->add_column(
           sprintf(
             'IF( '.
-              'hold.id IS NULL AND option_and_delink.alternate IS NULL, '.
-              // show the participants details when not 3rd party or alternate
+              // only show if there is no alternate and the script was answered
+              'option_and_delink.alternate IS NULL AND option_and_delink.uid IS NOT NULL, '.
               '%s, '.
-              // otherwise only show DMs (when there is only ONE DM available)
               'IF( "DM" = option_and_delink.alternate, %s, NULL ) '.
             ')',
             $column[0],
@@ -94,7 +87,13 @@ class withdraw_mailout extends \cenozo\business\report\base_report
       $select->add_column( 'IFNULL( option_and_delink.hin, "" )', 'HIN', false );
     }
 
-    $modifier->order_desc( 'hold.id IS NULL AND option_and_delink.alternate IS NULL' );
+    $modifier->order_desc(
+      'option_and_delink.uid IS NOT NULL AND '.
+      '( '.
+        'option_and_delink.alternate IS NULL OR '.
+        '("DM" = option_and_delink.alternate AND dm.participant_id IS NOT NULL) '.
+      ')'
+    );
     $modifier->order( 'uid' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
@@ -102,6 +101,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->join( 'region', 'address.region_id', 'region.id' );
     $modifier->join( 'country', 'region.country_id', 'country.id' );
     $modifier->where( 'exclusion_id', '=', NULL );
+    $modifier->where( 'IFNULL( consent.accept, true )', '=', false );
 
     // make sure the current consent is negative or the participant has been withdrawn by a 3rd party
     $join_mod = lib::create( 'database\modifier' );
@@ -109,17 +109,6 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $join_mod->where( 'participant_last_consent.consent_type_id', '=', $db_participation_consent_type->id );
     $modifier->join_modifier( 'participant_last_consent', $join_mod );
     $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
-
-    $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
-    $join_mod = lib::create( 'database\modifier' );
-    $join_mod->where( 'participant_last_hold.hold_id', '=', 'hold.id', false );
-    $join_mod->where( 'hold.hold_type_id', '=', $db_withdrawn_3rd_party_hold_type->id );
-    $modifier->join_modifier( 'hold', $join_mod, 'left' );
-
-    $modifier->where_bracket( true );
-    $modifier->where( 'IFNULL( consent.accept, true )', '=', false );
-    $modifier->or_where( 'hold.id', '!=', NULL );
-    $modifier->where_bracket( false );
 
     // join to the participant's last mailed event
     $modifier->join(
