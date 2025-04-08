@@ -146,6 +146,7 @@ class survey_manager extends \cenozo\singleton
     $util_class_name = lib::get_class_name( 'util' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
+    $db = $participant_class_name::db();
     $db_pine_app = lib::create( 'business\session' )->get_pine_application();
     $cenozo_manager = lib::create( 'business\cenozo_manager', $db_pine_app );
     $modifier_obj = array( 'limit' => 1000000 );
@@ -155,9 +156,10 @@ class survey_manager extends \cenozo\singleton
     ) );
 
     // loop through the data and create a temporary table containing the option and delink details
-    $participant_class_name::db()->execute(
+    $db->execute(
       'CREATE TEMPORARY TABLE option_and_delink( '.
         'uid VARCHAR(45) NOT NULL, '.
+        'alternate VARCHAR(45) NULL DEFAULT NULL, '.
         'option CHAR(7) NOT NULL, '.
         'hin TINYINT(1) NULL DEFAULT NULL, '.
         'delink TINYINT(1) NOT NULL, '.
@@ -186,11 +188,12 @@ class survey_manager extends \cenozo\singleton
         }
 
         $insert_record[] = sprintf(
-          '( "%s", "%s", %s, %d )',
-          $obj->uid,
-          $option,
-          property_exists( $obj, $hin_name ) ? sprintf( '%d', $obj->$hin_name ) : 'NULL',
-          $delink
+          '( %s, %s, %s, %s, %d )',
+          $db->format_string( $obj->uid ),
+          $db->format_string( $obj->SELECT_ALTERNATE ),
+          $db->format_string( $option ),
+          $db->format_string( property_exists( $obj, $hin_name ) ? $obj->$hin_name : NULL ),
+          $db->format_string( $delink ),
         );
       }
       

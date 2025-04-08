@@ -23,6 +23,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $consent_type_class_name = lib::get_class_name( 'database\consent_type' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $o_and_d = $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' );
 
     $db_participation_consent_type = $consent_type_class_name::get_unique_record( 'name', 'participation' );
     $db_withdrawn_3rd_party_hold_type = $hold_type_class_name::get_unique_record(
@@ -35,6 +36,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
 
     $select->from( 'participant' );
     $select->add_column( 'IF( hold.id IS NULL, "no", "yes" )', '3rd Party', false );
+    if( $o_and_d ) $select->add_column( 'IFNULL( option_and_delink.alternate, "" )', 'Alternate', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
     $this->add_application_identifier_columns( $select, $modifier );
@@ -47,6 +49,13 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $select->add_column( 'region.abbreviation', 'Province/State', false );
     $select->add_column( 'address.postcode', 'Postcode', false );
     $select->add_column( 'country.name', 'Country', false );
+
+    if( $o_and_d )
+    {
+      $select->add_column( 'IF( option_and_delink.uid IS NULL, "no", "yes" )', 'Script', false );
+      $select->add_column( 'IFNULL( option_and_delink.option, "" )', 'Option', false );
+      $select->add_column( 'IFNULL( option_and_delink.hin, "" )', 'HIN', false );
+    }
 
     $modifier->order( 'IF( hold.id IS NULL, "no", "yes" )' );
     $modifier->order( 'uid' );
@@ -132,14 +141,11 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     $modifier->where_bracket( false );
 
     // add the special withdraw option column using a left join
-    if( $setting_manager->get_setting( 'general', 'withdraw_option_and_delink' ) )
-    { 
+    if( $o_and_d )
+    {
       $survey_manager = lib::create( 'business\survey_manager' );
       $survey_manager->create_option_and_delink_table();
       $modifier->left_join( 'option_and_delink', 'participant.uid', 'option_and_delink.uid' );
-      $select->add_column( 'IF( option_and_delink.uid IS NULL, "no", "yes" )', 'Script', false );
-      $select->add_column( 'IFNULL( option_and_delink.option, "" )', 'Option', false );
-      $select->add_column( 'IFNULL( option_and_delink.hin, "" )', 'HIN', false );
     }
 
     // set up requirements
