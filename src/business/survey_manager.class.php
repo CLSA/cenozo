@@ -177,7 +177,7 @@ class survey_manager extends \cenozo\singleton
         $option = 'default';
         if(
           property_exists( $obj, 'SHOW_OPTIONS' ) &&
-          property_exists( $obj, 'SHOW_OPTION' ) &&
+          property_exists( $obj, 'SELECT_OPTION' ) &&
           'YES' == $obj->SHOW_OPTIONS
         ) {
           if( preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
