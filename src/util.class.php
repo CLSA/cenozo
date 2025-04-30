@@ -296,6 +296,9 @@ class util
     $dogwood_manager = lib::create( 'business\dogwood_manager' );
     $db_user = $user_class_name::get_unique_record( 'name', $username );
 
+    // ignore any usernames containing non alphanumeric or underscore characters
+    if ( preg_match( '/[^a-zA-Z0-9_]/', $username ) ) return false;
+
     $valid = NULL;
     if( $dogwood_manager->get_enabled() )
     {

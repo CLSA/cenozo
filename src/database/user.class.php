@@ -18,12 +18,23 @@ class user extends record
    */
   public function __set( $column_name, $value )
   {
-    if( $column_name == 'password' )
+    if( 'name' == $column_name )
+    {
+      // only allow alphanum and underscore characters
+      if( preg_match( '/[^a-zA-Z0-9_]/', $value ) )
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Tried to set user name to invalid string "%s"', $value ),
+          __METHOD__
+        );
+      }
+    }
+    else if( 'password' == $column_name )
     {
       $value = password_hash( $value, PASSWORD_BCRYPT );
       parent::__set( 'password_type', 'bcrypt' );
     }
-    else if( $column_name == 'hashed_password' )
+    else if( 'hashed_password' == $column_name )
     {
       // the password is already hashed, so don't hash it again
       $column_name = 'password';
