@@ -61,17 +61,29 @@ class patch extends \cenozo\service\service
           if( array_key_exists( 'timezone', $user_array ) )
           {
             $timezone = $user_array['timezone'];
-            if( is_object( $timezone ) && property_exists( $timezone, 'participant_id' ) )
+            if( is_object( $timezone ) )
             {
-              $db_participant = lib::create( 'database\participant', $timezone->participant_id );
-              $db_first_address = $db_participant->get_first_address();
-              if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
-            }
-            else if( is_object( $timezone ) && property_exists( $timezone, 'alternate_id' ) )
-            {
-              $db_alternate = lib::create( 'database\alternate', $timezone->alternate_id );
-              $db_first_address = $db_alternate->get_first_address();
-              if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+              if( property_exists( $timezone, 'address_id' ) )
+              {
+                $db_address = lib::create( 'database\address', $timezone->address_id );
+                if( is_null( $db_address ) ) $this->status->set_code( 409 );
+              }
+              else if( property_exists( $timezone, 'participant_id' ) )
+              {
+                $db_participant = lib::create( 'database\participant', $timezone->participant_id );
+                $db_first_address = $db_participant->get_first_address();
+                if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+              }
+              else if( property_exists( $timezone, 'alternate_id' ) )
+              {
+                $db_alternate = lib::create( 'database\alternate', $timezone->alternate_id );
+                $db_first_address = $db_alternate->get_first_address();
+                if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
+              }
+              else
+              {
+                $this->status->set_code( 400 );
+              }
             }
           }
         }
