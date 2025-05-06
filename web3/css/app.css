@@ -1,0 +1,10 @@
+.loading {
+  background: url( ../img/loading.gif );
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.background {
+  background-image: url('../img/background.gif');
+  background-repeat: repeat;
+}

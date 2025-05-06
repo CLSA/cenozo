@@ -1,0 +1,111 @@
+import PN_common from "../common.js"
+import PN_element from "../element.js"
+import PN_session from "../session.js"
+
+import { PN_base_object } from "../base_object.js"
+
+export class PN_home_model extends PN_base_object {
+  constructor() {
+    super();
+    this.subject = "home";
+  }
+
+  get_text(type) {
+    const data = PN_session.data;
+    if ("version" == type) {
+      return `${data.application.version} build ${data.application.build}`;
+    }
+
+    if ("user_full_name" == type) {
+      return `${data.user.first_name} ${data.user.last_name}`;
+    }
+
+    if ("role" == type) {
+      return data.role.name;
+    }
+
+    if ("site" == type) {
+      return data.site.name;
+    }
+
+    if ("last_access_start" == type) {
+      return moment(data.user.last_activity.start_datetime).format(PN_common.get_datetime_format("datetime"));
+    }
+
+    if ("last_access_end" == type) {
+      return moment(data.user.last_activity.end_datetime).format(PN_common.get_datetime_format("datetime"));
+    }
+
+    if ("uptime" == type) {
+      return data.application.uptime;
+    }
+
+    if ("active_users" == type) {
+      return data.application.active_users;
+    }
+
+    if ("logo_url" == type) {
+      return `${ROOT_URL}/img/branding.png`;
+    }
+
+    if ("logo_name" == type) {
+      return APP_TITLE;
+    }
+
+    return `ERROR_MISSING_TEXT(${type})`;
+  }
+
+  render() {
+    return PN_element.create(`
+      <div class="container-fluid bg-light p-4">
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="text-primary fs-4">Welcome to the Inspection Tracker</div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Version:</label>
+              <div class="col-sm-9 col-form-label">${this.get_text("version")}</div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Account:</label>
+              <div class="col-sm-9 col-form-label">${this.get_text("user_full_name")}</div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Role:</label>
+              <div class="col-sm-9 col-form-label">${this.get_text("role")}</div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Site:</label>
+              <div class="col-sm-9 col-form-label">${this.get_text("site")}</div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Last login:</label>
+              <div class="col-sm-9 col-form-label">
+                ${this.get_text("last_access_start")} until ${this.get_text("last_access_end")}
+              </div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Uptime:</label>
+              <div class="col-sm-9 col-form-label">${this.get_text("uptime")}</div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Active Users:</label>
+              <div class="col-sm-9 col-form-label">${this.get_text("active_users")}</div>
+            </div>
+
+            <!--
+            <div class="text-primary fs-4 mt-4">System Messages</div>
+            <div class="container-fluid">
+              TODO: render system messages
+            </div>
+            -->
+          </div>
+          <div class="col-sm-4">
+            <img src="${this.get_text("logo_url")}" alt: "${this.get_text("logo_name")}"></img>
+          </div>
+        </div>
+      </div>
+    `);
+  }
+
+  async run() {}
+}

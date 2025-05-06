@@ -1,0 +1,45 @@
+import PN_element from "../element.js"
+
+import { PN_base_object } from "../base_object.js"
+
+export class PN_error_model extends PN_base_object {
+
+  constructor(error) {
+    super();
+    this.subject = "error";
+    this.error = error;
+    this.status = null;
+  }
+
+  get_text(type) {
+    if ("name" == type) {
+      if (404 == this.status) return "Page not found (404)";
+      else if (this.error.name) return this.error.name;
+      return "Unknown error";
+    }
+
+    if ("message" == type) {
+      if (404 == this.status) return "Sorry, the page you requested does not exist.";
+      else if (this.error.message) return this.error.message;
+      return "Sorry, an unexpected error occurred."
+    }
+
+    return `ERROR_MISSING_TEXT(${type})`;
+  }
+
+  render() {
+    // report the error to the console
+    console.error(this.error);
+
+    const card_el = PN_element.create_card();
+    const header_el = card_el.querySelector(".card-header");
+    header_el.classList.add("bg-danger");
+    header_el.innerHTML = this.get_text("name");
+    card_el.querySelector(".card-body").innerHTML = this.get_text("message");
+    card_el.querySelector(".card-footer").classList.add("bg-danger");
+
+    return card_el;
+  }
+
+  async run() {}
+}
