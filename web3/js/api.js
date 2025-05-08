@@ -1,18 +1,18 @@
 // API
 
-import PN_common from "./common.js"
+import CN_common from "./common.js"
 
 export default {
   fetch: async function(path, params, options) {
     let url = `${ROOT_URL}/api/${path}`;
 
-    if (PN_common.is_object(params)) {
+    if (CN_common.is_object(params)) {
       // encode select and modifier parameters
       if (params.select) params.select = this.select(params.select);
       if (params.modifier) params.modifier = this.modifier(params.modifier);
       const url_search_params = new URLSearchParams(params);
       url += `?${url_search_params.toString()}`;
-    } else if (PN_common.is_string(params)) {
+    } else if (CN_common.is_string(params)) {
       url += `?${params}`;
     }
 
@@ -49,7 +49,7 @@ export default {
         }
 
         if (message) {
-          error.message = error.message ? `${error.message} ${message}` : PN_common.uc_first(message);
+          error.message = error.message ? `${error.message} ${message}` : CN_common.uc_first(message);
         }
         if (response.status) error.name += ` (${response.status})`;
       }
@@ -103,7 +103,7 @@ export default {
   shorten_select: function(select) {
     if (Array.isArray(select)) {
       return select.map( item => this.shorten_select(item) );
-    } else if (PN_common.is_object(select)) {
+    } else if (CN_common.is_object(select)) {
       let new_select = {};
       for (var key in select) {
         if (Object.prototype.hasOwnProperty.call(select, key)) {
@@ -131,7 +131,7 @@ export default {
   shorten_modifier: function(modifier) {
     if (Array.isArray(modifier)) {
       return modifier.map( item => this.shorten_modifier(item) );
-    } else if (PN_common.is_object(modifier)) {
+    } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};
       for (var key in modifier) {
         if (Object.prototype.hasOwnProperty.call(modifier, key)) {

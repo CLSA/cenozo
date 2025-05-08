@@ -1,17 +1,21 @@
-import PN_common from "../common.js"
-import PN_element from "../element.js"
-import PN_session from "../session.js"
+import CN_common from "../common.js"
+import CN_element from "../element.js"
+import CN_session from "../session.js"
 
-import { PN_base_object } from "../base_object.js"
+import { CN_base_object } from "../base_object.js"
 
-export class PN_home_model extends PN_base_object {
+export class CN_home_model extends CN_base_object {
   constructor() {
     super();
     this.subject = "home";
   }
 
   get_text(type) {
-    const data = PN_session.data;
+    const data = CN_session.data;
+    if ("title" == type) {
+      return data.application.title;
+    }
+
     if ("version" == type) {
       return `${data.application.version} build ${data.application.build}`;
     }
@@ -29,11 +33,11 @@ export class PN_home_model extends PN_base_object {
     }
 
     if ("last_access_start" == type) {
-      return moment(data.user.last_activity.start_datetime).format(PN_common.get_datetime_format("datetime"));
+      return moment(data.user.last_activity.start_datetime).format(CN_common.get_datetime_format("datetime"));
     }
 
     if ("last_access_end" == type) {
-      return moment(data.user.last_activity.end_datetime).format(PN_common.get_datetime_format("datetime"));
+      return moment(data.user.last_activity.end_datetime).format(CN_common.get_datetime_format("datetime"));
     }
 
     if ("uptime" == type) {
@@ -45,7 +49,7 @@ export class PN_home_model extends PN_base_object {
     }
 
     if ("logo_url" == type) {
-      return `${ROOT_URL}/img/branding.png`;
+      return `${CN_session.data.application.cenozo_url}/img/branding.png`;
     }
 
     if ("logo_name" == type) {
@@ -56,11 +60,11 @@ export class PN_home_model extends PN_base_object {
   }
 
   render() {
-    return PN_element.create(`
-      <div class="container-fluid bg-light p-4">
+    return CN_element.create(`
+      <div class="container-fluid bg-white p-4">
         <div class="row">
-          <div class="col-sm-8">
-            <div class="text-primary fs-4">Welcome to the Inspection Tracker</div>
+          <div class="col-sm-6">
+            <div class="text-primary fs-4">Welcome to ${this.get_text("title")}</div>
             <div class="row ms-3">
               <label class="col-sm-3 col-form-label fw-bold">Version:</label>
               <div class="col-sm-9 col-form-label">${this.get_text("version")}</div>
@@ -99,8 +103,8 @@ export class PN_home_model extends PN_base_object {
             </div>
             -->
           </div>
-          <div class="col-sm-4">
-            <img src="${this.get_text("logo_url")}" alt: "${this.get_text("logo_name")}"></img>
+          <div class="col-sm-6">
+            <img class="w-100" src="${this.get_text("logo_url")}" alt="${this.get_text("logo_name")}"></img>
           </div>
         </div>
       </div>

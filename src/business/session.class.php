@@ -530,4 +530,11 @@ class session extends \cenozo\singleton
    * @access private
    */
   private $no_activity = false;
+
+  /**
+   * Whether we're using version 3
+   * @var boolean
+   * @access public
+   */
+  public $version3 = false;
 }

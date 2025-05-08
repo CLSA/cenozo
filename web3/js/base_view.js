@@ -1,12 +1,12 @@
-import PN_api from "./api.js"
-import PN_common from "./common.js"
-import PN_element from "./element.js"
-import PN_event from "./event.js"
-import PN_session from "./session.js"
+import CN_api from "./api.js"
+import CN_common from "./common.js"
+import CN_element from "./element.js"
+import CN_event from "./event.js"
+import CN_session from "./session.js"
 
-import { PN_base_action } from "./base_action.js"
+import { CN_base_action } from "./base_action.js"
 
-export class PN_base_view extends PN_base_action {
+export class CN_base_view extends CN_base_action {
   #properties;
   #record = {};
   #tab = null;
@@ -22,7 +22,7 @@ export class PN_base_view extends PN_base_action {
     super(parent_model);
 
     // setup each property
-    this.#properties = PN_common.clone(properties);
+    this.#properties = CN_common.clone(properties);
     for (var prop_name in this.#properties) {
       const prop = this.#properties[prop_name];
       prop.id = [this.parent_model.unique_id, prop_name].join("-");
@@ -51,8 +51,8 @@ export class PN_base_view extends PN_base_action {
         prop.max = this.#properties.hasOwnProperty("max") ? this.#properties.max : null;
       }
 
-      if (!PN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
-      if (!PN_common.is_function(prop.is_hidden)) prop.is_hidden = () => false;
+      if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
+      if (!CN_common.is_function(prop.is_hidden)) prop.is_hidden = () => false;
     }
   }
 
@@ -65,15 +65,15 @@ export class PN_base_view extends PN_base_action {
     }
 
     if ("header" == type) {
-      return `${PN_common.uc_words(this.parent_model.name.singular)} Details`;
+      return `${CN_common.uc_words(this.parent_model.name.singular)} Details`;
     }
 
     if ("view_parent" == type) {
       const parent_module = this.parent_model.get_parent_module();
       return (
         parent_module ?
-        `View ${PN_common.uc_words(parent_module.model.name.singular)}` :
-        `View ${PN_common.uc_words(this.parent_model.name.singular)} List`
+        `View ${CN_common.uc_words(parent_module.model.name.singular)}` :
+        `View ${CN_common.uc_words(this.parent_model.name.singular)} List`
       );
     }
 
@@ -89,7 +89,7 @@ export class PN_base_view extends PN_base_action {
     for (var prop_name in this.#properties) {
       const prop = this.#properties[prop_name];
       if ("enum" == prop.type) {
-        if (PN_common.is_object(prop.enum) && prop.enum.path) {
+        if (CN_common.is_object(prop.enum) && prop.enum.path) {
           // populate the enum
           const params = {
             select: prop.enum.select ? prop.enum.select : { column: "name" },
@@ -98,7 +98,7 @@ export class PN_base_view extends PN_base_action {
 
           // create an async function and add it to the promise list so they can be run in parallel
           const get_enums = async () => {
-            const response = await PN_api.get(prop.enum.path, params);
+            const response = await CN_api.get(prop.enum.path, params);
             prop.enum.values = (await response.json()).reduce((list, record) => {
               list.push({ key: record.id, value: record.name });
               return list;
@@ -119,7 +119,7 @@ export class PN_base_view extends PN_base_action {
     await Promise.all(promise_list);
 
     // load the record
-    const response = await PN_api.get(
+    const response = await CN_api.get(
       `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`
     );
     this.#record = await response.json();
@@ -174,7 +174,7 @@ export class PN_base_view extends PN_base_action {
         if ("" == data[prop_name]) data[prop_name] = null;
       }
 
-      await PN_api.patch(
+      await CN_api.patch(
         `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`,
         data
       );
@@ -203,16 +203,16 @@ export class PN_base_view extends PN_base_action {
    */
   async on_delete() {
     // first confirm
-    const modal = PN_event.modal_confirm({
+    const modal = CN_event.modal_confirm({
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete this ${PN_common.uc_words(this.parent_model.name.singular)}?
+        Are you sure you wish to delete this ${CN_common.uc_words(this.parent_model.name.singular)}?
       `,
     });
 
     if (await modal.test()) {
-      await PN_api.delete(
+      await CN_api.delete(
         `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`
       );
 
@@ -250,7 +250,7 @@ export class PN_base_view extends PN_base_action {
         } else if ("enum" == prop.type) {
           control_el.innerHTML = module_prop.required ?  "" : `<option value="">(empty)</option>`;
           prop.enum.values.forEach(option => {
-            control_el.append(PN_element.create(`
+            control_el.append(CN_element.create(`
               <option value="${option.key}">${option.value}</option>
             `));
           });
@@ -280,13 +280,13 @@ export class PN_base_view extends PN_base_action {
   create_property_element(prop_name) {
     const module_prop = this.parent_model.module.properties[prop_name];
     const prop = this.#properties[prop_name];
-    const prop_el = PN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
+    const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    prop_el.append(PN_element.create_form_label({ for: prop.id, value: prop.title }));
+    prop_el.append(CN_element.create_form_label({ for: prop.id, value: prop.title }));
 
     if (!prop.placeholder_el) {
-      prop.placeholder_el = PN_element.create(`
+      prop.placeholder_el = CN_element.create(`
         <div name="placeholder" class="col-sm-9 placeholder-glow h-100">
           <input class="form-control placeholder" disabled></input>
         </div>
@@ -322,7 +322,7 @@ export class PN_base_view extends PN_base_action {
         params.max = prop.max;
       }
 
-      prop.element = PN_element.create_form_element(prop.type, params);
+      prop.element = CN_element.create_form_element(prop.type, params);
     }
 
     // add the value UI element to the property
@@ -335,8 +335,8 @@ export class PN_base_view extends PN_base_action {
    * ADD DOCS
    */
   create_body_element() {
-    const form_el = PN_element.create("<form></form>");
-    const fieldset_el = PN_element.create("<fieldset></fieldset>");
+    const form_el = CN_element.create("<form></form>");
+    const fieldset_el = CN_element.create("<fieldset></fieldset>");
     fieldset_el.disabled = !this.parent_model.module.actions.edit;
     form_el.append(fieldset_el);
 
@@ -351,18 +351,18 @@ export class PN_base_view extends PN_base_action {
    * ADD DOCS
    */
   create_footer_element() {
-    const btn_group_el = PN_element.create(`<div class="btn-group" role="group"></div>`);
+    const btn_group_el = CN_element.create(`<div class="btn-group" role="group"></div>`);
 
-    const parent_btn_el = PN_element.create(
+    const parent_btn_el = CN_element.create(
       '<button name="back" type="button" class="btn btn-primary">Back</button>'
     );
     btn_group_el.append(parent_btn_el);
     (async () => { parent_btn_el.innerHTML = await this.get_text("view_parent"); })();
     parent_btn_el.onclick = async () => await this.on_navigate_to_parent();
 
-    const delete_btn_el = PN_element.create(`
+    const delete_btn_el = CN_element.create(`
       <button name="delete" type="button" class="btn btn-danger">
-        Delete ${PN_common.uc_words(this.parent_model.name.singular)}
+        Delete ${CN_common.uc_words(this.parent_model.name.singular)}
       </button>
     `);
     btn_group_el.append(delete_btn_el);
@@ -379,10 +379,10 @@ export class PN_base_view extends PN_base_action {
 
     // add a child list selector
     if (1 < this.parent_model.module.children.length) {
-      const list_selector_el = PN_element.create_card();
+      const list_selector_el = CN_element.create_card();
       el.append(list_selector_el);
 
-      list_selector_el.querySelector(".card-header").append(PN_element.create(`
+      list_selector_el.querySelector(".card-header").append(CN_element.create(`
         <div class="d-flex">
           <div class="flex-grow-1">
             List Selector
@@ -392,16 +392,16 @@ export class PN_base_view extends PN_base_action {
 
       list_selector_el.querySelector(".card-body").remove();
 
-      const btn_group_el = PN_element.create(`<div class="row"></div>`);
+      const btn_group_el = CN_element.create(`<div class="row"></div>`);
       list_selector_el.querySelector(".card-footer").append(btn_group_el);
 
       // add children to the list selector and render them
       this.parent_model.module.children.forEach((child_subject) => {
-        const child_module = PN_session.data.modules[child_subject];
+        const child_module = CN_session.data.modules[child_subject];
         
-        const child_btn_el = PN_element.create(`
+        const child_btn_el = CN_element.create(`
           <button name="${child_module.subject}" type="button" class="col btn btn-primary mx-1">
-            ${PN_common.uc_words(child_module.model.name.plural)}
+            ${CN_common.uc_words(child_module.model.name.plural)}
           </button>
         `);
         btn_group_el.append(child_btn_el);
@@ -411,7 +411,7 @@ export class PN_base_view extends PN_base_action {
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
           this.parent_model.module.children.forEach(c => {
-            let cm = PN_session.data.modules[c];
+            let cm = CN_session.data.modules[c];
             if (c == child_subject) {
               el.append(cm.model.element);
             } else {
@@ -428,7 +428,7 @@ export class PN_base_view extends PN_base_action {
     } else if (1 == this.parent_model.module.children.length) {
       // render the only child directly
       el.append(
-        PN_session.data.modules[this.parent_model.module.children[0]].model.render()
+        CN_session.data.modules[this.parent_model.module.children[0]].model.render()
       );
     }
 
@@ -445,7 +445,7 @@ export class PN_base_view extends PN_base_action {
 
     if (children) {
       this.parent_model.module.children.forEach(async (subject) => {
-        const module = PN_session.data.modules[subject];
+        const module = CN_session.data.modules[subject];
         if (module && "list" == module.operation.action) module.model.run();
       });
     }

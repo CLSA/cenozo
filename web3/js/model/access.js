@@ -1,6 +1,6 @@
-import { PN_base_model } from "../base_model.js"
+import { CN_base_model } from "../base_model.js"
 
-export class PN_access_model extends PN_base_model {
+export class CN_access_model extends CN_base_model {
   constructor(module) {
     super(
       module,

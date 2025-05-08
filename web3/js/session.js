@@ -1,15 +1,15 @@
 // SESSION
 
-import PN_api from "./api.js"
-import PN_common from "./common.js"
-import PN_element from "./element.js"
+import CN_api from "./api.js"
+import CN_common from "./common.js"
+import CN_element from "./element.js"
 
-import { PN_base_add } from "./base_add.js"
-import { PN_base_list } from "./base_list.js"
-import { PN_base_view } from "./base_view.js"
+import { CN_base_add } from "./base_add.js"
+import { CN_base_list } from "./base_list.js"
+import { CN_base_view } from "./base_view.js"
 
-import { PN_home_model } from "./model/home.js"
-import { PN_error_model } from "./model/error.js"
+import { CN_home_model } from "./model/home.js"
+import { CN_error_model } from "./model/error.js"
 
 export default {
   data: null,
@@ -19,7 +19,7 @@ export default {
 
   logout: async function() {
     try {
-      await PN_api.delete("self/0");
+      await CN_api.delete("self/0");
       window.location.assign(ROOT_URL);
     } catch (error) {
       console.error(error);
@@ -27,20 +27,20 @@ export default {
   },
 
   update_data: async function() {
-    const response = await PN_api.get("self/0");
+    const response = await CN_api.get("self/0");
     this.data = await response.json();
     for(const module_name in this.data.modules) {
       this.data.modules[module_name].children.sort();
       this.data.modules[module_name].choosing.sort();
     }
-    
+
     if (this.data.application.development_mode) console.info("Development mode");
   },
 
   get_time: function() {
     let now = moment();
     now.tz(this.data.user.timezone);
-    return now.format(PN_common.get_time_format(this.data.user.am_pm, false, true));
+    return now.format(CN_common.get_time_format(this.data.user.am_pm, false, true));
   },
 
   load_modules: async function() {
@@ -157,15 +157,15 @@ export default {
       load_module_list.map(async module_name => {
         const module = this.data.modules[module_name];
         // import the model if it hasn't been loaded yet
-        if (PN_common.is_object(module.classes)) return;
+        if (CN_common.is_object(module.classes)) return;
 
         const classes = await import(`./model/${module_name}.js`);
-        const prefix = `PN_${module_name}`;
+        const prefix = `CN_${module_name}`;
         module.classes = {
           model: classes[`${prefix}_model`],
-          add: classes[`${prefix}_add`] ? classes[`${prefix}_add`] : PN_base_add,
-          list: classes[`${prefix}_list`] ? classes[`${prefix}_list`] : PN_base_list,
-          view: classes[`${prefix}_view`] ? classes[`${prefix}_view`] : PN_base_view,
+          add: classes[`${prefix}_add`] ? classes[`${prefix}_add`] : CN_base_add,
+          list: classes[`${prefix}_list`] ? classes[`${prefix}_list`] : CN_base_list,
+          view: classes[`${prefix}_view`] ? classes[`${prefix}_view`] : CN_base_view,
         };
       })
     );
@@ -178,7 +178,7 @@ export default {
     // create all models and validate all operations
     for (const module_name in this.data.modules) {
       const module = this.data.modules[module_name];
-      if (PN_common.is_object(module.operation)) {
+      if (CN_common.is_object(module.operation)) {
         const op = module.operation;
         if (null == op.action) {
           throw new Error(`Error loading modules: module "${module_name} has no operation"`);
@@ -200,7 +200,7 @@ export default {
     let model = null;
     if (0 == this.data.operation_list.length) {
       // render the home module as the main content
-      model = new PN_home_model();
+      model = new CN_home_model();
     } else {
       // render the last module as the main content
       const last_module_name = this.data.operation_list[this.data.operation_list.length-1];
@@ -224,7 +224,7 @@ export default {
       // add the breadcrumbs
       const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
       breadcrumbs_el.innerHTML = "";
-      breadcrumbs_el.append(PN_element.create_breadcrumb_trail(this.data.operation_list));
+      breadcrumbs_el.append(CN_element.create_breadcrumb_trail(this.data.operation_list));
     } catch (error) {
       throw error;
     }
@@ -235,7 +235,7 @@ export default {
     main_content_el.innerHTML = "";
 
     // render the error as the main content
-    const model = new PN_error_model(error);
+    const model = new CN_error_model(error);
     if (error instanceof URIError) model.status = 404;
     const error_module_el = model.render();
     main_content_el.append(error_module_el);
@@ -255,6 +255,7 @@ export default {
 
   create_body: function() {
     const body_el = document.querySelector("body");
+    const split_lists = 20 <= Object.keys(this.data.menu.lists).length;
 
     body_el.innerHTML = `
       <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
@@ -281,31 +282,40 @@ export default {
       </nav>
 
       <div
-        class="offcanvas offcanvas-top"
-        tabindex="-1"
+        class="offcanvas offcanvas-top h-auto"
         id="main-menu-offcanvas"
         aria-labelledby="main-menu-offcanvas-label"
+        data-bs-backdrop="false"
+        tabindex="-1"
+        style="translate: 0 43px;"
       >
         <div class="offcanvas-body bg-light">
-          <div class="row">
-            <div class="btn-group" role="group" aria-label="Basic example">
-              <button name="account" type="button" class="btn btn-secondary">Account</button>
-              <button name="password" type="button" class="btn btn-secondary">Password</button>
-              <button name="logout" type="button" class="btn btn-secondary">Logout</button>
+          <div class="row g-2">
+            <div class="col">
+              <button name="account" type="button" class="btn btn-secondary w-100">Account</button>
+            </div>
+            <div class="col">
+              <button name="timezone" type="button" class="btn btn-secondary w-100">Timezone</button>
+            </div>
+            <div class="col">
+              <button name="password" type="button" class="btn btn-secondary w-100">Password</button>
+            </div>
+            <div class="col">
+              <button name="logout" type="button" class="btn btn-secondary w-100">Logout</button>
             </div>
           </div>
-          <div class="row py-2">
-            <div class="col-md-4">
+          <div class="row mt-1 g-2">
+            <div class="col-${split_lists ? 6 : 4}">
               <div name="lists" class="btn-group-vertical w-100">
                 <button type="button" class="btn btn-primary" disabled>Lists</button>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-${split_lists ? 3 : 4}">
               <div name="utilities" class="btn-group-vertical w-100">
                 <button type="button" class="btn btn-primary" disabled>Utilities</button>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-${split_lists ? 3 : 4}">
               <div name="reports" class="btn-group-vertical w-100">
                 <button type="button" class="btn btn-primary" disabled>Reports</button>
               </div>
@@ -328,6 +338,7 @@ export default {
   },
 
   start: async function() {
+    await this.update_data();
     this.create_body();
 
     const main_menu_header_el = document.getElementById("main-menu-header");
@@ -337,14 +348,13 @@ export default {
     const clock_el = main_menu_header_el.querySelector("div[name=clock]");
     const time_el = main_menu_header_el.querySelector("span[name=time]");
     const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
+    const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
     const password_btn_el = main_menu_offcanvas_el.querySelector("button[name=password]");
     const logout_btn_el = main_menu_offcanvas_el.querySelector("button[name=logout]");
     const lists_el = main_menu_offcanvas_el.querySelector("div[name=lists]");
     const utilities_el = main_menu_offcanvas_el.querySelector("div[name=utilities]");
     const reports_el = main_menu_offcanvas_el.querySelector("div[name=reports]");
 
-    // update the session info
-    await this.update_data();
     access_el.innerHTML = `${this.data.role.name} @ ${this.data.site.name}`;
 
     // keep the clock running
@@ -354,40 +364,67 @@ export default {
 
     // wire up the clock and menu buttons
     clock_el.onclick = () => {
-      const bs = PN_element.create_clock_settings_modal();
+      const bs = CN_element.create_clock_settings_modal();
       bs.show();
     }
     account_btn_el.onclick = () => {
-      const bs = PN_element.create_account_modal();
+      const bs = CN_element.create_account_modal();
+      bs.show();
+    }
+    timezone_btn_el.onclick = () => {
+      const bs = CN_element.create_clock_settings_modal();
       bs.show();
     }
     password_btn_el.onclick = () => {
-      const bs = PN_element.create_password_modal();
+      const bs = CN_element.create_password_modal();
       bs.show();
     }
     logout_btn_el.onclick = async () => await this.logout();
 
+    const lists_total = Object.keys(this.data.menu.lists).length;
+
+    if (20 <= lists_total) {
+      lists_el.append(CN_element.create(`
+        <div class="row w-100 g-0">
+          <div name="first-col" class="col btn-group-vertical pe-0"></div>
+          <div name="second-col" class="col btn-group-vertical ps-0"></div>
+        </div>
+      `));
+    }
+
+    let index = 0;
     for (const title in this.data.menu.lists) {
       const name = this.data.menu.lists[title];
 
-      const btn = PN_element.create(`
-        <button type="button" class="btn btn-outline-primary">${title}</button>
+      const btn_el = CN_element.create(`
+        <button type="button" class="btn btn-outline-primary w-100">${title}</button>
       `);
-      btn.onclick = async () => {
+      btn_el.onclick = async () => {
         main_menu_offcanvas_bs.hide();
         await this.navigate_to(`${name}/list`);
       };
-      lists_el.append(btn);
+
+      if (20 <= lists_total) {
+        if (2*index < lists_total) {
+          lists_el.querySelector("[name=first-col]").append(btn_el);
+        } else {
+          lists_el.querySelector("[name=second-col]").append(btn_el);
+        }
+      } else {
+        lists_el.append(btn_el);
+      }
+
+      index++;
     }
 
     for (const title in this.data.menu.utilities) {
-      utilities_el.append(PN_element.create(`
+      utilities_el.append(CN_element.create(`
         <button type="button" class="btn btn-outline-primary">${title}</button>
       `));
     }
 
     for (const title in this.data.menu.reports) {
-      reports_el.append(PN_element.create(`
+      reports_el.append(CN_element.create(`
         <button type="button" class="btn btn-outline-primary">${title}</button>
       `));
     }

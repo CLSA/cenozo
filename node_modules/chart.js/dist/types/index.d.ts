@@ -17,7 +17,7 @@ export {default as ArcElement, ArcProps} from '../elements/element.arc.js';
 export {default as PointElement, PointProps} from '../elements/element.point.js';
 export {Animation, Animations, Animator, AnimationEvent} from './animation.js';
 export {Color} from './color.js';
-export {ChartArea, Point} from './geometric.js';
+export {ChartArea, Point, TRBL} from './geometric.js';
 export {LayoutItem, LayoutPosition} from './layout.js';
 
 export interface ScriptableContext<TType extends ChartType> {
@@ -281,7 +281,7 @@ export interface DoughnutControllerDatasetOptions
   spacing: number;
 }
 
-export interface DoughnutAnimationOptions {
+export interface DoughnutAnimationOptions extends AnimationSpec<'doughnut'> {
   /**
    *   If true, the chart will animate in with a rotation animation. This property is in the options.animation object.
    * @default true
@@ -429,6 +429,15 @@ export declare const RadarController: ChartComponent & {
   prototype: RadarController;
   new (chart: Chart, datasetIndex: number): RadarController;
 };
+
+interface ChartMetaClip {
+  left: number | boolean;
+  top: number | boolean;
+  right: number | boolean;
+  bottom: number | boolean;
+  disabled: boolean;
+}
+
 interface ChartMetaCommon<TElement extends Element = Element, TDatasetElement extends Element = Element> {
   type: string;
   controller: DatasetController;
@@ -462,6 +471,7 @@ interface ChartMetaCommon<TElement extends Element = Element, TDatasetElement ex
   _sorted: boolean;
   _stacked: boolean | 'single';
   _parsed: unknown[];
+  _clip: ChartMetaClip;
 }
 
 export type ChartMeta<
@@ -1611,12 +1621,22 @@ export interface CoreChartOptions<TType extends ChartType> extends ParsingOption
    * base background color
    * @see Defaults.backgroundColor
    */
-  backgroundColor: Scriptable<Color, ScriptableContext<TType>>;
+  backgroundColor: ScriptableAndArray<Color, ScriptableContext<TType>>;
+  /**
+   * base hover background color
+   * @see Defaults.hoverBackgroundColor
+   */
+  hoverBackgroundColor: ScriptableAndArray<Color, ScriptableContext<TType>>;
   /**
    * base border color
    * @see Defaults.borderColor
    */
-  borderColor: Scriptable<Color, ScriptableContext<TType>>;
+  borderColor: ScriptableAndArray<Color, ScriptableContext<TType>>;
+  /**
+   * base hover border color
+   * @see Defaults.hoverBorderColor
+   */
+  hoverBorderColor: ScriptableAndArray<Color, ScriptableContext<TType>>;
   /**
    * base font
    * @see Defaults.font
@@ -3633,7 +3653,7 @@ export interface CartesianParsedData extends Point {
   }
 }
 
-interface BarParsedData extends CartesianParsedData {
+export interface BarParsedData extends CartesianParsedData {
   // Only specified if floating bars are show
   _custom?: {
     barStart: number;
@@ -3645,12 +3665,12 @@ interface BarParsedData extends CartesianParsedData {
   }
 }
 
-interface BubbleParsedData extends CartesianParsedData {
+export interface BubbleParsedData extends CartesianParsedData {
   // The bubble radius value
   _custom: number;
 }
 
-interface RadialParsedData {
+export interface RadialParsedData {
   r: number;
 }
 

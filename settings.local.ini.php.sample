@@ -19,11 +19,13 @@ $settings['general']['framework_name'] = 'cenozo';
 
 // the web url of the cenozo framework
 $host = NULL;
-if( array_key_exists( 'HTTP_X_FORWARDED_HOST', $_SERVER ) ) 
-  $host = $_SERVER['HTTP_X_FORWARDED_HOST'];
-else if( array_key_exists( 'HTTP_HOST', $_SERVER ) ) 
-  $host = $_SERVER['HTTP_HOST'];
-if( !is_null( $host ) ) $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to/cenozo', $host );
+if( array_key_exists( 'HTTP_X_FORWARDED_HOST', $_SERVER ) ) $host = $_SERVER['HTTP_X_FORWARDED_HOST'];
+else if( array_key_exists( 'HTTP_HOST', $_SERVER ) ) $host = $_SERVER['HTTP_HOST'];
+if( !is_null( $host ) )
+{
+  $settings['url']['CENOZO'] = sprintf( 'https://%s/url/to/cenozo', $host );
+  $settings['url']['CENOZO3'] = sprintf( 'https://%s/url/to/cenozo3', $host );
+}
 
 // utility account
 $settings['utility']['password'] = 'set password to utility account here'; 

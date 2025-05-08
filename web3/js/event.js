@@ -1,6 +1,6 @@
 // EVENT
 
-import PN_element from "./element.js"
+import CN_element from "./element.js"
 
 export default {
   /**
@@ -11,7 +11,7 @@ export default {
    */
   toast: function(config) {
     if (!config.type) config.type = "light";
-    const toast_el = PN_element.create(`
+    const toast_el = CN_element.create(`
       <div role="alert" aria-live="assertive" aria-atomic="true" class="toast bg-light mb-2">
         <div name="header" class="toast-header text-bg-${config.type}">
           <div class="fw-bold fs-5">${config.title}</div>
@@ -26,7 +26,7 @@ export default {
     `);
 
     if (config.message) {
-      toast_el.append(PN_element.create(`<div name="body" class="toast-body">${config.message}</div>`));
+      toast_el.append(CN_element.create(`<div name="body" class="toast-body">${config.message}</div>`));
     }
 
     document.querySelector("#main-toast-container .toast-container").append(toast_el);
@@ -36,7 +36,7 @@ export default {
 
   modal_message: function(config) {
     if (!config.type) config.type = "light";
-    const modal_el = PN_element.create(`
+    const modal_el = CN_element.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -64,7 +64,7 @@ export default {
   },
 
   modal_confirm: function(config) {
-    const modal_el = PN_element.create(`
+    const modal_el = CN_element.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">

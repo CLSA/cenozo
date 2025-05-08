@@ -33,7 +33,7 @@ final class bootstrap
   /**
    * Initialization
    * 
-   * @param string $launch Either "ui" or "api"
+   * @param string $launch Either "ui", "ui3" or "api"
    * @access public
    */
   public function initialize( $launch )
@@ -93,11 +93,17 @@ final class bootstrap
     $this->session = lib::create( 'business\session', $this->settings );
 
     // the session is initialized in the launch methods
-    if( 'ui' == $launch ) $this->launch_ui();
-    else if( 'api' == $launch ) $this->launch_api();
-    else die(
-      'The application is not set up properly.  Please check the launch type sent to the '.
-      'initialize() method and make sure it is either "ui" or "api".' );
+    if( 'ui' == $launch ) $this->launch_ui( false );
+    else if( 'ui3' == $launch ) $this->launch_ui( true );
+    else if( 'api' == $launch ) $this->launch_api( false );
+    else if( 'api3' == $launch ) $this->launch_api( true );
+    else
+    {
+      die(
+        'The application is not set up properly.  Please check the launch type sent to the '.
+        'initialize() method and make sure it is either "ui" or "api".'
+      );
+    }
 
     $this->session->shutdown();
   }
@@ -105,14 +111,16 @@ final class bootstrap
   /**
    * Executes the request.
    * 
+   * @param boolean $version3 Whether to launch the new version of the UI
    * @access private
    */
-  private function launch_ui()
+  private function launch_ui( $version3 = false )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $ui = lib::create( 'ui\ui' );
-    $error = NULL;
+    $ui = lib::create( $version3 ? 'ui\ui3' : 'ui\ui' );
+    $this->session->version3 = $version3;
 
+    $error = NULL;
     try
     {
       // if we are maintenance mode then go no further
@@ -185,10 +193,11 @@ final class bootstrap
    * 
    * @access private
    */
-  private function launch_api()
+  private function launch_api( $version3 = false )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
+    $this->session->version3 = $version3;
     $service = NULL;
     $db = NULL;
 

@@ -1,11 +1,11 @@
-import PN_api from "./api.js"
-import PN_common from "./common.js"
-import PN_element from "./element.js"
-import PN_session from "./session.js"
+import CN_api from "./api.js"
+import CN_common from "./common.js"
+import CN_element from "./element.js"
+import CN_session from "./session.js"
 
-import { PN_base_action } from "./base_action.js"
+import { CN_base_action } from "./base_action.js"
 
-export class PN_base_add extends PN_base_action {
+export class CN_base_add extends CN_base_action {
   #properties;
 
   // getters and setters
@@ -19,7 +19,7 @@ export class PN_base_add extends PN_base_action {
 
     // setup each property
     const parent_module = this.parent_model.get_parent_module();
-    this.#properties = PN_common.clone(properties);
+    this.#properties = CN_common.clone(properties);
     for (let prop_name in this.#properties) {
       const prop = this.#properties[prop_name];
       const module_prop = this.parent_model.module.properties[prop_name];
@@ -49,11 +49,11 @@ export class PN_base_add extends PN_base_action {
         prop.max = this.#properties.hasOwnProperty("max") ? this.#properties.max : null;
       }
 
-      if (!PN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
-      if (!PN_common.is_function(prop.is_hidden)) {
+      if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
+      if (!CN_common.is_function(prop.is_hidden)) {
         prop.is_hidden = () => parent_module && prop_name.match(`${parent_module.subject}_id`);
       }
-      if (!PN_common.is_function(prop.get_default)) {
+      if (!CN_common.is_function(prop.get_default)) {
         // if the column is a reference to the parent then use the parent's id
         prop.get_default = () => (
           parent_module && prop_name.match(`${parent_module.subject}_id`) ?
@@ -69,10 +69,10 @@ export class PN_base_add extends PN_base_action {
    */
   get_text(type) {
     if ("header" == type) {
-      let text = `Add ${PN_common.uc_words(this.parent_model.name.singular)}`;
+      let text = `Add ${CN_common.uc_words(this.parent_model.name.singular)}`;
       const parent_module = this.parent_model.get_parent_module();
       if (parent_module) {
-        text += ` to ${PN_common.uc_words(parent_module.model.name.singular)}`;
+        text += ` to ${CN_common.uc_words(parent_module.model.name.singular)}`;
       }
       return text;
     }
@@ -97,7 +97,7 @@ export class PN_base_add extends PN_base_action {
     for (var prop_name in this.#properties) {
       const prop = this.#properties[prop_name];
       if ("enum" == prop.type) {
-        if (PN_common.is_object(prop.enum) && prop.enum.path) {
+        if (CN_common.is_object(prop.enum) && prop.enum.path) {
           // populate the enum
           const params = {
             select: prop.enum.select ? prop.enum.select : { column: "name" },
@@ -106,7 +106,7 @@ export class PN_base_add extends PN_base_action {
 
           // create an async function and add it to the promise list so they can be run in parallel
           const get_enums = async () => {
-            const response = await PN_api.get(prop.enum.path, params);
+            const response = await CN_api.get(prop.enum.path, params);
             prop.enum.values = (await response.json()).reduce((list, record) => {
               list.push({ key: record.id, value: record.name });
               return list;
@@ -165,11 +165,11 @@ export class PN_base_add extends PN_base_action {
 
     try {
       // post the new record
-      const response = await PN_api.post(this.parent_model.get_base_path("api"), record);
+      const response = await CN_api.post(this.parent_model.get_base_path("api"), record);
 
       // now view the new record
       const id = await response.text();
-      await PN_session.navigate_to(
+      await CN_session.navigate_to(
         this.parent_model.module.actions.view ?
         this.parent_model.get_view_url(id) :
         this.parent_model.get_parent_module().model.get_view_url()
@@ -225,7 +225,7 @@ export class PN_base_add extends PN_base_action {
             `<option value="">(Select a ${prop.title}...)</option>`
           );
           prop.enum.values.forEach(option => {
-            control_el.append(PN_element.create(`
+            control_el.append(CN_element.create(`
               <option value="${option.key}">${option.value}</option>
             `));
           });
@@ -254,10 +254,10 @@ export class PN_base_add extends PN_base_action {
   create_property_element(prop_name) {
     const module_prop = this.parent_model.module.properties[prop_name];
     const prop = this.#properties[prop_name];
-    const prop_el = PN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
+    const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    prop_el.append(PN_element.create_form_label({ for: prop.id, value: prop.title }));
+    prop_el.append(CN_element.create_form_label({ for: prop.id, value: prop.title }));
 
     if (!prop.element) {
       // determine the property's UI element based on the type
@@ -288,7 +288,7 @@ export class PN_base_add extends PN_base_action {
         params.max_length = module_prop.max_length;
       }
 
-      prop.element = PN_element.create_form_element(prop.type, params);
+      prop.element = CN_element.create_form_element(prop.type, params);
     }
 
     // add the value UI element to the property
@@ -301,8 +301,8 @@ export class PN_base_add extends PN_base_action {
    * ADD DOCS
    */
   create_body_element() {
-    const form_el = PN_element.create("<form></form>");
-    const fieldset_el = PN_element.create("<fieldset></fieldset>");
+    const form_el = CN_element.create("<form></form>");
+    const fieldset_el = CN_element.create("<fieldset></fieldset>");
     form_el.append(fieldset_el);
 
     for (const prop_name in this.#properties) {
@@ -316,16 +316,16 @@ export class PN_base_add extends PN_base_action {
    * ADD DOCS
    */
   create_footer_element() {
-    const btn_group_el = PN_element.create('<div class="btn-group" role="group"></div>');
+    const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
 
-    const submit_btn_el = PN_element.create(
+    const submit_btn_el = CN_element.create(
       '<button name="submit" type="button" class="btn btn-primary">Submit</button>'
     );
     btn_group_el.append(submit_btn_el);
     (async () => { submit_btn_el.innerHTML = await this.get_text("submit"); })();
     submit_btn_el.onclick = async () => await this.on_submit();
 
-    const cancel_btn_el = PN_element.create(
+    const cancel_btn_el = CN_element.create(
       '<button name="cancel" type="button" class="btn btn-light">Cancel</button>'
     );
     btn_group_el.append(cancel_btn_el);

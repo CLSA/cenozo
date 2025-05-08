@@ -1,8 +1,8 @@
-import PN_element from "../element.js"
+import CN_element from "../element.js"
 
-import { PN_base_object } from "../base_object.js"
+import { CN_base_object } from "../base_object.js"
 
-export class PN_error_model extends PN_base_object {
+export class CN_error_model extends CN_base_object {
 
   constructor(error) {
     super();
@@ -31,7 +31,7 @@ export class PN_error_model extends PN_base_object {
     // report the error to the console
     console.error(this.error);
 
-    const card_el = PN_element.create_card();
+    const card_el = CN_element.create_card();
     const header_el = card_el.querySelector(".card-header");
     header_el.classList.add("bg-danger");
     header_el.innerHTML = this.get_text("name");

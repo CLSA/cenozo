@@ -1,9 +1,9 @@
-import PN_element from "./element.js"
-import PN_session from "./session.js"
+import CN_element from "./element.js"
+import CN_session from "./session.js"
 
-import { PN_base_object } from "./base_object.js"
+import { CN_base_object } from "./base_object.js"
 
-export class PN_base_action extends PN_base_object {
+export class CN_base_action extends CN_base_object {
   #parent_model = null;
   #is_loading = false;
   #is_placeholder = false;
@@ -49,7 +49,7 @@ export class PN_base_action extends PN_base_object {
    */
   async on_navigate_to_parent() {
     const parent_module = this.parent_model.get_parent_module();
-    await PN_session.navigate_to(
+    await CN_session.navigate_to(
       parent_module ?
       parent_module.model.get_view_url() :
       this.parent_model.get_list_url()
@@ -98,7 +98,7 @@ export class PN_base_action extends PN_base_object {
    * ADD DOCS
    */
   create_header_element() {
-    const el = PN_element.create(`
+    const el = CN_element.create(`
       <div class="d-flex">
         <div class="flex-grow-1">
           ${this.get_text("header")}
@@ -107,7 +107,7 @@ export class PN_base_action extends PN_base_object {
     `);
 
     // add a data refresh button
-    const refresh_btn_el = PN_element.create(`
+    const refresh_btn_el = CN_element.create(`
       <button class="btn btn-primary px-2 py-0">
         <i class="bi-arrow-clockwise fs-5"></i>
       </button>
@@ -141,10 +141,10 @@ export class PN_base_action extends PN_base_object {
    * ADD DOCS
    */
   render() {
-    const el = PN_element.create('<div name="model-action"></div>');
+    const el = CN_element.create('<div name="model-action"></div>');
     if (!this.#parent_model.module.hasOwnProperty("operation")) return el;
 
-    el.append(PN_element.create_card());
+    el.append(CN_element.create_card());
 
     // add the header, body and footer
     el.querySelector(".card-header").append(this.create_header_element());

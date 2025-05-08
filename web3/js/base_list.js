@@ -1,11 +1,11 @@
-import PN_api from "./api.js"
-import PN_common from "./common.js"
-import PN_element from "./element.js"
-import PN_session from "./session.js"
+import CN_api from "./api.js"
+import CN_common from "./common.js"
+import CN_element from "./element.js"
+import CN_session from "./session.js"
 
-import { PN_base_action } from "./base_action.js"
+import { CN_base_action } from "./base_action.js"
 
-export class PN_base_list extends PN_base_action {
+export class CN_base_list extends CN_base_action {
   #columns;
   #records = [];
   #total_records = 0;
@@ -23,10 +23,10 @@ export class PN_base_list extends PN_base_action {
 
     // setup each column
     const parent_module = this.parent_model.get_parent_module();
-    this.#columns = PN_common.clone(columns);
+    this.#columns = CN_common.clone(columns);
     for (var col_name in this.#columns) {
       const col = this.#columns[col_name];
-      if (!PN_common.is_function(col.is_hidden)) {
+      if (!CN_common.is_function(col.is_hidden)) {
         col.is_hidden = () => {
           if (!col.column) return false;
 
@@ -42,11 +42,11 @@ export class PN_base_list extends PN_base_action {
    */
   get_text(type) {
     if ("header" == type) {
-      return `${PN_common.uc_words(this.parent_model.name.singular)} List`;
+      return `${CN_common.uc_words(this.parent_model.name.singular)} List`;
     }
 
     if ("add" == type) {
-      return `Add ${PN_common.uc_words(this.parent_model.name.singular)}`;
+      return `Add ${CN_common.uc_words(this.parent_model.name.singular)}`;
     }
 
     return super.get_text(type);
@@ -56,7 +56,7 @@ export class PN_base_list extends PN_base_action {
    * ADD DOCS
    */
   async on_add() {
-    await PN_session.navigate_to(this.parent_model.get_add_url());
+    await CN_session.navigate_to(this.parent_model.get_add_url());
   }
 
   /**
@@ -66,7 +66,7 @@ export class PN_base_list extends PN_base_action {
     // set the query's limit and offset based on the current page
     const params = {
       modifier: {
-        limit: PN_session.data.application.list_row_size,
+        limit: CN_session.data.application.list_row_size,
         offset: (this.#current_page-1) * 20,
       },
       select: { column: [] },
@@ -85,7 +85,7 @@ export class PN_base_list extends PN_base_action {
       });
     }
 
-    const response = await PN_api.get(this.parent_model.get_base_path("api"), params);
+    const response = await CN_api.get(this.parent_model.get_base_path("api"), params);
     const limit = response.headers.get('X-Limit');
     const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
@@ -123,7 +123,7 @@ export class PN_base_list extends PN_base_action {
     // do nothing if the view action doesn't exist
     if (!this.parent_model.module.actions.view) return;
 
-    await PN_session.navigate_to(this.parent_model.get_view_url(record.id));
+    await CN_session.navigate_to(this.parent_model.get_view_url(record.id));
   }
 
   /**
@@ -150,18 +150,18 @@ export class PN_base_list extends PN_base_action {
           value = "(empty)";
         } else if ("boolean" == col.type) {
           value = value ? "Yes" : "No";
-        } else if (PN_common.is_datetime_type(col.type, "date")) {
+        } else if (CN_common.is_datetime_type(col.type, "date")) {
           value = moment(value).format(
-            PN_common.get_datetime_format(
+            CN_common.get_datetime_format(
               col.type,
-              PN_session.data.user.am_pm
+              CN_session.data.user.am_pm
             )
           );
-        } else if (PN_common.is_datetime_type(col.type, "time")) {
+        } else if (CN_common.is_datetime_type(col.type, "time")) {
           value = moment(`${moment().format("YYYY-MM-DD")} ${value}`).format(
-            PN_common.get_time_format(
+            CN_common.get_time_format(
               col.type,
-              PN_session.data.user.am_pm
+              CN_session.data.user.am_pm
             )
           );
         }
@@ -178,11 +178,11 @@ export class PN_base_list extends PN_base_action {
     const pagination_el = this.element.querySelector(".card-footer ul.pagination");
     pagination_el.innerHTML = "";
 
-    const pages = Math.ceil(this.#total_records / PN_session.data.application.list_row_size);
+    const pages = Math.ceil(this.#total_records / CN_session.data.application.list_row_size);
 
     if (1 < pages) {
       // add the previous button
-      const prev_el = PN_element.create(`
+      const prev_el = CN_element.create(`
         <li class="page-item"><button class="page-link"><i class="bi-rewind-fill"></i></button></li>
       `);
       if (1 == this.#current_page) prev_el.classList.add("disabled");
@@ -196,7 +196,7 @@ export class PN_base_list extends PN_base_action {
 
       // add pages by number
       for(let page = 1; page <= pages; page++) {
-        let page_el = PN_element.create(`
+        let page_el = CN_element.create(`
           <li class="page-item"><button class="page-link">${page}</button></li>
         `);
         if (page == this.#current_page) page_el.classList.add("active");
@@ -210,7 +210,7 @@ export class PN_base_list extends PN_base_action {
       }
 
       // add the next button
-      const next_el = PN_element.create(`
+      const next_el = CN_element.create(`
         <li class="page-item"><button class="page-link"><i class="bi-fast-forward-fill"></i></button></li>
       `);
       if (pages == this.#current_page) next_el.classList.add("disabled");
@@ -228,7 +228,7 @@ export class PN_base_list extends PN_base_action {
    * ADD DOCS
    */
   create_body_element() {
-    const table_el = PN_element.create(`
+    const table_el = CN_element.create(`
       <table class="table table-striped table-hover">
         <thead name="header"></thead>
         <tbody name="body"></tbody>
@@ -255,24 +255,24 @@ export class PN_base_list extends PN_base_action {
    * ADD DOCS
    */
   create_footer_element() {
-    const footer_el = PN_element.create('<div class="d-flex align-items-center justify-content-between"></div>');
+    const footer_el = CN_element.create('<div class="d-flex align-items-center justify-content-between"></div>');
 
-    const btn_group_el = PN_element.create('<div class="btn-group" role="group"></div>');
+    const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
     if (this.parent_model.module.actions.hasOwnProperty('add'))
     {
-      const add_btn_el = PN_element.create('<button name="add" type="button" class="btn btn-primary">Add</button>');
+      const add_btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary">Add</button>');
       btn_group_el.append(add_btn_el);
       (async () => { add_btn_el.innerHTML = await this.get_text("add"); })();
       add_btn_el.onclick = async () => await this.on_add();
     }
 
-    const summary_el = PN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
+    const summary_el = CN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
     footer_el.append(summary_el);
 
-    footer_el.append(PN_element.create(`
-      <nav aria-label="${PN_common.uc_words(this.parent_model.name.singular)} List navigation">
+    footer_el.append(CN_element.create(`
+      <nav aria-label="${CN_common.uc_words(this.parent_model.name.singular)} List navigation">
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));

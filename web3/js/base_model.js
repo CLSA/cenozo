@@ -1,12 +1,12 @@
-import PN_api from "./api.js"
-import PN_common from "./common.js"
-import PN_element from "./element.js"
-import PN_event from "./event.js"
-import PN_session from "./session.js"
+import CN_api from "./api.js"
+import CN_common from "./common.js"
+import CN_element from "./element.js"
+import CN_event from "./event.js"
+import CN_session from "./session.js"
 
-import { PN_base_object } from "./base_object.js"
+import { CN_base_object } from "./base_object.js"
 
-export class PN_base_model extends PN_base_object {
+export class CN_base_model extends CN_base_object {
   #unique_id;
   #module;
   #name;
@@ -85,7 +85,7 @@ export class PN_base_model extends PN_base_object {
    * ADD DOCS
    */
   render() {
-    this.#element = PN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
+    this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
     if (!this.#module.operation) return this.#element;
 
     // add the model_action

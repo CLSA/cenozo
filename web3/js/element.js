@@ -1,9 +1,9 @@
 // ELEMENT
 
-import PN_api from "./api.js"
-import PN_common from "./common.js"
-import PN_event from "./event.js"
-import PN_session from "./session.js"
+import CN_api from "./api.js"
+import CN_common from "./common.js"
+import CN_event from "./event.js"
+import CN_session from "./session.js"
 
 export default {
   // The DOMParser used by create() when creating elements from HTML strings
@@ -82,16 +82,16 @@ export default {
 
         if (el.params.required && [null, ""].includes(control_el.value)) {
           el.show_error("Can't be empty", 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else if (0 < control_el.value.length && !moment(control_el.value, "YYYY-MM-DD", true).isValid()) {
           el.show_error(`${control_el.value} is not a valid date`, 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else {
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, true);
           }
         }
@@ -102,16 +102,16 @@ export default {
       control_el.onchange = async () => {
         if (el.params.required && [null, ""].includes(control_el.value)) {
           el.show_error("Can't be empty", 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else if (!control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)) {
           el.show_error(`${control_el.value} is not a valid email address`, 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else {
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, true);
           }
         }
@@ -131,21 +131,21 @@ export default {
         control_el.value = parseInt(control_el.value);
         if (el.params.required && [null, ""].includes(control_el.value)) {
           el.show_error("Can't be empty", 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else if (null != el.params.min && control_el.value < el.params.min) {
           el.show_error(`The smallest number allowed is ${el.params.min}`, 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else if (null != el.params.max && control_el.value > el.params.max) {
           el.show_error(`The biggest number allowed is ${el.params.max}`, 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else {
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, true);
           }
         }
@@ -169,16 +169,16 @@ export default {
 
         if (el.params.required && [null, ""].includes(control_el.value)) {
           el.show_error("Can't be empty", 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else if (0 < control_el.value.length && !moment(control_el.value, "H:mm", true).isValid()) {
           el.show_error(`${control_el.value} is not a valid time`, 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else {
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, true);
           }
         }
@@ -186,7 +186,7 @@ export default {
     } else if ("typeahead" == type) {
       control_el = this.create(`<input class="form-control"></input>`);
 
-      if (PN_common.is_object(el.params.typeahead)) {
+      if (CN_common.is_object(el.params.typeahead)) {
         el.params.typeahead.open = false;
 
         // create the typeahead's element
@@ -211,7 +211,7 @@ export default {
         control_el.onkeydown = (event) => {
           if ("Escape" == event.key) {
             if (el.params.typeahead.open) {
-              if (PN_common.is_function(el.params.typeahead.on_cancel)) {
+              if (CN_common.is_function(el.params.typeahead.on_cancel)) {
                 el.params.typeahead.on_cancel(control_el);
               }
               dropdown_bs.hide()
@@ -220,10 +220,10 @@ export default {
         };
         control_el.onblur = async () => {
           // we may be blurring after a button click, so give it time to process
-          await PN_common.sleep(200);
+          await CN_common.sleep(200);
 
           if (el.params.typeahead.open) {
-            if (PN_common.is_function(el.params.typeahead.on_cancel)) {
+            if (CN_common.is_function(el.params.typeahead.on_cancel)) {
               el.params.typeahead.on_cancel(control_el);
             }
             dropdown_bs.hide();
@@ -247,7 +247,7 @@ export default {
               ul_el.append(item_el);
               item_el.onclick = () => {
                 control_el.value = item;
-                if (PN_common.is_function(el.params.typeahead.on_select)) {
+                if (CN_common.is_function(el.params.typeahead.on_select)) {
                   el.params.typeahead.on_select(control_el);
                 }
                 dropdown_bs.hide();
@@ -264,15 +264,15 @@ export default {
       throw new Error(`Tried to create form element using a missing or invalid type "${type}".`);
     }
 
-    if (!PN_common.is_function(control_el.onchange)) {
+    if (!CN_common.is_function(control_el.onchange)) {
       control_el.onchange = async () => {
         if (el.params.required && [null, ""].includes(control_el.value)) {
           el.show_error("Can't be empty", 2000);
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, false);
           }
         } else {
-          if (PN_common.is_function(el.params.onchange)) {
+          if (CN_common.is_function(el.params.onchange)) {
             await el.params.onchange(control_el, true);
           }
         }
@@ -306,7 +306,7 @@ export default {
       if (error) error_el.innerHTML = error;
 
       if (0 < time) {
-        await PN_common.sleep(time);
+        await CN_common.sleep(time);
         this.hide_error();
       }
     };
@@ -349,10 +349,10 @@ export default {
     let crumb_list = [{name: "Home", path: ""}];
     let parent_module = null;
     module_list.forEach(module_name => {
-      const module = PN_session.data.modules[module_name];
+      const module = CN_session.data.modules[module_name];
       if ("add" == module.operation.action) {
         crumb_list.push({
-          name: `Add ${PN_common.uc_words(module.model.name.singular)}`,
+          name: `Add ${CN_common.uc_words(module.model.name.singular)}`,
           path: null,
         });
       } else if ("view" == module.operation.action) {
@@ -362,7 +362,7 @@ export default {
         });
       } else if ("list" == module.operation.action) {
         crumb_list.push({
-          name: PN_common.uc_words(module.model.name.plural),
+          name: CN_common.uc_words(module.model.name.plural),
           path: null == parent_module ? `${module_name}/list` : parent_module.model.get_view_url(),
         });
       }
@@ -384,7 +384,7 @@ export default {
       if (null == crumb.path) {
         crumb_el.setAttribute("disabled", true);
       } else {
-        crumb_el.onclick = () => PN_session.navigate_to(crumb.path);
+        crumb_el.onclick = () => CN_session.navigate_to(crumb.path);
       }
     });
 
@@ -454,14 +454,14 @@ export default {
       },
     }));
     const timezone_control_el = document.getElementById("pn_clock_settings_modal_timezone");
-    timezone_control_el.value = PN_session.data.user.timezone;
-    timezone_control_el.last_selected_value = PN_session.data.user.timezone;
+    timezone_control_el.value = CN_session.data.user.timezone;
+    timezone_control_el.last_selected_value = CN_session.data.user.timezone;
 
     // add a use 12-hour clock boolean property
     const am_pm_el = this.create_form_label_and_element("boolean", {
       id: "pn_clock_settings_modal_am_pm",
       title: "Use 12-Hour Clock",
-      value: PN_session.data.user.am_pm,
+      value: CN_session.data.user.am_pm,
       required: true,
     });
     form_el.append(am_pm_el);
@@ -470,11 +470,11 @@ export default {
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = "true" == document.getElementById("pn_clock_settings_modal_am_pm").value;
       if (
-        PN_session.data.user.timezone != timezone ||
-        PN_session.data.user.am_pm != am_pm
+        CN_session.data.user.timezone != timezone ||
+        CN_session.data.user.am_pm != am_pm
       ) {
         // update the server
-        await PN_api.patch("self/0", {
+        await CN_api.patch("self/0", {
           user: {
             timezone: timezone,
             am_pm: am_pm,
@@ -528,7 +528,7 @@ export default {
     const first_name_el = this.create_form_label_and_element("string", {
       id: "pn_account_modal_first_name",
       title: "First Name",
-      value: PN_session.data.user.first_name,
+      value: CN_session.data.user.first_name,
       required: true,
     });
     form_el.append(first_name_el);
@@ -537,7 +537,7 @@ export default {
     const last_name_el = this.create_form_label_and_element("string", {
       id: "pn_account_modal_last_name",
       title: "Last Name",
-      value: PN_session.data.user.last_name,
+      value: CN_session.data.user.last_name,
       required: true,
     });
     form_el.append(last_name_el);
@@ -546,7 +546,7 @@ export default {
     const email_el = this.create_form_label_and_element("email", {
       id: "pn_account_modal_email",
       title: "Email",
-      value: PN_session.data.user.email,
+      value: CN_session.data.user.email,
       required: true,
     });
     form_el.append(email_el);
@@ -556,12 +556,12 @@ export default {
       let last_name = document.getElementById("pn_account_modal_last_name").value;
       let email = document.getElementById("pn_account_modal_email").value;
       if (
-        PN_session.data.user.first_name != first_name ||
-        PN_session.data.user.last_name != last_name ||
-        PN_session.data.user.email != email
+        CN_session.data.user.first_name != first_name ||
+        CN_session.data.user.last_name != last_name ||
+        CN_session.data.user.email != email
       ) {
         // update the server
-        await PN_api.patch("self/0", {
+        await CN_api.patch("self/0", {
           user: {
             first_name: first_name,
             last_name: last_name,
@@ -570,9 +570,9 @@ export default {
         });
 
         // update the UI
-        PN_session.data.user.first_name = first_name;
-        PN_session.data.user.last_name = last_name;
-        PN_session.data.user.email = email;
+        CN_session.data.user.first_name = first_name;
+        CN_session.data.user.last_name = last_name;
+        CN_session.data.user.email = email;
       }
       modal_bs.hide();
     };
@@ -622,7 +622,7 @@ export default {
     const current_password_el = this.create_form_label_and_element("password", {
       id: "pn_password_modal_current_password",
       title: "Current Password",
-      value: PN_session.data.user.current_password,
+      value: CN_session.data.user.current_password,
       required: true,
     });
     form_el.append(current_password_el);
@@ -631,7 +631,7 @@ export default {
     const new_password_el = this.create_form_label_and_element("password", {
       id: "pn_password_modal_new_password",
       title: "New Password",
-      value: PN_session.data.user.new_password,
+      value: CN_session.data.user.new_password,
       required: true,
     });
     form_el.append(new_password_el);
@@ -640,7 +640,7 @@ export default {
     const new_password_check_el = this.create_form_label_and_element("password", {
       id: "pn_password_modal_new_password_check",
       title: "Repeat New Password",
-      value: PN_session.data.user.new_password_check,
+      value: CN_session.data.user.new_password_check,
       required: true,
     });
     form_el.append(new_password_check_el);
@@ -680,7 +680,7 @@ export default {
       let new_password_check = new_password_control_check_el.value;
 
       if (new_password !== new_password_check) {
-        PN_event.toast({
+        CN_event.toast({
           title: "Password Mismatch",
           message: "The new passwords do not match.  Please type them again and make sure they are the same.",
           type: "danger",
@@ -688,7 +688,7 @@ export default {
       } else {
         // update the server
         try {
-          const response = await PN_api.patch("self/0", {
+          const response = await CN_api.patch("self/0", {
             user: {
               password: {
                 current: current_password,
@@ -697,8 +697,8 @@ export default {
             },
           });
         } catch (error) {
-          if (PN_common.is_object(error) && "invalid password" == error.error_code) {
-            PN_event.toast({
+          if (CN_common.is_object(error) && "invalid password" == error.error_code) {
+            CN_event.toast({
               title: "Password Failed",
               message: "The password you provided as your current password is incorrect.",
               type: "danger",

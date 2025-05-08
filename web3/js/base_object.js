@@ -1,1 +1,1 @@
-export class PN_base_object {}
+export class CN_base_object {}

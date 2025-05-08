@@ -94,12 +94,22 @@ $settings['report']['max_small_rows'] = 1000;
 
 // cenozo's sub-directory urls
 $settings['url']['ROOT'] = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) );
-if( array_key_exists( 'url', $this->settings ) && array_key_exists( 'CENOZO', $this->settings['url'] ) )
+if( array_key_exists( 'url', $this->settings ) )
 {
-  $settings['url']['APP'] = $this->settings['url']['CENOZO'].'/app';
-  $settings['url']['CSS'] = $this->settings['url']['CENOZO'].'/css';
-  $settings['url']['IMG'] = $this->settings['url']['CENOZO'].'/img';
-  $settings['url']['LIB'] = $this->settings['url']['CENOZO'].'/lib';
+  if( array_key_exists( 'CENOZO', $this->settings['url'] ) )
+  {
+    $settings['url']['APP'] = $this->settings['url']['CENOZO'].'/app';
+    $settings['url']['CSS'] = $this->settings['url']['CENOZO'].'/css';
+    $settings['url']['IMG'] = $this->settings['url']['CENOZO'].'/img';
+    $settings['url']['LIB'] = $this->settings['url']['CENOZO'].'/lib';
+  }
+  if( array_key_exists( 'CENOZO3', $this->settings['url'] ) )
+  {
+    $settings['url']['APP3'] = $this->settings['url']['CENOZO3'].'/app';
+    $settings['url']['CSS3'] = $this->settings['url']['CENOZO3'].'/css';
+    $settings['url']['IMG3'] = $this->settings['url']['CENOZO3'].'/img';
+    $settings['url']['LIB3'] = $this->settings['url']['CENOZO3'].'/lib';
+  }
 }
 
 // path to store cookies under

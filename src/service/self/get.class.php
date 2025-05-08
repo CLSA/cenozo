@@ -84,6 +84,8 @@ class get extends \cenozo\service\service
       'user' => $db_user->get_column_values( $user_sel )
     );
     $pseudo_record['application']['identifier'] = is_null( $db_identifier ) ? NULL : $db_identifier->name;
+    $pseudo_record['application']['build'] = sprintf( '%s-%s', CENOZO_BUILD, APP_BUILD );
+    $pseudo_record['application']['cenozo_url'] = CENOZO3_URL;
 
     // the following details are only provided if the user has access to the application
     if( !is_null( $db_user ) && !is_null( $db_role ) )
@@ -150,6 +152,13 @@ class get extends \cenozo\service\service
           'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false
         )
       );
+
+      if( $session->version3 )
+      {
+        $ui_data = lib::create( 'ui\ui3' )::get_ui_data();
+        $pseudo_record['modules'] = $ui_data['modules'];
+        $pseudo_record['menu'] = $ui_data['menu'];
+      }
 
       if( $setting_manager->get_setting( 'module', 'script' ) )
       {
