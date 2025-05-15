@@ -401,7 +401,7 @@ export class CN_base_view extends CN_base_action {
         
         const child_btn_el = CN_element.create(`
           <button name="${child_module.subject}" type="button" class="col btn btn-primary mx-1">
-            ${CN_common.uc_words(child_module.model.name.plural)}
+            ${CN_common.uc_words(child_module.model.name.singular)}
           </button>
         `);
         btn_group_el.append(child_btn_el);

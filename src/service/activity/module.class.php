@@ -58,5 +58,9 @@ class module extends \cenozo\service\site_restricted_module
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) )
       $modifier->where( 'activity.site_id', '=', $db_restrict_site->id );
+
+    $modifier->join( 'user', 'activity.user_id', 'user.id' );
+    $modifier->join( 'site', 'activity.site_id', 'site.id' );
+    $modifier->join( 'role', 'activity.role_id', 'role.id' );
   }
 }

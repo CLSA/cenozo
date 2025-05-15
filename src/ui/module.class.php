@@ -19,7 +19,14 @@ class module extends \cenozo\base_object
    */
   public function __construct( $subject )
   {
+    $db = lib::create( 'business\session' )->get_database();
     $this->subject = $subject;
+    if( $db->table_exists( $subject ) )
+    {
+      $this->column_list = $db->get_column_details( $subject );
+      foreach( $this->column_list as $name => $column )
+        $this->column_list[$name]['required'] = 1 == $column['required'];
+    }
   }
 
   /**
@@ -272,6 +279,8 @@ class module extends \cenozo\base_object
   public function as_array()
   {
     return array(
+      'subject' => $this->subject,
+      'properties' => $this->column_list,
       'actions' => $this->action_list,
       'children' => $this->child_list,
       'choosing' => $this->choose_list,
@@ -284,6 +293,12 @@ class module extends \cenozo\base_object
    * @var string
    */
   private $subject;
+
+  /**
+   * The module's column list
+   * @var array
+   */
+  private $column_list = [];
 
   /**
    * The module's action list

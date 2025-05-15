@@ -36,7 +36,7 @@ export class CN_user_model extends CN_base_model {
               list: moment.tz.names(),
             }
           },
-          am_pm: { title: "Use 12-hour Clock", type: "boolean" },
+          use_12hour_clock: { title: "Use 12-hour Clock", type: "boolean" },
           login_failures: {
             title: "Login Failures",
             is_hidden: (model) => model instanceof CN_base_add,
