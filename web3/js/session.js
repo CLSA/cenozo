@@ -32,6 +32,9 @@ export default {
     for(const module_name in this.data.modules) {
       this.data.modules[module_name].children.sort();
       this.data.modules[module_name].choosing.sort();
+      this.data.modules[module_name].action_allowed = function(type) {
+        return this.actions.hasOwnProperty(type);
+      };
     }
 
     if (this.data.application.development_mode) console.info("Development mode");
@@ -122,7 +125,7 @@ export default {
       } else if (1 == m) {
         // validate and set the module's current action
         action = str;
-        if (!module.actions.hasOwnProperty(action)) {
+        if (!module.action_allowed(action)) {
           throw new Error(
             `Error loading modules: module "${subject}" does not allow action "${action}"`
           );

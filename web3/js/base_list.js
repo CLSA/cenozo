@@ -1,6 +1,7 @@
 import CN_api from "./api.js"
 import CN_common from "./common.js"
 import CN_element from "./element.js"
+import CN_event from "./event.js"
 import CN_session from "./session.js"
 
 import { CN_base_action } from "./base_action.js"
@@ -57,6 +58,25 @@ export class CN_base_list extends CN_base_action {
    */
   async on_add() {
     await CN_session.navigate_to(this.parent_model.get_add_url());
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_delete(record) {
+    // first confirm
+    const modal = CN_event.modal_confirm({
+      static: true,
+      title: "Please Confirm",
+      message: `
+        Are you sure you wish to delete the ${CN_common.uc_words(this.parent_model.name.singular)} record?
+      `,
+    }); 
+
+    if (await modal.test()) {
+      await CN_api.delete(`${this.parent_model.module.subject}/${record.id}`);
+      await this.run();
+    }
   }
 
   /**
@@ -121,7 +141,7 @@ export class CN_base_list extends CN_base_action {
    */
   async on_row_click(record) {
     // do nothing if the view action doesn't exist
-    if (!this.parent_model.module.actions.view) return;
+    if (!this.parent_model.module.action_allowed("view")) return;
 
     await CN_session.navigate_to(this.parent_model.get_view_url(record.id));
   }
@@ -168,6 +188,20 @@ export class CN_base_list extends CN_base_action {
 
         tr_el.innerHTML += `<td class="text-center">${value}</td>`;
       }
+
+      // add an empty header for deleting records
+      if (this.parent_model.module.action_allowed("delete")) {
+        tr_el.innerHTML += `
+          <td class="col-auto p-0">
+            <button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>
+          </td>
+        `;
+
+        tr_el.querySelector("[name=delete]").onclick = () => {
+          this.on_delete(record);
+        };
+      }
+
       body_el.append(tr_el);
     });
 
@@ -256,16 +290,22 @@ export class CN_base_list extends CN_base_action {
     `);
 
     // build the header row
-    let header_tr = document.createElement("tr");
+    let header_tr_el = document.createElement("tr");
     for (const col_name in this.#columns) {
       const col = this.#columns[col_name];
 
       // don't show hidden columns
       if (col.is_hidden(this)) continue;
 
-      header_tr.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${col.title}</th>`;
+      header_tr_el.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${col.title}</th>`;
     }
-    table_el.querySelector("thead[name=header]").append(header_tr);
+
+    // add an empty header for deleting records
+    if (this.parent_model.module.action_allowed("delete")) {
+      header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
+    }
+
+    table_el.querySelector("thead[name=header]").append(header_tr_el);
 
     return table_el;
   }
@@ -279,8 +319,7 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    if (this.parent_model.module.actions.hasOwnProperty('add'))
-    {
+    if (this.parent_model.module.action_allowed("add")) {
       const add_btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary">Add</button>');
       btn_group_el.append(add_btn_el);
       (async () => { add_btn_el.innerHTML = await this.get_text("add"); })();

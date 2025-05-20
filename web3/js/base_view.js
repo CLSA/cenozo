@@ -337,7 +337,7 @@ export class CN_base_view extends CN_base_action {
   create_body_element() {
     const form_el = CN_element.create("<form></form>");
     const fieldset_el = CN_element.create("<fieldset></fieldset>");
-    fieldset_el.disabled = !this.parent_model.module.actions.edit;
+    fieldset_el.disabled = !this.parent_model.module.action_allowed("edit");
     form_el.append(fieldset_el);
 
     for (const prop_name in this.#properties) {

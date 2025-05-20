@@ -170,7 +170,7 @@ export class CN_base_add extends CN_base_action {
       // now view the new record
       const id = await response.text();
       await CN_session.navigate_to(
-        this.parent_model.module.actions.view ?
+        this.parent_model.module.action_allowed("view") ?
         this.parent_model.get_view_url(id) :
         this.parent_model.get_parent_module().model.get_view_url()
       );

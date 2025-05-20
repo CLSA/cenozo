@@ -789,6 +789,12 @@ class ui3 extends \cenozo\base_object
     [
       'id' => NULL,
       'path' => LIB3_URL,
+      'file' => '@popperjs/core/dist/umd/popper.min.js',
+      'build' => APP_BUILD,
+    ],
+    [
+      'id' => NULL,
+      'path' => LIB3_URL,
       'file' => 'bootstrap/dist/js/bootstrap.min.js',
       'build' => APP_BUILD,
     ],
