@@ -61,7 +61,11 @@ export class CN_base_view extends CN_base_action {
    */
   get_text(type) {
     if ("name" == type) {
-      return this.#record.name;
+      return (
+        this.#record.hasOwnProperty("name") ? this.#record.name :
+        this.#record.hasOwnProperty("title") ? this.#record.title :
+        undefined
+      );
     }
 
     if ("header" == type) {
@@ -207,7 +211,7 @@ export class CN_base_view extends CN_base_action {
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete this ${CN_common.uc_words(this.parent_model.name.singular)}?
+        Are you sure you wish to delete this ${this.parent_model.name.singular}?
       `,
     });
 
@@ -254,7 +258,7 @@ export class CN_base_view extends CN_base_action {
               <option value="${option.key}">${option.value}</option>
             `));
           });
-        } 
+        }
 
         control_el.querySelectorAll("option").forEach(option_el => {
           if (
@@ -270,6 +274,12 @@ export class CN_base_view extends CN_base_action {
         });
       } else {
         control_el.value = null === this.#record[prop_name] ? "" : this.#record[prop_name];
+
+        // update textarea sizes
+        if ("text" == prop.type) {
+          control_el.style.height = "";
+          control_el.style.height = control_el.scrollHeight + "px";
+        }
       }
     }
   }
@@ -398,7 +408,7 @@ export class CN_base_view extends CN_base_action {
       // add children to the list selector and render them
       this.parent_model.module.children.forEach((child_subject) => {
         const child_module = CN_session.data.modules[child_subject];
-        
+
         const child_btn_el = CN_element.create(`
           <button name="${child_module.subject}" type="button" class="col btn btn-primary mx-1">
             ${CN_common.uc_words(child_module.model.name.singular)}

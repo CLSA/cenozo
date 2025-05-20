@@ -61,7 +61,11 @@ export default {
   },
 
   get: async function(path, params) {
-    return await this.fetch(path, params);
+    return await this.fetch(
+      path,
+      params,
+      { headers: { "X-No-Activity": true } },
+    );
   },
 
   patch: async function(path, data) {

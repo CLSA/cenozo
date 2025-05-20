@@ -154,6 +154,16 @@ export default {
       control_el = this.create(`<input class="form-control"></input>`);
     } else if ("password" == type) {
       control_el = this.create(`<input type="password" class="form-control"></input>`);
+    } else if ("text" == type) {
+      control_el = this.create(`
+        <textarea
+          class="form-control"
+          oninput="
+            this.style.height = '';
+            this.style.height = this.scrollHeight + 'px';
+          "
+        ></textarea>
+      `);
     } else if ("time" == type) {
       if (undefined === el.params.placeholder) el.params.placeholder = "HH:MM";
 

@@ -69,9 +69,9 @@ export class CN_base_list extends CN_base_action {
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete the ${CN_common.uc_words(this.parent_model.name.singular)} record?
+        Are you sure you wish to delete the ${this.parent_model.name.singular} record?
       `,
-    }); 
+    });
 
     if (await modal.test()) {
       await CN_api.delete(`${this.parent_model.module.subject}/${record.id}`);
