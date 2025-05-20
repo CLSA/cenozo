@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.10';
-$settings['general']['cenozo_build'] = 'ef6f0bf3';
+$settings['general']['cenozo_build'] = '270e658b';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -67,6 +67,9 @@ $settings['general']['uid_regex'] = '^[A-Z][0-9]{6}$';
 
 // the administrator's email (if left NULL this will not be used)
 $settings['general']['admin_email'] = NULL;
+
+// the maximum number of rows that show in a UI list
+$settings['general']['list_row_size'] = 20;
 
 // the number of days after which values in the variable_cache table are deleted
 $settings['general']['variable_cache_expiry'] = 1;

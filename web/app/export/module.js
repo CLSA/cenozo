@@ -645,7 +645,7 @@ cenozoApp.defineModule({
                 path: "export/" + this.record.getIdentifier() + "/participant",
               }).count();
 
-              this.participantCount = parseInt(response.headers("Total"));
+              this.participantCount = parseInt(response.headers("X-Total"));
               this.dataPointCount = this.participantCount * this.columnList.filter((c) => c.include).length;
             },
 

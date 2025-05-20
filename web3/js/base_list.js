@@ -195,7 +195,26 @@ export class CN_base_list extends CN_base_action {
       };
 
       // add pages by number
-      for(let page = 1; page <= pages; page++) {
+      // start by assuming we're at the start of the list
+      let first_page = 1;
+      let last_page = 5 < pages ? 5 : pages;
+
+      if (pages > 5) {
+        if (pages-2 < this.#current_page) {
+          // we're at the end of the list, so show the last 5 pages
+          first_page = pages-4;
+          last_page = pages;
+        } else if (3 < this.#current_page) {
+          // we're in the middle of the list, so put the current page in the middle of the page span
+          // the first page is now two less than the current page
+          first_page = this.#current_page-2;
+
+          // and the last page is at most to more than the current page
+          last_page = this.#current_page+2 > pages ? pages : this.#current_page+2;
+        }
+      }
+
+      for(let page = first_page; page <= last_page; page++) {
         let page_el = CN_element.create(`
           <li class="page-item"><button class="page-link">${page}</button></li>
         `);

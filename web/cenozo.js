@@ -1386,7 +1386,7 @@
           modifier: { where: [], order: undefined },
           select: { column: ["id"] },
         };
-        var columnList = angular.fromJson(response.headers("Columns"));
+        var columnList = angular.fromJson(response.headers("X-Columns"));
 
         for (var column in columnList) {
           if ("active" == column)
@@ -1447,7 +1447,7 @@
           var response = await CnHttpFactory.instance({
             path: restriction.base_table,
           }).head();
-          var columnList = angular.fromJson(response.headers("Columns"));
+          var columnList = angular.fromJson(response.headers("X-Columns"));
           if (
             angular.isDefined(columnList[restriction.subject]) &&
             "enum" == columnList[restriction.subject].data_type
@@ -5648,7 +5648,7 @@
                     };
                   });
                   this.cache = this.cache.concat(response.data);
-                  var total = parseInt(response.headers("Total"));
+                  var total = parseInt(response.headers("X-Total"));
                   this.isReportAllowed =
                     CnSession.application.maxBigReport >= total;
                   this.isReportBig =
@@ -6178,7 +6178,7 @@
                 delete this.paginationModel.ignore;
 
                 this.paginationModel.currentPage = currentPage;
-                var offset = parseInt(response.headers("Offset"));
+                var offset = parseInt(response.headers("X-Offset"));
                 if (null == this.minOffset || offset < this.minOffset)
                   this.minOffset = offset;
 
@@ -6206,7 +6206,7 @@
                   }
                 });
                 this.cache = this.cache.concat(response.data);
-                this.total = parseInt(response.headers("Total"));
+                this.total = parseInt(response.headers("X-Total"));
                 this.isReportAllowed =
                   CnSession.application.maxBigReport >= this.total;
                 this.isReportBig =
@@ -8064,7 +8064,7 @@
                 path: object.module.subject.snake,
               }).head();
 
-              var columnList = angular.fromJson(response.headers("Columns"));
+              var columnList = angular.fromJson(response.headers("X-Columns"));
               for (var column in columnList) {
                 columnList[column].required =
                   "1" == columnList[column].required;
@@ -8852,7 +8852,7 @@
             }
 
             if (["GET", "HEAD"].includes(method)) {
-              object.headers["No-Activity"] = this.noActivity;
+              object.headers["X-No-Activity"] = this.noActivity;
             }
 
             if (angular.isDefined(object.params)) {

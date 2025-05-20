@@ -543,7 +543,7 @@ cenozoApp.defineModule({
               }, []);
 
             var alternateTypeColumn = angular.fromJson(
-              altTypeResponse.headers("Columns")
+              altTypeResponse.headers("X-Columns")
             );
             alternateTypeColumn.required = false;
             alternateTypeColumn.enumList = altTypeListResponse.data.reduce(
@@ -559,7 +559,7 @@ cenozoApp.defineModule({
             );
 
             var phoneColumnList = angular.fromJson(
-              phoneResponse.headers("Columns")
+              phoneResponse.headers("X-Columns")
             );
             phoneColumnList.international.required =
               "1" == phoneColumnList.international.required;
@@ -575,7 +575,7 @@ cenozoApp.defineModule({
             });
 
             var addressColumnList = angular.fromJson(
-              addressResponse.headers("Columns")
+              addressResponse.headers("X-Columns")
             );
             addressColumnList.international.required = false;
             addressColumnList.address1.required = false;

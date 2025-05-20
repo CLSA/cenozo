@@ -45,7 +45,7 @@ class head extends read
     // get the details of the leaf record
     $util_class_name = lib::get_class_name( 'util' );
     $record_class_name = $this->get_leaf_record_class_name();
-    $this->headers['Columns'] = $util_class_name::json_encode( $this->columns );
+    $this->headers['X-Columns'] = $util_class_name::json_encode( $this->columns );
   }
 
   /**

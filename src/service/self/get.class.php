@@ -233,6 +233,8 @@ class get extends \cenozo\service\service
       $activity_mod->where( 'application_id', '=', $db_application->id );
       $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
       $pseudo_record['application']['development_mode'] = lib::in_development_mode();
+      $pseudo_record['application']['list_row_size'] =
+        $setting_manager->get_setting( 'general', 'list_row_size' );
       $pseudo_record['application']['login_failure_limit'] =
         $setting_manager->get_setting( 'general', 'login_failure_limit' );
       $pseudo_record['application']['max_big_report'] =

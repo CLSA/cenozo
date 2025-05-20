@@ -90,9 +90,9 @@ class query extends read
     if( !is_null( $leaf_subject ) )
     {
       $record_class_name = $this->get_leaf_record_class_name();
-      $this->headers['Limit'] = $this->modifier->get_limit();
-      $this->headers['Offset'] = $this->modifier->get_offset();
-      $this->headers['Total'] = $this->get_record_count();
+      $this->headers['X-Limit'] = $this->modifier->get_limit();
+      $this->headers['X-Offset'] = $this->modifier->get_offset();
+      $this->headers['X-Total'] = $this->get_record_count();
       if( !$this->get_argument( 'count', false ) ) $this->set_data( $this->get_record_list() );
     }
   }

@@ -86,7 +86,7 @@ final class bootstrap
 
     // determine if we should record activity
     $util_class_name = lib::get_class_name( 'util' );
-    $this->no_activity = 'true' === $util_class_name::get_header( 'No-Activity' );
+    $this->no_activity = 'true' === $util_class_name::get_header( 'X-No-Activity' );
 
     // set up the logger and session
     lib::create( 'log' );

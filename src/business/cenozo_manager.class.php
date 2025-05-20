@@ -128,7 +128,7 @@ class cenozo_manager extends \cenozo\base_object
       )
     ];
 
-    if( $this->no_activity ) $header_list[] = 'No-Activity:true';
+    if( $this->no_activity ) $header_list[] = 'X-No-Activity:true';
 
     $code = 0;
 
@@ -192,7 +192,7 @@ class cenozo_manager extends \cenozo\base_object
   }
 
   /**
-   * Determines whether to send the "No-Activity" header to cenozo
+   * Determines whether to send the "X-No-Activity" header to cenozo
    * @var boolean
    * @access public
    */
