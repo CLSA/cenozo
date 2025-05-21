@@ -179,10 +179,7 @@ export class CN_base_list extends CN_base_action {
           );
         } else if (CN_common.is_datetime_type(col.type, "time")) {
           value = moment(`${moment().format("YYYY-MM-DD")} ${value}`).format(
-            CN_common.get_time_format(
-              col.type,
-              CN_session.data.user.am_pm
-            )
+            CN_common.get_time_format(CN_session.data.user.am_pm, false)
           );
         }
 

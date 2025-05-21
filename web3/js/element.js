@@ -297,7 +297,10 @@ export default {
     if (undefined !== el.params.placeholder) control_el.setAttribute("placeholder", el.params.placeholder);
     if (undefined !== el.params.max_length) control_el.setAttribute("max_length", el.params.max_length);
     if (['boolean', 'enum'].includes(type)) {
-      control_el.prepend(this.create(`<option value="">${el.params.placeholder}</option>`));
+      if (!el.params.required) {
+        let empty = undefined === el.params.placeholder ? "(empty)" : el.params.placeholder;
+        control_el.prepend(this.create(`<option value="">${empty}</option>`));
+      }
     } else {
       if (el.params.placeholder) control_el.placeholder = el.params.placeholder;
       if (el.params.required) control_el.setAttribute("required", "required");
@@ -347,7 +350,7 @@ export default {
     el.addEventListener("DOMNodeInserted", () => {
       if (undefined !== params.value) {
         const control_el = document.getElementById(params.id);
-        control_el.value = params.value;
+        control_el.value = "boolean" == type ? (params.value ? 1 : 0) : params.value;
       }
     });
 
@@ -416,7 +419,7 @@ export default {
 
   create_clock_settings_modal: function() {
     const modal_el = this.create(`
-      <div id="pn_clock_settings_modal" class="modal fade" tabindex="-1">
+      <div id="cn_clock_settings_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -457,29 +460,29 @@ export default {
       value: "Timezone"
     }));
     timezone_el.append(this.create_form_element("typeahead", {
-      id: "pn_clock_settings_modal_timezone",
+      id: "cn_clock_settings_modal_timezone",
       required: true,
       typeahead: {
         min_length: 2,
         list: moment.tz.names(),
         on_select: (el) => {
-          const timezone_control_el = document.getElementById("pn_clock_settings_modal_timezone");
+          const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
           timezone_control_el.value = el.value;
           timezone_control_el.last_selected_value = el.value;
         },
         on_cancel: () => {
-          const timezone_control_el = document.getElementById("pn_clock_settings_modal_timezone");
+          const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
           timezone_control_el.value = timezone_control_el.last_selected_value;
         },
       },
     }));
-    const timezone_control_el = document.getElementById("pn_clock_settings_modal_timezone");
+    const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
     timezone_control_el.value = CN_session.data.user.timezone;
     timezone_control_el.last_selected_value = CN_session.data.user.timezone;
 
     // add a use 12-hour clock boolean property
     const am_pm_el = this.create_form_label_and_element("boolean", {
-      id: "pn_clock_settings_modal_am_pm",
+      id: "cn_clock_settings_modal_am_pm",
       title: "Use 12-Hour Clock",
       value: CN_session.data.user.am_pm,
       required: true,
@@ -488,7 +491,7 @@ export default {
 
     modal_el.querySelector("[name=save]").onclick = async () => {
       let timezone = timezone_control_el.last_selected_value;
-      let am_pm = "true" == document.getElementById("pn_clock_settings_modal_am_pm").value;
+      let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
       if (
         CN_session.data.user.timezone != timezone ||
         CN_session.data.user.am_pm != am_pm
@@ -497,7 +500,7 @@ export default {
         await CN_api.patch("self/0", {
           user: {
             timezone: timezone,
-            am_pm: am_pm,
+            use_12hour_clock: am_pm,
           },
         });
 
@@ -512,7 +515,7 @@ export default {
 
   create_account_modal: function() {
     const modal_el = this.create(`
-      <div id="pn_account_modal" class="modal fade" tabindex="-1">
+      <div id="cn_account_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -546,7 +549,7 @@ export default {
 
     // add a first name string property
     const first_name_el = this.create_form_label_and_element("string", {
-      id: "pn_account_modal_first_name",
+      id: "cn_account_modal_first_name",
       title: "First Name",
       value: CN_session.data.user.first_name,
       required: true,
@@ -555,7 +558,7 @@ export default {
 
     // add a last name string property
     const last_name_el = this.create_form_label_and_element("string", {
-      id: "pn_account_modal_last_name",
+      id: "cn_account_modal_last_name",
       title: "Last Name",
       value: CN_session.data.user.last_name,
       required: true,
@@ -564,7 +567,7 @@ export default {
 
     // add an email string property
     const email_el = this.create_form_label_and_element("email", {
-      id: "pn_account_modal_email",
+      id: "cn_account_modal_email",
       title: "Email",
       value: CN_session.data.user.email,
       required: true,
@@ -572,9 +575,9 @@ export default {
     form_el.append(email_el);
 
     modal_el.querySelector("[name=save]").onclick = async () => {
-      let first_name = document.getElementById("pn_account_modal_first_name").value;
-      let last_name = document.getElementById("pn_account_modal_last_name").value;
-      let email = document.getElementById("pn_account_modal_email").value;
+      let first_name = document.getElementById("cn_account_modal_first_name").value;
+      let last_name = document.getElementById("cn_account_modal_last_name").value;
+      let email = document.getElementById("cn_account_modal_email").value;
       if (
         CN_session.data.user.first_name != first_name ||
         CN_session.data.user.last_name != last_name ||
@@ -602,7 +605,7 @@ export default {
 
   create_password_modal: function() {
     const modal_el = this.create(`
-      <div id="pn_password_modal" class="modal fade" tabindex="-1">
+      <div id="cn_password_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -640,7 +643,7 @@ export default {
 
     // add a current password string property
     const current_password_el = this.create_form_label_and_element("password", {
-      id: "pn_password_modal_current_password",
+      id: "cn_password_modal_current_password",
       title: "Current Password",
       value: CN_session.data.user.current_password,
       required: true,
@@ -649,7 +652,7 @@ export default {
 
     // add a new password string property
     const new_password_el = this.create_form_label_and_element("password", {
-      id: "pn_password_modal_new_password",
+      id: "cn_password_modal_new_password",
       title: "New Password",
       value: CN_session.data.user.new_password,
       required: true,
@@ -658,7 +661,7 @@ export default {
 
     // add a repeat new password string property
     const new_password_check_el = this.create_form_label_and_element("password", {
-      id: "pn_password_modal_new_password_check",
+      id: "cn_password_modal_new_password_check",
       title: "Repeat New Password",
       value: CN_session.data.user.new_password_check,
       required: true,
@@ -674,9 +677,9 @@ export default {
     new_password_check_el.children[1].classList.replace("col-sm-9", "col-sm-8");
 
     // track when the save button should be enabled
-    const current_password_control_el = document.getElementById("pn_password_modal_current_password");
-    const new_password_control_el = document.getElementById("pn_password_modal_new_password");
-    const new_password_control_check_el = document.getElementById("pn_password_modal_new_password_check");
+    const current_password_control_el = document.getElementById("cn_password_modal_current_password");
+    const new_password_control_el = document.getElementById("cn_password_modal_new_password");
+    const new_password_control_check_el = document.getElementById("cn_password_modal_new_password_check");
 
     const update_save_btn = () => {
       if (

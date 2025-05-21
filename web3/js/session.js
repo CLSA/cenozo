@@ -30,6 +30,10 @@ export default {
   update_data: async function() {
     const response = await CN_api.get("self/0");
     this.data = await response.json();
+    
+    // convert use_12hour_clock to am_pm
+    this.data.user.am_pm = this.data.user.use_12hour_clock;
+    delete this.data.user.use_12hour_clock;
     for(const module_name in this.data.modules) {
       this.data.modules[module_name].children.sort();
       this.data.modules[module_name].choosing.sort();
