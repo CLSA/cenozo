@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script>
+    const CENOZO_URL = "<?php print CENOZO3_URL; ?>";
     const ROOT_URL = "<?php print ROOT_URL; ?>";
     const APP_TITLE = "<?php print APP_TITLE; ?>";
   </script>

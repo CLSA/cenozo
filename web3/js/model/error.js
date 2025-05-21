@@ -38,6 +38,11 @@ export class CN_error_model extends CN_base_object {
     card_el.querySelector(".card-body").innerHTML = this.get_text("message");
     card_el.querySelector(".card-footer").classList.add("bg-danger");
 
+    // add the breadcrumbs
+    const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
+    breadcrumbs_el.innerHTML = "";
+    breadcrumbs_el.append(CN_element.create_breadcrumb_trail(["error"]));
+
     return card_el;
   }
 

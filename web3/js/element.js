@@ -356,27 +356,35 @@ export default {
 
   create_breadcrumb_trail: function(module_list) {
     // create a list of all crumbs (adding chevrons later)
-    let crumb_list = [{name: "Home", path: ""}];
+    const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
+    let crumb_list = [{
+      name: unread ? "Home" : 'Home <i class="bi-envelope-fill text-warning"></i>',
+      path: ""
+    }];
     let parent_module = null;
     module_list.forEach(module_name => {
-      const module = CN_session.data.modules[module_name];
-      if ("add" == module.operation.action) {
-        crumb_list.push({
-          name: `Add ${CN_common.uc_words(module.model.name.singular)}`,
-          path: null,
-        });
-      } else if ("view" == module.operation.action) {
-        crumb_list.push({
-          name: module.model.actions.view.get_text("name"),
-          path: module.model.get_view_url(),
-        });
-      } else if ("list" == module.operation.action) {
-        crumb_list.push({
-          name: CN_common.uc_words(module.model.name.plural),
-          path: null == parent_module ? `${module_name}/list` : parent_module.model.get_view_url(),
-        });
+      if ("error" == module_name) {
+        crumb_list.push({ name: "Error", path: null });
+      } else {
+        const module = CN_session.data.modules[module_name];
+        if ("add" == module.operation.action) {
+          crumb_list.push({
+            name: `Add ${CN_common.uc_words(module.model.name.singular)}`,
+            path: null,
+          });
+        } else if ("view" == module.operation.action) {
+          crumb_list.push({
+            name: module.model.actions.view.get_text("name"),
+            path: module.model.get_view_url(),
+          });
+        } else if ("list" == module.operation.action) {
+          crumb_list.push({
+            name: CN_common.uc_words(module.model.name.plural),
+            path: null == parent_module ? `${module_name}/list` : parent_module.model.get_view_url(),
+          });
+        }
+        parent_module = module;
       }
-      parent_module = module;
     });
 
     // add each crumb to the trail, interspersed by chevrons
@@ -385,10 +393,12 @@ export default {
     crumb_list.forEach(crumb => {
       root_el.append(this.create('<i class="bi-chevron-compact-right text-light"></i>'));
       let crumb_el = this.create(`
-        <button class="btn btn-primary px-1">
-          ${crumb.name}
-        </button>
-      `); 
+        <button
+          class="btn btn-primary px-1"
+          data-bs-dismiss="offcanvas"
+          data-bs-target="#main-menu-offcanvas"
+        >${crumb.name}</button>
+      `);
       last_crumb_el = crumb_el;
       root_el.append(crumb_el);
       if (null == crumb.path) {

@@ -1,6 +1,6 @@
 window.addEventListener("load", function () {
   const logo_el = document.querySelector("#logo");
-  if (logo_el) logo_el.src = ROOT_URL + "/img/branding.png";
+  if (logo_el) logo_el.src = CENOZO_URL + "/img/branding.png";
 
   let browser = null;
   let bad_version = null;

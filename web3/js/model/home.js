@@ -7,7 +7,6 @@ import { CN_base_object } from "../base_object.js"
 
 export class CN_home_model extends CN_base_object {
   #element;
-  #system_message_list = [];
 
   constructor() {
     super();
@@ -72,6 +71,7 @@ export class CN_home_model extends CN_base_object {
       message.unread = true;
     }
 
+    CN_session.update_breadcrumbs();
     this.update_element();
   }
 
@@ -79,10 +79,10 @@ export class CN_home_model extends CN_base_object {
     const sm_el = this.#element.querySelector("[name=system-messages]");
     sm_el.innerHTML = "";
 
-    if (0 == this.#system_message_list.length) {
+    if (0 == CN_session.system_message_list.length) {
       sm_el.append(CN_element.create('<div class="col-form-label">There are no system messages.</div>'));
     } else {
-      this.#system_message_list.forEach(message => {
+      CN_session.system_message_list.forEach(message => {
         const message_el = CN_element.create(`
           <div class="card mt-3 px-0 ${message.unread ? "" : "text-muted"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
@@ -110,7 +110,7 @@ export class CN_home_model extends CN_base_object {
 
   render() {
     this.#element = CN_element.create(`
-      <div class="container-fluid bg-white p-4">
+      <div class="container-fluid rounded bg-white p-4">
         <div class="row">
           <div class="col-sm-6">
             <div class="text-primary fs-4">Welcome to ${this.get_text("title")}</div>
@@ -159,16 +159,7 @@ export class CN_home_model extends CN_base_object {
   }
 
   async run() {
-    const response = await CN_api.get(
-      "self/0/system_message",
-      {
-        no_activity: 1,
-        select: { column: ["id", "title", "note", "unread"] },
-        modifier: { order: { unread: true, id: false } },
-      },
-    );
-    this.#system_message_list = await response.json();
-
+    await CN_session.update_system_messages();
     this.update_element();
   }
 }

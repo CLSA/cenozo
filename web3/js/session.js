@@ -13,6 +13,7 @@ import { CN_error_model } from "./model/error.js"
 
 export default {
   data: null,
+  system_message_list: [],
 
   home_model: null,
   error_model: null,
@@ -38,6 +39,25 @@ export default {
     }
 
     if (this.data.application.development_mode) console.info("Development mode");
+  },
+
+  update_system_messages: async function() {
+    const response = await CN_api.get(
+      "self/0/system_message",
+      {
+        no_activity: 1,
+        select: { column: ["id", "title", "note", "unread"] },
+        modifier: { order: { unread: true, id: false } },
+      },
+    );
+    this.system_message_list = await response.json();
+  },
+
+  update_breadcrumbs: function() {
+    // add the breadcrumbs
+    const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
+    breadcrumbs_el.innerHTML = "";
+    breadcrumbs_el.append(CN_element.create_breadcrumb_trail(this.data.operation_list));
   },
 
   get_time: function() {
@@ -222,12 +242,9 @@ export default {
           .map(module_name => this.data.modules[module_name].model.actions.view.on_load())
       );
 
+      // now run the model and update the breadcrumbs
       await model.run();
-
-      // add the breadcrumbs
-      const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
-      breadcrumbs_el.innerHTML = "";
-      breadcrumbs_el.append(CN_element.create_breadcrumb_trail(this.data.operation_list));
+      await this.update_breadcrumbs();
     } catch (error) {
       throw error;
     }
@@ -266,11 +283,11 @@ export default {
           <button
             name="menu-button"
             type="button"
-            class="btn btn-light my-1 py-1"
+            class="btn btn-outline-light my-1"
             data-bs-toggle="offcanvas"
             data-bs-target="#main-menu-offcanvas"
           >
-            <img src="${ROOT_URL}/img/favicon.ico" alt="#", height=20></img>
+            <strong>${APP_TITLE}</strong>
           </button>
           <div name="breadcrumbs" class="collapse navbar-collapse ms-2">
           </div>
@@ -290,7 +307,7 @@ export default {
         aria-labelledby="main-menu-offcanvas-label"
         data-bs-backdrop="false"
         tabindex="-1"
-        style="translate: 0 43px;"
+        style="translate: 0 46px;"
       >
         <div class="offcanvas-body bg-light">
           <div class="row g-2">
@@ -435,6 +452,12 @@ export default {
     try {
       await this.load_modules();
       await this.render();
+
+      // check for system messages every 5 minutes
+      setInterval(async () => {
+        await this.update_system_messages();
+        await this.update_breadcrumbs();
+      }, 300000);
     } catch (error) {
       this.render_error(error);
     }
