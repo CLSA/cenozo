@@ -641,6 +641,13 @@ class ui3 extends \cenozo\base_object
   {
     $this->link_list[] = [
       'rel' => 'stylesheet',
+      'path' => ROOT_URL,
+      'file' => sprintf( 'css/theme.%s', DEVELOPMENT ? 'css' : 'min.css' ),
+      'build' => APP_BUILD,
+    ];
+
+    $this->link_list[] = [
+      'rel' => 'stylesheet',
       'path' => CSS3_URL,
       'file' => DEVELOPMENT ? 'app.css' : 'app.min.css',
       'build' => CENOZO_BUILD,
@@ -771,12 +778,6 @@ class ui3 extends \cenozo\base_object
       'rel' => 'stylesheet',
       'path' => LIB3_URL,
       'file' => 'bootstrap-icons/font/bootstrap-icons.min.css',
-      'build' => APP_BUILD,
-    ],
-    [
-      'rel' => 'stylesheet',
-      'path' => CSS3_URL,
-      'file' => DEVELOPMENT ? 'app.css' : 'app.min.css',
       'build' => APP_BUILD,
     ],
   ];

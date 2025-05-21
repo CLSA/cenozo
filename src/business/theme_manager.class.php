@@ -26,12 +26,12 @@ class theme_manager extends \cenozo\singleton
     $primary_color = $db_application->primary_color;
     $secondary_color = $db_application->secondary_color;
     $this->base_theme_color = array(
-      'primary' => array(
+      'PRIMARY' => array(
         'r' => hexdec( substr( $primary_color, 1, 2 ) ),
         'g' => hexdec( substr( $primary_color, 3, 2 ) ),
         'b' => hexdec( substr( $primary_color, 5, 2 ) )
       ),
-      'secondary' => array(
+      'SECONDARY' => array(
         'r' => hexdec( substr( $secondary_color, 1, 2 ) ),
         'g' => hexdec( substr( $secondary_color, 3, 2 ) ),
         'b' => hexdec( substr( $secondary_color, 5, 2 ) )
@@ -48,21 +48,19 @@ class theme_manager extends \cenozo\singleton
   /**
    * Used internally to return RGB-HEX color codes
    * 
-   * @param string $type Which color type to return (primary or secondary)
+   * @param string $type Which color type to return (PRIMARY, PRIMARY_DEC, SECONDARY or SECONDARY_DEC)
    * @param float $fraction What fraction to show the color at (0.0 to 1.0)
    * @return string
    * @access protected
    */
-  protected function get_color( $type = 'primary', $fraction = 1.0 )
+  protected function get_color( $type_name = 'PRIMARY', $fraction = 1.0 )
   {
     $fraction = strval( $fraction );
 
-    if( !array_key_exists( $type, $this->theme_color_list ) )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Tried to get theme color for type "%s" which doesn\'t exist.', $type ),
-        __METHOD__ );
-
     // add the color if it doesn't exist
+    $parts = explode( '_', $type_name );
+    $type = $parts[0];
+    $decimal = 1 < count( $parts ) && 'DEC' == $parts[1];
     if( !array_key_exists( $fraction, $this->theme_color_list[$type] ) )
     {
       $r = intval( $fraction * $this->base_theme_color[$type]['r'] );
@@ -72,10 +70,13 @@ class theme_manager extends \cenozo\singleton
       $b = intval( $fraction * $this->base_theme_color[$type]['b'] );
       if( 0 > $b ) $b = 0; else if( 255 < $b ) $b = 255;
 
-      $this->theme_color_list[$type][$fraction] = sprintf( '#%s%s%s', dechex( $r ), dechex( $g ), dechex( $b ) );
+      $this->theme_color_list[$type][$fraction] = [
+        'dec' => sprintf( '%d, %d, %d', $r, $g, $b ),
+        'hex' => sprintf( '#%s%s%s', dechex( $r ), dechex( $g ), dechex( $b ) ),
+      ];
     }
 
-    return $this->theme_color_list[$type][$fraction];
+    return $this->theme_color_list[$type][$fraction][$decimal ? 'dec' : 'hex'];
   }
 
   /**
@@ -85,24 +86,44 @@ class theme_manager extends \cenozo\singleton
    */
   public function generate_theme_css()
   {
+    $regex = '/(PRIMARY|PRIMARY_DEC|SECONDARY|SECONDARY_DEC)\(([^)]+)\)/';
+
+    // start with the version 2 css theme.css file
     $css = $this->css_template;
 
     // find all color types in the css template
-    $regex = sprintf( '/(%s)\(([^)]+)\)/',
-                      strtoupper( implode( '|', array_keys( $this->theme_color_list ) ) ) );
     $matches = array();
     preg_match_all( $regex, $css, $matches );
 
     // replace color references in the css string with actual values
     foreach( $matches[0] as $index => $match )
     {
-      $type = strtolower( $matches[1][$index] );
+      $type = $matches[1][$index];
       $fraction = $matches[2][$index];
       $css = str_replace( $match, $this->get_color( $type, $fraction ), $css );
     }
 
     $filename = sprintf( '%s/web/css/theme.css', APPLICATION_PATH );
-    return false !== file_put_contents( $filename, $css );
+    $success = false !== file_put_contents( $filename, $css );
+
+    // now generate the version 3 css theme.css file
+    $css = $this->css3_template;
+
+    // find all color types in the css template
+    $matches = array();
+    preg_match_all( $regex, $css, $matches );
+
+    // replace color references in the css string with actual values
+    foreach( $matches[0] as $index => $match )
+    {
+      $type = $matches[1][$index];
+      $fraction = $matches[2][$index];
+      $css = str_replace( $match, $this->get_color( $type, $fraction ), $css );
+    }
+
+    $filename = sprintf( '%s/web3/css/theme.css', APPLICATION_PATH );
+
+    return $success && false !== file_put_contents( $filename, $css );
   }
 
   /**
@@ -312,6 +333,143 @@ fieldset[disabled] .btn-info.active {
 }
 .panel-info > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: SECONDARY(1.0);
+}
+CSS;
+
+  /**
+   * A CSS template used when writing the theme.css file
+   * @var
+   * @access protected
+   */
+  protected $css3_template = <<<'CSS'
+[data-bs-theme="custom"] {
+  --bs-link-color: PRIMARY(1.0);
+  --bs-link-color-rgb: PRIMARY_DEC(1.0);
+  --bs-primary-rgb: PRIMARY_DEC(1.0);
+  --bs-primary-hover-bg: PRIMARY_DEC(1.25);
+  --bs-primary-hover-border: PRIMARY_DEC(0.87);
+  --bs-primary-active-bg: PRIMARY_DEC(0.75);
+  --bs-primary-active-border: PRIMARY_DEC(0.4);
+
+  --bs-info-rgb: SECONDARY_DEC(1.0);
+  --bs-info-hover-bg: SECONDARY_DEC(1.25);
+  --bs-info-hover-border: SECONDARY_DEC(0.87);
+  --bs-info-active-bg: SECONDARY_DEC(0.75);
+  --bs-info-active-border: SECONDARY_DEC(0.4);
+
+  .text-bg-primary {
+    background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity, 1)) !important;
+  }
+
+  .bg-primary {
+    background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity)) !important;
+  }
+
+  .bg-primary-subtle {
+    background-color: var(--bs-primary-rgb-subtle) !important;
+  }
+
+  .btn-primary {
+    --bs-btn-bg: rgb(var(--bs-primary-rgb));
+    --bs-btn-border-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-hover-bg: rgb(var(--bs-primary-hover-bg));
+    --bs-btn-hover-border-color: rgb(var(--bs-primary-hover-border));
+    --bs-btn-active-bg: rgb(var(--bs-primary-active-bg));
+    --bs-btn-active-border-color: rgb(var(--bs-primary-active-border));
+    --bs-btn-disabled-bg: rgb(var(--bs-primary-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .btn-outline-primary {
+    --bs-btn-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-border-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-hover-bg: rgb(var(--bs-primary-rgb));
+    --bs-btn-hover-border-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-active-bg: rgb(var(--bs-primary-rgb));
+    --bs-btn-active-border-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-disabled-color: rgb(var(--bs-primary-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .form-check-input:checked {
+    background-color: rgb(var(--bs-primary-rgb));
+    border-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .form-check-input[type=checkbox]:indeterminate {
+    background-color: rgb(var(--bs-primary-rgb));
+    border-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .form-range::-webkit-slider-thumb {
+    background-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .form-range::-moz-range-thumb {
+    background-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .dropdown-menu {
+    --bs-dropdown-link-active-bg: rgb(var(--bs-primary-rgb));
+  }
+
+  .dropdown-menu-dark {
+    --bs-dropdown-link-active-bg: rgb(var(--bs-primary-rgb));
+  }
+
+  .nav-pills {
+    --bs-nav-pills-link-active-bg: rgb(var(--bs-primary-rgb));
+  }
+
+  .list-group {
+    --bs-list-group-active-bg: rgb(var(--bs-primary-rgb));
+    --bs-list-group-active-border-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .text-bg-info {
+    color: #000 !important;
+    background-color: rgba(var(--bs-info-rgb), var(--bs-bg-opacity, 1)) !important;
+  }
+
+  .bg-info {
+    background-color: rgba(var(--bs-info-rgb), var(--bs-bg-opacity)) !important;
+  }
+
+  .bg-info-subtle {
+    background-color: var(--bs-info-rgb-subtle) !important;
+  }
+
+  .pagination {
+    --bs-pagination-active-bg: rgb(var(--bs-primary-rgb));
+    --bs-pagination-active-border-color: rgb(var(--bs-primary-rgb));
+  }
+
+  .progress,
+  .progress-stacked {
+    --bs-progress-bar-bg: rgb(var(--bs-primary-rgb));
+  }
+
+  .btn-info {
+    --bs-btn-bg: rgb(var(--bs-info-rgb));
+    --bs-btn-border-color: rgb(var(--bs-info-rgb));
+    --bs-btn-hover-bg: rgb(var(--bs-info-hover-bg));
+    --bs-btn-hover-border-color: rgb(var(--bs-info-hover-border));
+    --bs-btn-active-bg: rgb(var(--bs-info-active-bg));
+    --bs-btn-active-border-color: rgb(var(--bs-info-active-border));
+    --bs-btn-disabled-bg: rgb(var(--bs-info-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-info-rgb));
+  }
+
+  .btn-outline-info {
+    --bs-btn-color: rgb(var(--bs-info-rgb));
+    --bs-btn-border-color: rgb(var(--bs-info-rgb));
+    --bs-btn-hover-bg: rgb(var(--bs-info-rgb));
+    --bs-btn-hover-border-color: rgb(var(--bs-info-rgb));
+    --bs-btn-active-bg: rgb(var(--bs-info-rgb));
+    --bs-btn-active-border-color: rgb(var(--bs-info-rgb));
+    --bs-btn-disabled-color: rgb(var(--bs-info-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-info-rgb));
+  }
 }
 CSS;
 }
