@@ -31,7 +31,6 @@ export class CN_system_message_model extends CN_base_model {
                 table: "application",
                 column: "title",
                 alias: "name",
-                table_prefix: false,
               } },
               modifier: {
                 where: { column: "application.id", operator: "=", value: CN_session.data.application.id },

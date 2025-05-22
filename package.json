@@ -1,6 +1,6 @@
 {
   "name": "cenozo",
-  "description": "An Angular+PHP framework used to build logistics web applications for scientific studies.",
+  "description": "An Javascript+PHP framework used to build logistics web applications for scientific studies.",
   "version": "3.0",
   "author": {
     "name": "Patrick D. Emond",
