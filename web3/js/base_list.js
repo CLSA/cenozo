@@ -27,6 +27,14 @@ export class CN_base_list extends CN_base_action {
     this.#columns = CN_common.clone(columns);
     for (var col_name in this.#columns) {
       const col = this.#columns[col_name];
+
+      // by default always prefix the table name
+      if (undefined === col.table_prefix) col.table_prefix = true;
+
+      // by default center align all columns
+      if (undefined === col.align) col.align = "center";
+
+      // define the is_hidden function if it hasn't been defined
       if (!CN_common.is_function(col.is_hidden)) {
         col.is_hidden = () => {
           if (!col.column) return false;
@@ -95,14 +103,19 @@ export class CN_base_list extends CN_base_action {
     // run through the columns and build the query's select parameter
     let columns = [];
     for (const col_name in this.#columns) {
-      let column = this.#columns[col_name].column;
-      if (!column) column = `${this.parent_model.module.subject}.${col_name}`;
-      let [table, name] = column.split(".");
-      params.select.column.push({
-        table: table,
-        column: name,
-        alias: col_name
-      });
+      if (this.#columns[col_name].table_prefix) {
+        let column = this.#columns[col_name].column;
+        if (!column) column = `${this.parent_model.module.subject}.${col_name}`;
+        let [table, name] = column.split(".");
+        params.select.column.push({
+          table: table,
+          column: name,
+          alias: col_name
+        });
+      } else {
+        // no table prefix means just add the column name
+        params.select.column.push(col_name);
+      }
     }
 
     const response = await CN_api.get(this.parent_model.get_base_path("api"), params);
@@ -183,7 +196,7 @@ export class CN_base_list extends CN_base_action {
           );
         }
 
-        tr_el.innerHTML += `<td class="text-center">${value}</td>`;
+        tr_el.innerHTML += `<td class="text-${col.align}">${value}</td>`;
       }
 
       // add an empty header for deleting records
