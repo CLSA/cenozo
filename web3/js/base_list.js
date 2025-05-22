@@ -154,7 +154,7 @@ export class CN_base_list extends CN_base_action {
    */
   async on_row_click(record) {
     // do nothing if the view action doesn't exist
-    if (!this.parent_model.module.action_allowed("view")) return;
+    if (!this.parent_model.allow_view()) return;
 
     await CN_session.navigate_to(this.parent_model.get_view_url(record.id));
   }
@@ -194,13 +194,15 @@ export class CN_base_list extends CN_base_action {
           value = moment(`${moment().format("YYYY-MM-DD")} ${value}`).format(
             CN_common.get_time_format(CN_session.data.user.am_pm, false)
           );
+        } else if (CN_common.is_string(value) && 0 < col.limit) {
+          value = value.substring(0, col.limit);
         }
 
         tr_el.innerHTML += `<td class="text-${col.align}">${value}</td>`;
       }
 
       // add an empty header for deleting records
-      if (this.parent_model.module.action_allowed("delete")) {
+      if (this.parent_model.allow_delete()) {
         tr_el.innerHTML += `
           <td class="col-auto p-0">
             <button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>
@@ -311,7 +313,7 @@ export class CN_base_list extends CN_base_action {
     }
 
     // add an empty header for deleting records
-    if (this.parent_model.module.action_allowed("delete")) {
+    if (this.parent_model.allow_delete()) {
       header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
     }
 
@@ -329,7 +331,7 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    if (this.parent_model.module.action_allowed("add")) {
+    if (this.parent_model.allow_add()) {
       const add_btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary">Add</button>');
       btn_group_el.append(add_btn_el);
       (async () => { add_btn_el.innerHTML = await this.get_text("add"); })();

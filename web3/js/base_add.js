@@ -58,7 +58,7 @@ export class CN_base_add extends CN_base_action {
         prop.get_default = () => (
           parent_module && prop_name.match(`${parent_module.subject}_id`) ?
           parent_module.model.actions.view.record.id :
-          module_prop.default
+          (module_prop ? module_prop.default : null)
         );
       }
     }
@@ -95,6 +95,7 @@ export class CN_base_add extends CN_base_action {
     // load dynamic enums
     const promise_list = [];
     for (var prop_name in this.#properties) {
+      const module_prop = this.parent_model.module.properties[prop_name];
       const prop = this.#properties[prop_name];
       if ("enum" == prop.type) {
         if (CN_common.is_object(prop.enum) && prop.enum.path) {
@@ -115,7 +116,7 @@ export class CN_base_add extends CN_base_action {
           promise_list.push(get_enums());
         } else {
           // enum properties with an enum object use the column definition
-          let matches = this.parent_model.module.properties[prop_name].type.match(/^enum\('(.+)'\)$/);
+          let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
           if (null == matches) {
             throw new Error(`Property ${prop_name} has no valid enum values.`);
           } else {
@@ -155,7 +156,7 @@ export class CN_base_add extends CN_base_action {
       }
 
       // make sure required properties are available
-      if (module_prop.required && "" === control_el.value) {
+      if (module_prop && module_prop.required && "" === control_el.value) {
         prop.element.show_error("Can't be empty", 0);
         valid = false;
       }
@@ -170,7 +171,7 @@ export class CN_base_add extends CN_base_action {
       // now view the new record
       const id = await response.text();
       await CN_session.navigate_to(
-        this.parent_model.module.action_allowed("view") ?
+        this.parent_model.allow_view() ?
         this.parent_model.get_view_url(id) :
         this.parent_model.get_parent_module().model.get_view_url()
       );
@@ -195,7 +196,6 @@ export class CN_base_add extends CN_base_action {
     super.update_element();
 
     for (const prop_name in this.#properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
       const prop = this.#properties[prop_name];
       const prop_el = this.element.querySelector(`[name=${prop.id}]`);
       const control_el = document.getElementById(prop.id);
@@ -265,7 +265,7 @@ export class CN_base_add extends CN_base_action {
         id: prop.id,
         name: prop_name,
         title: prop.title,
-        required: module_prop.required,
+        required: module_prop ? module_prop.required : false,
       };
 
       // if this is a typeahead then create a copy of the typeahead object
@@ -284,7 +284,7 @@ export class CN_base_add extends CN_base_action {
         params.max = prop.max;
       }
 
-      if (module_prop.max_length) {
+      if (module_prop && module_prop.max_length) {
         params.max_length = module_prop.max_length;
       }
 

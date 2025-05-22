@@ -91,7 +91,9 @@ export class CN_base_view extends CN_base_action {
     // load dynamic enums
     const promise_list = [];
     for (var prop_name in this.#properties) {
+      const module_prop = this.parent_model.module.properties[prop_name];
       const prop = this.#properties[prop_name];
+
       if ("enum" == prop.type) {
         if (CN_common.is_object(prop.enum) && prop.enum.path) {
           // populate the enum
@@ -110,8 +112,8 @@ export class CN_base_view extends CN_base_action {
           }
           promise_list.push(get_enums());
         } else {
-          // enum properties with an enum object use the column definition
-          let matches = this.parent_model.module.properties[prop_name].type.match(/^enum\('(.+)'\)$/);
+          // enum properties without an enum path use the column definition
+          let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
           if (null == matches) {
             throw new Error(`Property ${prop_name} has no valid enum values.`);
           } else {
@@ -166,7 +168,6 @@ export class CN_base_view extends CN_base_action {
   async on_change(prop_name) {
     const prop = this.#properties[prop_name];
     const control_el = document.getElementById(prop.id);
-    const module_prop = this.parent_model.module.properties[prop_name];
 
     try {
       // update the server
@@ -252,7 +253,7 @@ export class CN_base_view extends CN_base_action {
       if (["boolean", "enum"].includes(prop.type)) {
         if ("boolean" == prop.type) {
         } else if ("enum" == prop.type) {
-          control_el.innerHTML = module_prop.required ?  "" : `<option value="">(empty)</option>`;
+          control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
           prop.enum.values.forEach(option => {
             control_el.append(CN_element.create(`
               <option value="${option.key}">${option.value}</option>
@@ -309,7 +310,7 @@ export class CN_base_view extends CN_base_action {
         id: prop.id,
         name: prop_name,
         title: prop.title,
-        required: module_prop.required,
+        required: module_prop ? module_prop.required : false,
         placeholder: "(empty)",
       };
 
@@ -347,7 +348,7 @@ export class CN_base_view extends CN_base_action {
   create_body_element() {
     const form_el = CN_element.create("<form></form>");
     const fieldset_el = CN_element.create("<fieldset></fieldset>");
-    fieldset_el.disabled = !this.parent_model.module.action_allowed("edit");
+    fieldset_el.disabled = !this.parent_model.allow_edit();
     form_el.append(fieldset_el);
 
     for (const prop_name in this.#properties) {

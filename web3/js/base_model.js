@@ -26,8 +26,6 @@ export class CN_base_model extends CN_base_object {
 
   // convenience methods
   get_parent_module() { return this.#module.operation.parent_module; }
-
-  // convenience methods
   get_list_url() { return this.get_base_path("url") + "/list"; }
   get_add_url() { return this.get_base_path("url") + "/add"; }
   get_view_url(id = null) {
@@ -65,14 +63,16 @@ export class CN_base_model extends CN_base_object {
     if (params.properties) {
       // make sure all properties exist in the module
       for (let prop_name in params.properties) {
-        if (!this.#module.properties.hasOwnProperty(prop_name)) {
-          throw new Error(
-            `Model property "${prop_name}" does not exist in parent "${this.#module.subject}" module.`
-          );
-        }
+        if (!params.properties[prop_name].meta_column) {
+          if (!this.#module.properties.hasOwnProperty(prop_name)) {
+            throw new Error(
+              `Model property "${prop_name}" does not exist in parent "${this.#module.subject}" module.`
+            );
+          }
 
-        if (this.#module.properties[prop_name].type.match(/unsigned/)) {
-          params.properties[prop_name].min = 0;
+          if (this.#module.properties[prop_name].type.match(/unsigned/)) {
+            params.properties[prop_name].min = 0;
+          }
         }
       }
 
@@ -80,6 +80,14 @@ export class CN_base_model extends CN_base_object {
       this.#actions.view = new this.#module.classes.view(this, params.properties);
     }
   }
+
+  /**
+   * ADD DOCS
+   */
+  allow_add() { return this.module.action_allowed("add"); }
+  allow_delete() { return this.module.action_allowed("delete"); }
+  allow_edit() { return this.module.action_allowed("edit"); }
+  allow_view() { return this.module.action_allowed("view"); }
 
   /**
    * ADD DOCS
