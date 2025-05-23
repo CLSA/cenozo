@@ -197,6 +197,8 @@ export default {
       control_el = this.create(`<input class="form-control"></input>`);
 
       if (CN_common.is_object(el.params.typeahead)) {
+        el.params.typeahead.promise = null;
+        el.params.typeahead.timeout_id = null;
         el.params.typeahead.open = false;
 
         // create the typeahead's element
@@ -241,33 +243,57 @@ export default {
         }
 
         // listen for when the input's value has changed
-        control_el.addEventListener('input', () => {
-          // search for matches after the input is at least min_length characters
-          if (el.params.typeahead.min_length <= control_el.value.length) {
-            // replace the dropdown's list with the matching items
-            const ul_el = typeahead_el.querySelector("ul");
+        control_el.addEventListener('input', async () => {
+          const typeahead = el.params.typeahead;
 
-            ul_el.innerHTML = "";
-            el.params.typeahead.list.filter(
-              item => item.match(new RegExp(control_el.value, "i"))
-            ).slice(
-              0, 20
-            ).forEach(item => {
-              const item_el = this.create(`<li><btn class="dropdown-item">${item}</btn></li>`);
-              ul_el.append(item_el);
+          // only proceed if the typeahead isn't loading and we've reached the min length threshold
+          if (typeahead.min_length > control_el.value.length) return;
+
+          // wait for the last request to complete
+          await typeahead.promise;
+
+          // clear any previous attempt that happened too soon ago
+          if (null != typeahead.timeout_id) {
+            clearTimeout(typeahead.timeout_id);
+            typeahead.timeout_id = null;
+          }
+
+          // wait at short while after the user has stopped typing before proceeding
+          typeahead.timeout_id = setTimeout(typeahead.promise = async () => {
+            typeahead.timeout_id = null;
+
+            typeahead.list = (
+              CN_common.is_function(typeahead.get_list) ?
+              // call the get_list function to generate the list
+              await typeahead.get_list(control_el.value) :
+              // there is no get_list function so just use the list property instead
+              typeahead.list.filter(item => item.match(new RegExp(control_el.value, "i")))
+            )
+              // convert string values to objects with label and value properties
+              .map(item => CN_common.is_object(item) ? item : { label: item, value: item })
+              // only use the first 20 results (to limit the size of the dropdown list)
+              .slice(0, 20);
+
+            // now create a list of <li> elements for the typeahead's <ul> element
+            // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
+            const li_el_list = typeahead.list.map(item => {
+              const item_el = this.create(`<li><btn class="dropdown-item">${item.label}</btn></li>`)
               item_el.onclick = () => {
-                control_el.value = item;
-                if (CN_common.is_function(el.params.typeahead.on_select)) {
-                  el.params.typeahead.on_select(control_el);
+                control_el.value = item.label;
+                if (CN_common.is_function(typeahead.on_select)) {
+                  typeahead.on_select(control_el);
                 }
                 dropdown_bs.hide();
               }
+              return item_el;
             });
 
-            if (!el.params.typeahead.open) {
-              dropdown_bs.show();
-            }
-          }
+            // now replace the dropdown's list with the matching items
+            const ul_el = typeahead_el.querySelector("ul");
+            ul_el.innerHTML = "";
+            li_el_list.forEach(item_el => ul_el.append(item_el));
+            if (!typeahead.open) dropdown_bs.show();
+          }, 200);
         });
       }
     } else {
@@ -711,7 +737,7 @@ export default {
       } else {
         // update the server
         try {
-          const response = await CN_api.patch("self/0", {
+          await CN_api.patch("self/0", {
             user: {
               password: {
                 current: current_password,

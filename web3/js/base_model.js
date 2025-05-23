@@ -1,4 +1,3 @@
-import CN_api from "./api.js"
 import CN_common from "./common.js"
 import CN_element from "./element.js"
 import CN_event from "./event.js"

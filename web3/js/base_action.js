@@ -62,10 +62,10 @@ export class CN_base_action extends CN_base_object {
   on_pre_loading() {
     this.#is_loading = true;
 
-    // Show placeholder while loading data, but only if it takes longer than 100 ms
+    // Show placeholder while loading data, but only if it takes longer than 200 ms
     this.#placeholder_timeout_id = setTimeout(() => {
       this.show_placeholder();
-    }, 100);
+    }, 200);
   }
 
   /**

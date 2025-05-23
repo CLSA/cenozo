@@ -151,6 +151,10 @@ export class CN_base_add extends CN_base_action {
           null :
           control_el.options[control_el.selectedIndex].value
         );
+      } else if ("typeahead" == prop.type) {
+        // convert from label to value by looking up the element's typeahead list in the params object
+        // NOTE: this is not the same as the property's params object (it is copied when the element is created)
+        record[prop_name] = prop.element.params.typeahead.list.find(item => control_el.value === item.label).value;
       } else {
         record[prop_name] = control_el.value;
       }

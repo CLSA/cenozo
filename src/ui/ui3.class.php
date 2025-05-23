@@ -259,6 +259,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'alternate' == $module->get_subject() )
       {
+        /*
         $module->add_choose( 'alternate_type' );
         $module->add_child( 'address' );
         $module->add_child( 'phone' );
@@ -266,6 +267,7 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'form' );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
+        */
       }
       else if( 'alternate_consent' == $module->get_subject() )
       {

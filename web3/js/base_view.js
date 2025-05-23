@@ -35,7 +35,7 @@ export class CN_base_view extends CN_base_action {
         if (!prop.typeahead.on_cancel) {
           prop.typeahead.on_cancel = (el) => {
             // put the record's value back
-            el.value = this.#record[el.getAttribute("name")];
+            el.value = this.get_record_label(el.getAttribute("name"));
           };
         }
         if (!prop.typeahead.on_select) {
@@ -59,11 +59,22 @@ export class CN_base_view extends CN_base_action {
   /**
    * ADD DOCS
    */
+  get_record_label(col_name) {
+    return (
+      undefined !== this.#record[`formatted_${col_name}`] ?
+      this.#record[`formatted_${col_name}`] :
+      this.#record[col_name]
+    );
+  }
+
+  /**
+   * ADD DOCS
+   */
   get_text(type) {
     if ("name" == type) {
       return (
-        this.#record.hasOwnProperty("name") ? this.#record.name :
-        this.#record.hasOwnProperty("title") ? this.#record.title :
+        this.#record.hasOwnProperty("name") ? this.get_record_label("name") :
+        this.#record.hasOwnProperty("title") ? this.get_record_label("title") :
         undefined
       );
     }
@@ -177,6 +188,10 @@ export class CN_base_view extends CN_base_action {
         data[prop_name] = "" == data[prop_name] ? null : Number(data[prop_name]);
       } else if ("date" == prop.type) {
         if ("" == data[prop_name]) data[prop_name] = null;
+      } else if ("typeahead" == prop.type) {
+        // convert from label to value by looking up the element's typeahead list in the params object
+        // NOTE: this is not the same as the property's params object (it is copied when the element is created)
+        data[prop_name] = prop.element.params.typeahead.list.find(item => control_el.value === item.label).value;
       }
 
       await CN_api.patch(
@@ -274,7 +289,8 @@ export class CN_base_view extends CN_base_action {
           }
         });
       } else {
-        control_el.value = null === this.#record[prop_name] ? "" : this.#record[prop_name];
+        let value = this.get_record_label(prop_name);
+        control_el.value = null === value ? "" : value;
 
         // update textarea sizes
         if ("text" == prop.type) {

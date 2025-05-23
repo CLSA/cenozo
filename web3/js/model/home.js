@@ -64,10 +64,10 @@ export class CN_home_model extends CN_base_object {
 
   async mark_message(message) {
     if (message.unread) {
-      const response = await CN_api.post(`system_message/${message.id}/user`, CN_session.data.user.id);
+      await CN_api.post(`system_message/${message.id}/user`, CN_session.data.user.id);
       message.unread = false;
     } else {
-      const response = await CN_api.delete(`system_message/${message.id}/user/${CN_session.data.user.id}`);
+      await CN_api.delete(`system_message/${message.id}/user/${CN_session.data.user.id}`);
       message.unread = true;
     }
 
