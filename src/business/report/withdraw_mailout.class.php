@@ -33,6 +33,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
     if( $o_and_d ) $select->add_column( 'IFNULL( option_and_delink.alternate, "" )', 'Alternate', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'uid', 'UID' );
+    $select->add_column( 'cohort.name', 'Cohort', false );
     $this->add_application_identifier_columns( $select, $modifier );
 
     if( $o_and_d )
@@ -95,6 +96,7 @@ class withdraw_mailout extends \cenozo\business\report\base_report
       ')'
     );
     $modifier->order( 'uid' );
+    $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'participant_first_address', 'participant.id', 'participant_first_address.participant_id' );
     $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
