@@ -161,9 +161,13 @@ cenozoApp.defineModule({
         type: "enum",
         isConstant: true,
       },
-      current_sex: {
-        title: "Current Sex",
+      gender_identity: {
+        title: "Gender Identity",
         type: "enum",
+      },
+      pronouns: {
+        title: "Pronouns",
+        type: "string",
       },
       date_of_birth: {
         title: "Date of Birth",
@@ -1612,6 +1616,7 @@ cenozoApp.defineModule({
             cohortList: [],
             relationTypeList: [],
             sexList: [],
+            genderIdentityList: [],
             languageList: [],
             availabilityTypeList: [],
             phoneTypeList: [],
@@ -1712,6 +1717,8 @@ cenozoApp.defineModule({
             "other_name",
             "last_name",
             "sex",
+            "gender_identity",
+            "pronouns",
             "date_of_birth",
             "language",
             "availability_type",
@@ -1742,6 +1749,8 @@ cenozoApp.defineModule({
             try {
               await object.parentModel.metadata.getPromise();
               object.sexList = object.parentModel.metadata.columnList.sex.enumList.map(row => row.name);
+              object.genderIdentityList =
+                object.parentModel.metadata.columnList.gender_identity.enumList.map(row => row.name);
 
               await object.addressModel.metadata.getPromise();
               await object.phoneModel.metadata.getPromise();
@@ -2067,7 +2076,8 @@ cenozoApp.defineModule({
                 "language_id",
                 "preferred_site_id",
                 "sex",
-                "current_sex",
+                "gender_identity",
+                "pronouns",
               ],
               object.module,
               CnParticipantModelFactory.root.metadata.columnList
@@ -2108,7 +2118,7 @@ cenozoApp.defineModule({
 
               relationTypeIdItem.enumList.unshift({ value: "", name: "(empty)" });
 
-              const index = object.participantInputList.findIndexByProperty("column", "sex");
+              const index = object.participantInputList.findIndexByProperty("column", "pronouns");
               object.participantInputList.splice(index, 0, relationTypeIdItem);
             }
 

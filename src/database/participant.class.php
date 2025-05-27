@@ -800,20 +800,38 @@ class participant extends record
     }
     $db_participant->cohort_id = $db_cohort->id;
 
-    if( array_key_exists( 'grouping', $data ) && !is_null( $data['grouping'] ) ) $db_participant->grouping = $data['grouping'];
-    if( array_key_exists( 'honorific', $data ) && !is_null( $data['honorific'] ) ) $db_participant->honorific = $data['honorific'];
+    if( array_key_exists( 'grouping', $data ) && !is_null( $data['grouping'] ) )
+      $db_participant->grouping = $data['grouping'];
+    if( array_key_exists( 'honorific', $data ) && !is_null( $data['honorific'] ) )
+      $db_participant->honorific = $data['honorific'];
     $db_participant->first_name = $first_name;
-    if( array_key_exists( 'other_name', $data ) && !is_null( $data['other_name'] ) ) $db_participant->other_name = $data['other_name'];
+    if( array_key_exists( 'other_name', $data ) && !is_null( $data['other_name'] ) )
+      $db_participant->other_name = $data['other_name'];
     $db_participant->last_name = $last_name;
 
     if( array_key_exists( 'sex', $data ) && !is_null( $data['sex'] ) )
     {
-      if( !in_array( $data['sex'], static::get_enum_values( 'sex' ) ) ) return sprintf( 'Invalid sex "%s".', $data['sex'] );
+      if( !in_array( $data['sex'], static::get_enum_values( 'sex' ) ) )
+        return sprintf( 'Invalid sex "%s".', $data['sex'] );
       $db_participant->sex = $data['sex'];
     }
     else $db_participant->sex = 'male';
 
-    $db_participant->current_sex = $db_participant->sex;
+    if( array_key_exists( 'gender_identity', $data ) && !is_null( $data['gender_identity'] ) )
+    {
+      if( !in_array( $data['gender_identity'], static::get_enum_values( 'gender_identity' ) ) )
+        return sprintf( 'Invalid gender identity "%s".', $data['gender_identity'] );
+      $db_participant->gender_identity = $data['gender_identity'];
+    }
+    else
+    {
+      $db_participant->gender_identity = 'other';
+      if ('male' == $db_participant->sex) $db_participant->gender_identity = 'man';
+      else if ('female' == $db_participant->sex) $db_participant->gender_identity = 'woman';
+    }
+
+    if( array_key_exists( 'pronouns', $data ) && !is_null( $data['pronouns'] ) )
+      $db_participant->pronouns = $data['pronouns'];
 
     if( array_key_exists( 'date_of_birth', $data ) && !is_null( $data['date_of_birth'] ) )
     {
