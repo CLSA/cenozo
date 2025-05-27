@@ -298,6 +298,11 @@ export class CN_base_view extends CN_base_action {
           control_el.style.height = control_el.scrollHeight + "px";
         }
       }
+
+      // flash the border green to show the data has been updated
+      const old_style = control_el.style;
+      control_el.style["border-color"] = "green";
+      setTimeout(() => { control_el.style = old_style; }, 500);
     }
   }
 
