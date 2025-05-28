@@ -194,7 +194,6 @@ cenozoApp.defineModule({
           this.onNew = async function (record) {
             await this.$$onNew(record);
 
-            var parent = this.parentModel.getParentIdentifier();
             var response = await CnHttpFactory.instance({
               path: "application/0",
               data: { select: { column: ["mail_name", "mail_address"] } },
@@ -203,25 +202,16 @@ cenozoApp.defineModule({
             record.from_name = response.data.mail_name;
             record.from_address = response.data.mail_address;
 
+            var parent = this.parentModel.getParentIdentifier();
+            if (angular.isUndefined(parent.subject) || angular.isUndefined(parent.identifier)) return;
+
             var response = await CnHttpFactory.instance({
               path: parent.subject + "/" + parent.identifier,
-              data: {
-                select: {
-                  column: [
-                    "honorific",
-                    "first_name",
-                    "other_name",
-                    "last_name",
-                    "email",
-                  ],
-                },
-              },
+              data: { select: { column: ["honorific", "first_name", "other_name", "last_name", "email"] } },
             }).get();
 
-            record.to_name =
-              response.data.honorific + " " + response.data.first_name;
-            if (response.data.other_name)
-              record.to_name += " (" + response.data.other_name + ")";
+            record.to_name = response.data.honorific + " " + response.data.first_name;
+            if (response.data.other_name) record.to_name += " (" + response.data.other_name + ")";
             record.to_name += " " + response.data.last_name;
             record.to_address = response.data.email;
           };
