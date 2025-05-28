@@ -96,6 +96,18 @@
             <td class="text-left">Must be one of the following: {{ model.sexList.join( ', ' ) }}</td>
           </tr>
           <tr>
+            <td class="allow-select">gender_identity</td>
+            <td>{{ model.genderIdentityList[0] }}</td>
+            <td class="text-left">Must be one of the following: {{ model.genderIdentityList.join( ', ' ) }}</td>
+          </tr>
+          <tr>
+            <td class="allow-select">pronouns</td>
+            <td>(empty)</td>
+            <td class="text-left">
+              Can be empty or any string up to {{ model.parentModel.metadata.columnList.pronouns.max_length }} characters long.
+            </td>
+          </tr>
+          <tr>
             <td class="allow-select">date_of_birth</td>
             <td>(empty)</td>
             <td class="text-left">Can be empty or a date in YYYY-MM-DD format.</td>
