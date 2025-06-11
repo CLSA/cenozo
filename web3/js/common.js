@@ -118,4 +118,16 @@ export default {
       match => match.toUpperCase()
     );
   },
+
+  ordinal_suffix(number) {
+    let tens = number % 10, hundreds = number % 100;
+
+    return number + (
+      1 == tens && 11 != hundreds ? "st" :
+      2 == tens && 12 != hundreds ? "nd" :
+      3 == tens && 13 != hundreds ? "rd" :
+      "th"
+    );
+  }
+
 }

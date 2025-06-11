@@ -58,23 +58,12 @@ export class CN_base_model extends CN_base_object {
     this.#unique_id = [module.subject, Math.round(Math.random()*10000000000)].join("-");
     this.#module = module;
     this.#name = params.name;
+
+    // send the columns to the list action
     if (params.columns) this.#actions.list = new this.#module.classes.list(this, params.columns);
+
+    // send the properties to the record actions (add and view)
     if (params.properties) {
-      // make sure all properties exist in the module
-      for (let prop_name in params.properties) {
-        if (!params.properties[prop_name].meta_column) {
-          if (!this.#module.properties.hasOwnProperty(prop_name)) {
-            throw new Error(
-              `Model property "${prop_name}" does not exist in parent "${this.#module.subject}" module.`
-            );
-          }
-
-          if (this.#module.properties[prop_name].type.match(/unsigned/)) {
-            params.properties[prop_name].min = 0;
-          }
-        }
-      }
-
       this.#actions.add = new this.#module.classes.add(this, params.properties);
       this.#actions.view = new this.#module.classes.view(this, params.properties);
     }

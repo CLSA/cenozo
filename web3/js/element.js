@@ -77,48 +77,11 @@ export default {
           .replace(/^([0-9]{4}-[0-9]{2})([0-9]*)/, "$1-$2")
           .replace(/^([0-9]{4}-[0-9]{2}-[0-9]{2}).*/, "$1");
       };
-      control_el.onchange = async () => {
-        control_el.onkeyup();
-
-        if (el.params.required && [null, ""].includes(control_el.value)) {
-          el.show_error("Can't be empty", 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else if (0 < control_el.value.length && !moment(control_el.value, "YYYY-MM-DD", true).isValid()) {
-          el.show_error(`${control_el.value} is not a valid date`, 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else {
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, true);
-          }
-        }
-      };
     } else if ("email" == type) {
       control_el = this.create(`<input type="email" class="form-control"></input>`);
-
-      control_el.onchange = async () => {
-        if (el.params.required && [null, ""].includes(control_el.value)) {
-          el.show_error("Can't be empty", 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else if (!control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)) {
-          el.show_error(`${control_el.value} is not a valid email address`, 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else {
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, true);
-          }
-        }
-      };
     } else if ("enum" == type) {
       control_el = this.create(`<select class="form-select"></select>`);
-    } else if ("integer" == type) {
+    } else if (["integer", "float"].includes(type)) {
       control_el = this.create(`
         <input
           type="number"
@@ -127,33 +90,12 @@ export default {
           ${null == el.params.max ? "" : "max="+el.params.max}
         ></input>
       `);
-      control_el.onchange = async () => {
-        control_el.value = parseInt(control_el.value);
-        if (el.params.required && [null, ""].includes(control_el.value)) {
-          el.show_error("Can't be empty", 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else if (null != el.params.min && control_el.value < el.params.min) {
-          el.show_error(`The smallest number allowed is ${el.params.min}`, 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else if (null != el.params.max && control_el.value > el.params.max) {
-          el.show_error(`The biggest number allowed is ${el.params.max}`, 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else {
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, true);
-          }
-        }
-      }
     } else if ("string" == type) {
       control_el = this.create(`<input class="form-control"></input>`);
     } else if ("password" == type) {
       control_el = this.create(`<input type="password" class="form-control"></input>`);
+    } else if ("rank" == type) {
+      control_el = this.create(`<select class="form-select"></select>`);
     } else if ("text" == type) {
       control_el = this.create(`
         <textarea
@@ -174,46 +116,27 @@ export default {
           .replace(/^([0-9]{2})([0-9]*)/, "$1:$2")
           .replace(/^([0-9]{2}:[0-9]{2}).*/, "$1");
       };
-      control_el.onchange = async () => {
-        control_el.onkeyup();
-
-        if (el.params.required && [null, ""].includes(control_el.value)) {
-          el.show_error("Can't be empty", 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else if (0 < control_el.value.length && !moment(control_el.value, "H:mm", true).isValid()) {
-          el.show_error(`${control_el.value} is not a valid time`, 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else {
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, true);
-          }
-        }
-      };
     } else if ("typeahead" == type) {
       control_el = this.create(`<input class="form-control"></input>`);
 
       if (CN_common.is_object(el.params.typeahead)) {
+        if (!el.params.typeahead.hasOwnProperty("min_length")) el.params.typeahead.min_length = 2;
         el.params.typeahead.promise = null;
         el.params.typeahead.timeout_id = null;
         el.params.typeahead.open = false;
 
         // create the typeahead's element
-        const typeahead_el = this.create(`
-          <div class="dropdown">
-            <ul class="dropdown-menu w-100">
-            </ul>
-          </div>
-        `);
+        const typeahead_el = this.create(`<div class="dropdown"><ul class="dropdown-menu w-100"></ul></div>`);
         const dropdown_bs = new bootstrap.Dropdown(typeahead_el);
 
         // add the typeahead's element after the prop's element once it's been inserted into the DOM
-        control_el.addEventListener("DOMNodeInserted", () => {
-          control_el.after(typeahead_el);
+        const observer = new MutationObserver((mutation, observer) => {
+          if (document.contains(control_el)) {
+            control_el.after(typeahead_el);
+            observer.disconnect();
+          }
         });
+        observer.observe(el, { childList: true });
 
         // track whether the dropdown is open or not
         typeahead_el.addEventListener("shown.bs.dropdown", () => { el.params.typeahead.open = true; });
@@ -224,7 +147,7 @@ export default {
           if ("Escape" == event.key) {
             if (el.params.typeahead.open) {
               if (CN_common.is_function(el.params.typeahead.on_cancel)) {
-                el.params.typeahead.on_cancel(control_el);
+                el.params.typeahead.on_cancel();
               }
               dropdown_bs.hide()
             }
@@ -235,10 +158,16 @@ export default {
           await CN_common.sleep(200);
 
           if (el.params.typeahead.open) {
+            // call on_cancel if the typeahead is open
             if (CN_common.is_function(el.params.typeahead.on_cancel)) {
-              el.params.typeahead.on_cancel(control_el);
+              el.params.typeahead.on_cancel();
             }
             dropdown_bs.hide();
+          } else {
+            // return to the last committed value if there's a parent model
+            if (el.parent_model && el.params.name) {
+              el.parent_model.undo_state(el.params.name, true);
+            }
           }
         }
 
@@ -262,31 +191,31 @@ export default {
           typeahead.timeout_id = setTimeout(typeahead.promise = async () => {
             typeahead.timeout_id = null;
 
-            typeahead.list = (
-              CN_common.is_function(typeahead.get_list) ?
-              // call the get_list function to generate the list
-              await typeahead.get_list(control_el.value) :
-              // there is no get_list function so just use the list property instead
-              typeahead.list.filter(item => item.match(new RegExp(control_el.value, "i")))
-            )
-              // convert string values to objects with label and value properties
-              .map(item => CN_common.is_object(item) ? item : { label: item, value: item })
-              // only use the first 20 results (to limit the size of the dropdown list)
-              .slice(0, 20);
+            // generate the list if the get_list() function exists
+            if (CN_common.is_function(typeahead.get_list)) {
+              typeahead.list = await typeahead.get_list(control_el.value);
+            }
+
+            // convert string values to objects with key and value pairs
+            typeahead.list = typeahead.list.map(
+              item => CN_common.is_object(item) ? item : { key: item, value: item }
+            );
 
             // now create a list of <li> elements for the typeahead's <ul> element
             // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
-            const li_el_list = typeahead.list.map(item => {
-              const item_el = this.create(`<li><btn class="dropdown-item">${item.label}</btn></li>`)
-              item_el.onclick = () => {
-                control_el.value = item.label;
-                if (CN_common.is_function(typeahead.on_select)) {
-                  typeahead.on_select(control_el);
+            const li_el_list = typeahead.list
+              // Make sure only matching items are included (this is already done in get_list() but not when
+              // the list isn't dynamic
+              .filter(item => item.value.match(new RegExp(control_el.value, "i")))
+              .map(item => {
+                const item_el = this.create(`<li><btn class="dropdown-item">${item.value}</btn></li>`)
+                item_el.onclick = () => {
+                  control_el.value = item.value;
+                  if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
+                  dropdown_bs.hide();
                 }
-                dropdown_bs.hide();
-              }
-              return item_el;
-            });
+                return item_el;
+              }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
 
             // now replace the dropdown's list with the matching items
             const ul_el = typeahead_el.querySelector("ul");
@@ -300,17 +229,48 @@ export default {
       throw new Error(`Tried to create form element using a missing or invalid type "${type}".`);
     }
 
-    if (!CN_common.is_function(control_el.onchange)) {
+    // add an onchange function to all properties except typeaheads (they use on_select instead)
+    if ("typeahead" != type && !CN_common.is_function(control_el.onchange)) {
       control_el.onchange = async () => {
+        if (["date", "time"].includes(type)) {
+          control_el.onkeyup();
+        } else if (["integer", "float"].includes(type)) {
+          control_el.value = "integer" == type ? parseInt(control_el.value) : parseFloat(control_el.value);
+        }
+
+        // determine if there was an error
+        let error = null;
+
         if (el.params.required && [null, ""].includes(control_el.value)) {
-          el.show_error("Can't be empty", 2000);
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, false);
-          }
-        } else {
-          if (CN_common.is_function(el.params.onchange)) {
-            await el.params.onchange(control_el, true);
-          }
+          error = "Can't be empty";
+        } else if (
+          "email" == type &&
+          !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
+        ) {
+          error = `${control_el.value} is not a valid email address`;
+        } else if (
+          ["integer", "float"].includes(type) &&
+          null != el.params.min && control_el.value < el.params.min
+        ) {
+          error = `The smallest number allowed is ${el.params.min}`;
+        } else if (
+          ["integer", "float"].includes(type) &&
+          null != el.params.max && control_el.value > el.params.max
+        ) {
+          error = `The biggest number allowed is ${el.params.max}`;
+        } else if (
+          "time" == type &&
+          0 < control_el.value.length && !moment(control_el.value, "H:mm", true).isValid()
+        ) {
+          error = `${control_el.value} is not a valid time`;
+        }
+
+        // show any errors
+        if (null != error) el.show_error(error, 2000);
+
+        // call the onchange function if it exists
+        if (CN_common.is_function(el.params.onchange)) {
+          await el.params.onchange(control_el, null === error, el.parent_model);
         }
       };
     }
@@ -361,24 +321,6 @@ export default {
     };
 
     el.append(this.create('<small name="error" class="text-danger"></small>'));
-
-    return el;
-  },
-
-  create_form_label_and_element: function(type, params) {
-    const el = this.create('<div class="row mb-3"></div>');
-    el.append(this.create_form_label({
-      for: params.id,
-      value: params.title,
-    }));
-    el.append(this.create_form_element(type, params));
-
-    el.addEventListener("DOMNodeInserted", () => {
-      if (undefined !== params.value) {
-        const control_el = document.getElementById(params.id);
-        control_el.value = "boolean" == type ? (params.value ? 1 : 0) : params.value;
-      }
-    });
 
     return el;
   },
@@ -489,7 +431,6 @@ export default {
       id: "cn_clock_settings_modal_timezone",
       required: true,
       typeahead: {
-        min_length: 2,
         list: moment.tz.names(),
         on_select: (el) => {
           const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
@@ -505,15 +446,18 @@ export default {
     const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
     timezone_control_el.value = CN_session.data.user.timezone;
     timezone_control_el.last_selected_value = CN_session.data.user.timezone;
+    timezone_control_el.onblur = () => {
+      if (!moment.tz.names().includes(timezone_control_el.value)) {
+        timezone_control_el.value = timezone_control_el.last_selected_value;
+      }
+    }
 
     // add a use 12-hour clock boolean property
-    const am_pm_el = this.create_form_label_and_element("boolean", {
-      id: "cn_clock_settings_modal_am_pm",
-      title: "Use 12-Hour Clock",
-      value: CN_session.data.user.am_pm,
-      required: true,
-    });
+    const am_pm_el = this.create('<div class="row mb-3"></div>');
+    am_pm_el.append(this.create_form_label({ for: "cn_clock_settings_modal_am_pm", value: "Use 12-Hour Clock" }));
+    am_pm_el.append(this.create_form_element("boolean", { id: "cn_clock_settings_modal_am_pm", required: true }));
     form_el.append(am_pm_el);
+    document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
 
     modal_el.querySelector("[name=save]").onclick = async () => {
       let timezone = timezone_control_el.last_selected_value;
@@ -573,32 +517,21 @@ export default {
       modal_el.remove();
     });
 
-    // add a first name string property
-    const first_name_el = this.create_form_label_and_element("string", {
-      id: "cn_account_modal_first_name",
-      title: "First Name",
-      value: CN_session.data.user.first_name,
-      required: true,
-    });
-    form_el.append(first_name_el);
+    // create elements
+    let element_list = [
+      { id: "first_name", title: "First Name", type: "string" },
+      { id: "last_name", title: "Last Name", type: "string" },
+      { id: "email", title: "Email", type: "email" },
+    ];
 
-    // add a last name string property
-    const last_name_el = this.create_form_label_and_element("string", {
-      id: "cn_account_modal_last_name",
-      title: "Last Name",
-      value: CN_session.data.user.last_name,
-      required: true,
+    element_list.forEach(element => {
+      let id = `cn_account_modal_${element.id}`;
+      const el = this.create('<div class="row mb-3"></div>');
+      el.append(this.create_form_label({ for: id, value: element.title }));
+      el.append(this.create_form_element(element.type, { id: id, required: true }));
+      form_el.append(el);
+      document.getElementById(id).value = CN_session.data.user[element.id];
     });
-    form_el.append(last_name_el);
-
-    // add an email string property
-    const email_el = this.create_form_label_and_element("email", {
-      id: "cn_account_modal_email",
-      title: "Email",
-      value: CN_session.data.user.email,
-      required: true,
-    });
-    form_el.append(email_el);
 
     modal_el.querySelector("[name=save]").onclick = async () => {
       let first_name = document.getElementById("cn_account_modal_first_name").value;
@@ -667,40 +600,24 @@ export default {
       modal_el.remove();
     });
 
-    // add a current password string property
-    const current_password_el = this.create_form_label_and_element("password", {
-      id: "cn_password_modal_current_password",
-      title: "Current Password",
-      value: CN_session.data.user.current_password,
-      required: true,
-    });
-    form_el.append(current_password_el);
+    // create elements
+    let element_list = [
+      { id: "current_password", title: "Current Password" },
+      { id: "new_password", title: "New Password" },
+      { id: "new_password_check", title: "Repeat New Password" },
+    ];
 
-    // add a new password string property
-    const new_password_el = this.create_form_label_and_element("password", {
-      id: "cn_password_modal_new_password",
-      title: "New Password",
-      value: CN_session.data.user.new_password,
-      required: true,
-    });
-    form_el.append(new_password_el);
+    element_list.forEach(element => {
+      let id = `cn_password_modal_${element.id}`;
+      const el = this.create('<div class="row mb-3"></div>');
+      el.append(this.create_form_label({ for: id, value: element.title }));
+      el.append(this.create_form_element("password", { id: id, required: true }));
+      form_el.append(el);
 
-    // add a repeat new password string property
-    const new_password_check_el = this.create_form_label_and_element("password", {
-      id: "cn_password_modal_new_password_check",
-      title: "Repeat New Password",
-      value: CN_session.data.user.new_password_check,
-      required: true,
+      // widen all labels
+      el.children[0].classList.replace("col-sm-3", "col-sm-4");
+      el.children[1].classList.replace("col-sm-9", "col-sm-8");
     });
-    form_el.append(new_password_check_el);
-
-    // widen all labels
-    current_password_el.children[0].classList.replace("col-sm-3", "col-sm-4");
-    current_password_el.children[1].classList.replace("col-sm-9", "col-sm-8");
-    new_password_el.children[0].classList.replace("col-sm-3", "col-sm-4");
-    new_password_el.children[1].classList.replace("col-sm-9", "col-sm-8");
-    new_password_check_el.children[0].classList.replace("col-sm-3", "col-sm-4");
-    new_password_check_el.children[1].classList.replace("col-sm-9", "col-sm-8");
 
     // track when the save button should be enabled
     const current_password_control_el = document.getElementById("cn_password_modal_current_password");

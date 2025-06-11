@@ -20,10 +20,7 @@ export class CN_site_model extends CN_base_model {
           timezone: {
             title: "Timezone",
             type: "typeahead",
-            typeahead: {
-              min_length: 2,
-              list: moment.tz.names(),
-            }
+            typeahead: { list: moment.tz.names() }
           },
           phone_number: { title: "Phone Number", },
           address1: { title: "Address", },

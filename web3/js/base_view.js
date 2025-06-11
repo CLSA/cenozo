@@ -4,68 +4,10 @@ import CN_element from "./element.js"
 import CN_event from "./event.js"
 import CN_session from "./session.js"
 
-import { CN_base_action } from "./base_action.js"
+import { CN_base_record } from "./base_record.js"
 
-export class CN_base_view extends CN_base_action {
-  #properties;
-  #record = {};
+export class CN_base_view extends CN_base_record {
   #tab = null;
-
-  // getters and setters
-  get properties() { return this.#properties }
-  get record() { return this.#record }
-
-  /**
-   * ADD DOCS
-   */
-  constructor(parent_model, properties) {
-    super(parent_model);
-
-    // setup each property
-    this.#properties = CN_common.clone(properties);
-    for (var prop_name in this.#properties) {
-      const prop = this.#properties[prop_name];
-      prop.id = [this.parent_model.unique_id, prop_name].join("-");
-      if (!prop.type) prop.type = "string";
-
-      if ("typeahead" == prop.type) {
-        if (!prop.typeahead) prop.typeahead = {};
-        if (!prop.typeahead.min_length) prop.typeahead.min_length = 2;
-        if (!prop.typeahead.list) prop.typeahead.list = [];
-        if (!prop.typeahead.on_cancel) {
-          prop.typeahead.on_cancel = (el) => {
-            // put the record's value back
-            el.value = this.get_record_label(el.getAttribute("name"));
-          };
-        }
-        if (!prop.typeahead.on_select) {
-          prop.typeahead.on_select = (el) => {
-            // update the property with the new selection
-            this.on_change(el.getAttribute("name"));
-          };
-        }
-      }
-
-      if (["integer", "float"].includes(prop.type)) {
-        prop.min = this.#properties.hasOwnProperty("min") ? this.#properties.min : null;
-        prop.max = this.#properties.hasOwnProperty("max") ? this.#properties.max : null;
-      }
-
-      if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
-      if (!CN_common.is_function(prop.is_hidden)) prop.is_hidden = () => false;
-    }
-  }
-
-  /**
-   * ADD DOCS
-   */
-  get_record_label(col_name) {
-    return (
-      undefined !== this.#record[`formatted_${col_name}`] ?
-      this.#record[`formatted_${col_name}`] :
-      this.#record[col_name]
-    );
-  }
 
   /**
    * ADD DOCS
@@ -73,8 +15,8 @@ export class CN_base_view extends CN_base_action {
   get_text(type) {
     if ("name" == type) {
       return (
-        this.#record.hasOwnProperty("name") ? this.get_record_label("name") :
-        this.#record.hasOwnProperty("title") ? this.get_record_label("title") :
+        this.properties.hasOwnProperty("name") ? this.get_state("name") :
+        this.properties.hasOwnProperty("title") ? this.get_state("title") :
         undefined
       );
     }
@@ -99,47 +41,27 @@ export class CN_base_view extends CN_base_action {
    * ADD DOCS
    */
   async on_load() {
-    // load dynamic enums
-    const promise_list = [];
-    for (var prop_name in this.#properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
-      const prop = this.#properties[prop_name];
-
-      if ("enum" == prop.type) {
-        if (CN_common.is_object(prop.enum) && prop.enum.path) {
-          // populate the enum
-          const params = {
-            select: prop.enum.select ? prop.enum.select : { column: "name" },
-            modifier: prop.enum.modifier ? prop.enum.modifier : { order: "name" },
-          };
-
-          // create an async function and add it to the promise list so they can be run in parallel
-          const get_enums = async () => {
-            const response = await CN_api.get(prop.enum.path, params);
-            prop.enum.values = (await response.json()).reduce((list, record) => {
-              list.push({ key: record.id, value: record.name });
-              return list;
-            }, []);
-          }
-          promise_list.push(get_enums());
-        } else {
-          // enum properties without an enum path use the column definition
-          let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-          if (null == matches) {
-            throw new Error(`Property ${prop_name} has no valid enum values.`);
-          } else {
-            prop.enum = { values: matches[1].split("','").map(v => ({ key: v, value: v })) };
-          }
-        }
-      }
-    }
-    await Promise.all(promise_list);
+    await super.on_load();
 
     // load the record
     const response = await CN_api.get(
       `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`
     );
-    this.#record = await response.json();
+
+    const record = await response.json();
+    for (var prop_name in this.properties) {
+      const prop = this.properties[prop_name];
+      // check for the formatted value for this property
+      if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
+        this.clear_state(prop.name);
+        this.set_state(prop.name, record[`formatted_${prop.name}`]);
+        this.commit_state(prop.name);
+      } else if (record.hasOwnProperty(prop.name)) {
+        this.clear_state(prop.name);
+        this.set_state(prop.name, record[prop.name]);
+        this.commit_state(prop.name);
+      }
+    }
   }
 
   /**
@@ -149,8 +71,8 @@ export class CN_base_view extends CN_base_action {
     super.show_placeholder();
 
     // Replace the property elements with placeholders
-    for (const prop_name in this.#properties) {
-      const prop = this.#properties[prop_name];
+    for (const prop_name in this.properties) {
+      const prop = this.properties[prop_name];
       const prop_el = this.element.querySelector(`[name=${prop.id}]`);
       if (prop.element) {
         if (null == prop_el.querySelector("[name=placeholder]")) {
@@ -167,8 +89,8 @@ export class CN_base_view extends CN_base_action {
     super.hide_placeholder();
 
     // Replace the placeholders with the property elements
-    for (const prop_name in this.#properties) {
-      const prop = this.#properties[prop_name];
+    for (const prop_name in this.properties) {
+      const prop = this.properties[prop_name];
       const prop_el = this.element.querySelector(`[name=${prop.id}]`);
       if (prop.element) {
         prop_el.replaceChild(prop.element, prop_el.querySelector("[name=placeholder]"));
@@ -176,35 +98,33 @@ export class CN_base_view extends CN_base_action {
     }
   }
 
-  async on_change(prop_name) {
-    const prop = this.#properties[prop_name];
+  async on_set_property(prop_name) {
+    const prop = this.properties[prop_name];
     const control_el = document.getElementById(prop.id);
 
     try {
       // update the server
       let data = {};
-      data[prop_name] = control_el.value;
+      data[prop.name] = this.get_state(prop.name);
       if ("boolean" == prop.type) {
-        data[prop_name] = "" == data[prop_name] ? null : Number(data[prop_name]);
+        data[prop.name] = "" == data[prop.name] ? null : Number(data[prop.name]);
       } else if ("date" == prop.type) {
-        if ("" == data[prop_name]) data[prop_name] = null;
+        if ("" == data[prop.name]) data[prop.name] = null;
       } else if ("typeahead" == prop.type) {
-        // convert from label to value by looking up the element's typeahead list in the params object
-        // NOTE: this is not the same as the property's params object (it is copied when the element is created)
-        data[prop_name] = prop.element.params.typeahead.list.find(item => control_el.value === item.label).value;
+        // convert from value to key by looking up the element's typeahead list in the params object
+        // NOTE: the element's params is not the same as the property's params object (it is cloned)
+        data[prop.name] = prop.element.params.typeahead.list.find(item => data[prop.name] === item.value).key;
       }
 
       await CN_api.patch(
         `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`,
         data
       );
-
-      // update the record
-      this.#record[prop_name] = data[prop_name];
     } catch (error) {
+      this.undo_state(prop.name);
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
-          const prop = this.#properties[prop_name];
+          const prop = this.properties[prop_name];
           const prop_el = this.element.querySelector(`[name=${prop.id}]`);
           const control_el = document.getElementById(prop.id);
           prop.element.show_error("Conflicts with existing record", 5000);
@@ -243,79 +163,58 @@ export class CN_base_view extends CN_base_action {
   /**
    * ADD DOCS
    */
-  update_element() {
-    super.update_element();
+  update_property_element(prop_name) {
+    const module_prop = this.parent_model.module.properties[prop_name];
+    const prop = this.properties[prop_name];
+    const control_el = document.getElementById(prop.id);
 
-    for (const prop_name in this.#properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
-      const prop = this.#properties[prop_name];
-      const control_el = document.getElementById(prop.id);
-      if (null == control_el) return;
-
-      const prop_el = this.element.querySelector(`[name=${prop.id}]`);
-
-      // remove any properties that evaluate to hidden
-      if (prop.is_hidden(this)) {
-        prop_el.style.display = "none";
-      } else {
-        prop_el.style.removeProperty("display");
-      }
-
-      // disable any properties that evaluate to constant
-      control_el.disabled = prop.is_constant(this);
-
-      // rebuild enum select options
-      if (["boolean", "enum"].includes(prop.type)) {
-        if ("boolean" == prop.type) {
-        } else if ("enum" == prop.type) {
-          control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
-          prop.enum.values.forEach(option => {
-            control_el.append(CN_element.create(`
-              <option value="${option.key}">${option.value}</option>
-            `));
-          });
-        }
-
-        control_el.querySelectorAll("option").forEach(option_el => {
-          if (
-            ("" == option_el.value && null === this.#record[prop_name]) ||
-            (1 == option_el.value && true === this.#record[prop_name]) ||
-            (0 == option_el.value && false === this.#record[prop_name]) ||
-            (null != this.#record[prop_name] && option_el.value === this.#record[prop_name].toString())
-          ){
-            option_el.selected = true;
-          } else {
-            option_el.removeAttribute("selected");
-          }
+    // rebuild enum select options
+    if (["boolean", "enum", "rank"].includes(prop.type)) {
+      if ("boolean" != prop.type) {
+        control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
+        prop.enum.values.forEach(option => {
+          control_el.append(CN_element.create(`
+            <option value="${option.key}">${option.value}</option>
+          `));
         });
-      } else {
-        let value = this.get_record_label(prop_name);
-        control_el.value = null === value ? "" : value;
-
-        // update textarea sizes
-        if ("text" == prop.type) {
-          control_el.style.height = "";
-          control_el.style.height = control_el.scrollHeight + "px";
-        }
       }
 
-      // flash the border green to show the data has been updated
-      const old_style = control_el.style;
-      control_el.style["border-color"] = "green";
-      setTimeout(() => { control_el.style = old_style; }, 500);
+      control_el.querySelectorAll("option").forEach(option_el => {
+        const value = this.get_state(prop.name);
+        if (
+          ("" == option_el.value && null === value) ||
+          (1 == option_el.value && true === value) ||
+          (0 == option_el.value && false === value) ||
+          (null != value && option_el.value === value.toString())
+        ){
+          option_el.selected = true;
+        } else {
+          option_el.removeAttribute("selected");
+        }
+      });
+    } else {
+      let value = this.get_state(prop.name);
+      control_el.value = null === value ? "" : value;
+
+      // update textarea sizes
+      if ("text" == prop.type) {
+        control_el.style.height = "";
+        control_el.style.height = control_el.scrollHeight + "px";
+      }
     }
+
+    // flash the border green to show the data has been updated
+    const old_style = control_el.style;
+    control_el.style["border-color"] = "green";
+    setTimeout(() => { control_el.style = old_style; }, 500);
   }
 
   /**
    * ADD DOCS
    */
   create_property_element(prop_name) {
-    const module_prop = this.parent_model.module.properties[prop_name];
-    const prop = this.#properties[prop_name];
-    const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
-
-    // add the label to the property
-    prop_el.append(CN_element.create_form_label({ for: prop.id, value: prop.title }));
+    const prop = this.properties[prop_name];
+    const prop_el = super.create_property_element(prop_name);
 
     if (!prop.placeholder_el) {
       prop.placeholder_el = CN_element.create(`
@@ -325,41 +224,6 @@ export class CN_base_view extends CN_base_action {
       `);
     }
 
-    if (!prop.element) {
-      // determine the property's UI element based on the type
-      let params = {
-        id: prop.id,
-        name: prop_name,
-        title: prop.title,
-        required: module_prop ? module_prop.required : false,
-        placeholder: "(empty)",
-      };
-
-      // if this is a typeahead then create a copy of the typeahead object
-      if ("typeahead" == prop.type) {
-        params.typeahead = { ...prop.typeahead };
-      } else {
-        const self_obj = this;
-        params.onchange = async (control_el, success) => {
-          if (success) {
-            await self_obj.on_change(prop_name);
-          } else {
-            control_el.value = self_obj.record[prop_name];
-          }
-        };
-      }
-
-      if (["integer", "float"].includes(prop.type)) {
-        params.min = prop.min;
-        params.max = prop.max;
-      }
-
-      prop.element = CN_element.create_form_element(prop.type, params);
-    }
-
-    // add the value UI element to the property
-    prop_el.append(prop.element);
-
     return prop_el;
   }
 
@@ -367,15 +231,8 @@ export class CN_base_view extends CN_base_action {
    * ADD DOCS
    */
   create_body_element() {
-    const form_el = CN_element.create("<form></form>");
-    const fieldset_el = CN_element.create("<fieldset></fieldset>");
-    fieldset_el.disabled = !this.parent_model.allow_edit();
-    form_el.append(fieldset_el);
-
-    for (const prop_name in this.#properties) {
-      fieldset_el.append(this.create_property_element(prop_name));
-    }
-
+    const form_el = super.create_body_element();
+    form_el.querySelector("fieldset").disabled = !this.parent_model.allow_edit();
     return form_el;
   }
 

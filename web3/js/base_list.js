@@ -190,6 +190,8 @@ export class CN_base_list extends CN_base_action {
               CN_session.data.user.am_pm
             )
           );
+        } else if ("rank" == col.type) {
+          value = CN_common.ordinal_suffix(value);
         } else if (CN_common.is_datetime_type(col.type, "time")) {
           value = moment(`${moment().format("YYYY-MM-DD")} ${value}`).format(
             CN_common.get_time_format(CN_session.data.user.am_pm, false)
