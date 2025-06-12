@@ -105,16 +105,7 @@ export class CN_base_view extends CN_base_record {
     try {
       // update the server
       let data = {};
-      data[prop.name] = this.get_state(prop.name);
-      if ("boolean" == prop.type) {
-        data[prop.name] = "" == data[prop.name] ? null : Number(data[prop.name]);
-      } else if ("date" == prop.type) {
-        if ("" == data[prop.name]) data[prop.name] = null;
-      } else if ("typeahead" == prop.type) {
-        // convert from value to key by looking up the element's typeahead list in the params object
-        // NOTE: the element's params is not the same as the property's params object (it is cloned)
-        data[prop.name] = prop.element.params.typeahead.list.find(item => data[prop.name] === item.value).key;
-      }
+      data[prop.name] = this.get_formatted_property(prop);
 
       await CN_api.patch(
         `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`,

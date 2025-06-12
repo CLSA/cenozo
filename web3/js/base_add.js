@@ -72,18 +72,7 @@ export class CN_base_add extends CN_base_record {
       // don't include hidden properties
       if (prop.is_hidden(this)) continue;
 
-      // TODO: code smell when creating the record, check out base_view.on_set_property()
-
-      record[prop.name] = this.get_state(prop.name);
-      if ("boolean" == prop.type) {
-        record[prop.name] = "" == record[prop.name] ? null : Number(record[prop.name]);
-      } else if ("date" == prop.type) {
-        if ("" == record[prop.name]) record[prop.name] = null;
-      } else if ("typeahead" == prop.type) {
-        // convert from value to key by looking up the element's typeahead list in the params object
-        // NOTE: the element's params is not the same as the property's params object (it is cloned)
-        record[prop.name] = prop.element.params.typeahead.list.find(item => record[prop.name] === item.value).key;
-      }
+      record[prop.name] = this.get_formatted_property(prop);
 
       // make sure required properties are available
       if (module_prop && module_prop.required && "" === control_el.value) {

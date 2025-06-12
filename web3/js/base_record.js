@@ -323,4 +323,22 @@ export class CN_base_record extends CN_base_action {
 
     return prop_el;
   }
+
+  /**
+   * ADD DOCS
+   */
+  get_formatted_property(prop) {
+    let value = this.get_state(prop.name);
+    if ("boolean" == prop.type) {
+      value = "" == value ? null : Number(value);
+    } else if ("date" == prop.type) {
+      if ("" == value) value = null;
+    } else if ("typeahead" == prop.type) {
+      // convert from value to key by looking up the element's typeahead list in the params object
+      // NOTE: the element's params is not the same as the property's params object (it is cloned)
+      value = prop.element.params.typeahead.list.find(item => value === item.value).key;
+    }
+
+    return value;
+  }
 }
