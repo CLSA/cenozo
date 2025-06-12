@@ -7460,10 +7460,10 @@
                 // now add the column details to the selectList
                 if ("months" == list[key].type) {
                   for (var month = 0; month < 12; month++)
-                    selectList.push(moment().month(month).format("MMMM").toLowerCase());
+                    selectList.push(moment().locale('en').month(month).format("MMMM").toLowerCase());
                 } else if ("days" == list[key].type) {
                   for (var day = 0; day < 7; day++)
-                    selectList.push(moment().day(day).format("dddd").toLowerCase());
+                    selectList.push(moment().locale('en').day(day).format("dddd").toLowerCase());
                 } else {
                   // add column to the select list
                   var select = { column: columnName };

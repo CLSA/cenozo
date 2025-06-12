@@ -577,7 +577,7 @@ class util
    */
   public static function json_decode( $arg, $associative = NULL )
   {
-    return json_decode( self::utf8_encode( $arg ), $associative );
+    return is_null( $arg ) ? NULL : json_decode( self::utf8_encode( $arg ), $associative );
   }
 
   /**
