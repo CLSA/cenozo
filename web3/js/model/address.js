@@ -136,10 +136,10 @@ export class CN_address_model extends CN_base_model {
 }
 
 export class CN_address_view extends CN_base_view {
-  get_text(type) {
+  async get_text(type) {
     if ("name" == type) {
       return `${this.get_state("rank")}) ${this.get_state("city")}`;
     }
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 }

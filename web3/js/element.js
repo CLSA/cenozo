@@ -325,7 +325,7 @@ export default {
     return el;
   },
 
-  create_breadcrumb_trail: function(module_list) {
+  create_breadcrumb_trail: async function(module_list) {
     // create a list of all crumbs (adding chevrons later)
     const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
     let crumb_list = [{
@@ -333,7 +333,7 @@ export default {
       path: ""
     }];
     let parent_module = null;
-    module_list.forEach(module_name => {
+    await Promise.all(module_list.map(async module_name => {
       if ("error" == module_name) {
         crumb_list.push({ name: "Error", path: null });
       } else {
@@ -344,8 +344,9 @@ export default {
             path: null,
           });
         } else if ("view" == module.operation.action) {
+          const name = await module.model.actions.view.get_text("name");
           crumb_list.push({
-            name: module.model.actions.view.get_text("name"),
+            name: name,
             path: module.model.get_view_url(),
           });
         } else if ("list" == module.operation.action) {
@@ -356,7 +357,7 @@ export default {
         }
         parent_module = module;
       }
-    });
+    }));
 
     // add each crumb to the trail, interspersed by chevrons
     const root_el = this.create('<div></div>');

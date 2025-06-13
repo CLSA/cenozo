@@ -3,6 +3,9 @@ import CN_session from "./session.js"
 
 import { CN_base_object } from "./base_object.js"
 
+/**
+ * The base class for all action classes (add/view/list/etc)
+ */
 export class CN_base_action extends CN_base_object {
   #parent_model = null;
   #is_loading = false;
@@ -16,7 +19,8 @@ export class CN_base_action extends CN_base_object {
   get is_placeholder() { return this.#is_placeholder }
 
   /**
-   * ADD DOCS
+   * Constructor
+   * @param base_model parent_model The model that the action belongs to
    */
   constructor(parent_model) {
     super();
@@ -26,7 +30,7 @@ export class CN_base_action extends CN_base_object {
   /**
    * ADD DOCS
    */
-  get_text(type) {
+  async get_text(type) {
     return `ERROR_MISSING_TEXT(${type})`;
   }
 
@@ -98,13 +102,8 @@ export class CN_base_action extends CN_base_object {
    * ADD DOCS
    */
   create_header_element() {
-    const el = CN_element.create(`
-      <div class="d-flex">
-        <div class="flex-grow-1">
-          ${this.get_text("header")}
-        </div>
-      </div>
-    `);
+    const el = CN_element.create('<div class="d-flex"><div class="flex-grow-1"></div></div>');
+    (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
 
     // add a data refresh button
     const refresh_btn_el = CN_element.create(`

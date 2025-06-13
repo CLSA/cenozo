@@ -11,7 +11,7 @@ export class CN_error_model extends CN_base_object {
     this.status = null;
   }
 
-  get_text(type) {
+  async get_text(type) {
     if ("name" == type) {
       if (404 == this.status) return "Page not found (404)";
       else if (this.error.name) return this.error.name;
@@ -34,14 +34,16 @@ export class CN_error_model extends CN_base_object {
     const card_el = CN_element.create_card();
     const header_el = card_el.querySelector(".card-header");
     header_el.classList.add("bg-danger");
-    header_el.innerHTML = this.get_text("name");
-    card_el.querySelector(".card-body").innerHTML = this.get_text("message");
+    (async () => {
+      header_el.innerHTML = await this.get_text("name");
+      card_el.querySelector(".card-body").innerHTML = await this.get_text("message");
+    })();
     card_el.querySelector(".card-footer").classList.add("bg-danger");
 
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
-    breadcrumbs_el.append(CN_element.create_breadcrumb_trail(["error"]));
+    (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail(["error"])); })();
 
     return card_el;
   }

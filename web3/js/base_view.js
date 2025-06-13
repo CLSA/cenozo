@@ -12,7 +12,7 @@ export class CN_base_view extends CN_base_record {
   /**
    * ADD DOCS
    */
-  get_text(type) {
+  async get_text(type) {
     if ("name" == type) {
       return (
         this.properties.hasOwnProperty("name") ? this.get_state("name") :
@@ -34,7 +34,7 @@ export class CN_base_view extends CN_base_record {
       );
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**

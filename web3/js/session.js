@@ -61,7 +61,7 @@ export default {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
-    breadcrumbs_el.append(CN_element.create_breadcrumb_trail(this.data.operation_list));
+    (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail(this.data.operation_list)); })();
   },
 
   get_time: function() {

@@ -60,7 +60,7 @@ export class CN_base_list extends CN_base_action {
   /**
    * ADD DOCS
    */
-  get_text(type) {
+  async get_text(type) {
     if ("header" == type) {
       return `${CN_common.uc_words(this.parent_model.name.singular)} List`;
     }
@@ -73,7 +73,7 @@ export class CN_base_list extends CN_base_action {
       return `Choose ${CN_common.uc_words(this.parent_model.name.plural)}`;
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**

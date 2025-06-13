@@ -11,7 +11,7 @@ export class CN_base_add extends CN_base_record {
   /**
    * ADD DOCS
    */
-  get_text(type) {
+  async get_text(type) {
     if ("header" == type) {
       let text = `Add ${CN_common.uc_words(this.parent_model.name.singular)}`;
       const parent_module = this.parent_model.get_parent_module();
@@ -29,7 +29,7 @@ export class CN_base_add extends CN_base_record {
       return "Cancel";
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**
