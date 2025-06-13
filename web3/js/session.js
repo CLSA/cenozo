@@ -142,6 +142,13 @@ export default {
               `Error loading modules: module "${subject}" is not child of "${parent_subject}"`
             );
           }
+
+          // make sure the parent can have this module as a choosing
+          if (!module.operation.parent_module.choosing.includes(subject)) {
+            throw new Error(
+              `Error loading modules: module "${subject}" is not choosing of "${parent_subject}"`
+            );
+          }
         }
 
         // now import the model if it hasn't been loaded yet
@@ -158,7 +165,7 @@ export default {
 
         // if viewing then import all missing child module classes
         if ("view" == action) {
-          module.children.forEach((child_subject) => {
+          module.children.concat(module.choosing).forEach((child_subject) => {
             if (!this.data.modules[child_subject]) {
               throw new Error(`Error loading modules: module "${child_subject}" does not exist`);
             }
@@ -171,8 +178,6 @@ export default {
 
             if (!load_module_list.includes(child_subject)) load_module_list.push(child_subject);
           });
-
-          // TODO: import and create choose models
         }
       } else if (2 == m) {
         module.operation.identifier = str;

@@ -7,10 +7,13 @@ import CN_session from "./session.js"
 import { CN_base_action } from "./base_action.js"
 
 export class CN_base_list extends CN_base_action {
+  #list_mode;
   #columns;
   #records = [];
   #total_records = 0;
   #current_page = 1;
+  #is_choosing = false;
+  #choosing_list;
 
   // getters and setters
   get columns() { return this.#columns }
@@ -22,8 +25,16 @@ export class CN_base_list extends CN_base_action {
   constructor(parent_model, columns) {
     super(parent_model);
 
-    // setup each column
     const parent_module = this.parent_model.get_parent_module();
+
+    // determine whether the list is in choosing mode
+    this.#list_mode = (
+      null != parent_module && parent_module.choosing.includes(this.parent_model.module.subject) ?
+      "choose" :
+      "add"
+    );
+
+    // setup each column
     this.#columns = CN_common.clone(columns);
     for (var col_name in this.#columns) {
       const col = this.#columns[col_name];
@@ -58,6 +69,10 @@ export class CN_base_list extends CN_base_action {
       return `Add ${CN_common.uc_words(this.parent_model.name.singular)}`;
     }
 
+    if ("choose" == type) {
+      return `Choose ${CN_common.uc_words(this.parent_model.name.plural)}`;
+    }
+
     return super.get_text(type);
   }
 
@@ -90,6 +105,33 @@ export class CN_base_list extends CN_base_action {
   /**
    * ADD DOCS
    */
+  async on_choose() {
+    if (this.#is_choosing) {
+      // send selected records back to the server
+      if (0 < this.#choosing_list.add.length || 0 < this.#choosing_list.remove.length) {
+        const params = {};
+        if (0 < this.#choosing_list.add.length) params.add = this.#choosing_list.add;
+        if (0 < this.#choosing_list.remove.length) params.remove = this.#choosing_list.remove;
+        const response = await CN_api.post(this.parent_model.get_base_path("api"), params);
+      }
+    }
+
+    // toggle the is_choosing state
+    this.#is_choosing = !this.#is_choosing;
+    await this.run();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_cancel_choose() {
+    this.#is_choosing = false;
+    await this.run();
+  }
+
+  /**
+   * ADD DOCS
+   */
   async on_load() {
     // set the query's limit and offset based on the current page
     const params = {
@@ -99,6 +141,8 @@ export class CN_base_list extends CN_base_action {
       },
       select: { column: [] },
     };
+
+    if (this.#is_choosing) params.choosing = 1;
 
     // run through the columns and build the query's select parameter
     let columns = [];
@@ -125,6 +169,17 @@ export class CN_base_list extends CN_base_action {
 
     // replace the records at the current page with the returned records
     this.#records = await response.json();
+
+    if (this.#is_choosing) {
+      // make note of chosen records
+      this.#choosing_list = {
+        current: this.#records.filter(r => r.chosen).map(r => r.id),
+        add: [],
+        remove: [],
+      };
+    } else {
+      this.#choosing_list = null;
+    }
   }
 
   /**
@@ -153,10 +208,30 @@ export class CN_base_list extends CN_base_action {
    * ADD DOCS
    */
   async on_row_click(record) {
-    // do nothing if the view action doesn't exist
-    if (!this.parent_model.allow_view()) return;
+    if (this.#is_choosing) {
+      // toggle the record's chosen state
+      record.chosen = !record.chosen;
 
-    await CN_session.navigate_to(this.parent_model.get_view_url(record.id));
+      let list_type = this.#choosing_list.current.includes(record.id) ? "remove" : "add";
+      let add = (
+        this.#choosing_list.current.includes(record.id) ?
+        !record.chosen :
+        record.chosen
+      );
+
+      if (add) {
+        if (!this.#choosing_list[list_type].includes(record.id)) {
+          this.#choosing_list[list_type].push(record.id);
+        }
+      } else {
+        let index = this.#choosing_list[list_type].indexOf(record.id);
+        if (-1 !== index) this.#choosing_list[list_type].splice(index, 1);
+      }
+
+      this.update_element();
+    } else if (this.parent_model.allow_view()) {
+      await CN_session.navigate_to(this.parent_model.get_view_url(record.id));
+    }
   }
 
   /**
@@ -165,12 +240,33 @@ export class CN_base_list extends CN_base_action {
   update_element() {
     super.update_element();
 
+    if ("choose" == this.#list_mode) {
+      // update the choose buttons based on is_choosing
+      const btn_el = this.element.querySelector("[name=choose]");
+      (async () => { btn_el.innerHTML = this.#is_choosing ? "Apply" : await this.get_text("choose"); })();
+
+      // add or remove the cancel button depending on whether we're currently choosing or not
+      const cancel_btn_el = this.element.querySelector("[name=cancel_choose]");
+      if (this.#is_choosing && null == cancel_btn_el) {
+        // add the cancel button
+        const cancel_btn_el = CN_element.create(
+          '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
+        );
+        cancel_btn_el.onclick = async () => await this.on_cancel_choose();
+        btn_el.parentElement.prepend(cancel_btn_el);
+      } else if (!this.#is_choosing && null != cancel_btn_el) {
+        // remove the cancel button
+        cancel_btn_el.remove();
+      }
+    }
+
     const body_el = this.element.querySelector("table [name=body]");
     body_el.innerHTML = "";
 
     const start_index = (this.#current_page-1)*20;
     this.#records.map(record => {
       let tr_el = document.createElement("tr");
+      if (this.#is_choosing && record.chosen) tr_el.classList.add("table-primary");
       tr_el.onclick = async () => await this.on_row_click(record);
       for (const col_name in this.#columns) {
         const col = this.#columns[col_name];
@@ -333,12 +429,12 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    if (this.parent_model.allow_add()) {
-      const add_btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary">Add</button>');
-      btn_group_el.append(add_btn_el);
-      (async () => { add_btn_el.innerHTML = await this.get_text("add"); })();
-      add_btn_el.onclick = async () => await this.on_add();
-    }
+    const btn_el = CN_element.create(
+      `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
+    );
+    btn_group_el.append(btn_el);
+    (async () => { btn_el.innerHTML = await this.get_text(this.#list_mode); })();
+    btn_el.onclick = async () => await ("choose" == this.#list_mode ? this.on_choose() : this.on_add());
 
     const summary_el = CN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
     footer_el.append(summary_el);

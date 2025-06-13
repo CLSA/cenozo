@@ -258,7 +258,8 @@ export class CN_base_view extends CN_base_record {
     const el = super.render();
 
     // add a child list selector
-    if (1 < this.parent_model.module.children.length) {
+    const child_list = this.parent_model.module.children.concat(this.parent_model.module.choosing);
+    if (1 < child_list.length) {
       const list_selector_el = CN_element.create_card();
       el.append(list_selector_el);
 
@@ -276,7 +277,7 @@ export class CN_base_view extends CN_base_record {
       list_selector_el.querySelector(".card-footer").append(btn_group_el);
 
       // add children to the list selector and render them
-      this.parent_model.module.children.forEach((child_subject) => {
+      child_list.forEach((child_subject) => {
         const child_module = CN_session.data.modules[child_subject];
 
         const child_btn_el = CN_element.create(`
@@ -290,7 +291,7 @@ export class CN_base_view extends CN_base_record {
           this.#tab = child_subject;
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
-          this.parent_model.module.children.forEach(c => {
+          child_list.forEach(c => {
             let cm = CN_session.data.modules[c];
             if (c == child_subject) {
               el.append(cm.model.element);
@@ -305,11 +306,9 @@ export class CN_base_view extends CN_base_record {
           el.append(child_el);
         }
       });
-    } else if (1 == this.parent_model.module.children.length) {
+    } else if (1 == child_list.length) {
       // render the only child directly
-      el.append(
-        CN_session.data.modules[this.parent_model.module.children[0]].model.render()
-      );
+      el.append(CN_session.data.modules[child_list[0]].model.render());
     }
 
     return el;
@@ -324,7 +323,7 @@ export class CN_base_view extends CN_base_record {
     await super.run();
 
     if (children) {
-      this.parent_model.module.children.forEach(async (subject) => {
+      this.parent_model.module.children.concat(this.parent_model.module.choosing).forEach(async (subject) => {
         const module = CN_session.data.modules[subject];
         if (module && "list" == module.operation.action) module.model.run();
       });

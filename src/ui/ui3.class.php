@@ -275,7 +275,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'alternate_consent_type' == $module->get_subject() )
       {
-        $module->add_child( 'role' );
+        $module->add_choose( 'role' );
         $module->add_child( 'alternate' );
       }
       else if( 'alternate_type' == $module->get_subject() )
