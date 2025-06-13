@@ -20,7 +20,7 @@ export class CN_base_action extends CN_base_object {
 
   /**
    * Constructor
-   * @param base_model parent_model The model that the action belongs to
+   * @param base_model parent_model: The model that the action belongs to
    */
   constructor(parent_model) {
     super();
@@ -28,28 +28,30 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Gets UI text values by type
+   * @param string type
+   * @return string
    */
   async get_text(type) {
     return `ERROR_MISSING_TEXT(${type})`;
   }
 
   /**
-   * ADD DOCS
+   * Replaces all dynamic elements with a placeholder
    */
   show_placeholder() {
     this.#is_placeholder = true;
   }
 
   /**
-   * ADD DOCS
+   * Removes placeholders from all dynamic elements
    */
   hide_placeholder() {
     this.#is_placeholder = false;
   }
 
   /**
-   * ADD DOCS
+   * Navigates to the action's parent action
    */
   async on_navigate_to_parent() {
     const parent_module = this.parent_model.get_parent_module();
@@ -61,7 +63,7 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * When running the action this method is always called before on_load()
    */
   on_pre_loading() {
     this.#is_loading = true;
@@ -73,13 +75,13 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Is called whenever the action is run and is responsible for loading the action's dynamic data
    */
   async on_load() {
   }
 
   /**
-   * ADD DOCS
+   * When running the action this method is always called after on_load()
    */
   on_post_loading() {
     this.#is_loading = false;
@@ -93,13 +95,14 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Updates the action's element
    */
   update_element() {
   }
 
   /**
-   * ADD DOCS
+   * Creates the action's element's header element
+   * @return Element
    */
   create_header_element() {
     const el = CN_element.create('<div class="d-flex"><div class="flex-grow-1"></div></div>');
@@ -123,21 +126,24 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Creates the action's element's body element
+   * @return Element
    */
   create_body_element() {
     return "";
   }
 
   /**
-   * ADD DOCS
+   * Creates the action's element's footer element
+   * @return Element
    */
   create_footer_element() {
     return "";
   }
 
   /**
-   * ADD DOCS
+   * Creates the action's element including the header, body and footer sub-elements
+   * @return Element
    */
   render() {
     const el = CN_element.create('<div name="model-action"></div>');
@@ -154,7 +160,7 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Runs the dynamic parts of the action (loading data) and updates the action's element once ready
    */
   async run() {
     if (!this.#parent_model.module.operation) return;

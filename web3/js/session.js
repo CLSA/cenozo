@@ -11,6 +11,9 @@ import { CN_base_view } from "./base_view.js"
 import { CN_home_model } from "./model/home.js"
 import { CN_error_model } from "./model/error.js"
 
+/**
+ * The session class which handles the application
+ */
 export default {
   data: null,
   system_message_list: [],
@@ -18,6 +21,9 @@ export default {
   home_model: null,
   error_model: null,
 
+  /**
+   * ADD DOCS
+   */
   logout: async function() {
     try {
       await CN_api.delete("self/0");
@@ -27,6 +33,9 @@ export default {
     }
   },
 
+  /**
+   * ADD DOCS
+   */
   update_data: async function() {
     const response = await CN_api.get("self/0");
     this.data = await response.json();
@@ -45,6 +54,9 @@ export default {
     if (this.data.application.development_mode) console.info("Development mode");
   },
 
+  /**
+   * ADD DOCS
+   */
   update_system_messages: async function() {
     const response = await CN_api.get(
       "self/0/system_message",
@@ -57,6 +69,9 @@ export default {
     this.system_message_list = await response.json();
   },
 
+  /**
+   * ADD DOCS
+   */
   update_breadcrumbs: function() {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
@@ -64,12 +79,18 @@ export default {
     (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail(this.data.operation_list)); })();
   },
 
+  /**
+   * ADD DOCS
+   */
   get_time: function() {
     let now = moment();
     now.tz(this.data.user.timezone);
     return now.format(CN_common.get_time_format(this.data.user.am_pm, false, true));
   },
 
+  /**
+   * ADD DOCS
+   */
   load_modules: async function() {
     const href_parts = window.location.pathname
       .replace(new RegExp(`${ROOT_URL}/`), "")
@@ -203,6 +224,9 @@ export default {
     );
   },
 
+  /**
+   * ADD DOCS
+   */
   render: async function() {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
@@ -259,6 +283,9 @@ export default {
     }
   },
 
+  /**
+   * ADD DOCS
+   */
   render_error: function(error) {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
@@ -270,6 +297,9 @@ export default {
     main_content_el.append(error_module_el);
   },
 
+  /**
+   * ADD DOCS
+   */
   navigate_to: async function(path) {
     if (this.data.application.development_mode) console.info(`navigating to /${path}`);
     window.history.pushState({}, "", `${ROOT_URL}/${path}`);
@@ -282,6 +312,9 @@ export default {
     }
   },
 
+  /**
+   * ADD DOCS
+   */
   create_body: function() {
     const body_el = document.querySelector("body");
     const split_lists = 20 <= Object.keys(this.data.menu.lists).length;
@@ -366,6 +399,9 @@ export default {
     `;
   },
 
+  /**
+   * ADD DOCS
+   */
   start: async function() {
     await this.update_data();
     this.create_body();

@@ -136,6 +136,9 @@ export class CN_address_model extends CN_base_model {
 }
 
 export class CN_address_view extends CN_base_view {
+  /**
+   * Extends the parent method
+   */
   async get_text(type) {
     if ("name" == type) {
       return `${this.get_state("rank")}) ${this.get_state("city")}`;

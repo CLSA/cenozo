@@ -1,6 +1,5 @@
 import CN_common from "./common.js"
 import CN_element from "./element.js"
-import CN_event from "./event.js"
 import CN_session from "./session.js"
 
 import { CN_base_object } from "./base_object.js"
@@ -33,7 +32,9 @@ export class CN_base_model extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Returns the model's base URL or API path
+   * @param string type: Either "url" or "api"
+   * @return string
    */
   get_base_path(type) {
     let path_parts = [this.#module.subject];
@@ -48,7 +49,10 @@ export class CN_base_model extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Constructor
+   *
+   * @param object module: The model's module (as defined in session.js)
+   * @param object params: An object with the properties defining the model (name, columns and properties)
    */
   constructor(module, params) {
     super();
@@ -70,7 +74,7 @@ export class CN_base_model extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Determines whether the add, delete, edit or view actions are permitted
    */
   allow_add() { return this.module.action_allowed("add"); }
   allow_delete() { return this.module.action_allowed("delete"); }
@@ -78,7 +82,7 @@ export class CN_base_model extends CN_base_object {
   allow_view() { return this.module.action_allowed("view"); }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   render() {
     this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
@@ -97,7 +101,7 @@ export class CN_base_model extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   async run() {
     if (!this.#module.operation) return;

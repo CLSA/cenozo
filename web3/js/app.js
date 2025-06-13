@@ -1,7 +1,10 @@
-// start the session once the page has finished loading
+/**
+ * Starts the session once the page has finished loading.
+ * Also handles all unhandled exceptions and handles browser navigation events.
+ */
 window.addEventListener("load", async () => {
   const CN_common = (await import("./common.js")).default;
-  const CN_event = (await import("./event.js")).default;
+  const CN_element = (await import("./element.js")).default;
   const CN_session = (await import("./session.js")).default;
 
   // catch all unhandled exceptions
@@ -23,7 +26,7 @@ window.addEventListener("load", async () => {
       }
     }
 
-    const modal = CN_event.modal_message(params);
+    const modal = CN_element.modal_message(params);
     modal.show();
   });
 

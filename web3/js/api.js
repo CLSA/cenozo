@@ -2,7 +2,21 @@
 
 import CN_common from "./common.js"
 
+/**
+ * The API class provides a way to communicate with the server's API
+ *
+ * Fetch methods (get/patch/post/delete) automatically prepend the API's path so only reletive paths must
+ * be provided.  These methods also automatically format select and modifier objects and handle various
+ * response codes returned by the API.
+ */
 export default {
+  /**
+   * Fetch method used for all API calls, returns the result from calling the native fetch() function
+   * @param strign path: The relative API path
+   * @param object params: Query URI parameters
+   * @param object options: Fetch options passed directly to the native fetch() function
+   * @return Response
+   */
   fetch: async function(path, params, options) {
     let url = `${ROOT_URL}/api/${path}`;
 
@@ -60,6 +74,12 @@ export default {
     return response;
   },
 
+  /**
+   * Convenience method for all GET API calls
+   * @param strign path: The relative API path
+   * @param object params: Query URI parameters
+   * @return Response
+   */
   get: async function(path, params) {
     return await this.fetch(
       path,
@@ -68,6 +88,12 @@ export default {
     );
   },
 
+  /**
+   * Convenience method for all PATCH API calls
+   * @param strign path: The relative API path
+   * @param object data: The data to patch
+   * @return Response
+   */
   patch: async function(path, data) {
     return await this.fetch(
       path,
@@ -80,6 +106,12 @@ export default {
     );
   },
 
+  /**
+   * Convenience method for all POST API calls
+   * @param strign path: The relative API path
+   * @param object data: The data to post
+   * @return Response
+   */
   post: async function(path, data) {
     return await this.fetch(
       path,
@@ -92,6 +124,11 @@ export default {
     );
   },
 
+  /**
+   * Convenience method for all DELETE API calls
+   * @param strign path: The relative API path
+   * @return Response
+   */
   delete: async function(path) {
     return await this.fetch(
       path,
@@ -100,10 +137,43 @@ export default {
     );
   },
 
+  /**
+   * Converts a select parameter into a stringified query parameter
+   *
+   * Select objects take the following form:
+   * {
+   *   from: <table_name>
+   *   OR
+   *   from:
+   *   {
+   *     table: <table_name>
+   *     alias: <table_alias>
+   *   }
+   *   column:
+   *   [
+   *     <column_name>,
+   *     {
+   *       table: <table_name> (optional)
+   *       column: <column_name>
+   *       alias: <column_alias> (optional)
+   *       table_prefix: true|false (optional)
+   *     },
+   *   ],
+   *   distinct: <true|false>
+   * }
+   *
+   * @param object select
+   * @return string
+   */
   select: function(select) {
     return JSON.stringify(this.shorten_select(select));
   },
 
+  /**
+   * Shortens all select properties
+   * @param object select
+   * @return object
+   */
   shorten_select: function(select) {
     if (Array.isArray(select)) {
       return select.map( item => this.shorten_select(item) );
@@ -128,10 +198,56 @@ export default {
     return select;
   },
 
+  /**
+   * Converts a modifier parameter into a stringified query parameter
+   *
+   * Modifier objects take the following form:
+   * {
+   *   join:
+   *   [
+   *     {
+   *       table: <table>,
+   *       onleft: <column>,
+   *       onright: <column>,
+   *       type: inner|cross|straight|left|left outer|right|right outer (optional)
+   *       alias: <string> (optional),
+   *       prepend: true|false (optional)
+   *     }
+   *   ],
+   *   having|where or h|w:
+   *   [
+   *     {
+   *       bracket: true,
+   *       open: true|false,
+   *       or: true|false
+   *     },
+   *     {
+   *       column: <column>
+   *       operator: =|!=|<|>|LIKE|NOT LIKE|etc
+   *       value: <value>
+   *     }
+   *   ],
+   *   order:
+   *   [
+   *     <column>,
+   *     { <column>: true|false (whether to sort descending) }
+   *   ],
+   *   limit: N,
+   *   offset or off: N
+   * }
+   *
+   * @param object modifier
+   * @return string
+   */
   modifier: function(modifier) {
     return JSON.stringify(this.shorten_modifier(modifier));
   },
 
+  /**
+   * Shortens all modifier properties
+   * @param object modifier
+   * @return object
+   */
   shorten_modifier: function(modifier) {
     if (Array.isArray(modifier)) {
       return modifier.map( item => this.shorten_modifier(item) );

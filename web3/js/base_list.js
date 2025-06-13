@@ -1,7 +1,6 @@
 import CN_api from "./api.js"
 import CN_common from "./common.js"
 import CN_element from "./element.js"
-import CN_event from "./event.js"
 import CN_session from "./session.js"
 
 import { CN_base_action } from "./base_action.js"
@@ -20,7 +19,12 @@ export class CN_base_list extends CN_base_action {
   get records() { return this.#records }
 
   /**
-   * ADD DOCS
+   * Constructor
+   *
+   * TODO: document a full description of the columns parameter
+   *
+   * @param base_model parent_model: The model that the list action belongs to
+   * @param object columns: A list of column definitions
    */
   constructor(parent_model, columns) {
     super(parent_model);
@@ -58,7 +62,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends the parent method
    */
   async get_text(type) {
     if ("header" == type) {
@@ -77,18 +81,19 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Called when the list's add button is clicked
    */
   async on_add() {
     await CN_session.navigate_to(this.parent_model.get_add_url());
   }
 
   /**
-   * ADD DOCS
+   * Called when one of the list's delete buttons are clicked
+   * @param object record: One of the records from the #records array
    */
   async on_delete(record) {
     // first confirm
-    const modal = CN_event.modal_confirm({
+    const modal = CN_element.modal_confirm({
       static: true,
       title: "Please Confirm",
       message: `
@@ -103,7 +108,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Called when a choose-based list's choose or apply button is clicked
    */
   async on_choose() {
     if (this.#is_choosing) {
@@ -122,7 +127,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Called when a choose-based list's cancel button is clicked
    */
   async on_cancel_choose() {
     this.#is_choosing = false;
@@ -130,7 +135,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   async on_load() {
     // set the query's limit and offset based on the current page
@@ -183,7 +188,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   show_placeholder() {
     super.show_placeholder();
@@ -205,7 +210,8 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Called when one of the lists's rows is clicked
+   * @param object record: One of the records from the #records array
    */
   async on_row_click(record) {
     if (this.#is_choosing) {
@@ -235,7 +241,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   update_element() {
     super.update_element();
@@ -388,7 +394,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_body_element() {
     const table_el = CN_element.create(`
@@ -421,7 +427,7 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_footer_element() {
     const footer_el = CN_element.create('<div class="d-flex align-items-center justify-content-between"></div>');

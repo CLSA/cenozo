@@ -1,7 +1,6 @@
 import CN_api from "./api.js"
 import CN_common from "./common.js"
 import CN_element from "./element.js"
-import CN_event from "./event.js"
 import CN_session from "./session.js"
 
 import { CN_base_action } from "./base_action.js"
@@ -13,7 +12,12 @@ export class CN_base_record extends CN_base_action {
   get properties() { return this.#properties }
 
   /**
-   * ADD DOCS
+   * Constructor
+   *
+   * TODO: document a full description of the properties parameter
+   *
+   * @param base_model parent_model: The model that the action belongs to
+   * @param object properties: A list of property definitions
    */
   constructor(parent_model, properties) {
     super(parent_model);
@@ -83,7 +87,9 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Gets the value of a state
+   * @param string name: The name of the state
+   * @return (dynamic)
    */
   get_state(name) {
     const prop = this.#properties[name];
@@ -93,7 +99,9 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Sets the value of a state
+   * @param string name: The name of the state
+   * @param (dynamic) val: The value to set the state to
    */
   set_state(name, val) {
     const prop = this.#properties[name];
@@ -116,7 +124,8 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Marks a state's current value as committed to the server
+   * @param string name: The name of the state
    */
   commit_state(name) {
     const prop = this.#properties[name];
@@ -127,7 +136,8 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Clears a state, removing all state history
+   * @param string name: The name of the state
    */
   clear_state(name) {
     const prop = this.#properties[name];
@@ -137,7 +147,9 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Returns to the state's earlier value
+   * @param string name: The name of the state
+   * @param boolean committed: Whether to return to the last committed state
    */
   undo_state(name, committed=false) {
     const prop = this.#properties[name];
@@ -161,7 +173,7 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent class
    */
   async on_load() {
     // load dynamic enums
@@ -220,7 +232,7 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   update_element() {
     super.update_element();
@@ -251,7 +263,7 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_body_element() {
     const form_el = CN_element.create("<form></form>");
@@ -267,7 +279,9 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Creates a property's element
+   * @param string prop_name
+   * @return Element
    */
   create_property_element(prop_name) {
     const module_prop = this.parent_model.module.properties[prop_name];
@@ -325,7 +339,9 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Returns a property's value formatted by its type
+   * @param string prop: The name of the property
+   * @return (dynamic)
    */
   get_formatted_property(prop) {
     let value = this.get_state(prop.name);

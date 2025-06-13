@@ -11,6 +11,11 @@ export class CN_error_model extends CN_base_object {
     this.status = null;
   }
 
+  /**
+   * Gets UI text values by type
+   * @param string type
+   * @return string
+   */
   async get_text(type) {
     if ("name" == type) {
       if (404 == this.status) return "Page not found (404)";
@@ -27,6 +32,9 @@ export class CN_error_model extends CN_base_object {
     return `ERROR_MISSING_TEXT(${type})`;
   }
 
+  /**
+   * ADD DOCS
+   */
   render() {
     // report the error to the console
     console.error(this.error);
@@ -48,5 +56,8 @@ export class CN_error_model extends CN_base_object {
     return card_el;
   }
 
+  /**
+   * ADD DOCS
+   */
   async run() {}
 }

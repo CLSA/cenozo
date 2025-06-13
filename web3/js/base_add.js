@@ -9,7 +9,7 @@ export class CN_base_add extends CN_base_record {
   #default_values_applied = [];
 
   /**
-   * ADD DOCS
+   * Extends the parent method
    */
   async get_text(type) {
     if ("header" == type) {
@@ -33,7 +33,7 @@ export class CN_base_add extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends the parent method
    */
   async on_load() {
     await super.on_load();
@@ -50,14 +50,15 @@ export class CN_base_add extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Commits a property's UI value to the state
+   * @param string prop_name
    */
   async on_set_property(prop_name) {
     this.commit_state(prop_name);
   }
 
   /**
-   * ADD DOCS
+   * Validates all properties and creates a new record on the server side
    */
   async on_submit() {
     // validate all property values
@@ -109,7 +110,8 @@ export class CN_base_add extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Update's a property's element, applying default values when first called
+   * @param string prop_name
    */
   update_property_element(prop_name) {
     const prop = this.properties[prop_name];
@@ -154,7 +156,7 @@ export class CN_base_add extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_footer_element() {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');

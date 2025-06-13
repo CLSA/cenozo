@@ -1,7 +1,6 @@
 import CN_api from "./api.js"
 import CN_common from "./common.js"
 import CN_element from "./element.js"
-import CN_event from "./event.js"
 import CN_session from "./session.js"
 
 import { CN_base_record } from "./base_record.js"
@@ -10,7 +9,7 @@ export class CN_base_view extends CN_base_record {
   #tab = null;
 
   /**
-   * ADD DOCS
+   * Extends the parent method
    */
   async get_text(type) {
     if ("name" == type) {
@@ -38,7 +37,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   async on_load() {
     await super.on_load();
@@ -65,7 +64,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   show_placeholder() {
     super.show_placeholder();
@@ -83,7 +82,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   hide_placeholder() {
     super.hide_placeholder();
@@ -130,11 +129,11 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Called when the delete button is clicked
    */
   async on_delete() {
     // first confirm
-    const modal = CN_event.modal_confirm({
+    const modal = CN_element.modal_confirm({
       static: true,
       title: "Please Confirm",
       message: `
@@ -152,7 +151,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   update_property_element(prop_name) {
     const module_prop = this.parent_model.module.properties[prop_name];
@@ -201,7 +200,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_property_element(prop_name) {
     const prop = this.properties[prop_name];
@@ -219,7 +218,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_body_element() {
     const form_el = super.create_body_element();
@@ -228,7 +227,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   create_footer_element() {
     const btn_group_el = CN_element.create(`<div class="btn-group" role="group"></div>`);
@@ -252,7 +251,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   render() {
     const el = super.render();
@@ -315,7 +314,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   /**
-   * ADD DOCS
+   * Extends parent method
    */
   async run(children = false) {
     if (!this.parent_model.module.operation) return;

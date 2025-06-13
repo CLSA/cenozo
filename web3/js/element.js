@@ -2,15 +2,21 @@
 
 import CN_api from "./api.js"
 import CN_common from "./common.js"
-import CN_event from "./event.js"
 import CN_session from "./session.js"
 
+/**
+ * A list of functions that create various elements
+ */
 export default {
-  // The DOMParser used by create() when creating elements from HTML strings
+  /**
+   * The DOMParser used by create() when creating elements from HTML strings
+   */
   dom_parser: new DOMParser(),
 
   /**
    * Converts an HTML string into an Element object
+   * @param string html: HTML expressed as a string
+   * @return Element
    */
   create: function(html) {
     if (undefined === html) throw new Error("element.create: must provide 1 argument, 0 provided");
@@ -26,10 +32,8 @@ export default {
   },
 
   /**
-   * Card element contains:
-   * div[name=header]: The card's header div
-   * div[name=body]: The card's body div
-   * div[name=footer]: The card's footer div
+   * Creates a card element containing header, body and footer sub-elements
+   * @return Element
    */
   create_card: function() {
     return this.create(`
@@ -43,6 +47,11 @@ export default {
     `);
   },
 
+  /**
+   * Creates a form label
+   * @param object params: An object that has value, for and name properties
+   * @return Element
+   */
   create_form_label: function(params) {
     const el = this.create(`
       <label class="col-sm-3 col-form-label text-end fw-bold">
@@ -54,6 +63,12 @@ export default {
     return el;
   },
 
+  /**
+   * Creates a form element
+   * @param string type: One of "boolean", "date", "email", "enum", "integer", "string", "password", "rank", "text", "time", or "typeahead"
+   * @param object params: An object defining the element (properties depending on element type)
+   * @return Element
+   */
   create_form_element: function(type, params) {
     const el = this.create('<div class="col-sm-9"></div>');
     el.params = params;
@@ -325,6 +340,11 @@ export default {
     return el;
   },
 
+  /**
+   * Creates a breadcrumb trail based on a module list
+   * @param array module_list: A list of modules in their trail order
+   * @return Element
+   */
   create_breadcrumb_trail: async function(module_list) {
     // create a list of all crumbs (adding chevrons later)
     const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
@@ -386,6 +406,10 @@ export default {
     return root_el;
   },
 
+  /**
+   * Creates a clock settings modal (for changing the user's time-based preferences)
+   * @return bootstrap.Modal
+   */
   create_clock_settings_modal: function() {
     const modal_el = this.create(`
       <div id="cn_clock_settings_modal" class="modal fade" tabindex="-1">
@@ -484,6 +508,10 @@ export default {
     return modal_bs;
   },
 
+  /**
+   * Creates an account modal (for changing the user's account details)
+   * @return bootstrap.Modal
+   */
   create_account_modal: function() {
     const modal_el = this.create(`
       <div id="cn_account_modal" class="modal fade" tabindex="-1">
@@ -563,6 +591,10 @@ export default {
     return modal_bs;
   },
 
+  /**
+   * Creates a password modal (for changing the user's password)
+   * @return bootstrap.Modal
+   */
   create_password_modal: function() {
     const modal_el = this.create(`
       <div id="cn_password_modal" class="modal fade" tabindex="-1">
@@ -647,7 +679,7 @@ export default {
       let new_password_check = new_password_control_check_el.value;
 
       if (new_password !== new_password_check) {
-        CN_event.toast({
+        this.toast({
           title: "Password Mismatch",
           message: "The new passwords do not match.  Please type them again and make sure they are the same.",
           type: "danger",
@@ -665,7 +697,7 @@ export default {
           });
         } catch (error) {
           if (CN_common.is_object(error) && "invalid password" == error.error_code) {
-            CN_event.toast({
+            this.toast({
               title: "Password Failed",
               message: "The password you provided as your current password is incorrect.",
               type: "danger",
@@ -680,5 +712,122 @@ export default {
     };
 
     return modal_bs;
+  },
+
+  /**
+   * Shows a toast message
+   * @param object config:
+   *   type: Which bootstrap color type to make the header (default light)
+   *   title: The toast's title
+   *   message: The toast's message
+   */
+  toast: function(config) {
+    if (!config.type) config.type = "light";
+    const toast_el = CN_element.create(`
+      <div role="alert" aria-live="assertive" aria-atomic="true" class="toast bg-light mb-2">
+        <div name="header" class="toast-header text-bg-${config.type}">
+          <div class="fw-bold fs-5">${config.title}</div>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+      </div>
+    `);
+
+    if (config.message) {
+      toast_el.append(CN_element.create(`<div name="body" class="toast-body">${config.message}</div>`));
+    }
+
+    document.querySelector("#main-toast-container .toast-container").append(toast_el);
+    const bs = new bootstrap.Toast(toast_el);
+    bs.show();
+  },
+
+  /**
+   * Creates a modal message dialog
+   * @param object config: An object that has type, title, message and static properties
+   * @return bootstrap.Modal
+   */
+  modal_message: function(config) {
+    if (!config.type) config.type = "light";
+    const modal_el = CN_element.create(`
+      <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header text-bg-${config.type}">
+              <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">${config.message}</div>
+          </div>
+        </div>
+      </div>
+    `);
+    document.getElementById("main-content").append(modal_el);
+    if (config.static) {
+      modal_el.setAttribute("data-bs-backdrop", "static");
+      modal_el.setAttribute("data-bs-keyboard", "false");
+    }
+
+    return new bootstrap.Modal(modal_el);
+  },
+
+  /**
+   * Creates a modal config dialog
+   * @param object config: An object that has type, title, message and static properties
+   * @return bootstrap.Modal
+   */
+  modal_confirm: function(config) {
+    if (!config.type) config.type = "primary";
+    const modal_el = CN_element.create(`
+      <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header text-bg-${config.type}">
+              <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
+            </div>
+            <div class="modal-body">${config.message}</div>
+            <div class="modal-footer text-bg-info py-1">
+              <button
+                name="no"
+                type="button"
+                class="btn btn-primary col-2"
+                data-bs-dismiss="modal"
+              >No</button>
+              <button
+                name="yes"
+                type="button"
+                class="btn btn-primary col-2"
+                data-bs-dismiss="modal"
+              >Yes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    document.getElementById("main-content").append(modal_el);
+    if (config.static) {
+      modal_el.setAttribute("data-bs-backdrop", "static");
+      modal_el.setAttribute("data-bs-keyboard", "false");
+    }
+
+    const bs = new bootstrap.Modal(modal_el);
+    bs.test = () => {
+      return new Promise((resolve, reject) => {
+        bs.show();
+        modal_el.querySelector("[name=no]").onclick = () => resolve(false);
+        modal_el.querySelector("[name=yes]").onclick = () => resolve(true);
+      });
+    };
+
+    return bs;
   },
 }
