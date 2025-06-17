@@ -244,6 +244,67 @@ export default {
       throw new Error(`Tried to create form element using a missing or invalid type "${type}".`);
     }
 
+    // create the element's validate function
+    el.validate = () => {
+      // determine if there was an error
+      let error = null;
+
+      if (el.params.required && [null, ""].includes(control_el.value)) {
+        error = "Can't be empty";
+      } else if (
+        "email" == type &&
+        !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
+      ) {
+        error = `${control_el.value} is not a valid email address`;
+      } else if (
+        ["integer", "float"].includes(type) &&
+        null != el.params.min && control_el.value < el.params.min
+      ) {
+        error = `The smallest number allowed is ${el.params.min}`;
+      } else if (
+        ["integer", "float"].includes(type) &&
+        null != el.params.max && control_el.value > el.params.max
+      ) {
+        error = `The biggest number allowed is ${el.params.max}`;
+      } else if (
+        "time" == type &&
+        0 < control_el.value.length && !moment(control_el.value, "H:mm", true).isValid()
+      ) {
+        error = `${control_el.value} is not a valid time`;
+      }
+
+      if (null == error && el.params.format) {
+        // determine the regex
+        let re = null;
+        if ("integer" == el.params.format) re = /^-?[0-9]+$/;
+        else if ("float" == el.params.format) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
+        else if ("alphanum" == el.params.format) re = /^[a-zA-Z0-9]+$/;
+        else if ("alpha_num" == el.params.format) re = /^[a-zA-Z0-9_]+$/;
+        else if ("identifier" == el.params.format) re = /^[^;=\/]+$/;
+
+        // test the regex, min and max values
+        if (re && !re.test(control_el.value)) {
+          error = "Invalid format";
+        }
+      }
+
+      if (null == error && el.params.regex) {
+        var regex_list = CN_common.is_array(el.params.regex) ? el.params.regex : [el.params.regex];
+        for (var i = 0; i < regex_list.length; i++) {
+          var re = new RegExp(regex_list[i]);
+          if (!re.test(control_el.value)) {
+            error = "Invalid format";
+            break;
+          }
+        }
+      }
+
+      // show any errors
+      if (null != error) el.show_error(error, 2000);
+
+      return null == error;
+    };
+
     // add an onchange function to all properties except typeaheads (they use on_select instead)
     if ("typeahead" != type && !CN_common.is_function(control_el.onchange)) {
       control_el.onchange = async () => {
@@ -253,39 +314,12 @@ export default {
           control_el.value = "integer" == type ? parseInt(control_el.value) : parseFloat(control_el.value);
         }
 
-        // determine if there was an error
-        let error = null;
-
-        if (el.params.required && [null, ""].includes(control_el.value)) {
-          error = "Can't be empty";
-        } else if (
-          "email" == type &&
-          !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
-        ) {
-          error = `${control_el.value} is not a valid email address`;
-        } else if (
-          ["integer", "float"].includes(type) &&
-          null != el.params.min && control_el.value < el.params.min
-        ) {
-          error = `The smallest number allowed is ${el.params.min}`;
-        } else if (
-          ["integer", "float"].includes(type) &&
-          null != el.params.max && control_el.value > el.params.max
-        ) {
-          error = `The biggest number allowed is ${el.params.max}`;
-        } else if (
-          "time" == type &&
-          0 < control_el.value.length && !moment(control_el.value, "H:mm", true).isValid()
-        ) {
-          error = `${control_el.value} is not a valid time`;
-        }
-
-        // show any errors
-        if (null != error) el.show_error(error, 2000);
+        // validate the input
+        const valid = el.validate();
 
         // call the onchange function if it exists
         if (CN_common.is_function(el.params.onchange)) {
-          await el.params.onchange(control_el, null === error, el.parent_model);
+          await el.params.onchange(control_el, valid, el.parent_model);
         }
       };
     }
@@ -723,7 +757,7 @@ export default {
    */
   toast: function(config) {
     if (!config.type) config.type = "light";
-    const toast_el = CN_element.create(`
+    const toast_el = this.create(`
       <div role="alert" aria-live="assertive" aria-atomic="true" class="toast bg-light mb-2">
         <div name="header" class="toast-header text-bg-${config.type}">
           <div class="fw-bold fs-5">${config.title}</div>
@@ -738,7 +772,7 @@ export default {
     `);
 
     if (config.message) {
-      toast_el.append(CN_element.create(`<div name="body" class="toast-body">${config.message}</div>`));
+      toast_el.append(this.create(`<div name="body" class="toast-body">${config.message}</div>`));
     }
 
     document.querySelector("#main-toast-container .toast-container").append(toast_el);
@@ -753,7 +787,7 @@ export default {
    */
   modal_message: function(config) {
     if (!config.type) config.type = "light";
-    const modal_el = CN_element.create(`
+    const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -787,7 +821,7 @@ export default {
    */
   modal_confirm: function(config) {
     if (!config.type) config.type = "primary";
-    const modal_el = CN_element.create(`
+    const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">

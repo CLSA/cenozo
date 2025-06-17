@@ -9,6 +9,18 @@ export class CN_base_add extends CN_base_record {
   #default_values_applied = [];
 
   /**
+   * Constructor
+   *
+   * TODO: document a full description of the properties parameter
+   *
+   * @param base_model parent_model: The model that the action belongs to
+   * @param object properties: A list of property definitions
+   */
+  constructor(parent_model, properties) {
+    super("add", parent_model, properties);
+  }
+
+  /**
    * Extends the parent method
    */
   async get_text(type) {
@@ -65,20 +77,10 @@ export class CN_base_add extends CN_base_record {
     let valid = true;
     let record = {};
     for (const prop_name in this.properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
-      const prop = this.properties[prop_name];
-      const prop_el = this.element.querySelector(`[name=${prop.id}]`);
-      const control_el = document.getElementById(prop.id);
-
-      // don't include hidden properties
-      if (prop.is_hidden(this)) continue;
-
-      record[prop.name] = this.get_formatted_property(prop);
-
-      // make sure required properties are available
-      if (module_prop && module_prop.required && "" === control_el.value) {
-        prop.element.show_error("Can't be empty", 0);
-        valid = false;
+      // set record value and validate all visible properties
+      if (!this.properties[prop_name].is_hidden(this)) {
+        record[prop_name] = this.get_formatted_property(prop_name);
+        if (!this.properties[prop_name].element.validate()) valid = false;
       }
     }
 

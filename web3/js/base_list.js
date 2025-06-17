@@ -27,7 +27,7 @@ export class CN_base_list extends CN_base_action {
    * @param object columns: A list of column definitions
    */
   constructor(parent_model, columns) {
-    super(parent_model);
+    super("list", parent_model);
 
     const parent_module = this.parent_model.get_parent_module();
 

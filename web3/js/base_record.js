@@ -16,11 +16,12 @@ export class CN_base_record extends CN_base_action {
    *
    * TODO: document a full description of the properties parameter
    *
+   * @param string type: The type of action (either "add" or "view")
    * @param base_model parent_model: The model that the action belongs to
    * @param object properties: A list of property definitions
    */
-  constructor(parent_model, properties) {
-    super(parent_model);
+  constructor(type, parent_model, properties) {
+    super(type, parent_model);
 
     // setup each property
     const parent_module = this.parent_model.get_parent_module();
@@ -232,6 +233,27 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
+   * Returns a property's value formatted by its type
+   * @param string prop_name: The name of the property
+   * @return (dynamic)
+   */
+  get_formatted_property(prop_name) {
+    const prop = this.properties[prop_name];
+    let value = this.get_state(prop.name);
+    if ("boolean" == prop.type) {
+      value = "" == value ? null : Number(value);
+    } else if ("date" == prop.type) {
+      if ("" == value) value = null;
+    } else if ("typeahead" == prop.type) {
+      // convert from value to key by looking up the element's typeahead list in the params object
+      // NOTE: the element's params is not the same as the property's params object (it is cloned)
+      value = prop.element.params.typeahead.list.find(item => value === item.value).key;
+    }
+
+    return value;
+  }
+
+  /**
    * Extends parent method
    */
   update_element() {
@@ -302,6 +324,9 @@ export class CN_base_record extends CN_base_action {
       } else if (["integer", "float"].includes(prop.type)) {
         params.min = prop.min;
         params.max = prop.max;
+      } else {
+        if (prop.format) params.format = prop.format;
+        if (prop.regex) params.regex = prop.regex;
       }
 
       if (module_prop && module_prop.max_length) {
@@ -312,7 +337,7 @@ export class CN_base_record extends CN_base_action {
         params.onchange = async (control_el, success) => {
           if (success) {
             await this.on_set_property(prop.name);
-          } else {
+          } else if ("view" == this.type) {
             this.undo_state(prop.name);
           }
         };
@@ -336,25 +361,5 @@ export class CN_base_record extends CN_base_action {
     prop_el.append(prop.element);
 
     return prop_el;
-  }
-
-  /**
-   * Returns a property's value formatted by its type
-   * @param string prop: The name of the property
-   * @return (dynamic)
-   */
-  get_formatted_property(prop) {
-    let value = this.get_state(prop.name);
-    if ("boolean" == prop.type) {
-      value = "" == value ? null : Number(value);
-    } else if ("date" == prop.type) {
-      if ("" == value) value = null;
-    } else if ("typeahead" == prop.type) {
-      // convert from value to key by looking up the element's typeahead list in the params object
-      // NOTE: the element's params is not the same as the property's params object (it is cloned)
-      value = prop.element.params.typeahead.list.find(item => value === item.value).key;
-    }
-
-    return value;
   }
 }

@@ -1,6 +1,4 @@
-import { CN_base_add } from "../base_add.js"
 import { CN_base_model } from "../base_model.js"
-import { CN_base_view } from "../base_view.js"
 
 export class CN_user_ip_address_model extends CN_base_model {
   constructor(module) {

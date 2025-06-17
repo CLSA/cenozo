@@ -7,12 +7,14 @@ import { CN_base_object } from "./base_object.js"
  * The base class for all action classes (add/view/list/etc)
  */
 export class CN_base_action extends CN_base_object {
+  #type;
   #parent_model = null;
   #is_loading = false;
   #is_placeholder = false;
   #placeholder_timeout_id = null;
 
   // getters and setters
+  get type() { return this.#type }
   get parent_model() { return this.#parent_model }
   get element() { return this.#parent_model.element }
   get is_loading() { return this.#is_loading }
@@ -20,10 +22,12 @@ export class CN_base_action extends CN_base_object {
 
   /**
    * Constructor
+   * @param string type: The type of action ("add", "list", "view", etc)
    * @param base_model parent_model: The model that the action belongs to
    */
-  constructor(parent_model) {
+  constructor(type, parent_model) {
     super();
+    this.#type = type;
     this.#parent_model = parent_model;
   }
 

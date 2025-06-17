@@ -1,8 +1,6 @@
 import CN_session from "../session.js"
 
-import { CN_base_add } from "../base_add.js"
 import { CN_base_model } from "../base_model.js"
-import { CN_base_view } from "../base_view.js"
 
 export class CN_system_message_model extends CN_base_model {
   constructor(module) {
@@ -37,15 +35,15 @@ export class CN_system_message_model extends CN_base_model {
                 order: "title",
               },
             },
-            is_hidden: (model) => CN_session.data.role.all_sites ? false : model instanceof CN_base_add,
-            is_constant: (model) => CN_session.data.role.all_sites ? false : model instanceof CN_base_view,
+            is_hidden: (model) => CN_session.data.role.all_sites ? false : "add" == model.type,
+            is_constant: (model) => CN_session.data.role.all_sites ? false : "view" == model.type,
           },
           site_id: {
             title: "Site",
             type: "enum",
             enum: { path: "site" },
-            is_hidden: (model) => CN_session.data.role.all_sites ? false : model instanceof CN_base_add,
-            is_constant: (model) => CN_session.data.role.all_sites ? false : model instanceof CN_base_view,
+            is_hidden: (model) => CN_session.data.role.all_sites ? false : "add" == model.type,
+            is_constant: (model) => CN_session.data.role.all_sites ? false : "view" == model.type,
           },
           role_id: {
             title: "Role",

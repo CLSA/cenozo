@@ -1,8 +1,4 @@
-import CN_session from "../session.js"
-
-import { CN_base_add } from "../base_add.js"
 import { CN_base_model } from "../base_model.js"
-import { CN_base_view } from "../base_view.js"
 
 export class CN_consent_type_model extends CN_base_model {
   constructor(module) {

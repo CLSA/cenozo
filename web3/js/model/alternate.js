@@ -1,5 +1,4 @@
 import CN_api from "../api.js"
-import CN_session from "../session.js"
 
 import { CN_base_model } from "../base_model.js"
 import { CN_base_view } from "../base_view.js"
@@ -84,7 +83,7 @@ export class CN_alternate_model extends CN_base_model {
             type: "enum",
             enum: { path: "alternate_type" },
             help: "You can add more than one role after the alternate has been created.",
-            is_hidden: (model) => model instanceof CN_base_view,
+            is_hidden: (model) => "view" == model.type,
           },
           global_note: { title: "Special Note", type: "text" },
         },

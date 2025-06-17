@@ -1,6 +1,4 @@
-import { CN_base_add } from "../base_add.js"
 import { CN_base_model } from "../base_model.js"
-import { CN_base_view } from "../base_view.js"
 
 export class CN_user_model extends CN_base_model {
   constructor(module) {
@@ -23,7 +21,7 @@ export class CN_user_model extends CN_base_model {
           active: { title: "Active", type: "boolean", },
           name: {
             title: "Name",
-            is_constant: (model) => model instanceof CN_base_view,
+            is_constant: (model) => "view" == model.type,
           },
           first_name: { title: "First Name", },
           last_name: { title: "Last Name", },
@@ -36,7 +34,7 @@ export class CN_user_model extends CN_base_model {
           use_12hour_clock: { title: "Use 12-hour Clock", type: "boolean" },
           login_failures: {
             title: "Login Failures",
-            is_hidden: (model) => model instanceof CN_base_add,
+            is_hidden: (model) => "add" == model.type,
           },
         },
       }

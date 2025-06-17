@@ -9,6 +9,18 @@ export class CN_base_view extends CN_base_record {
   #tab = null;
 
   /**
+   * Constructor
+   *
+   * TODO: document a full description of the properties parameter
+   *
+   * @param base_model parent_model: The model that the action belongs to
+   * @param object properties: A list of property definitions
+   */
+  constructor(parent_model, properties) {
+    super("view", parent_model, properties);
+  }
+
+  /**
    * Extends the parent method
    */
   async get_text(type) {
@@ -98,26 +110,20 @@ export class CN_base_view extends CN_base_record {
   }
 
   async on_set_property(prop_name) {
-    const prop = this.properties[prop_name];
-    const control_el = document.getElementById(prop.id);
-
     try {
       // update the server
       let data = {};
-      data[prop.name] = this.get_formatted_property(prop);
+      data[prop_name] = this.get_formatted_property(prop_name);
 
       await CN_api.patch(
         `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`,
         data
       );
     } catch (error) {
-      this.undo_state(prop.name);
+      this.undo_state(prop_name);
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
-          const prop = this.properties[prop_name];
-          const prop_el = this.element.querySelector(`[name=${prop.id}]`);
-          const control_el = document.getElementById(prop.id);
-          prop.element.show_error("Conflicts with existing record", 5000);
+          this.properties[prop_name].element.show_error("Conflicts with existing record", 5000);
         });
       } else {
         this.run();

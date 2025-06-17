@@ -1,6 +1,5 @@
 import CN_session from "../session.js"
 
-import { CN_base_add } from "../base_add.js"
 import { CN_base_model } from "../base_model.js"
 import { CN_base_view } from "../base_view.js"
 
@@ -42,7 +41,7 @@ export class CN_address_model extends CN_base_model {
                 model.undo_state("international");
               }
             },
-            is_constant: (model) => model instanceof CN_base_view,
+            is_constant: (model) => "view" == model.type,
           },
           address1: { title: "Address Line 1", type: "string" },
           address2: { title: "Address Line 2", type: "string" },
@@ -60,7 +59,7 @@ export class CN_address_model extends CN_base_model {
               } },
               modifier: { order: ["country.name", "region.name"] },
             },
-            is_hidden: (model) => model instanceof CN_base_add || model.get_state("international"),
+            is_hidden: (model) => "add" == model.type || model.get_state("international"),
             is_constant: () => true,
             help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
           },
@@ -68,7 +67,7 @@ export class CN_address_model extends CN_base_model {
             title: "Region",
             type: "string",
             is_hidden: (model) => !(
-              model instanceof CN_base_add ?
+              "add" == model.type ?
               1 == model.properties.international.element.querySelector("select").value :
               model.get_state("international")
             ),
@@ -93,7 +92,7 @@ export class CN_address_model extends CN_base_model {
               },
             },
             is_hidden: (model) => !(
-              model instanceof CN_base_add ?
+              "add" == model.type ?
               1 == model.properties.international.element.querySelector("select").value :
               model.get_state("international")
             ),
@@ -106,13 +105,13 @@ export class CN_address_model extends CN_base_model {
           timezone_offset: {
             title: "Timezone Offset",
             type: "float",
-            is_hidden: (model) => model instanceof CN_base_add,
+            is_hidden: (model) => "add" == model.type,
             help: "The number of hours difference between the address' timezone and UTC.",
           },
           daylight_savings: {
             title: "Daylight Savings",
             type: "boolean",
-            is_hidden: (model) => model instanceof CN_base_add,
+            is_hidden: (model) => "add" == model.type,
             help: "Whether the address observes daylight savings.",
           },
           note: { title: "Note", type: "text" },
