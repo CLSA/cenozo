@@ -157,16 +157,12 @@ export default {
         // define this module in the parent
         if (null != parent_subject) {
           // make sure the parent can have this module as a child
-          if (!module.operation.parent_module.children.includes(subject)) {
+          if (
+            !module.operation.parent_module.children.includes(subject) &&
+            !module.operation.parent_module.choosing.includes(subject)
+          ) {
             throw new Error(
-              `Error loading modules: module "${subject}" is not child of "${parent_subject}"`
-            );
-          }
-
-          // make sure the parent can have this module as a choosing
-          if (!module.operation.parent_module.choosing.includes(subject)) {
-            throw new Error(
-              `Error loading modules: module "${subject}" is not choosing of "${parent_subject}"`
+              `Error loading modules: module "${subject}" is not a child of "${parent_subject}"`
             );
           }
         }
