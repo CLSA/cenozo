@@ -308,6 +308,14 @@ export default {
   },
 
   /**
+   * ADD DOCS
+   */
+   get_leaf_module: function() {
+     const leaf_module_name = this.data.operation_list[this.data.operation_list.length-1];
+     return this.data.modules[leaf_module_name];
+   },
+
+  /**
    * Creates the main UI body
    */
   create_body: function() {

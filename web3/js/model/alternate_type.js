@@ -1,4 +1,7 @@
+import CN_session from "../session.js"
+
 import { CN_base_model } from "../base_model.js"
+import { CN_base_list } from "../base_list.js"
 
 export class CN_alternate_type_model extends CN_base_model {
   constructor(module) {
@@ -18,7 +21,7 @@ export class CN_alternate_type_model extends CN_base_model {
           alternate_count: { title: "Alternates", table_prefix: false },
           description: { title: "Description", type: "text", align: "left" },
 
-          // used by the alternate module to determine whether a type can be chosen
+          // used in the CN_alternate_type_list.is_choose_disabled method below
           access: { table_prefix: false, is_hidden: (model) => true },
           role_count: { table_prefix: false, is_hidden: (model) => true },
         },
@@ -37,6 +40,22 @@ export class CN_alternate_type_model extends CN_base_model {
           description: { title: "Description", type: "text" },
         },
       }
+    );
+  }
+}
+
+export class CN_alternate_type_list extends CN_base_list {
+  /**
+   * Extends the parent method
+   */
+  is_choose_disabled(record) {
+    // when selecting an alternate's alternate_type, restrict by role
+    const leaf_module = CN_session.get_leaf_module();
+    return (
+      "alternate" == leaf_module.subject &&
+      "view" == leaf_module.operation.action &&
+      0 < record.role_count &&
+      !record.access
     );
   }
 }

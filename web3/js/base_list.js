@@ -210,11 +210,23 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
+   * Determines whether a record cannot be selected when in choose mode
+   * @param object record: One of the records from the #records array
+   * @return boolean
+   */
+  is_choose_disabled(record) {
+    return false;
+  }
+
+  /**
    * Called when one of the lists's rows is clicked
    * @param object record: One of the records from the #records array
    */
   async on_row_click(record) {
     if (this.#is_choosing) {
+      // do nothing if the record is disabled
+      if (this.is_choose_disabled(record)) return;
+
       // toggle the record's chosen state
       record.chosen = !record.chosen;
 
@@ -272,7 +284,10 @@ export class CN_base_list extends CN_base_action {
     const start_index = (this.#current_page-1)*20;
     this.#records.map(record => {
       let tr_el = document.createElement("tr");
-      if (this.#is_choosing && record.chosen) tr_el.classList.add("table-primary");
+      if (this.#is_choosing) {
+        if (record.chosen) tr_el.classList.add("table-primary");
+        if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
+      }
       tr_el.onclick = async () => await this.on_row_click(record);
       for (const col_name in this.#columns) {
         const col = this.#columns[col_name];
