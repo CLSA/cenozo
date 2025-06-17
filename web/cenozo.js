@@ -2322,6 +2322,11 @@
               },
 
               save: async function () {
+                // make sure there are no invalid form elements
+                cenozo.forEachFormElement("form", function (element) {
+                  if (element.$invalid) $scope.form.$valid = false;
+                });
+
                 if (!$scope.form.$valid) {
                   // dirty all inputs so we can find the problem
                   cenozo.forEachFormElement("form", function (element) {
