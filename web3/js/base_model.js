@@ -82,7 +82,8 @@ export class CN_base_model extends CN_base_object {
   allow_view() { return this.module.action_allowed("view"); }
 
   /**
-   * Extends parent method
+   * Creates the model's element including the header, body and footer sub-elements
+   * @return Element
    */
   render() {
     this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
@@ -101,7 +102,7 @@ export class CN_base_model extends CN_base_object {
   }
 
   /**
-   * Extends parent method
+   * Runs the dynamic parts of the model (loading data) and updates the element once ready
    */
   async run() {
     if (!this.#module.operation) return;

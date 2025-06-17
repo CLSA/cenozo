@@ -33,7 +33,8 @@ export class CN_error_model extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Creates the element including the header, body and footer sub-elements
+   * @return Element
    */
   render() {
     // report the error to the console
@@ -57,7 +58,7 @@ export class CN_error_model extends CN_base_object {
   }
 
   /**
-   * ADD DOCS
+   * Runs the dynamic parts of the object
    */
   async run() {}
 }

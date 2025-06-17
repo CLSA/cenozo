@@ -22,7 +22,7 @@ export default {
   error_model: null,
 
   /**
-   * ADD DOCS
+   * Logs the user out of the application
    */
   logout: async function() {
     try {
@@ -34,7 +34,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Reads the user's session data from the server
    */
   update_data: async function() {
     const response = await CN_api.get("self/0");
@@ -50,12 +50,10 @@ export default {
         return this.actions.hasOwnProperty(type);
       };
     }
-
-    if (this.data.application.development_mode) console.info("Development mode");
   },
 
   /**
-   * ADD DOCS
+   * Updates the system message list
    */
   update_system_messages: async function() {
     const response = await CN_api.get(
@@ -70,7 +68,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Updates the breadcrumb trail based on the current URL
    */
   update_breadcrumbs: function() {
     // add the breadcrumbs
@@ -80,7 +78,8 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Gets the current time formatted by the user's preferences
+   * @return string
    */
   get_time: function() {
     let now = moment();
@@ -89,7 +88,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Loads all modules and creates all models based on the current URL
    */
   load_modules: async function() {
     const href_parts = window.location.pathname
@@ -225,7 +224,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Renders the current state to the UI based on the loaded modules/models
    */
   render: async function() {
     const main_content_el = document.getElementById("main-content");
@@ -284,7 +283,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Renders an error to the UI
    */
   render_error: function(error) {
     const main_content_el = document.getElementById("main-content");
@@ -298,7 +297,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Navigates the browser to the given path
    */
   navigate_to: async function(path) {
     if (this.data.application.development_mode) console.info(`navigating to /${path}`);
@@ -313,7 +312,7 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Creates the main UI body
    */
   create_body: function() {
     const body_el = document.querySelector("body");
@@ -400,10 +399,11 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Starts the application
    */
   start: async function() {
     await this.update_data();
+    if (this.data.application.development_mode) console.info("Development mode");
     this.create_body();
 
     const main_menu_header_el = document.getElementById("main-menu-header");

@@ -160,7 +160,7 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * Runs the dynamic parts of the action (loading data) and updates the action's element once ready
+   * Runs the dynamic parts of the action (loading data) and updates the element once ready
    */
   async run() {
     if (!this.#parent_model.module.operation) return;

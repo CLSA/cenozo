@@ -108,6 +108,10 @@ export class CN_home_model extends CN_base_object {
     }
   }
 
+  /**
+   * Creates the element including the header, body and footer sub-elements
+   * @return Element
+   */
   render() {
     this.#element = CN_element.create(`
       <div class="container-fluid rounded bg-white p-4">
@@ -158,6 +162,9 @@ export class CN_home_model extends CN_base_object {
     return this.#element;
   }
 
+  /**
+   * Runs the dynamic parts of the object (loading data) and updates the element once ready
+   */
   async run() {
     await CN_session.update_system_messages();
     this.update_element();
