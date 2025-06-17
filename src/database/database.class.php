@@ -32,6 +32,9 @@ class database extends \cenozo\base_object
     $this->password = $password;
     $this->name = $database;
 
+    // errors are handled by this class
+    mysqli_report( MYSQLI_REPORT_OFF );
+
     // set up the database connection
     $this->connection = new \mysqli( $this->server, $this->username, $this->password, $this->name );
     if( $this->connection->connect_error )
