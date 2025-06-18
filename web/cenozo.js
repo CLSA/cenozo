@@ -2304,19 +2304,14 @@
               check: function (property) {
                 // convert size types and write record property from formatted record
                 var input = $scope.model.module.getInput(property);
-                if ("size" == input.type)
-                  $scope.record[property] = $filter("cnSize")(
-                    $scope.formattedRecord[property].join(" "),
-                    true
-                  );
+                if ("size" == input.type) {
+                  $scope.record[property] = $filter("cnSize")($scope.formattedRecord[property].join(" "), true);
+                }
 
                 // test the format
                 var element = cenozo.getFormElement(property);
                 if (element) {
-                  element.$error.format = !$scope.model.testFormat(
-                    property,
-                    $scope.record[property]
-                  );
+                  element.$error.format = !$scope.model.testFormat(property, $scope.record[property]);
                   cenozo.updateFormElement(element, true);
                 }
               },
@@ -2324,7 +2319,15 @@
               save: async function () {
                 // make sure there are no invalid form elements
                 cenozo.forEachFormElement("form", function (element) {
-                  if (element.$invalid) $scope.form.$valid = false;
+                  if (element.$invalid) {
+                    // ignore invalid elements that have no errors
+                    for (var error in element.$error) {
+                      if (element.$error[error]) {
+                        $scope.form.$valid = false;
+                        break;
+                      }
+                    }
+                  }
                 });
 
                 if (!$scope.form.$valid) {
@@ -2552,6 +2555,13 @@
                   $scope.record[$scope.input.key] = $model;
                 } else {
                   $scope.record[$scope.input.key] = $item;
+                }
+
+                const element = cenozo.getFormElement($scope.input.key);
+                if (element) {
+                  // remove the element's required error if the record has a value
+                  if (element.$error.required && $scope.record[$scope.input.key]) delete element.$error.required;
+                  cenozo.updateFormElement(element, true);
                 }
               },
 
