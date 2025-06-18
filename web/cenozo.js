@@ -2319,7 +2319,15 @@
               save: async function () {
                 // make sure there are no invalid form elements
                 cenozo.forEachFormElement("form", function (element) {
-                  if (element.$invalid) $scope.form.$valid = false;
+                  if (element.$invalid) {
+                    // ignore invalid elements that have no errors
+                    for (var error in element.$error) {
+                      if (element.$error[error]) {
+                        $scope.form.$valid = false;
+                        break;
+                      }
+                    }
+                  }
                 });
 
                 if (!$scope.form.$valid) {
