@@ -180,7 +180,7 @@ class survey_manager extends \cenozo\singleton
           property_exists( $obj, 'SELECT_OPTION' ) &&
           'YES' == $obj->SHOW_OPTIONS
         ) {
-          if( preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
+          if( !is_null( $obj->SELECT_OPTION ) && preg_match( '/OPTION([0-9])_/', $obj->SELECT_OPTION, $matches ) )
           {
             $delink_options = array(
               'OPTION3_HIN_COMP', 'OPTION3_HIN_TRACK', 'OPTION2_NO_HIN_COMP', 'OPTION2_NO_HIN_TRACK'

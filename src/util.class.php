@@ -660,8 +660,10 @@ class util
             if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
             {
               // convert timezones
-              if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
-              {
+              if(
+                !is_null( $sub_value ) &&
+                preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value )
+              ) {
                 $datetime_obj = static::get_datetime_object( $sub_value );
                 $datetime_obj->setTimezone( $db_user->get_timezone_object() );
                 $sub_value = $datetime_obj->format( 'Y-m-d '.$time_format );
@@ -707,7 +709,9 @@ class util
     $encoded_data = '';
     foreach( $csv_array as $row )
     {
-      $row = array_map( function( $value ) { return sprintf( '"%s"', str_replace( '"', '""', $value ) ); }, $row );
+      $row = array_map( function( $value ) {
+        return is_null( $value ) ? "" : sprintf( '"%s"', str_replace( '"', '""', $value ) );
+      }, $row );
       $encoded_data .= implode( ',', $row )."\n";
     }
 
