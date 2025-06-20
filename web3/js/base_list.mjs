@@ -41,21 +41,22 @@ export class CN_base_list extends CN_base_action {
     // setup each column
     this.#columns = CN_common.clone(columns);
     for (var col_name in this.#columns) {
-      const col = this.#columns[col_name];
+      const column = this.#columns[col_name];
+      if (!column.type) column.type = "string";
 
       // by default always prefix the table name
-      if (undefined === col.table_prefix) col.table_prefix = true;
+      if (undefined === column.table_prefix) column.table_prefix = true;
 
       // by default center align all columns
-      if (undefined === col.align) col.align = "center";
+      if (undefined === column.align) column.align = "center";
 
       // define the is_hidden function if it hasn't been defined
-      if (!CN_common.is_function(col.is_hidden)) {
-        col.is_hidden = () => {
-          if (!col.column) return false;
+      if (!CN_common.is_function(column.is_hidden)) {
+        column.is_hidden = () => {
+          if (!column.column) return false;
 
           // if there's a parent then don't show columns belonging to the parent's subject
-          return null != parent_module && col.column.match(`${parent_module.subject}\.`);
+          return null != parent_module && column.column.match(`${parent_module.subject}\.`);
         };
       }
     }
@@ -290,34 +291,34 @@ export class CN_base_list extends CN_base_action {
       }
       tr_el.onclick = async () => await this.on_row_click(record);
       for (const col_name in this.#columns) {
-        const col = this.#columns[col_name];
+        const column = this.#columns[col_name];
 
         // don't show hidden columns
-        if (col.is_hidden(this)) continue;
+        if (column.is_hidden(this)) continue;
 
         let value = record[col_name];
         if (null === value) {
           value = "(empty)";
-        } else if ("boolean" == col.type) {
+        } else if ("boolean" == column.type) {
           value = value ? "Yes" : "No";
-        } else if (CN_common.is_datetime_type(col.type, "date")) {
+        } else if (CN_common.is_datetime_type(column.type, "date")) {
           value = moment(value).format(
             CN_common.get_datetime_format(
-              col.type,
+              column.type,
               CN_session.data.user.am_pm
             )
           );
-        } else if ("rank" == col.type) {
+        } else if ("rank" == column.type) {
           value = CN_common.ordinal_suffix(value);
-        } else if (CN_common.is_datetime_type(col.type, "time")) {
+        } else if (CN_common.is_datetime_type(column.type, "time")) {
           value = moment(`${moment().format("YYYY-MM-DD")} ${value}`).format(
             CN_common.get_time_format(CN_session.data.user.am_pm, false)
           );
-        } else if (CN_common.is_string(value) && 0 < col.limit) {
-          value = value.substring(0, col.limit);
+        } else if (CN_common.is_string(value) && 0 < column.limit) {
+          value = value.substring(0, column.limit);
         }
 
-        tr_el.innerHTML += `<td class="text-${col.align}">${value}</td>`;
+        tr_el.innerHTML += `<td class="text-${column.align}">${value}</td>`;
       }
 
       // add an empty header for deleting records
@@ -423,12 +424,12 @@ export class CN_base_list extends CN_base_action {
     // build the header row
     let header_tr_el = document.createElement("tr");
     for (const col_name in this.#columns) {
-      const col = this.#columns[col_name];
+      const column = this.#columns[col_name];
 
       // don't show hidden columns
-      if (col.is_hidden(this)) continue;
+      if (column.is_hidden(this)) continue;
 
-      header_tr_el.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${col.title}</th>`;
+      header_tr_el.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${column.title}</th>`;
     }
 
     // add an empty header for deleting records
