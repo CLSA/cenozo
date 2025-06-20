@@ -187,10 +187,12 @@ export default {
             }
             const child_module = this.data.modules[child_subject];
 
-            child_module.operation = {
-              parent_module: module,
-              action: "list",
-            };
+            if (!child_module.hasOwnProperty("operation")) {
+              child_module.operation = {
+                parent_module: module,
+                action: "list",
+              };
+            }
 
             if (!load_module_list.includes(child_subject)) load_module_list.push(child_subject);
           });
@@ -247,16 +249,9 @@ export default {
       }
     }
 
-    // render the last module's content
-    let model = null;
-    if (0 == this.data.operation_list.length) {
-      // render the home module as the main content
-      model = new CN_home_model();
-    } else {
-      // render the last module as the main content
-      const last_module_name = this.data.operation_list[this.data.operation_list.length-1];
-      model = this.data.modules[last_module_name].model;
-    }
+    // render the left module's content (or the home model if there are no operations
+    const leaf_module = this.get_leaf_module();
+    const model = null == leaf_module ? new CN_home_model() : leaf_module.model;
 
     // TODO: is this try/catch block necessary? if so then explain why
     try {
@@ -311,8 +306,8 @@ export default {
    * ADD DOCS
    */
    get_leaf_module: function() {
-     const leaf_module_name = this.data.operation_list[this.data.operation_list.length-1];
-     return this.data.modules[leaf_module_name];
+     const len = this.data.operation_list.length;
+     return 0 == len ?  null : this.data.modules[this.data.operation_list[len-1]];
    },
 
   /**

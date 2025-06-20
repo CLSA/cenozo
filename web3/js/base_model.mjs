@@ -41,8 +41,12 @@ export class CN_base_model extends CN_base_object {
     const parent_module = this.get_parent_module();
     if (parent_module) {
       path_parts.unshift(parent_module.operation.identifier);
-      if ("url" == type) path_parts.unshift("view");
-      path_parts.unshift(parent_module.model.get_base_path(type));
+      if ("url" == type) {
+        path_parts.unshift("view");
+        path_parts.unshift(parent_module.model.get_base_path(type));
+      } else {
+        path_parts.unshift(parent_module.subject);
+      }
     }
 
     return path_parts.join("/");
@@ -83,18 +87,21 @@ export class CN_base_model extends CN_base_object {
 
   /**
    * Creates the model's element including the header, body and footer sub-elements
+   * @param string action: Optionally render a specific action
    * @return Element
    */
-  render() {
+  render(action = null) {
     this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
-    if (!this.#module.operation) return this.#element;
+
+    // determine which action to use
+    if (null == action && this.#module.hasOwnProperty("operation")) action = this.#module.operation.action;
 
     // add the model_action
-    if ("add" == this.#module.operation.action) {
+    if ("add" == action) {
       this.#element.append(this.#actions.add.render());
-    } else if ("list" == this.#module.operation.action) {
+    } else if ("list" == action) {
       this.#element.append(this.#actions.list.render());
-    } else if ("view" == this.#module.operation.action) {
+    } else if ("view" == action) {
       this.#element.append(this.#actions.view.render());
     }
 
@@ -103,15 +110,17 @@ export class CN_base_model extends CN_base_object {
 
   /**
    * Runs the dynamic parts of the model (loading data) and updates the element once ready
+   * @param string action: Optionally render a specific action
    */
-  async run() {
-    if (!this.#module.operation) return;
+  async run(action = null) {
+    // determine which action to use
+    if (null == action && this.#module.hasOwnProperty("operation")) action = this.#module.operation.action;
 
-    if ("add" == this.#module.operation.action) {
+    if ("add" == action) {
       await this.#actions.add.run();
-    } else if ("list" == this.#module.operation.action) {
+    } else if ("list" == action) {
       await this.#actions.list.run();
-    } else if ("view" == this.#module.operation.action) {
+    } else if ("view" == action) {
       await this.#actions.view.run(true); // also render children
     }
   }

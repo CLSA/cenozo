@@ -11,10 +11,8 @@ export class CN_base_add extends CN_base_record {
   /**
    * Constructor
    *
-   * TODO: document a full description of the properties parameter
-   *
    * @param base_model parent_model: The model that the action belongs to
-   * @param object properties: A list of property definitions
+   * @param object properties: A list of property definitions (see parent class for more details)
    */
   constructor(parent_model, properties) {
     super("add", parent_model, properties);

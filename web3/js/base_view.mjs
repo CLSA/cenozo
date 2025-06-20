@@ -11,10 +11,8 @@ export class CN_base_view extends CN_base_record {
   /**
    * Constructor
    *
-   * TODO: document a full description of the properties parameter
-   *
    * @param base_model parent_model: The model that the action belongs to
-   * @param object properties: A list of property definitions
+   * @param object properties: A list of property definitions (see parent class for more details)
    */
   constructor(parent_model, properties) {
     super("view", parent_model, properties);
@@ -306,14 +304,14 @@ export class CN_base_view extends CN_base_record {
           });
         };
 
-        const child_el = child_module.model.render();
+        const child_el = child_module.model.render("list");
         if (child_subject == (new URL(window.location)).searchParams.get('tab')) {
           el.append(child_el);
         }
       });
     } else if (1 == child_list.length) {
       // render the only child directly
-      el.append(CN_session.data.modules[child_list[0]].model.render());
+      el.append(CN_session.data.modules[child_list[0]].model.render("list"));
     }
 
     return el;
@@ -328,10 +326,10 @@ export class CN_base_view extends CN_base_record {
     await super.run();
 
     if (children) {
-      this.parent_model.module.children.concat(this.parent_model.module.choosing).forEach(async (subject) => {
-        const module = CN_session.data.modules[subject];
-        if (module && "list" == module.operation.action) module.model.run();
-      });
+      // run all children and choosing models as well
+      this.parent_model.module.children.concat(this.parent_model.module.choosing).forEach(
+        async (subject) => CN_session.data.modules[subject].model.run("list")
+      );
     }
   }
 }
