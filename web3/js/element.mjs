@@ -3,6 +3,7 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_session from "./session.mjs"
+import CN_timezones from "./timezones.mjs"
 
 /**
  * A list of functions that create various elements
@@ -132,7 +133,7 @@ export default {
           .replace(/^([0-9]{2}:[0-9]{2}).*/, "$1");
       };
     } else if ("typeahead" == type) {
-      control_el = this.create(`<input class="form-control"></input>`);
+      control_el = this.create(`<input class="form-control" autocomplete="off"></input>`);
 
       if (CN_common.is_object(el.params.typeahead)) {
         if (!el.params.typeahead.hasOwnProperty("min_length")) el.params.typeahead.min_length = 2;
@@ -268,7 +269,8 @@ export default {
         error = `The biggest number allowed is ${el.params.max}`;
       } else if (
         "time" == type &&
-        0 < control_el.value.length && !moment(control_el.value, "H:mm", true).isValid()
+        0 < control_el.value.length &&
+        !control_el.value.match(/^(2[0-3]|[01]?[0-9]):([0-5]?[0-9])$/)
       ) {
         error = `${control_el.value} is not a valid time`;
       }
@@ -490,7 +492,7 @@ export default {
       id: "cn_clock_settings_modal_timezone",
       required: true,
       typeahead: {
-        list: moment.tz.names(),
+        list: CN_timezones,
         on_select: (el) => {
           const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
           timezone_control_el.value = el.value;
@@ -506,7 +508,7 @@ export default {
     timezone_control_el.value = CN_session.data.user.timezone;
     timezone_control_el.last_selected_value = CN_session.data.user.timezone;
     timezone_control_el.onblur = () => {
-      if (!moment.tz.names().includes(timezone_control_el.value)) {
+      if (!CN_timezones.includes(timezone_control_el.value)) {
         timezone_control_el.value = timezone_control_el.last_selected_value;
       }
     }

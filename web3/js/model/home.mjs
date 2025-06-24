@@ -36,11 +36,11 @@ export class CN_home_model extends CN_base_object {
     }
 
     if ("last_access_start" == type) {
-      return moment(data.user.last_activity.start_datetime).format(CN_common.get_datetime_format("datetime"));
+      return CN_common.format_datetime(data.user.last_activity.start_datetime, "datetime");
     }
 
     if ("last_access_end" == type) {
-      return moment(data.user.last_activity.end_datetime).format(CN_common.get_datetime_format("datetime"));
+      return CN_common.format_datetime(data.user.last_activity.end_datetime, "datetime");
     }
 
     if ("uptime" == type) {

@@ -302,18 +302,11 @@ export class CN_base_list extends CN_base_action {
         } else if ("boolean" == column.type) {
           value = value ? "Yes" : "No";
         } else if (CN_common.is_datetime_type(column.type, "date")) {
-          value = moment(value).format(
-            CN_common.get_datetime_format(
-              column.type,
-              CN_session.data.user.am_pm
-            )
-          );
+          value = CN_common.format_datetime(value, column.type);
         } else if ("rank" == column.type) {
           value = CN_common.ordinal_suffix(value);
         } else if (CN_common.is_datetime_type(column.type, "time")) {
-          value = moment(`${moment().format("YYYY-MM-DD")} ${value}`).format(
-            CN_common.get_time_format(CN_session.data.user.am_pm, false)
-          );
+          value = CN_common.format_time(value, column.type);
         } else if (CN_common.is_string(value) && 0 < column.limit) {
           value = value.substring(0, column.limit);
         }

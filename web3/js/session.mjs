@@ -82,9 +82,13 @@ export default {
    * @return string
    */
   get_time: function() {
-    let now = moment();
-    now.tz(this.data.user.timezone);
-    return now.format(CN_common.get_time_format(this.data.user.am_pm, false, true));
+    return CN_common.format_time(
+      new Date(),
+      this.data.user.timezone,
+      this.data.user.am_pm,
+      false,
+      true
+    );
   },
 
   /**

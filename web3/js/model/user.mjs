@@ -1,3 +1,5 @@
+import CN_timezones from "./timezones.mjs"
+
 import { CN_base_model } from "../base_model.mjs"
 
 export class CN_user_model extends CN_base_model {
@@ -29,7 +31,7 @@ export class CN_user_model extends CN_base_model {
           timezone: {
             title: "Timezone",
             type: "typeahead",
-            typeahead: { list: moment.tz.names() }
+            typeahead: { list: CN_timezones }
           },
           use_12hour_clock: { title: "Use 12-hour Clock", type: "boolean" },
           login_failures: {

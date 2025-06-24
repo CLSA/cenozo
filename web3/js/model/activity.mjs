@@ -14,8 +14,8 @@ export class CN_activity_model extends CN_base_model {
           user: { column: "user.name", title: "User", },
           site: { column: "site.name", title: "Site", },
           role: { column: "role.name", title: "Role", },
-          start_datetime: { title: "Start", type: "datetime" },
-          end_datetime: { title: "End", type: "datetime" },
+          start_datetime: { title: "Start", type: "datetimesecond" },
+          end_datetime: { title: "End", type: "datetimesecond" },
         },
       }
     );

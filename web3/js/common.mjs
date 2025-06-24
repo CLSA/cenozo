@@ -1,3 +1,5 @@
+import CN_session from "./session.mjs"
+
 // COMMON
 
 /**
@@ -123,53 +125,70 @@ export default {
   },
 
   /**
-   * Returns the moment-based datetime format
-   * @param string format: Any date format including "yearmonth", "dob", "dod", "datetime", "date", "time", etc
+   * Returns a time string representation of a datetime
+   * @param string|Date value: The datetime to format
+   * @param string timezone: Which timezone to use
+   * @param boolean am_pm: Whether to format using am_pm or 24-hour time
+   * @param boolean seconds: Whether to include seconds
+   * @param boolean show_timezone: Whether to include the timezone
+   * @return string
+   */
+  format_time: function(
+    value,
+    timezone = CN_session.data.user.timezone,
+    am_pm = CN_session.data.user.am_pm,
+    seconds = false,
+    show_timezone = false
+  ) {
+    let options = { timeZone: timezone, hour12: am_pm, hour: am_pm ? "numeric" : "2-digit", minute: "2-digit" };
+    if (seconds) options.second = "2-digit";
+    if (show_timezone) options.timeZoneName = "short";
+    return new Intl.DateTimeFormat('en-CA', options).format(new Date(value));
+  },
+
+  /**
+   * Returns a datetime string representation of a datetime
+   * @param string|Date value: The datetime to format
+   * @param string format: Which format to use (yearmonth, dob, dod, date, datetime, datetimesecond, etc)
+   * @param string timezone: Which timezone to use
    * @param boolean am_pm: Whether to format using am_pm or 24-hour time
    * @param boolean long_form: Whether to format in long or short form
    * @return string
    */
-  get_datetime_format: function(format, am_pm = false, long_form = false) {
-    var resolved_format = format;
+  format_datetime: function(
+    value,
+    format,
+    timezone = CN_session.data.user.timezone,
+    am_pm = CN_session.data.user.am_pm,
+    long_form = false
+  ) {
+    let options = { timeZone: timezone };
+    let include_date = true;
+    let include_time = false;
     if ("yearmonth" == format) {
-      resolved_format = "MMMM, YYYY";
+      options = { ...options, year: "numeric", month: "long" };
     } else if ("dob" == format || "dod" == format) {
-      resolved_format = "MMM D, YYYY";
+      options = { ...options, year: "numeric", month: "short", day: "numeric" };
     } else if (this.is_datetime_type(format, "date")) {
-      resolved_format = (long_form ? "dddd, MMMM Do" : "MMM D") + ", YYYY";
-      if ("date" != format) {
-        resolved_format += (
-          " @ " +
-          this.get_time_format(
-            am_pm,
-            this.is_datetime_type(format, "second"),
-            long_form
-          )
-        );
-      }
+      options = { ...options, year: "numeric", month: long_form ? "long" : "short", day: "numeric" };
+      if (long_form) options.weekday = "long";
+      include_time = "date" != format;
     } else if (this.is_datetime_type(format, "time")) {
-      resolved_format = this.get_time_format(
-        am_pm,
-        this.is_datetime_type(format, "second"),
-        false
+      include_time = true;
+    }
+
+    let parts = [];
+    if (include_date) {
+      parts.push(
+        new Intl.DateTimeFormat('en-CA', options).format(new Date(value))
       );
     }
-    return resolved_format;
-  },
-
-  /**
-   * Returns the moment-based time format
-   * @param boolean am_pm: Whether to format using am_pm or 24-hour time
-   * @param boolean seconds: Whether to include seconds
-   * @param boolean timezone: Whether to include the timezone
-   * @return string
-   */
-  get_time_format: function(am_pm = false, seconds = false, timezone = false) {
-    let h = am_pm ? "h" : "H";
-    let s = seconds ? ":ss" : "";
-    let a = am_pm ? "a" : "";
-    let z = timezone ? " z" : "";
-    return `${h}:mm${s}${a}${z}`;
+    if (include_time) {
+      parts.push(
+        this.format_time(value, timezone, am_pm, this.is_datetime_type(format, "second"), long_form)
+      );
+    }
+    return parts.join(" @ ");
   },
 
   /**
@@ -207,6 +226,6 @@ export default {
       3 == tens && 13 != hundreds ? "rd" :
       "th"
     );
-  }
+  },
 
 }
