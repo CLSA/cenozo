@@ -42,7 +42,7 @@ export default {
         <div class="card">
           <div class="card-header text-bg-primary fw-bold fs-5"></div>
           <div class="card-body"></div>
-          <div class="card-footer text-bg-info fs-5"></div>
+          <div class="card-footer text-bg-secondary fs-5"></div>
         </div>
       </div>
     `);
@@ -455,14 +455,14 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Clock Settings</h2>
             </div>
             <div class="modal-body">
-              <span class="text-info">
+              <span class="text-secondary">
                 Select which timezone you would like times to be displayed in.<br />
                 Note that most timezones have multiple names, you may choose any.
               </span>
               <hr />
               <form></form>
             </div>
-            <div class="modal-footer text-bg-info">
+            <div class="modal-footer text-bg-secondary">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button name="save" type="button" class="btn btn-primary">Save</button>
             </div>
@@ -557,13 +557,13 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Account Details</h2>
             </div>
             <div class="modal-body">
-              <span class="text-info">
+              <span class="text-secondary">
                 Update your account details here:
               </span>
               <hr />
               <form></form>
             </div>
-            <div class="modal-footer text-bg-info">
+            <div class="modal-footer text-bg-secondary">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button name="save" type="button" class="btn btn-primary">Save</button>
             </div>
@@ -640,7 +640,7 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Account Details</h2>
             </div>
             <div class="modal-body">
-              <div class="text-info">
+              <div class="text-secondary">
                 Fill out this form to change your password.
               </div>
               <div class="text-warning">
@@ -649,7 +649,7 @@ export default {
               <hr />
               <form></form>
             </div>
-            <div class="modal-footer text-bg-info">
+            <div class="modal-footer text-bg-secondary">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button name="save" type="button" class="btn btn-primary" disabled>Save</button>
             </div>
@@ -831,7 +831,7 @@ export default {
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
             </div>
             <div class="modal-body">${config.message}</div>
-            <div class="modal-footer text-bg-info py-1">
+            <div class="modal-footer text-bg-secondary py-1">
               <button
                 name="no"
                 type="button"
