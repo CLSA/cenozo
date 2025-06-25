@@ -439,6 +439,24 @@ CSS;
     background-color: var(--bs-info-rgb-subtle) !important;
   }
 
+  .accordion-button {
+    color: #000 !important;
+    background-color: rgba(var(--bs-info-rgb), var(--bs-bg-opacity, 1)) !important;
+    border-radius: 0px;
+  }
+
+  .accordion-button:not(.collapsed) {
+    color: inherit;
+  }
+
+  .accordion-button:focus{
+    box-shadow: inherit;
+  }
+
+  .accordion-button:hover{
+    background-color: rgba(var(--bs-info-hover-bg), var(--bs-bg-opacity, 1)) !important;
+  }
+
   .pagination {
     --bs-pagination-active-bg: rgb(var(--bs-primary-rgb));
     --bs-pagination-active-border-color: rgb(var(--bs-primary-rgb));

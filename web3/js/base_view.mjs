@@ -23,11 +23,13 @@ export class CN_base_view extends CN_base_record {
    */
   async get_text(type) {
     if ("name" == type) {
-      return (
-        this.properties.hasOwnProperty("name") ? this.get_state("name") :
-        this.properties.hasOwnProperty("title") ? this.get_state("title") :
-        undefined
-      );
+      const name_prop = this.get_property("name");
+      if (name_prop) return this.get_state("name");
+
+      const title_prop = this.get_property("title");
+      if (title_prop) return this.get_state("title");
+
+      return undefined;
     }
 
     if ("header" == type) {
@@ -58,8 +60,7 @@ export class CN_base_view extends CN_base_record {
     );
 
     const record = await response.json();
-    for (var prop_name in this.properties) {
-      const prop = this.properties[prop_name];
+    this.for_each_property(prop => {
       // check for the formatted value for this property
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
         this.clear_state(prop.name);
@@ -70,7 +71,7 @@ export class CN_base_view extends CN_base_record {
         this.set_state(prop.name, record[prop.name]);
         this.commit_state(prop.name);
       }
-    }
+    });
   }
 
   /**
@@ -80,15 +81,14 @@ export class CN_base_view extends CN_base_record {
     super.show_placeholder();
 
     // Replace the property elements with placeholders
-    for (const prop_name in this.properties) {
-      const prop = this.properties[prop_name];
+    this.for_each_property(prop => {
       const prop_el = this.element.querySelector(`[name=${prop.id}]`);
       if (prop.element) {
         if (null == prop_el.querySelector("[name=placeholder]")) {
           prop_el.replaceChild(prop.placeholder_el, prop.element);
         }
       }
-    }
+    });
   }
 
   /**
@@ -98,13 +98,12 @@ export class CN_base_view extends CN_base_record {
     super.hide_placeholder();
 
     // Replace the placeholders with the property elements
-    for (const prop_name in this.properties) {
-      const prop = this.properties[prop_name];
+    this.for_each_property(prop => {
       const prop_el = this.element.querySelector(`[name=${prop.id}]`);
       if (prop.element) {
         prop_el.replaceChild(prop.element, prop_el.querySelector("[name=placeholder]"));
       }
-    }
+    });
   }
 
   async on_set_property(prop_name) {
@@ -121,7 +120,7 @@ export class CN_base_view extends CN_base_record {
       this.undo_state(prop_name);
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
-          this.properties[prop_name].element.show_error("Conflicts with existing record", 5000);
+          this.get_property(prop_name).element.show_error("Conflicts with existing record", 5000);
         });
       } else {
         this.run();
@@ -159,7 +158,7 @@ export class CN_base_view extends CN_base_record {
    */
   update_property_element(prop_name) {
     const module_prop = this.parent_model.module.properties[prop_name];
-    const prop = this.properties[prop_name];
+    const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
     // rebuild enum select options
@@ -207,7 +206,7 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   create_property_element(prop_name) {
-    const prop = this.properties[prop_name];
+    const prop = this.get_property(prop_name);
     const prop_el = super.create_property_element(prop_name);
 
     if (!prop.placeholder_el) {

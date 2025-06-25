@@ -6,10 +6,7 @@ import CN_session from "./session.mjs"
 import { CN_base_action } from "./base_action.mjs"
 
 export class CN_base_record extends CN_base_action {
-  #properties;
-
-  // getters and setters
-  get properties() { return this.#properties }
+  #property_groups;
 
   /**
    * Constructor
@@ -23,66 +20,136 @@ export class CN_base_record extends CN_base_action {
   constructor(type, parent_model, properties) {
     super(type, parent_model);
 
-    // setup each property
+    const module = this.parent_model.module;
     const parent_module = this.parent_model.get_parent_module();
-    this.#properties = CN_common.clone(properties);
-    for (var prop_name in this.#properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
-      const prop = this.#properties[prop_name];
-      prop.id = [this.parent_model.unique_id, prop_name].join("-");
-      prop.name = prop_name;
-      prop.state = [];
-      if (!prop.type) prop.type = "string";
 
-      // make sure all properties exist in the module
-      if (!this.#properties[prop.name].meta_column) {
-        if (!this.parent_model.module.properties.hasOwnProperty(prop.name)) {
+    // while setting up all property groups keep track of all property names to ensure they are unique
+    let existing_properties = {};
+
+    // setup all property group
+    this.#property_groups = {};
+    for (var key in properties) {
+      let entry = properties[key];
+      if (entry.hasOwnProperty("properties")) {
+        const group_name = key;
+
+        // make sure none of the properties in this group already exist
+        for (var prop_name in entry.properties) {
+          if (existing_properties.hasOwnProperty(prop_name)) {
+            throw new Error(
+              `The "${module.subject}" model contains a duplicate propery name "${prop_name}" ` +
+              `that already exists in the "${existing_properties[prop_name]}" group.`
+            );
+          }
+          existing_properties[prop_name] = group_name;
+        }
+
+        this.#property_groups[group_name] = CN_common.clone(entry);
+        if (!this.#property_groups[group_name].hasOwnProperty("title")) {
+          this.#property_groups[group_name].title = null;
+        }
+      } else {
+        // put ungrouped properties in the base group
+        const group_name = "$main";
+        const prop_name = key;
+
+        // setup the main group if it doesn't already exist
+        if (!this.#property_groups.hasOwnProperty(group_name)) {
+          this.#property_groups[group_name] = { title: null, properties: {} };
+        }
+
+        // make sure the property doesn't already exist
+        if (existing_properties.hasOwnProperty(prop_name)) {
           throw new Error(
-            `Model property "${prop.name}" does not exist in parent "${this.parent_model.module.subject}" module.`
+            `Duplicate propery name "${prop_name}" already exists in the ` +
+            `"${existing_properties[prop_name]}" group`
           );
         }
 
-        if (prop.type.match(/unsigned/)) {
-          this.#properties[prop.name].min = 0;
-        }
+        existing_properties[prop_name] = "main";
+        this.#property_groups[group_name].properties[prop_name] = CN_common.clone(entry);
       }
+    }
 
-      if ("typeahead" == prop.type) {
-        if (!prop.typeahead) prop.typeahead = {};
-        if (!prop.typeahead.list) prop.typeahead.list = [];
-        if (!prop.typeahead.on_select) {
-          prop.typeahead.on_select = item => {
-            const control_el = document.getElementById(prop.id);
-            this.set_state(prop.name, item.value);
-            this.commit_state(prop.name);
-            if (CN_common.is_function(prop.element.params.onchange)) {
-              prop.element.params.onchange(control_el, true, this.get_state(prop.name));
-            }
-          };
-        }
-        if (!prop.typeahead.on_cancel) {
-          prop.typeahead.on_cancel = () => {
-            this.undo_state(prop.name, true);
+    // setup properties in each group
+    for (var group_name in this.#property_groups) {
+      for (var prop_name in this.#property_groups[group_name].properties) {
+        const module_prop = module.properties[prop_name];
+        const prop = this.#property_groups[group_name].properties[prop_name];
+        prop.id = [this.parent_model.unique_id, prop_name].join("-");
+        prop.name = prop_name;
+        prop.state = [];
+        if (!prop.type) prop.type = "string";
+        if (!prop.group) prop.group = null;
+
+        // make sure all non meta columns properties exist in the module
+        if (!prop.meta_column) {
+          if (!module.properties.hasOwnProperty(prop.name)) {
+            throw new Error(`Model property "${prop.name}" does not exist in parent "${module.subject}" module.`);
           }
         }
-      }
 
-      if (["integer", "float"].includes(prop.type)) {
-        prop.min = prop.hasOwnProperty("min") ? prop.min : null;
-        prop.max = prop.hasOwnProperty("max") ? prop.max : null;
-      }
+        // typeaheads need special configuration
+        if ("typeahead" == prop.type) {
+          if (!prop.typeahead) prop.typeahead = {};
+          if (!prop.typeahead.list) prop.typeahead.list = [];
+          if (!prop.typeahead.on_select) {
+            prop.typeahead.on_select = item => {
+              const control_el = document.getElementById(prop.id);
+              this.set_state(prop.name, item.value);
+              this.commit_state(prop.name);
+              if (CN_common.is_function(prop.element.params.onchange)) {
+                prop.element.params.onchange(control_el, true, this.get_state(prop.name));
+              }
+            };
+          }
+          if (!prop.typeahead.on_cancel) {
+            prop.typeahead.on_cancel = () => {
+              this.undo_state(prop.name, true);
+            }
+          }
+        } else if (["integer", "float"].includes(prop.type)) {
+          // numerical properties may have min/max values
+          prop.min = prop.hasOwnProperty("min") ? prop.min : (prop.type.match(/unsigned/) ? 0 : null);
+          prop.max = prop.hasOwnProperty("max") ? prop.max : null;
+        }
 
-      if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
-      if (!CN_common.is_function(prop.is_hidden)) {
-        prop.is_hidden = () => parent_module && prop.name.match(`${parent_module.subject}_id`);
+        // make sure all properties have the is_constant, is_hidden and get_default functions
+        if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
+        if (!CN_common.is_function(prop.is_hidden)) {
+          prop.is_hidden = () => parent_module && prop.name.match(`${parent_module.subject}_id`);
+        }
+        if (!CN_common.is_function(prop.get_default)) {
+          // if the column is a reference to the parent then use the parent's id
+          prop.get_default = () => (
+            parent_module && prop.name.match(`${parent_module.subject}_id`) ?
+            parent_module.model.actions.view.get_state("id") :
+            (module_prop ? module_prop.default : null)
+          );
+        }
       }
-      if (!CN_common.is_function(prop.get_default)) {
-        // if the column is a reference to the parent then use the parent's id
-        prop.get_default = () => (
-          parent_module && prop.name.match(`${parent_module.subject}_id`) ?
-          parent_module.model.actions.view.get_state("id") :
-          (module_prop ? module_prop.default : null)
-        );
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_property(prop_name) {
+    for (var group_name in this.#property_groups) {
+      if (this.#property_groups[group_name].properties.hasOwnProperty(prop_name)) {
+        return this.#property_groups[group_name].properties[prop_name];
+      }
+    }
+    return null;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  for_each_property(callback) {
+    for (var group_name in this.#property_groups) {
+      for (var prop_name in this.#property_groups[group_name].properties) {
+        callback(this.#property_groups[group_name].properties[prop_name]);
       }
     }
   }
@@ -93,7 +160,7 @@ export class CN_base_record extends CN_base_action {
    * @return (dynamic)
    */
   get_state(name) {
-    const prop = this.#properties[name];
+    const prop = this.get_property(name);
     if (undefined === prop) throw new Error(`Tried to get state value "${name}" which doesn't exist.`);
     const len = prop.state.length;
     return 0 < len ? prop.state[len-1].value : undefined;
@@ -105,7 +172,7 @@ export class CN_base_record extends CN_base_action {
    * @param (dynamic) val: The value to set the state to
    */
   set_state(name, val) {
-    const prop = this.#properties[name];
+    const prop = this.get_property(name);
     if (undefined === prop) throw new Error(`Tried to set state value "${name}" which doesn't exist.`);
 
     const len = prop.state.length;
@@ -129,7 +196,7 @@ export class CN_base_record extends CN_base_action {
    * @param string name: The name of the state
    */
   commit_state(name) {
-    const prop = this.#properties[name];
+    const prop = this.get_property(name);
     if (undefined === prop) throw new Error(`Tried to set state value "${name}" which doesn't exist.`);
 
     const len = prop.state.length;
@@ -141,7 +208,7 @@ export class CN_base_record extends CN_base_action {
    * @param string name: The name of the state
    */
   clear_state(name) {
-    const prop = this.#properties[name];
+    const prop = this.get_property(name);
     if (undefined === prop) throw new Error(`Tried to set state value "${name}" which doesn't exist.`);
 
     prop.state = [];
@@ -153,7 +220,7 @@ export class CN_base_record extends CN_base_action {
    * @param boolean committed: Whether to return to the last committed state
    */
   undo_state(name, committed=false) {
-    const prop = this.#properties[name];
+    const prop = this.get_property(name);
     if (undefined === prop) throw new Error(`Tried to undo state value "${name}" which doesn't exist.`);
 
     if (committed) {
@@ -179,54 +246,56 @@ export class CN_base_record extends CN_base_action {
   async on_load() {
     // load dynamic enums
     const promise_list = [];
-    for (var prop_name in this.#properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
-      const prop = this.#properties[prop_name];
+    for (var group_name in this.#property_groups) {
+      for (var prop_name in this.#property_groups[group_name].properties) {
+        const module_prop = this.parent_model.module.properties[prop_name];
+        const prop = this.#property_groups[group_name].properties[prop_name];
 
-      if ("enum" == prop.type) {
-        if (CN_common.is_object(prop.enum) && prop.enum.path) {
-          // populate the enum
-          const params = {
-            select: prop.enum.select ? prop.enum.select : { column: "name" },
-            modifier: prop.enum.modifier ? prop.enum.modifier : { order: "name" },
-          };
+        if ("enum" == prop.type) {
+          if (CN_common.is_object(prop.enum) && prop.enum.path) {
+            // populate the enum
+            const params = {
+              select: prop.enum.select ? prop.enum.select : { column: "name" },
+              modifier: prop.enum.modifier ? prop.enum.modifier : { order: "name" },
+            };
 
-          // create an async function and add it to the promise list so they can be run in parallel
-          const get_enums = async () => {
-            const response = await CN_api.get(prop.enum.path, params);
-            prop.enum.values = (await response.json()).reduce((list, record) => {
-              list.push({ key: record.id, value: record.name });
-              return list;
-            }, []);
-          };
-          promise_list.push(get_enums());
-        } else {
-          // enum properties without an enum path use the column definition
-          let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-          if (null == matches) throw new Error(`Property ${prop.name} has no valid enum values.`);
-          prop.enum = { values: matches[1].split("','").map(v => ({ key: v, value: v })) };
-        }
-      } else if ("rank" == prop.type) {
-        // populate the rank enum based on the max rank
-        const params = {
-          select: { column: {
-            column: `max(${this.parent_model.module.subject}.rank)`,
-            alias: "max_rank",
-            table_prefix: false
-          } },
-        };
-
-        const get_max_rank = async () => {
-          const response = await CN_api.get(this.parent_model.get_base_path("api"), params);
-          const max_rank = (await response.json())[0].max_rank;
-
-          if (!max_rank) throw new Error(`Couldn't get max rank for ${prop.name}.`);
-          prop.enum = { values: [] };
-          for(let r = 1; r <= max_rank; r++) {
-            prop.enum.values.push({ key: r, value: CN_common.ordinal_suffix(r) });
+            // create an async function and add it to the promise list so they can be run in parallel
+            const get_enums = async () => {
+              const response = await CN_api.get(prop.enum.path, params);
+              prop.enum.values = (await response.json()).reduce((list, record) => {
+                list.push({ key: record.id, value: record.name });
+                return list;
+              }, []);
+            };
+            promise_list.push(get_enums());
+          } else {
+            // enum properties without an enum path use the column definition
+            let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
+            if (null == matches) throw new Error(`Property ${prop.name} has no valid enum values.`);
+            prop.enum = { values: matches[1].split("','").map(v => ({ key: v, value: v })) };
           }
-        };
-        promise_list.push(get_max_rank());
+        } else if ("rank" == prop.type) {
+          // populate the rank enum based on the max rank
+          const params = {
+            select: { column: {
+              column: `max(${this.parent_model.module.subject}.rank)`,
+              alias: "max_rank",
+              table_prefix: false
+            } },
+          };
+
+          const get_max_rank = async () => {
+            const response = await CN_api.get(this.parent_model.get_base_path("api"), params);
+            const max_rank = (await response.json())[0].max_rank;
+
+            if (!max_rank) throw new Error(`Couldn't get max rank for ${prop.name}.`);
+            prop.enum = { values: [] };
+            for(let r = 1; r <= max_rank; r++) {
+              prop.enum.values.push({ key: r, value: CN_common.ordinal_suffix(r) });
+            }
+          };
+          promise_list.push(get_max_rank());
+        }
       }
     }
     await Promise.all(promise_list);
@@ -238,7 +307,7 @@ export class CN_base_record extends CN_base_action {
    * @return (dynamic)
    */
   get_formatted_property(prop_name) {
-    const prop = this.properties[prop_name];
+    const prop = this.get_property(prop_name);
     let value = this.get_state(prop.name);
     if ("boolean" == prop.type) {
       value = "" == value ? null : Number(value);
@@ -259,28 +328,30 @@ export class CN_base_record extends CN_base_action {
   update_element() {
     super.update_element();
 
-    for (const prop_name in this.#properties) {
-      const module_prop = this.parent_model.module.properties[prop_name];
-      const prop = this.#properties[prop_name];
-      const prop_el = this.element.querySelector(`[name=${prop.id}]`);
-      const control_el = document.getElementById(prop.id);
-      if (null == control_el) return;
+    for (var group_name in this.#property_groups) {
+      for (var prop_name in this.#property_groups[group_name].properties) {
+        const module_prop = this.parent_model.module.properties[prop_name];
+        const prop = this.#property_groups[group_name].properties[prop_name];
+        const prop_el = this.element.querySelector(`[name=${prop.id}]`);
+        const control_el = document.getElementById(prop.id);
+        if (null == control_el) return;
 
-      // hide any errors
-      prop.element.hide_error();
+        // hide any errors
+        prop.element.hide_error();
 
-      // remove any properties that evaluate to hidden
-      if (prop.is_hidden(this)) {
-        prop_el.style.display = "none";
-      } else {
-        prop_el.style.removeProperty("display");
+        // remove any properties that evaluate to hidden
+        if (prop.is_hidden(this)) {
+          prop_el.style.display = "none";
+        } else {
+          prop_el.style.removeProperty("display");
+        }
+
+        // disable any properties that evaluate to constant
+        control_el.disabled = prop.is_constant(this);
+
+        // now update the property element (this varies in the child base_add and base_view classes)
+        this.update_property_element(prop.name);
       }
-
-      // disable any properties that evaluate to constant
-      control_el.disabled = prop.is_constant(this);
-
-      // now update the property element (this varies in the child base_add and base_view classes)
-      this.update_property_element(prop.name);
     }
   }
 
@@ -293,11 +364,64 @@ export class CN_base_record extends CN_base_action {
     fieldset_el.disabled = !this.parent_model.allow_edit();
     form_el.append(fieldset_el);
 
-    for (const prop_name in this.#properties) {
-      fieldset_el.append(this.create_property_element(prop_name));
+    // create the main group above all others
+    if (this.#property_groups.hasOwnProperty("$main")) {
+      const parent_el = CN_element.create('<div class="px-3"></div>');
+      fieldset_el.append(parent_el);
+      for (var prop_name in this.#property_groups.$main.properties) {
+        parent_el.append(this.create_property_element(prop_name));
+      }
     }
 
+    // now create all other groups
+    let accordion_el = null;
+
+    for (var group_name in this.#property_groups) {
+      if ("$main" != group_name) {
+        if (null == accordion_el) {
+          accordion_el = CN_element.create('<div class="accordion accordion-flush"></div>');
+        }
+
+        const group_el = this.create_property_group_element(group_name);
+        accordion_el.append(group_el);
+        const group_body_el = group_el.querySelector("div.accordion-body");
+        for (var prop_name in this.#property_groups[group_name].properties) {
+          group_body_el.append(this.create_property_element(prop_name));
+        }
+      }
+    }
+
+    if (null != accordion_el) fieldset_el.append(accordion_el);
+
     return form_el;
+  }
+
+  /**
+   * Creates a property group's element
+   * @param string group_name
+   * @return Element
+   */
+  create_property_group_element(group_name) {
+    const group = this.#property_groups[group_name];
+    const group_id = [this.parent_model.unique_id, group_name].join("-");
+    return CN_element.create(`
+      <div class="accordion-item px-0">
+        <div class="accordion-header">
+          <button
+            class="accordion-button collapsed fw-bold py-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#${group_id}"
+            aria-expanded="false"
+            aria-controls="${group_id}"
+          >${group.title}</button>
+        </div>
+        <div id="${group_id}" class="accordion-collapse collapse">
+          <div class="accordion-body">
+          </div>
+        </div>
+      </div>
+    `);
   }
 
   /**
@@ -307,7 +431,7 @@ export class CN_base_record extends CN_base_action {
    */
   create_property_element(prop_name) {
     const module_prop = this.parent_model.module.properties[prop_name];
-    const prop = this.properties[prop_name];
+    const prop = this.get_property(prop_name);
     const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
@@ -361,5 +485,16 @@ export class CN_base_record extends CN_base_action {
     prop_el.append(prop.element);
 
     return prop_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  render() {
+    // remove the card body's padding to make better use of space
+    const el = super.render();
+    el.querySelector(".card-body").classList.add("pb-0");
+    el.querySelector(".card-body").classList.add("px-0");
+    return el;
   }
 }

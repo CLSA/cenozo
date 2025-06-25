@@ -68,7 +68,7 @@ export class CN_address_model extends CN_base_model {
             type: "string",
             is_hidden: (model) => !(
               "add" == model.type ?
-              1 == model.properties.international.element.querySelector("select").value :
+              1 == model.get_property("international").element.querySelector("select").value :
               model.get_state("international")
             ),
             help: "International regions are unrestricted and are not automatically set by the postcode.",
@@ -93,7 +93,7 @@ export class CN_address_model extends CN_base_model {
             },
             is_hidden: (model) => !(
               "add" == model.type ?
-              1 == model.properties.international.element.querySelector("select").value :
+              1 == model.get_property("international").element.querySelector("select").value :
               model.get_state("international")
             ),
           },
@@ -115,18 +115,24 @@ export class CN_address_model extends CN_base_model {
             help: "Whether the address observes daylight savings.",
           },
           note: { title: "Note", type: "text" },
-          january: { title: "January", type: "boolean" },
-          february: { title: "February", type: "boolean" },
-          march: { title: "March", type: "boolean" },
-          april: { title: "April", type: "boolean" },
-          may: { title: "May", type: "boolean" },
-          june: { title: "June", type: "boolean" },
-          july: { title: "July", type: "boolean" },
-          august: { title: "August", type: "boolean" },
-          september: { title: "September", type: "boolean" },
-          october: { title: "October", type: "boolean" },
-          november: { title: "November", type: "boolean" },
-          december: { title: "December", type: "boolean" },
+
+          months: {
+            title: "Available Months",
+            properties: {
+              january: { title: "January", type: "boolean" },
+              february: { title: "February", type: "boolean" },
+              march: { title: "March", type: "boolean" },
+              april: { title: "April", type: "boolean" },
+              may: { title: "May", type: "boolean" },
+              june: { title: "June", type: "boolean" },
+              july: { title: "July", type: "boolean" },
+              august: { title: "August", type: "boolean" },
+              september: { title: "September", type: "boolean" },
+              october: { title: "October", type: "boolean" },
+              november: { title: "November", type: "boolean" },
+              december: { title: "December", type: "boolean" },
+            },
+          },
         },
       }
     );

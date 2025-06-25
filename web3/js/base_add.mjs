@@ -48,15 +48,13 @@ export class CN_base_add extends CN_base_record {
   async on_load() {
     await super.on_load();
 
-    for (var prop_name in this.properties) {
-      const prop = this.properties[prop_name];
-
+    this.for_each_property(prop => {
       // add an extra rank to make room for adding a new record
       if ("rank" == prop.type) {
         const extra_rank = prop.enum.values.length + 1;
         prop.enum.values.push({ key: extra_rank, value: CN_common.ordinal_suffix(extra_rank) });
       }
-    }
+    });
   }
 
   /**
@@ -74,13 +72,13 @@ export class CN_base_add extends CN_base_record {
     // validate all property values
     let valid = true;
     let record = {};
-    for (const prop_name in this.properties) {
+    this.for_each_property(prop => {
       // set record value and validate all visible properties
-      if (!this.properties[prop_name].is_hidden(this)) {
-        record[prop_name] = this.get_formatted_property(prop_name);
-        if (!this.properties[prop_name].element.validate()) valid = false;
+      if (!prop.is_hidden(this)) {
+        record[prop.name] = this.get_formatted_property(prop.name);
+        if (!prop.element.validate()) valid = false;
       }
-    }
+    });
 
     if (!valid) return;
 
@@ -98,7 +96,7 @@ export class CN_base_add extends CN_base_record {
     } catch (error) {
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
-          const prop = this.properties[prop_name];
+          const prop = this.get_property(prop_name);
           const prop_el = this.element.querySelector(`[name=${prop.id}]`);
           const control_el = document.getElementById(prop.id);
           prop.element.show_error("Conflicts with existing record", 0);
@@ -114,7 +112,7 @@ export class CN_base_add extends CN_base_record {
    * @param string prop_name
    */
   update_property_element(prop_name) {
-    const prop = this.properties[prop_name];
+    const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
     // set all default values once only
