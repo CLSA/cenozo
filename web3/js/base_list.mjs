@@ -17,6 +17,9 @@ export class CN_base_list extends CN_base_action {
   // getters and setters
   get columns() { return this.#columns }
   get records() { return this.#records }
+  get total_records() { return this.#total_records }
+  get current_page() { return this.#current_page }
+  get is_choosing() { return this.#is_choosing }
 
   /**
    * Constructor
@@ -444,12 +447,14 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    const btn_el = CN_element.create(
-      `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
-    );
-    btn_group_el.append(btn_el);
-    (async () => { btn_el.innerHTML = await this.get_text(this.#list_mode); })();
-    btn_el.onclick = async () => await ("choose" == this.#list_mode ? this.on_choose() : this.on_add());
+    if ("add" != this.#list_mode || this.parent_model.module.action_allowed("add")) {
+      const btn_el = CN_element.create(
+        `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
+      );
+      btn_group_el.append(btn_el);
+      (async () => { btn_el.innerHTML = await this.get_text(this.#list_mode); })();
+      btn_el.onclick = async () => await ("choose" == this.#list_mode ? this.on_choose() : this.on_add());
+    }
 
     const summary_el = CN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
     footer_el.append(summary_el);
