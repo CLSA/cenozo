@@ -261,8 +261,8 @@ class ui3 extends \cenozo\base_object
       {
         $module->add_child( 'address' );
         $module->add_choose( 'alternate_type' );
-        /*
         $module->add_child( 'phone' );
+        /*
         $module->add_child( 'alternate_consent' );
         $module->add_child( 'form' );
         $module->add_action( 'notes', '/{identifier}?{search}' );
@@ -679,21 +679,6 @@ class ui3 extends \cenozo\base_object
    */
   protected function add_interface_libs()
   {
-    $this->script_list = array_merge( $this->script_list, [
-      [
-        'id' => NULL,
-        'path' => LIB3_URL,
-        'file' => 'moment/min/moment-with-locales.min.js',
-        'build' => CENOZO_BUILD,
-      ],
-      [
-        'id' => NULL,
-        'path' => LIB3_URL,
-        'file' => 'moment-timezone/builds/moment-timezone-with-data-1970-2030.min.js',
-        'build' => CENOZO_BUILD,
-      ],
-    ] );
-
     // determine which optional libs are installed
     $file_list = [
       'chart.js/dist/chart.umd.js',
