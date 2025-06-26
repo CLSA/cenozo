@@ -179,7 +179,10 @@ export class CN_base_record extends CN_base_action {
 
             // create an async function and add it to the promise list so they can be run in parallel
             const get_enums = async () => {
-              const response = await CN_api.get(prop.enum.path, params);
+              // the path may be dynamic
+              let path = CN_common.is_function(prop.enum.path) ? await prop.enum.path(this) : prop.enum.path;
+
+              const response = await CN_api.get(path, params);
               prop.enum.values = (await response.json()).reduce((list, record) => {
                 list.push({ key: record.id, value: record.name });
                 return list;
