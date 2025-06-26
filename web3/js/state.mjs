@@ -39,7 +39,7 @@ export class CN_state extends CN_base_object {
     }
 
     // apply element binding
-    if (this.#element.value) this.#element.value = this.get();
+    if (this.#element) this.#element.value = this.get();
   }
 
   /**
@@ -75,6 +75,6 @@ export class CN_state extends CN_base_object {
     }
 
     // apply element binding
-    if (this.#element.value) this.#element.value = this.get();
+    if (this.#element) this.#element.value = this.get();
   }
 }
