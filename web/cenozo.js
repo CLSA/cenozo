@@ -5380,7 +5380,7 @@
           object.cache = [];
           object.cacheMinDate = null;
           object.cacheMaxDate = null;
-          object.enableReports = 1 < CnSession.role.tier;
+          object.enableReports = true;
           object.isReportLoading = false;
           object.isReportAllowed = false;
           object.isReportBig = false;
@@ -5804,7 +5804,7 @@
             total: 0,
             minOffset: null,
             cache: [],
-            enableReports: 1 < CnSession.role.tier,
+            enableReports: true,
             isReportLoading: false,
             isReportAllowed: false,
             isReportBig: false,
