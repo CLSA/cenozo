@@ -182,7 +182,7 @@ export default {
           } else {
             // return to the last committed value if there's a parent model
             if (el.parent_model && el.params.name) {
-              el.parent_model.undo_state(el.params.name, true);
+              el.parent_model.get_property(el.params.name).state.undo(true);
             }
           }
         }

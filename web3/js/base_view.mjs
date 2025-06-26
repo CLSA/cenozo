@@ -24,10 +24,10 @@ export class CN_base_view extends CN_base_record {
   async get_text(type) {
     if ("name" == type) {
       const name_prop = this.get_property("name");
-      if (name_prop) return this.get_state("name");
+      if (name_prop) return name_prop.state.get();
 
       const title_prop = this.get_property("title");
-      if (title_prop) return this.get_state("title");
+      if (title_prop) return title_prop.state.get();
 
       return undefined;
     }
@@ -63,13 +63,13 @@ export class CN_base_view extends CN_base_record {
     this.for_each_property(prop => {
       // check for the formatted value for this property
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
-        this.clear_state(prop.name);
-        this.set_state(prop.name, record[`formatted_${prop.name}`]);
-        this.commit_state(prop.name);
+        prop.state.clear();
+        prop.state.set(record[`formatted_${prop.name}`]);
+        prop.state.commit();
       } else if (record.hasOwnProperty(prop.name)) {
-        this.clear_state(prop.name);
-        this.set_state(prop.name, record[prop.name]);
-        this.commit_state(prop.name);
+        prop.state.clear();
+        prop.state.set(record[prop.name]);
+        prop.state.commit();
       }
     });
   }
@@ -117,7 +117,7 @@ export class CN_base_view extends CN_base_record {
         data
       );
     } catch (error) {
-      this.undo_state(prop_name);
+      this.get_property(prop_name).state.undo();
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
           this.get_property(prop_name).element.show_error("Conflicts with existing record", 5000);
@@ -173,7 +173,7 @@ export class CN_base_view extends CN_base_record {
       }
 
       control_el.querySelectorAll("option").forEach(option_el => {
-        const value = this.get_state(prop.name);
+        const value = prop.state.get();
         if (
           ("" == option_el.value && null === value) ||
           (1 == option_el.value && true === value) ||
@@ -186,7 +186,7 @@ export class CN_base_view extends CN_base_record {
         }
       });
     } else {
-      let value = this.get_state(prop.name);
+      let value = prop.state.get();
       control_el.value = null === value ? "" : value;
 
       // update textarea sizes

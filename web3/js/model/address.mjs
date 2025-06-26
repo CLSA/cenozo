@@ -38,7 +38,7 @@ export class CN_address_model extends CN_base_model {
                 await model.on_set_property("international");
                 model.update_element();
               } else {
-                model.undo_state("international");
+                model.get_property("international").state.undo();
               }
             },
             is_constant: (model) => "view" == model.type,
@@ -59,7 +59,7 @@ export class CN_address_model extends CN_base_model {
               } },
               modifier: { order: ["country.name", "region.name"] },
             },
-            is_hidden: (model) => "add" == model.type || model.get_state("international"),
+            is_hidden: (model) => "add" == model.type || model.get_property("international").state.get(),
             is_constant: () => true,
             help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
           },
@@ -69,7 +69,7 @@ export class CN_address_model extends CN_base_model {
             is_hidden: (model) => !(
               "add" == model.type ?
               1 == model.get_property("international").element.querySelector("select").value :
-              model.get_state("international")
+              model.get_property("international").state.get()
             ),
             help: "International regions are unrestricted and are not automatically set by the postcode.",
           },
@@ -94,7 +94,7 @@ export class CN_address_model extends CN_base_model {
             is_hidden: (model) => !(
               "add" == model.type ?
               1 == model.get_property("international").element.querySelector("select").value :
-              model.get_state("international")
+              model.get_property("international").state.get()
             ),
           },
           postcode: {
@@ -157,7 +157,7 @@ export class CN_address_view extends CN_base_view {
    */
   async get_text(type) {
     if ("name" == type) {
-      return `${this.get_state("rank")}) ${this.get_state("city")}`;
+      return `${this.get_property("rank").state.get()}) ${this.get_property("city").state.get()}`;
     }
     return await super.get_text(type);
   }

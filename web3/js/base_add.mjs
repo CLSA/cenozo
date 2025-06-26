@@ -62,7 +62,7 @@ export class CN_base_add extends CN_base_record {
    * @param string prop_name
    */
   async on_set_property(prop_name) {
-    this.commit_state(prop_name);
+    this.get_property(prop_name).state.commit();
   }
 
   /**

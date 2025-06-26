@@ -4,6 +4,7 @@ import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
+import { CN_state } from "./state.mjs"
 
 export class CN_base_record extends CN_base_action {
   #property_groups;
@@ -78,7 +79,7 @@ export class CN_base_record extends CN_base_action {
         const prop = this.#property_groups[group_name].properties[prop_name];
         prop.id = [this.parent_model.unique_id, prop_name].join("-");
         prop.name = prop_name;
-        prop.state = [];
+        prop.state = new CN_state();
         if (!prop.type) prop.type = "string";
         if (!prop.group) prop.group = null;
 
@@ -95,17 +96,20 @@ export class CN_base_record extends CN_base_action {
           if (!prop.typeahead.list) prop.typeahead.list = [];
           if (!prop.typeahead.on_select) {
             prop.typeahead.on_select = item => {
-              const control_el = document.getElementById(prop.id);
-              this.set_state(prop.name, item.value);
-              this.commit_state(prop.name);
+              prop.state.set(item.value);
+              prop.state.commit();
               if (CN_common.is_function(prop.element.params.onchange)) {
-                prop.element.params.onchange(control_el, true, this.get_state(prop.name));
+                prop.element.params.onchange(
+                  document.getElementById(prop.id),
+                  true,
+                  prop.state.get()
+                );
               }
             };
           }
           if (!prop.typeahead.on_cancel) {
             prop.typeahead.on_cancel = () => {
-              this.undo_state(prop.name, true);
+              prop.state.undo(true);
             }
           }
         } else if (["integer", "float"].includes(prop.type)) {
@@ -123,7 +127,7 @@ export class CN_base_record extends CN_base_action {
           // if the column is a reference to the parent then use the parent's id
           prop.get_default = () => (
             parent_module && prop.name.match(`${parent_module.subject}_id`) ?
-            parent_module.model.actions.view.get_state("id") :
+            parent_module.model.actions.view.get_property("id").state.get() :
             (module_prop ? module_prop.default : null)
           );
         }
@@ -152,92 +156,6 @@ export class CN_base_record extends CN_base_action {
         callback(this.#property_groups[group_name].properties[prop_name]);
       }
     }
-  }
-
-  /**
-   * Gets the value of a state
-   * @param string name: The name of the state
-   * @return (dynamic)
-   */
-  get_state(name) {
-    const prop = this.get_property(name);
-    if (undefined === prop) throw new Error(`Tried to get state value "${name}" which doesn't exist.`);
-    const len = prop.state.length;
-    return 0 < len ? prop.state[len-1].value : undefined;
-  }
-
-  /**
-   * Sets the value of a state
-   * @param string name: The name of the state
-   * @param (dynamic) val: The value to set the state to
-   */
-  set_state(name, val) {
-    const prop = this.get_property(name);
-    if (undefined === prop) throw new Error(`Tried to set state value "${name}" which doesn't exist.`);
-
-    const len = prop.state.length;
-    const new_state = {value: val, committed: false};
-
-    if (0 < len && !prop.state[len-1].committed) {
-      // when the current state isn't committed then simply overwrite it
-      prop.state[len-1] = new_state;
-    } else {
-      // otherwise always add the new state
-      prop.state.push(new_state);
-    }
-
-    // apply element binding
-    const control_el = document.getElementById(prop.id);
-    if (control_el) control_el.value = this.get_state(name);
-  }
-
-  /**
-   * Marks a state's current value as committed to the server
-   * @param string name: The name of the state
-   */
-  commit_state(name) {
-    const prop = this.get_property(name);
-    if (undefined === prop) throw new Error(`Tried to set state value "${name}" which doesn't exist.`);
-
-    const len = prop.state.length;
-    if (0 < len) prop.state[len-1].committed = true;
-  }
-
-  /**
-   * Clears a state, removing all state history
-   * @param string name: The name of the state
-   */
-  clear_state(name) {
-    const prop = this.get_property(name);
-    if (undefined === prop) throw new Error(`Tried to set state value "${name}" which doesn't exist.`);
-
-    prop.state = [];
-  }
-
-  /**
-   * Returns to the state's earlier value
-   * @param string name: The name of the state
-   * @param boolean committed: Whether to return to the last committed state
-   */
-  undo_state(name, committed=false) {
-    const prop = this.get_property(name);
-    if (undefined === prop) throw new Error(`Tried to undo state value "${name}" which doesn't exist.`);
-
-    if (committed) {
-      // keep going to the previous state until there are none left or we find one that is committed
-      let state = prop.state[prop.state.length-1];
-      while (state && !state.committed) {
-        prop.state.pop();
-        state = prop.state[prop.state.length-1];
-      }
-    } else {
-      // simply go to the previous state
-      prop.state.pop();
-    }
-
-    // apply element binding
-    const control_el = document.getElementById(prop.id);
-    if (control_el) control_el.value = this.get_state(name);
   }
 
   /**
@@ -308,7 +226,7 @@ export class CN_base_record extends CN_base_action {
    */
   get_formatted_property(prop_name) {
     const prop = this.get_property(prop_name);
-    let value = this.get_state(prop.name);
+    let value = prop.state.get();
     if ("boolean" == prop.type) {
       value = "" == value ? null : Number(value);
     } else if ("date" == prop.type) {
@@ -462,7 +380,7 @@ export class CN_base_record extends CN_base_action {
           if (success) {
             await this.on_set_property(prop.name);
           } else if ("view" == this.type) {
-            this.undo_state(prop.name);
+            prop.state.undo();
           }
         };
       }
@@ -475,7 +393,8 @@ export class CN_base_record extends CN_base_action {
     const observer = new MutationObserver((mutation, observer) => {
       mutation.filter(m => "childList" == m.type).forEach(m => {
         const control_el = document.getElementById(m.target.getAttribute("name"));
-        control_el.addEventListener("input", () => this.set_state(control_el.name, control_el.value));
+        const prop = this.get_property(control_el.name);
+        prop.state.bind_element(control_el);
       });
       observer.disconnect();
     });

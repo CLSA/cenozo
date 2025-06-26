@@ -104,7 +104,7 @@ export class CN_alternate_view extends CN_base_view {
    */
   async get_text(type) {
     if ("name" == type) {
-      return `${this.get_state("last_name")}, ${this.get_state("first_name")}`;
+      return `${this.get_property("last_name").state.get()}) ${this.get_property("first_name").state.get()}`;
     }
     return await super.get_text(type);
   }
