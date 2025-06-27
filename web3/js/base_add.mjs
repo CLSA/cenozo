@@ -23,8 +23,8 @@ export class CN_base_add extends CN_base_record {
    */
   async get_text(type) {
     if ("header" == type) {
-      let text = `Add ${CN_common.uc_words(this.parent_model.get_singular())}`;
-      const parent_module = this.parent_model.get_parent_module();
+      let text = `Add ${CN_common.uc_words(this.get_parent_model().get_singular())}`;
+      const parent_module = this.get_parent_model().get_parent_module();
       if (parent_module) {
         text += ` to ${CN_common.uc_words(parent_module.get_model().get_singular())}`;
       }
@@ -83,21 +83,23 @@ export class CN_base_add extends CN_base_record {
     if (!valid) return;
 
     try {
+      const parent_model = this.get_parent_model();
+
       // post the new record
-      const response = await CN_api.post(this.parent_model.get_base_path("api"), record);
+      const response = await CN_api.post(parent_model.get_base_path("api"), record);
 
       // now view the new record
       const id = await response.text();
       await CN_session.navigate_to(
-        this.parent_model.allow_view() ?
-        this.parent_model.get_view_url(id) :
-        this.parent_model.get_parent_module().model.get_view_url()
+        parent_model.allow_view() ?
+        parent_model.get_view_url(id) :
+        parent_model.get_parent_module().model.get_view_url()
       );
     } catch (error) {
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
           const prop = this.get_property(prop_name);
-          const prop_el = this.element.querySelector(`[name=${prop.id}]`);
+          const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
           const control_el = document.getElementById(prop.id);
           prop.element.show_error("Conflicts with existing record", 0);
         });

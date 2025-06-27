@@ -21,8 +21,8 @@ export class CN_base_record extends CN_base_action {
   constructor(type, parent_model, properties) {
     super(type, parent_model);
 
-    const module = this.parent_model.module;
-    const parent_module = this.parent_model.get_parent_module();
+    const module = this.get_parent_model().get_module();
+    const parent_module = this.get_parent_model().get_parent_module();
 
     // while setting up all property groups keep track of all property names to ensure they are unique
     let existing_properties = {};
@@ -77,7 +77,7 @@ export class CN_base_record extends CN_base_action {
       for (var prop_name in this.#property_groups[group_name].properties) {
         const module_prop = module.get_property(prop_name);
         const prop = this.#property_groups[group_name].properties[prop_name];
-        prop.id = [this.parent_model.unique_id, prop_name].join("-");
+        prop.id = [this.get_parent_model().get_unique_id(), prop_name].join("-");
         prop.name = prop_name;
         prop.state = new CN_state();
         if (!prop.type) prop.type = "string";
@@ -129,7 +129,7 @@ export class CN_base_record extends CN_base_action {
           // if the column is a reference to the parent then use the parent's id
           prop.get_default = () => (
             parent_module && prop.name.match(`${parent_module.get_name()}_id`) ?
-            parent_module.get_model().actions.view.get_property("id").state.get() :
+            parent_module.get_model().get_view_action().get_property("id").state.get() :
             (module_prop ? module_prop.default : null)
           );
         }
@@ -168,7 +168,7 @@ export class CN_base_record extends CN_base_action {
     const promise_list = [];
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
-        const module_prop = this.parent_model.module.get_property(prop_name);
+        const module_prop = this.get_parent_model().get_module().get_property(prop_name);
         const prop = this.#property_groups[group_name].properties[prop_name];
 
         if ("enum" == prop.type) {
@@ -201,14 +201,14 @@ export class CN_base_record extends CN_base_action {
           // populate the rank enum based on the max rank
           const params = {
             select: { column: {
-              column: `max(${this.parent_model.get_name()}.rank)`,
+              column: `max(${this.get_parent_model().get_name()}.rank)`,
               alias: "max_rank",
               table_prefix: false
             } },
           };
 
           const get_max_rank = async () => {
-            const response = await CN_api.get(this.parent_model.get_base_path("api"), params);
+            const response = await CN_api.get(this.get_parent_model().get_base_path("api"), params);
             const max_rank = (await response.json())[0].max_rank;
 
             if (!max_rank) throw new Error(`Couldn't get max rank for ${prop.name}.`);
@@ -254,7 +254,7 @@ export class CN_base_record extends CN_base_action {
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
         const prop = this.#property_groups[group_name].properties[prop_name];
-        const prop_el = this.element.querySelector(`[name=${prop.id}]`);
+        const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
         const control_el = document.getElementById(prop.id);
         if (null == control_el) return;
 
@@ -283,7 +283,7 @@ export class CN_base_record extends CN_base_action {
   create_body_element() {
     const form_el = CN_element.create("<form></form>");
     const fieldset_el = CN_element.create("<fieldset></fieldset>");
-    fieldset_el.disabled = !this.parent_model.allow_edit();
+    fieldset_el.disabled = !this.get_parent_model().allow_edit();
     form_el.append(fieldset_el);
 
     // create the main group above all others
@@ -325,7 +325,7 @@ export class CN_base_record extends CN_base_action {
    */
   create_property_group_element(group_name) {
     const group = this.#property_groups[group_name];
-    const group_id = [this.parent_model.unique_id, group_name].join("-");
+    const group_id = [this.get_parent_model().get_unique_id(), group_name].join("-");
     return CN_element.create(`
       <div class="accordion-item px-0">
         <div class="accordion-header">
@@ -352,7 +352,7 @@ export class CN_base_record extends CN_base_action {
    * @return Element
    */
   create_property_element(prop_name) {
-    const module_prop = this.parent_model.module.get_property(prop_name);
+    const module_prop = this.get_parent_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
     const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 
@@ -383,7 +383,7 @@ export class CN_base_record extends CN_base_action {
         params.onchange = async (control_el, success) => {
           if (success) {
             await this.on_set_property(prop.name);
-          } else if ("view" == this.type) {
+          } else if ("view" == this.get_type()) {
             prop.state.undo();
           }
         };

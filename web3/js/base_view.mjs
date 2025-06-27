@@ -33,15 +33,15 @@ export class CN_base_view extends CN_base_record {
     }
 
     if ("header" == type) {
-      return `${CN_common.uc_words(this.parent_model.get_singular())} Details`;
+      return `${CN_common.uc_words(this.get_parent_model().get_singular())} Details`;
     }
 
     if ("view_parent" == type) {
-      const parent_module = this.parent_model.get_parent_module();
+      const parent_module = this.get_parent_model().get_parent_module();
       return (
         parent_module ?
         `View ${CN_common.uc_words(parent_module.get_model().get_singular())}` :
-        `View ${CN_common.uc_words(this.parent_model.get_singular())} List`
+        `View ${CN_common.uc_words(this.get_parent_model().get_singular())} List`
       );
     }
 
@@ -55,7 +55,7 @@ export class CN_base_view extends CN_base_record {
     await super.on_load();
 
     // load the record
-    const response = await CN_api.get(this.parent_model.get_view_url(null, "api"));
+    const response = await CN_api.get(this.get_parent_model().get_view_url(null, "api"));
 
     const record = await response.json();
     this.for_each_property(prop => {
@@ -80,7 +80,7 @@ export class CN_base_view extends CN_base_record {
 
     // Replace the property elements with placeholders
     this.for_each_property(prop => {
-      const prop_el = this.element.querySelector(`[name=${prop.id}]`);
+      const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
       if (prop.element) {
         if (null == prop_el.querySelector("[name=placeholder]")) {
           prop_el.replaceChild(prop.placeholder_el, prop.element);
@@ -97,7 +97,7 @@ export class CN_base_view extends CN_base_record {
 
     // Replace the placeholders with the property elements
     this.for_each_property(prop => {
-      const prop_el = this.element.querySelector(`[name=${prop.id}]`);
+      const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
       if (prop.element) {
         prop_el.replaceChild(prop.element, prop_el.querySelector("[name=placeholder]"));
       }
@@ -110,7 +110,7 @@ export class CN_base_view extends CN_base_record {
       let data = {};
       data[prop_name] = this.get_formatted_property(prop_name);
 
-      await CN_api.patch(this.parent_model.get_view_url(null, "api"), data);
+      await CN_api.patch(this.get_parent_model().get_view_url(null, "api"), data);
     } catch (error) {
       this.get_property(prop_name).state.undo();
       if ("Conflict (409)" == error.name) {
@@ -135,12 +135,12 @@ export class CN_base_view extends CN_base_record {
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete this ${this.parent_model.get_singular()}?
+        Are you sure you wish to delete this ${this.get_parent_model().get_singular()}?
       `,
     });
 
     if (await modal.test()) {
-      await CN_api.delete(this.parent_model.get_view_url(null, "api"));
+      await CN_api.delete(this.get_parent_model().get_view_url(null, "api"));
       await this.on_navigate_to_parent();
     }
   }
@@ -149,7 +149,7 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   update_property_element(prop_name) {
-    const module_prop = this.parent_model.module.get_property(prop_name);
+    const module_prop = this.get_parent_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
@@ -217,7 +217,7 @@ export class CN_base_view extends CN_base_record {
    */
   create_body_element() {
     const form_el = super.create_body_element();
-    form_el.querySelector("fieldset").disabled = !this.parent_model.allow_edit();
+    form_el.querySelector("fieldset").disabled = !this.get_parent_model().allow_edit();
     return form_el;
   }
 
@@ -236,7 +236,7 @@ export class CN_base_view extends CN_base_record {
 
     const delete_btn_el = CN_element.create(`
       <button name="delete" type="button" class="btn btn-danger">
-        Delete ${CN_common.uc_words(this.parent_model.get_singular())}
+        Delete ${CN_common.uc_words(this.get_parent_model().get_singular())}
       </button>
     `);
     btn_group_el.append(delete_btn_el);
@@ -252,7 +252,8 @@ export class CN_base_view extends CN_base_record {
     const el = super.render();
 
     // add a child list selector
-    const child_list = this.parent_model.module.get_children().concat(this.parent_model.module.get_choosing());
+    const module = this.get_parent_model().get_module();
+    const child_list = module.get_children().concat(module.get_choosing());
     if (1 < child_list.length) {
       const list_selector_el = CN_element.create_card();
       el.append(list_selector_el);
@@ -286,7 +287,7 @@ export class CN_base_view extends CN_base_record {
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
           child_list.forEach(c => {
-            const child_el = CN_session.get_module(c).get_model().element;
+            const child_el = CN_session.get_module(c).get_model().get_element();
             if (c == child_name) {
               el.append(child_el);
             } else {
@@ -312,13 +313,14 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   async run(children = false) {
-    if (null == this.parent_model.module.get_action()) return;
+    const module = this.get_parent_model().get_module();
+    if (null == module.get_action()) return;
 
     await super.run();
 
     if (children) {
       // run all children and choosing models as well
-      this.parent_model.module.get_children().concat(this.parent_model.module.get_choosing()).forEach(
+      module.get_children().concat(module.get_choosing()).forEach(
         async (name) => CN_session.get_module(name).get_model().run("list")
       );
     }

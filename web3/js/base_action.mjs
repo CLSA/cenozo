@@ -13,13 +13,6 @@ export class CN_base_action extends CN_base_object {
   #is_placeholder = false;
   #placeholder_timeout_id = null;
 
-  // getters and setters
-  get type() { return this.#type }
-  get parent_model() { return this.#parent_model }
-  get element() { return this.#parent_model.element }
-  get is_loading() { return this.#is_loading }
-  get is_placeholder() { return this.#is_placeholder }
-
   /**
    * Constructor
    * @param string type: The type of action ("add", "list", "view", etc)
@@ -30,6 +23,11 @@ export class CN_base_action extends CN_base_object {
     this.#type = type;
     this.#parent_model = parent_model;
   }
+
+  // access methods
+  get_type() { return this.#type }
+  get_parent_model() { return this.#parent_model }
+  get_element() { return this.#parent_model.get_element() }
 
   /**
    * Gets UI text values by type
@@ -58,11 +56,11 @@ export class CN_base_action extends CN_base_object {
    * Navigates to the action's parent action
    */
   async on_navigate_to_parent() {
-    const parent_module = this.parent_model.get_parent_module();
+    const parent_module = this.#parent_model.get_parent_module();
     await CN_session.navigate_to(
       parent_module ?
       parent_module.get_model().get_view_url() :
-      this.parent_model.get_list_url()
+      this.#parent_model.get_list_url()
     );
   }
 
@@ -151,7 +149,7 @@ export class CN_base_action extends CN_base_object {
    */
   render() {
     const el = CN_element.create('<div name="model-action"></div>');
-    if (null == this.#parent_model.module.get_action()) return el;
+    if (null == this.#parent_model.get_module().get_action()) return el;
 
     el.append(CN_element.create_card());
 
@@ -167,7 +165,7 @@ export class CN_base_action extends CN_base_object {
    * Runs the dynamic parts of the action (loading data) and updates the element once ready
    */
   async run() {
-    if (null == this.#parent_model.module.get_action()) return;
+    if (null == this.#parent_model.get_module().get_action()) return;
 
     this.on_pre_loading();
     await this.on_load();

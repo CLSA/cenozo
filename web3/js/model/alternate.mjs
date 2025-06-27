@@ -81,7 +81,7 @@ export class CN_alternate_model extends CN_base_model {
           type: "enum",
           enum: { path: "alternate_type" },
           help: "You can add more than one role after the alternate has been created.",
-          is_hidden: (model) => "view" == model.type,
+          is_hidden: (model) => "view" == model.get_type(),
         },
         global_note: { title: "Special Note", type: "text" },
       },

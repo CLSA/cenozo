@@ -402,7 +402,7 @@ export default {
             path: null,
           });
         } else if ("view" == action) {
-          const name = await model.actions.view.get_text("name");
+          const name = await model.get_view_action().get_text("name");
           crumb_list.push({
             name: name,
             path: model.get_view_url(),

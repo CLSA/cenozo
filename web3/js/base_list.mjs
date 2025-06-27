@@ -14,13 +14,6 @@ export class CN_base_list extends CN_base_action {
   #is_choosing = false;
   #choosing_list;
 
-  // getters and setters
-  get columns() { return this.#columns }
-  get records() { return this.#records }
-  get total_records() { return this.#total_records }
-  get current_page() { return this.#current_page }
-  get is_choosing() { return this.#is_choosing }
-
   /**
    * Constructor
    *
@@ -32,11 +25,10 @@ export class CN_base_list extends CN_base_action {
   constructor(parent_model, columns) {
     super("list", parent_model);
 
-    const parent_module = this.parent_model.get_parent_module();
-
     // determine whether the list is in choosing mode
+    const parent_module = parent_model.get_parent_module();
     this.#list_mode = (
-      null != parent_module && parent_module.has_choose(this.parent_model.get_name()) ?
+      null != parent_module && parent_module.has_choose(parent_model.get_name()) ?
       "choose" :
       "add"
     );
@@ -65,20 +57,23 @@ export class CN_base_list extends CN_base_action {
     }
   }
 
+  // access methods
+  is_choosing() { return this.#is_choosing; }
+
   /**
    * Extends the parent method
    */
   async get_text(type) {
     if ("header" == type) {
-      return `${CN_common.uc_words(this.parent_model.get_singular())} List`;
+      return `${CN_common.uc_words(this.get_parent_model().get_singular())} List`;
     }
 
     if ("add" == type) {
-      return `Add ${CN_common.uc_words(this.parent_model.get_singular())}`;
+      return `Add ${CN_common.uc_words(this.get_parent_model().get_singular())}`;
     }
 
     if ("choose" == type) {
-      return `Choose ${CN_common.uc_words(this.parent_model.get_plural())}`;
+      return `Choose ${CN_common.uc_words(this.get_parent_model().get_plural())}`;
     }
 
     return await super.get_text(type);
@@ -88,7 +83,7 @@ export class CN_base_list extends CN_base_action {
    * Called when the list's add button is clicked
    */
   async on_add() {
-    await CN_session.navigate_to(this.parent_model.get_add_url());
+    await CN_session.navigate_to(this.get_parent_model().get_add_url());
   }
 
   /**
@@ -101,12 +96,12 @@ export class CN_base_list extends CN_base_action {
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete the ${this.parent_model.get_singular()} record?
+        Are you sure you wish to delete the ${this.get_parent_model().get_singular()} record?
       `,
     });
 
     if (await modal.test()) {
-      await CN_api.delete(`${this.parent_model.get_name()}/${record.id}`);
+      await CN_api.delete(`${this.get_parent_model().get_name()}/${record.id}`);
       await this.run();
     }
   }
@@ -121,7 +116,7 @@ export class CN_base_list extends CN_base_action {
         const params = {};
         if (0 < this.#choosing_list.add.length) params.add = this.#choosing_list.add;
         if (0 < this.#choosing_list.remove.length) params.remove = this.#choosing_list.remove;
-        const response = await CN_api.post(this.parent_model.get_base_path("api"), params);
+        const response = await CN_api.post(this.get_parent_model().get_base_path("api"), params);
       }
     }
 
@@ -158,7 +153,7 @@ export class CN_base_list extends CN_base_action {
     for (const col_name in this.#columns) {
       if (this.#columns[col_name].table_prefix) {
         let column = this.#columns[col_name].column;
-        if (!column) column = `${this.parent_model.get_name()}.${col_name}`;
+        if (!column) column = `${this.get_parent_model().get_name()}.${col_name}`;
         let [table, name] = column.split(".");
         params.select.column.push({
           table: table,
@@ -171,7 +166,7 @@ export class CN_base_list extends CN_base_action {
       }
     }
 
-    const response = await CN_api.get(this.parent_model.get_base_path("api"), params);
+    const response = await CN_api.get(this.get_parent_model().get_base_path("api"), params);
     const limit = response.headers.get('X-Limit');
     const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
@@ -197,7 +192,7 @@ export class CN_base_list extends CN_base_action {
   show_placeholder() {
     super.show_placeholder();
 
-    const body_el = this.element.querySelector("table [name=body]");
+    const body_el = this.get_element().querySelector("table [name=body]");
     body_el.innerHTML = "";
     for (let row=0; row<20; row++) {
       let tr_el = document.createElement("tr");
@@ -251,8 +246,8 @@ export class CN_base_list extends CN_base_action {
       }
 
       this.update_element();
-    } else if (this.parent_model.allow_view()) {
-      await CN_session.navigate_to(this.parent_model.get_view_url(record.id));
+    } else if (this.get_parent_model().allow_view()) {
+      await CN_session.navigate_to(this.get_parent_model().get_view_url(record.id));
     }
   }
 
@@ -264,11 +259,11 @@ export class CN_base_list extends CN_base_action {
 
     if ("choose" == this.#list_mode) {
       // update the choose buttons based on is_choosing
-      const btn_el = this.element.querySelector("[name=choose]");
+      const btn_el = this.get_element().querySelector("[name=choose]");
       (async () => { btn_el.innerHTML = this.#is_choosing ? "Apply" : await this.get_text("choose"); })();
 
       // add or remove the cancel button depending on whether we're currently choosing or not
-      const cancel_btn_el = this.element.querySelector("[name=cancel_choose]");
+      const cancel_btn_el = this.get_element().querySelector("[name=cancel_choose]");
       if (this.#is_choosing && null == cancel_btn_el) {
         // add the cancel button
         const cancel_btn_el = CN_element.create(
@@ -282,7 +277,7 @@ export class CN_base_list extends CN_base_action {
       }
     }
 
-    const body_el = this.element.querySelector("table [name=body]");
+    const body_el = this.get_element().querySelector("table [name=body]");
     body_el.innerHTML = "";
 
     const start_index = (this.#current_page-1)*20;
@@ -318,7 +313,7 @@ export class CN_base_list extends CN_base_action {
       }
 
       // add an empty header for deleting records
-      if (this.parent_model.allow_delete()) {
+      if (this.get_parent_model().allow_delete()) {
         tr_el.innerHTML += `
           <td class="col-auto p-0">
             <button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>
@@ -333,11 +328,11 @@ export class CN_base_list extends CN_base_action {
       body_el.append(tr_el);
     });
 
-    const summary_el = this.element.querySelector(".card-footer [name=summary]");
-    summary_el.innerHTML = `${this.#total_records} ${this.parent_model.get_plural()} total`;
+    const summary_el = this.get_element().querySelector(".card-footer [name=summary]");
+    summary_el.innerHTML = `${this.#total_records} ${this.get_parent_model().get_plural()} total`;
 
     // rebuild the pagination buttons
-    const pagination_el = this.element.querySelector(".card-footer ul.pagination");
+    const pagination_el = this.get_element().querySelector(".card-footer ul.pagination");
     pagination_el.innerHTML = "";
 
     const pages = Math.ceil(this.#total_records / CN_session.data.application.list_row_size);
@@ -429,7 +424,7 @@ export class CN_base_list extends CN_base_action {
     }
 
     // add an empty header for deleting records
-    if (this.parent_model.allow_delete()) {
+    if (this.get_parent_model().allow_delete()) {
       header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
     }
 
@@ -447,7 +442,7 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    if ("add" != this.#list_mode || this.parent_model.module.action_allowed("add")) {
+    if ("add" != this.#list_mode || this.get_parent_model().get_module().action_allowed("add")) {
       const btn_el = CN_element.create(
         `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
       );
@@ -460,7 +455,7 @@ export class CN_base_list extends CN_base_action {
     footer_el.append(summary_el);
 
     footer_el.append(CN_element.create(`
-      <nav aria-label="${CN_common.uc_words(this.parent_model.get_singular())} List navigation">
+      <nav aria-label="${CN_common.uc_words(this.get_parent_model().get_singular())} List navigation">
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));

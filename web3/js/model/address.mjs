@@ -39,7 +39,7 @@ export class CN_address_model extends CN_base_model {
               model.get_property("international").state.undo();
             }
           },
-          is_constant: (model) => "view" == model.type,
+          is_constant: (model) => "view" == model.get_type(),
         },
         address1: { title: "Address Line 1", type: "string" },
         address2: { title: "Address Line 2", type: "string" },
@@ -57,7 +57,7 @@ export class CN_address_model extends CN_base_model {
             } },
             modifier: { order: ["country.name", "region.name"] },
           },
-          is_hidden: (model) => "add" == model.type || model.get_property("international").state.get(),
+          is_hidden: (model) => "add" == model.get_type() || model.get_property("international").state.get(),
           is_constant: () => true,
           help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
         },
@@ -65,7 +65,7 @@ export class CN_address_model extends CN_base_model {
           title: "Region",
           type: "string",
           is_hidden: (model) => !(
-            "add" == model.type ?
+            "add" == model.get_type() ?
             1 == model.get_property("international").element.querySelector("select").value :
             model.get_property("international").state.get()
           ),
@@ -90,7 +90,7 @@ export class CN_address_model extends CN_base_model {
             },
           },
           is_hidden: (model) => !(
-            "add" == model.type ?
+            "add" == model.get_type() ?
             1 == model.get_property("international").element.querySelector("select").value :
             model.get_property("international").state.get()
           ),
@@ -103,13 +103,13 @@ export class CN_address_model extends CN_base_model {
         timezone_offset: {
           title: "Timezone Offset",
           type: "float",
-          is_hidden: (model) => "add" == model.type,
+          is_hidden: (model) => "add" == model.get_type(),
           help: "The number of hours difference between the address' timezone and UTC.",
         },
         daylight_savings: {
           title: "Daylight Savings",
           type: "boolean",
-          is_hidden: (model) => "add" == model.type,
+          is_hidden: (model) => "add" == model.get_type(),
           help: "Whether the address observes daylight savings.",
         },
         note: { title: "Note", type: "text" },

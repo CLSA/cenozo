@@ -201,7 +201,7 @@ export default {
       // first load all parent views as their data may be needed by the leaf model
       await Promise.all(OP_LIST
         .filter(module_name => module_name != model.get_name())
-        .map(module_name => this.get_module(module_name).model.actions.view.on_load())
+        .map(module_name => this.get_module(module_name).get_model().get_view_action().on_load())
       );
 
       // now run the model and update the breadcrumbs

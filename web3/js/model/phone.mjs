@@ -24,7 +24,7 @@ export class CN_phone_model extends CN_base_model {
           enum: {
             path: (model) => {
               // get a list of the owner's addresses
-              return `${model.parent_model.get_view_url(null, "api")}/address`;
+              return `${model.get_parent_model().get_view_url(null, "api")}/address`;
             },
             select: { column: [
               "id", {
@@ -42,7 +42,7 @@ export class CN_phone_model extends CN_base_model {
           title: "International",
           type: "boolean",
           help: "Cannot be changed once the phone has been created.",
-          is_constant: (model) => "view" == model.type,
+          is_constant: (model) => "view" == model.get_type(),
         },
         rank: { title: "Rank", type: "rank" },
         type: { title: "Type", type: "enum" },
