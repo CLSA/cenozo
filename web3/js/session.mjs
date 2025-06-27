@@ -199,23 +199,26 @@ export default {
     const leaf_module = this.get_leaf_module();
     const model = leaf_module ? leaf_module.get_model() : new CN_home_model();
 
-    // TODO: is this try/catch block necessary? if so then explain why
+    // TODO: The remaining codes used to be in the following try/catch block but it may not be necessary
+    // If errors aren't being handled correctly in the browser this may need to be re-introduced
+    /*
     try {
-      const module_el = model.render();
-      main_content_el.append(module_el);
-
-      // first load all parent views as their data may be needed by the leaf model
-      await Promise.all(OP_LIST
-        .filter(module_name => module_name != model.get_name())
-        .map(module_name => this.get_module(module_name).get_model().get_action().on_load())
-      );
-
-      // now run the model and update the breadcrumbs
-      await model.run();
-      await this.update_breadcrumbs();
     } catch (error) {
       throw error;
     }
+    */
+    const module_el = model.render();
+    main_content_el.append(module_el);
+
+    // first load all parent views as their data may be needed by the leaf model
+    await Promise.all(OP_LIST
+      .filter(module_name => module_name != model.get_name())
+      .map(module_name => this.get_module(module_name).get_model().get_action().on_load())
+    );
+
+    // now run the model and update the breadcrumbs
+    await model.run();
+    await this.update_breadcrumbs();
   },
 
   /**
