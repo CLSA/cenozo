@@ -393,22 +393,24 @@ export default {
       if ("error" == module_name) {
         crumb_list.push({ name: "Error", path: null });
       } else {
-        const module = CN_session.data.modules[module_name];
-        if ("add" == module.operation.action) {
+        const module = CN_session.get_module(module_name);
+        const action = module.get_action();
+        const model = module.get_model();
+        if ("add" == action) {
           crumb_list.push({
-            name: `Add ${CN_common.uc_words(module.model.name.singular)}`,
+            name: `Add ${CN_common.uc_words(model.get_singular())}`,
             path: null,
           });
-        } else if ("view" == module.operation.action) {
-          const name = await module.model.actions.view.get_text("name");
+        } else if ("view" == action) {
+          const name = await model.actions.view.get_text("name");
           crumb_list.push({
             name: name,
-            path: module.model.get_view_url(),
+            path: model.get_view_url(),
           });
-        } else if ("list" == module.operation.action) {
+        } else if ("list" == action) {
           crumb_list.push({
-            name: CN_common.uc_words(module.model.name.plural),
-            path: null == parent_module ? `${module_name}/list` : parent_module.model.get_view_url(),
+            name: CN_common.uc_words(model.get_plural()),
+            path: null == parent_module ? `${module_name}/list` : parent_model.get_view_url(),
           });
         }
         parent_module = module;

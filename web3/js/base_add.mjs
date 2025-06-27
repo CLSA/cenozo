@@ -23,10 +23,10 @@ export class CN_base_add extends CN_base_record {
    */
   async get_text(type) {
     if ("header" == type) {
-      let text = `Add ${CN_common.uc_words(this.parent_model.name.singular)}`;
+      let text = `Add ${CN_common.uc_words(this.parent_model.get_singular())}`;
       const parent_module = this.parent_model.get_parent_module();
       if (parent_module) {
-        text += ` to ${CN_common.uc_words(parent_module.model.name.singular)}`;
+        text += ` to ${CN_common.uc_words(parent_module.get_model().get_singular())}`;
       }
       return text;
     }

@@ -33,7 +33,7 @@ window.addEventListener("load", async () => {
   // reload modules anytime the browser navigation buttons are clicked
   window.addEventListener("popstate", async event => {
     try {
-      await CN_session.load_modules();
+      await CN_session.load();
       CN_session.render();
     } catch (error) {
       CN_session.render_error(error);

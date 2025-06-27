@@ -7,9 +7,19 @@ import CN_element from "./element.mjs"
 import { CN_base_add } from "./base_add.mjs"
 import { CN_base_list } from "./base_list.mjs"
 import { CN_base_view } from "./base_view.mjs"
-
-import { CN_home_model } from "./model/home.mjs"
 import { CN_error_model } from "./model/error.mjs"
+import { CN_home_model } from "./model/home.mjs"
+import { CN_module } from "./module.mjs"
+
+/**
+ * A private list of all modules used by the session
+ */
+const MODULE_MAP = new Map();
+
+/**
+ * A private array of operations based on the URL
+ */
+const OP_LIST = [];
 
 /**
  * The session class which handles the application
@@ -20,6 +30,19 @@ export default {
 
   home_model: null,
   error_model: null,
+
+  /**
+   * Gets a module by name
+   * @param string name: The module's name
+   */
+  get_module: name => MODULE_MAP.get(name),
+
+  /**
+   * ADD DOCS
+   */
+  get_leaf_module: function() {
+    return 0 == OP_LIST.length ? null : this.get_module(OP_LIST[OP_LIST.length-1]);
+  },
 
   /**
    * Logs the user out of the application
@@ -43,12 +66,21 @@ export default {
     // convert use_12hour_clock to am_pm
     this.data.user.am_pm = this.data.user.use_12hour_clock;
     delete this.data.user.use_12hour_clock;
-    for(const module_name in this.data.modules) {
-      this.data.modules[module_name].children.sort();
-      this.data.modules[module_name].choosing.sort();
-      this.data.modules[module_name].action_allowed = function(type) {
-        return this.actions.hasOwnProperty(type);
-      };
+
+    // create all modules
+    const modules = this.data.modules;
+    delete this.data.modules;
+    for(const module_name in modules) {
+      const params = modules[module_name];
+      // a module is "root" if it's found in the lists menu
+      params.root = false;
+      for (const m in this.data.menu.lists) {
+        if (this.data.menu.lists[m] === module_name) {
+          params.root = true;
+          break;
+        }
+      }
+      MODULE_MAP.set(module_name, new CN_module(params));
     }
   },
 
@@ -74,7 +106,7 @@ export default {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
-    (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail(this.data.operation_list)); })();
+    (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail(OP_LIST)); })();
   },
 
   /**
@@ -94,135 +126,57 @@ export default {
   /**
    * Loads all modules and creates all models based on the current URL
    */
-  load_modules: async function() {
+  load: async function() {
     const href_parts = window.location.pathname
       .replace(new RegExp(`${ROOT_URL}/`), "")
       .split("/")
       .filter(str => 0 < str.length);
 
-    // first clear out all module operations
-    for(const module_name in this.data.modules) {
-      if (this.data.modules[module_name].hasOwnProperty("operation")) {
-        delete this.data.modules[module_name].operation;
-      }
-    }
+    // reset all module operations
+    for (const [module_name, module] of MODULE_MAP) module.reset_operation();
 
     // now set all new operations and import any missing models
-    this.data.operation_list = [];
-    let parent_subject = null;
-    let subject = null;
+    OP_LIST.length = 0;
+    let parent_module_name = null;
+    let module_name = null;
     let action = null;
     let module = null;
-    let load_module_list = [];
 
     // parse the href and collect a list of all modules that need to be loaded
     href_parts.forEach((str, index) => {
       const m = index % 3;
       const i = Math.floor(index / 3);
       if (0 == m) {
-        // identify and validate the module's subject
-        parent_subject = subject;
-        subject = str;
-        if (!this.data.modules[subject]) {
-          throw new Error(`Error loading modules: module "${subject}" does not exist`);
-        }
-        module = null == subject ? null : this.data.modules[subject];
+        parent_module_name = null == module ? null : module.get_name();
 
-        this.data.operation_list.push(subject);
+        // validate the module's parent
+        module = this.get_module(str);
+        if (!module) throw new Error(`Error loading session: module "${str}" does not exist`);
 
-        // if this is the root module then make sure it's allowed to be the root
-        if (null == parent_subject) {
-          let root_allowed = false;
-          for (const m in this.data.menu.lists) {
-            if (this.data.menu.lists[m] === subject) {
-              root_allowed = true;
-              break;
-            }
-          }
-
-          if (!root_allowed) {
-            let error = new URIError();
-            error.error_code = null;
-            error.name = "Not Found";
-            error.message = "The needed resource could not be found."
-            throw error;
-          }
-
-          // create the operation object
-          module.operation = { parent_module: null, action: null };
-        } else {
-          // create the operation object
-          module.operation = {
-            parent_module: this.data.modules[parent_subject],
-            action: null,
-          };
+        if (!module.set_operation_parent(parent_module_name)) {
+          let error = new URIError();
+          error.error_code = null;
+          error.name = "Not Found";
+          error.message = "The needed resource could not be found."
+          throw error;
         }
 
-        // define this module in the parent
-        if (null != parent_subject) {
-          // make sure the parent can have this module as a child
-          if (
-            !module.operation.parent_module.children.includes(subject) &&
-            !module.operation.parent_module.choosing.includes(subject)
-          ) {
-            throw new Error(
-              `Error loading modules: module "${subject}" is not a child of "${parent_subject}"`
-            );
-          }
-        }
-
-        // now import the model if it hasn't been loaded yet
-        if (!load_module_list.includes(subject)) load_module_list.push(subject);
+        OP_LIST.push(module.get_name());
       } else if (1 == m) {
-        // validate and set the module's current action
-        action = str;
-        if (!module.action_allowed(action)) {
-          throw new Error(
-            `Error loading modules: module "${subject}" does not allow action "${action}"`
-          );
-        }
-        module.operation.action = action;
-
-        // if viewing then import all missing child module classes
-        if ("view" == action) {
-          module.children.concat(module.choosing).forEach((child_subject) => {
-            if (!this.data.modules[child_subject]) {
-              throw new Error(`Error loading modules: module "${child_subject}" does not exist`);
-            }
-            const child_module = this.data.modules[child_subject];
-
-            if (!child_module.hasOwnProperty("operation")) {
-              child_module.operation = {
-                parent_module: module,
-                action: "list",
-              };
-            }
-
-            if (!load_module_list.includes(child_subject)) load_module_list.push(child_subject);
-          });
+        // validate the module's action
+        const result = module.set_operation_action(str);
+        if ("not allowed" == result) {
+          throw new Error(`Error loading session: module ${module.get_name()} does not allow action "${str}".`);
         }
       } else if (2 == m) {
-        module.operation.identifier = str;
+        module.set_operation_identifier(str);
       }
     });
 
-    // now import all modules
-    await Promise.all(
-      load_module_list.map(async module_name => {
-        const module = this.data.modules[module_name];
-        // import the model if it hasn't been loaded yet
-        if (CN_common.is_object(module.classes)) return;
-
-        const classes = await import(`./model/${module_name}.mjs`);
-        const prefix = `CN_${module_name}`;
-        module.classes = {
-          model: classes[`${prefix}_model`],
-          add: classes[`${prefix}_add`] ? classes[`${prefix}_add`] : CN_base_add,
-          list: classes[`${prefix}_list`] ? classes[`${prefix}_list`] : CN_base_list,
-          view: classes[`${prefix}_view`] ? classes[`${prefix}_view`] : CN_base_view,
-        };
-      })
-    );
+    // now load all models
+    const promise_list = [];
+    for (const [module_name, module] of MODULE_MAP) promise_list.push(module.load_classes());
+    await Promise.all(promise_list);
   },
 
   /**
@@ -233,29 +187,11 @@ export default {
     main_content_el.innerHTML = "";
 
     // create all models and validate all operations
-    for (const module_name in this.data.modules) {
-      const module = this.data.modules[module_name];
-      if (CN_common.is_object(module.operation)) {
-        const op = module.operation;
-        if (null == op.action) {
-          throw new Error(`Error loading modules: module "${module_name} has no operation"`);
-        } else if (op.hasOwnProperty("identifier") && ["add", "list"].includes(op.action)) {
-          throw new Error(
-            `Error loading modules: module "${module_name}" has identifier for ${op.action} action`
-          );
-        } else if (!op.hasOwnProperty("identifier") && "view" == op.action) {
-          throw new Error(
-            `Error loading modules: module "${module_name}" has no identifier for "${op.action}" action`
-          );
-        }
-
-        module.model = new module.classes.model(module);
-      }
-    }
+    for (const [module_name, module] of MODULE_MAP) module.create_model();
 
     // render the left module's content (or the home model if there are no operations
     const leaf_module = this.get_leaf_module();
-    const model = null == leaf_module ? new CN_home_model() : leaf_module.model;
+    const model = leaf_module ? leaf_module.get_model() : new CN_home_model();
 
     // TODO: is this try/catch block necessary? if so then explain why
     try {
@@ -263,10 +199,9 @@ export default {
       main_content_el.append(module_el);
 
       // first load all parent views as their data may be needed by the leaf model
-      await Promise.all(
-        this.data.operation_list
-          .filter(module_name => module_name != model.module.subject)
-          .map(module_name => this.data.modules[module_name].model.actions.view.on_load())
+      await Promise.all(OP_LIST
+        .filter(module_name => module_name != model.get_name())
+        .map(module_name => this.get_module(module_name).model.actions.view.on_load())
       );
 
       // now run the model and update the breadcrumbs
@@ -299,20 +234,12 @@ export default {
     window.history.pushState({}, "", `${ROOT_URL}/${path}`);
 
     try {
-      await this.load_modules();
+      await this.load();
       await this.render();
     } catch (error) {
       this.render_error(error);
     }
   },
-
-  /**
-   * ADD DOCS
-   */
-   get_leaf_module: function() {
-     const len = this.data.operation_list.length;
-     return 0 == len ?  null : this.data.modules[this.data.operation_list[len-1]];
-   },
 
   /**
    * Creates the main UI body
@@ -498,7 +425,7 @@ export default {
     }
 
     try {
-      await this.load_modules();
+      await this.load();
       await this.render();
 
       // check for system messages every 5 minutes

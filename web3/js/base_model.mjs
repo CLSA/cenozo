@@ -7,7 +7,7 @@ import { CN_base_object } from "./base_object.mjs"
 export class CN_base_model extends CN_base_object {
   #unique_id;
   #module;
-  #name;
+  #wording;
   #element;
   #actions = {
     add: null,
@@ -18,17 +18,21 @@ export class CN_base_model extends CN_base_object {
   // getters and setters
   get unique_id() { return this.#unique_id; }
   get module() { return this.#module; }
-  get name() { return this.#name; }
+  get wording() { return this.#wording; }
   get element() { return this.#element; }
   get actions() { return this.#actions; }
 
   // convenience methods
-  get_parent_module() { return this.#module.operation.parent_module; }
+  get_name() { return this.#module.get_name(); }
+  get_singular() { return this.#wording.singular; }
+  get_plural() { return this.#wording.plural; }
+  get_posessive() { return this.#wording.posessive; }
+  get_parent_module() { return this.#module.get_parent_module(); }
   get_list_url() { return this.get_base_path("url") + "/list"; }
   get_add_url() { return this.get_base_path("url") + "/add"; }
-  get_view_url(id = null) {
-    if (null == id) id = this.#module.operation.identifier;
-    return this.get_base_path("url") + `/view/${id}`;
+  get_view_url(id = null, type = "url") {
+    if (null == id) id = this.#module.get_identifier();
+    return `${this.get_base_path(type)}/${"url" == type ? "view/" : ""}${id}`;
   }
 
   /**
@@ -37,15 +41,15 @@ export class CN_base_model extends CN_base_object {
    * @return string
    */
   get_base_path(type) {
-    let path_parts = [this.#module.subject];
+    let path_parts = [this.get_name()];
     const parent_module = this.get_parent_module();
     if (parent_module) {
-      path_parts.unshift(parent_module.operation.identifier);
+      path_parts.unshift(parent_module.get_identifier());
       if ("url" == type) {
         path_parts.unshift("view");
-        path_parts.unshift(parent_module.model.get_base_path(type));
+        path_parts.unshift(parent_module.get_model().get_base_path(type));
       } else {
-        path_parts.unshift(parent_module.subject);
+        path_parts.unshift(parent_module.get_name());
       }
     }
 
@@ -55,25 +59,25 @@ export class CN_base_model extends CN_base_object {
   /**
    * Constructor
    *
-   * @param object module: The model's module (as defined in session.mjs)
-   * @param object params: An object with the properties defining the model (name, columns and properties)
+   * @param object params: An object with the properties defining the model (wording, columns and properties)
    */
-  constructor(module, params) {
+  constructor(params) {
     super();
 
-    if (!params.name) throw new Error("Tried to create model with the name property.");
+    if (!params.wording) throw new Error("Tried to create model with the wording property.");
 
-    this.#unique_id = [module.subject, Math.round(Math.random()*10000000000)].join("-");
-    this.#module = module;
-    this.#name = params.name;
+    const module_name = this.get_class_name().match(/CN_(.+)_model/)[1];
+    this.#module = CN_session.get_module(module_name);
+    this.#unique_id = [this.get_name(), Math.round(Math.random()*10000000000)].join("-");
+    this.#wording = params.wording;
 
     // send the columns to the list action
-    if (params.columns) this.#actions.list = new this.#module.classes.list(this, params.columns);
+    if (params.columns) this.#actions.list = this.#module.create_list(this, params.columns);
 
     // send the properties to the record actions (add and view)
     if (params.properties) {
-      this.#actions.add = new this.#module.classes.add(this, params.properties);
-      this.#actions.view = new this.#module.classes.view(this, params.properties);
+      this.#actions.add = this.#module.create_add(this, params.properties);
+      this.#actions.view = this.#module.create_view(this, params.properties);
     }
   }
 
@@ -94,7 +98,7 @@ export class CN_base_model extends CN_base_object {
     this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
 
     // determine which action to use
-    if (null == action && this.#module.hasOwnProperty("operation")) action = this.#module.operation.action;
+    if (null == action) action = this.#module.get_action();
 
     // add the model_action
     if ("add" == action) {
@@ -114,7 +118,7 @@ export class CN_base_model extends CN_base_object {
    */
   async run(action = null) {
     // determine which action to use
-    if (null == action && this.#module.hasOwnProperty("operation")) action = this.#module.operation.action;
+    if (null == action) action = this.#module.get_action();
 
     if ("add" == action) {
       await this.#actions.add.run();

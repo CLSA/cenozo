@@ -61,7 +61,7 @@ export class CN_base_action extends CN_base_object {
     const parent_module = this.parent_model.get_parent_module();
     await CN_session.navigate_to(
       parent_module ?
-      parent_module.model.get_view_url() :
+      parent_module.get_model().get_view_url() :
       this.parent_model.get_list_url()
     );
   }
@@ -151,7 +151,7 @@ export class CN_base_action extends CN_base_object {
    */
   render() {
     const el = CN_element.create('<div name="model-action"></div>');
-    if (!this.#parent_model.module.hasOwnProperty("operation")) return el;
+    if (null == this.#parent_model.module.get_action()) return el;
 
     el.append(CN_element.create_card());
 
@@ -167,7 +167,7 @@ export class CN_base_action extends CN_base_object {
    * Runs the dynamic parts of the action (loading data) and updates the element once ready
    */
   async run() {
-    if (!this.#parent_model.module.operation) return;
+    if (null == this.#parent_model.module.get_action()) return;
 
     this.on_pre_loading();
     await this.on_load();

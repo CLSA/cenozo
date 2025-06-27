@@ -4,56 +4,52 @@ import { CN_base_model } from "../base_model.mjs"
 import { CN_base_view } from "../base_view.mjs"
 
 export class CN_phone_model extends CN_base_model {
-  constructor(module) {
-    super(
-      module,
-      {
-        name: {
-          singular: "phone number",
-          plural: "phone numbers",
-          posessive: "phone number's",
-        },
-        columns: {
-          rank: { title: "Rank", type: "rank" },
-          number: { title: "Number" },
-          type: { title: "Type" },
-          active: { title: "Active", type: "boolean" },
-        },
-        properties: {
-          address_id: {
-            title: "Associated Address",
-            type: "enum",
-            enum: {
-              path: (model) => {
-                // get a list of the owner's addresses
-                const parent_module = model.parent_model.get_parent_module();
-                return `${parent_module.subject}/${parent_module.operation.identifier}/address`;
-              },
-              select: { column: [
-                "id", {
-                  column: 'CONCAT(rank, ") ", CONCAT_WS(", ", address1, address2, city, region.name))',
-                  alias: "name",
-                  table_prefix: false
-                }
-              ] },
-              modifier: { order: "rank" },
+  constructor() {
+    super({
+      wording: {
+        singular: "phone number",
+        plural: "phone numbers",
+        posessive: "phone number's",
+      },
+      columns: {
+        rank: { title: "Rank", type: "rank" },
+        number: { title: "Number" },
+        type: { title: "Type" },
+        active: { title: "Active", type: "boolean" },
+      },
+      properties: {
+        address_id: {
+          title: "Associated Address",
+          type: "enum",
+          enum: {
+            path: (model) => {
+              // get a list of the owner's addresses
+              return `${model.parent_model.get_view_url(null, "api")}/address`;
             },
-            help: "The address that this phone number is associated with, if any.",
+            select: { column: [
+              "id", {
+                column: 'CONCAT(rank, ") ", CONCAT_WS(", ", address1, address2, city, region.name))',
+                alias: "name",
+                table_prefix: false
+              }
+            ] },
+            modifier: { order: "rank" },
           },
-          active: { title: "Active", type: "boolean" },
-          international: {
-            title: "International",
-            type: "boolean",
-            help: "Cannot be changed once the phone has been created.",
-            is_constant: (model) => "view" == model.type,
-          },
-          rank: { title: "Rank", type: "rank" },
-          type: { title: "Type", type: "enum" },
-          number: { title: "Number", help: "If not international then must be in 000-000-0000 format." },
-          note: { title: "Note", type: "text" },
+          help: "The address that this phone number is associated with, if any.",
         },
-      }
-    );
+        active: { title: "Active", type: "boolean" },
+        international: {
+          title: "International",
+          type: "boolean",
+          help: "Cannot be changed once the phone has been created.",
+          is_constant: (model) => "view" == model.type,
+        },
+        rank: { title: "Rank", type: "rank" },
+        type: { title: "Type", type: "enum" },
+        number: { title: "Number", help: "If not international then must be in 000-000-0000 format." },
+        note: { title: "Note", type: "text" },
+      },
+    });
   }
 }
 

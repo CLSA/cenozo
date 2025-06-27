@@ -33,15 +33,15 @@ export class CN_base_view extends CN_base_record {
     }
 
     if ("header" == type) {
-      return `${CN_common.uc_words(this.parent_model.name.singular)} Details`;
+      return `${CN_common.uc_words(this.parent_model.get_singular())} Details`;
     }
 
     if ("view_parent" == type) {
       const parent_module = this.parent_model.get_parent_module();
       return (
         parent_module ?
-        `View ${CN_common.uc_words(parent_module.model.name.singular)}` :
-        `View ${CN_common.uc_words(this.parent_model.name.singular)} List`
+        `View ${CN_common.uc_words(parent_module.get_model().get_singular())}` :
+        `View ${CN_common.uc_words(this.parent_model.get_singular())} List`
       );
     }
 
@@ -55,9 +55,7 @@ export class CN_base_view extends CN_base_record {
     await super.on_load();
 
     // load the record
-    const response = await CN_api.get(
-      `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`
-    );
+    const response = await CN_api.get(this.parent_model.get_view_url(null, "api"));
 
     const record = await response.json();
     this.for_each_property(prop => {
@@ -112,10 +110,7 @@ export class CN_base_view extends CN_base_record {
       let data = {};
       data[prop_name] = this.get_formatted_property(prop_name);
 
-      await CN_api.patch(
-        `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`,
-        data
-      );
+      await CN_api.patch(this.parent_model.get_view_url(null, "api"), data);
     } catch (error) {
       this.get_property(prop_name).state.undo();
       if ("Conflict (409)" == error.name) {
@@ -140,15 +135,12 @@ export class CN_base_view extends CN_base_record {
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete this ${this.parent_model.name.singular}?
+        Are you sure you wish to delete this ${this.parent_model.get_singular()}?
       `,
     });
 
     if (await modal.test()) {
-      await CN_api.delete(
-        `${this.parent_model.module.subject}/${this.parent_model.module.operation.identifier}`
-      );
-
+      await CN_api.delete(this.parent_model.get_view_url(null, "api"));
       await this.on_navigate_to_parent();
     }
   }
@@ -157,7 +149,7 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   update_property_element(prop_name) {
-    const module_prop = this.parent_model.module.properties[prop_name];
+    const module_prop = this.parent_model.module.get_property(prop_name);
     const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
@@ -244,7 +236,7 @@ export class CN_base_view extends CN_base_record {
 
     const delete_btn_el = CN_element.create(`
       <button name="delete" type="button" class="btn btn-danger">
-        Delete ${CN_common.uc_words(this.parent_model.name.singular)}
+        Delete ${CN_common.uc_words(this.parent_model.get_singular())}
       </button>
     `);
     btn_group_el.append(delete_btn_el);
@@ -260,7 +252,7 @@ export class CN_base_view extends CN_base_record {
     const el = super.render();
 
     // add a child list selector
-    const child_list = this.parent_model.module.children.concat(this.parent_model.module.choosing);
+    const child_list = this.parent_model.module.get_children().concat(this.parent_model.module.get_choosing());
     if (1 < child_list.length) {
       const list_selector_el = CN_element.create_card();
       el.append(list_selector_el);
@@ -279,38 +271,38 @@ export class CN_base_view extends CN_base_record {
       list_selector_el.querySelector(".card-footer").append(btn_group_el);
 
       // add children to the list selector and render them
-      child_list.forEach((child_subject) => {
-        const child_module = CN_session.data.modules[child_subject];
+      child_list.forEach((child_name) => {
+        const child_module = CN_session.get_module(child_name);
 
         const child_btn_el = CN_element.create(`
-          <button name="${child_module.subject}" type="button" class="col btn btn-primary mx-1">
-            ${CN_common.uc_words(child_module.model.name.singular)}
+          <button name="${child_module.get_name()}" type="button" class="col btn btn-primary mx-1">
+            ${CN_common.uc_words(child_module.get_model().get_singular())}
           </button>
         `);
         btn_group_el.append(child_btn_el);
 
         child_btn_el.onclick = async () => {
-          this.#tab = child_subject;
+          this.#tab = child_name;
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
           child_list.forEach(c => {
-            let cm = CN_session.data.modules[c];
-            if (c == child_subject) {
-              el.append(cm.model.element);
+            const child_el = CN_session.get_module(c).get_model().element;
+            if (c == child_name) {
+              el.append(child_el);
             } else {
-              cm.model.element.remove();
+              child_el.remove();
             }
           });
         };
 
-        const child_el = child_module.model.render("list");
-        if (child_subject == (new URL(window.location)).searchParams.get('tab')) {
+        const child_el = child_module.get_model().render("list");
+        if (child_name == (new URL(window.location)).searchParams.get('tab')) {
           el.append(child_el);
         }
       });
     } else if (1 == child_list.length) {
       // render the only child directly
-      el.append(CN_session.data.modules[child_list[0]].model.render("list"));
+      el.append(CN_session.get_module(child_list[0]).get_model().render("list"));
     }
 
     return el;
@@ -320,14 +312,14 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   async run(children = false) {
-    if (!this.parent_model.module.operation) return;
+    if (null == this.parent_model.module.get_action()) return;
 
     await super.run();
 
     if (children) {
       // run all children and choosing models as well
-      this.parent_model.module.children.concat(this.parent_model.module.choosing).forEach(
-        async (subject) => CN_session.data.modules[subject].model.run("list")
+      this.parent_model.module.get_children().concat(this.parent_model.module.get_choosing()).forEach(
+        async (name) => CN_session.get_module(name).get_model().run("list")
       );
     }
   }

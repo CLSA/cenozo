@@ -10,7 +10,7 @@ export class CN_home_model extends CN_base_object {
 
   constructor() {
     super();
-    this.subject = "home";
+    this.name = "home";
   }
 
   get_text(type) {

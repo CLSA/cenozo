@@ -36,7 +36,7 @@ export class CN_base_list extends CN_base_action {
 
     // determine whether the list is in choosing mode
     this.#list_mode = (
-      null != parent_module && parent_module.choosing.includes(this.parent_model.module.subject) ?
+      null != parent_module && parent_module.has_choose(this.parent_model.get_name()) ?
       "choose" :
       "add"
     );
@@ -58,8 +58,8 @@ export class CN_base_list extends CN_base_action {
         column.is_hidden = () => {
           if (!column.column) return false;
 
-          // if there's a parent then don't show columns belonging to the parent's subject
-          return null != parent_module && column.column.match(`${parent_module.subject}\.`);
+          // if there's a parent then don't show columns belonging to the parent's name
+          return null != parent_module && column.column.match(`${parent_module.get_name()}\.`);
         };
       }
     }
@@ -70,15 +70,15 @@ export class CN_base_list extends CN_base_action {
    */
   async get_text(type) {
     if ("header" == type) {
-      return `${CN_common.uc_words(this.parent_model.name.singular)} List`;
+      return `${CN_common.uc_words(this.parent_model.get_singular())} List`;
     }
 
     if ("add" == type) {
-      return `Add ${CN_common.uc_words(this.parent_model.name.singular)}`;
+      return `Add ${CN_common.uc_words(this.parent_model.get_singular())}`;
     }
 
     if ("choose" == type) {
-      return `Choose ${CN_common.uc_words(this.parent_model.name.plural)}`;
+      return `Choose ${CN_common.uc_words(this.parent_model.get_plural())}`;
     }
 
     return await super.get_text(type);
@@ -101,12 +101,12 @@ export class CN_base_list extends CN_base_action {
       static: true,
       title: "Please Confirm",
       message: `
-        Are you sure you wish to delete the ${this.parent_model.name.singular} record?
+        Are you sure you wish to delete the ${this.parent_model.get_singular()} record?
       `,
     });
 
     if (await modal.test()) {
-      await CN_api.delete(`${this.parent_model.module.subject}/${record.id}`);
+      await CN_api.delete(`${this.parent_model.get_name()}/${record.id}`);
       await this.run();
     }
   }
@@ -158,7 +158,7 @@ export class CN_base_list extends CN_base_action {
     for (const col_name in this.#columns) {
       if (this.#columns[col_name].table_prefix) {
         let column = this.#columns[col_name].column;
-        if (!column) column = `${this.parent_model.module.subject}.${col_name}`;
+        if (!column) column = `${this.parent_model.get_name()}.${col_name}`;
         let [table, name] = column.split(".");
         params.select.column.push({
           table: table,
@@ -334,7 +334,7 @@ export class CN_base_list extends CN_base_action {
     });
 
     const summary_el = this.element.querySelector(".card-footer [name=summary]");
-    summary_el.innerHTML = `${this.#total_records} ${this.parent_model.name.plural} total`;
+    summary_el.innerHTML = `${this.#total_records} ${this.parent_model.get_plural()} total`;
 
     // rebuild the pagination buttons
     const pagination_el = this.element.querySelector(".card-footer ul.pagination");
@@ -460,7 +460,7 @@ export class CN_base_list extends CN_base_action {
     footer_el.append(summary_el);
 
     footer_el.append(CN_element.create(`
-      <nav aria-label="${CN_common.uc_words(this.parent_model.name.singular)} List navigation">
+      <nav aria-label="${CN_common.uc_words(this.parent_model.get_singular())} List navigation">
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));

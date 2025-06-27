@@ -6,7 +6,7 @@ export class CN_error_model extends CN_base_object {
 
   constructor(error) {
     super();
-    this.subject = "error";
+    this.name = "error";
     this.error = error;
     this.status = null;
   }
