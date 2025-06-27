@@ -108,6 +108,6 @@ export class CN_base_model extends CN_base_object {
    */
   async run() {
     // run the model's action and its children
-    if (null != this.#action) this.#action.run(true);
+    if (null != this.#action) await this.#action.run(true);
   }
 }
