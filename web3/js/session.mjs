@@ -175,7 +175,10 @@ export default {
 
     // now load all models
     const promise_list = [];
-    for (const [module_name, module] of MODULE_MAP) promise_list.push(module.load_classes());
+    for (const [module_name, module] of MODULE_MAP) {
+      // only load the classes for modules that have an action
+      if (module.get_action_name()) promise_list.push(module.load_classes());
+    }
     await Promise.all(promise_list);
   },
 
@@ -187,7 +190,10 @@ export default {
     main_content_el.innerHTML = "";
 
     // create all models and validate all operations
-    for (const [module_name, module] of MODULE_MAP) module.create_model();
+    for (const [module_name, module] of MODULE_MAP) {
+      // only create the model for modules that have an action
+      if (module.get_action_name()) module.create_model();
+    }
 
     // render the left module's content (or the home model if there are no operations
     const leaf_module = this.get_leaf_module();
@@ -201,7 +207,7 @@ export default {
       // first load all parent views as their data may be needed by the leaf model
       await Promise.all(OP_LIST
         .filter(module_name => module_name != model.get_name())
-        .map(module_name => this.get_module(module_name).get_model().get_view_action().on_load())
+        .map(module_name => this.get_module(module_name).get_model().get_action().on_load())
       );
 
       // now run the model and update the breadcrumbs

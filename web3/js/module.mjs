@@ -35,29 +35,10 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("choosing")) this.#choosing = params.choosing.sort();
   }
 
-  /**
-   * ADD DOCS
-   */
   get_name() { return this.#name; }
-
-  /**
-   * ADD DOCS
-   */
   action_allowed(action) { return this.#actions.hasOwnProperty(action); }
-
-  /**
-   * ADD DOCS
-   */
-  get_action() { return null == this.#operation ? null : this.#operation.action; }
-
-  /**
-   * ADD DOCS
-   */
+  get_action_name() { return null == this.#operation ? null : this.#operation.action; }
   get_identifier() { return null == this.#operation ? null : this.#operation.identifier; }
-
-  /**
-   * ADD DOCS
-   */
   get_parent_module() {
     return (
       null == this.#operation || null == this.#operation.parent ?
@@ -65,46 +46,19 @@ export class CN_module extends CN_base_object {
       CN_session.get_module(this.#operation.parent)
     );
   }
-
-  /**
-   * ADD DOCS
-   */
   get_model() { return this.#model; }
-
-  /**
-   * ADD DOCS
-   */
   has_property(name) { return this.#properties.hasOwnProperty(name); }
-
-  /**
-   * ADD DOCS
-   */
   get_property(name) { return this.#properties[name]; }
-
-  /**
-   * ADD DOCS
-   */
   has_child(module_name) { return this.#children.includes(module_name); }
-
-  /**
-   * ADD DOCS
-   */
   get_children() { return this.#children; }
-
-  /**
-   * ADD DOCS
-   */
   has_choose(module_name) { return this.#choosing.includes(module_name); }
-
-  /**
-   * ADD DOCS
-   */
   get_choosing() { return this.#choosing; }
-
-  /**
-   * ADD DOCS
-   */
   reset_operation() { if (null != this.#operation) this.#operation = null; }
+
+  create_model() { this.#model = new this.#classes.model(); }
+  create_add(model, properties) { return new this.#classes.add(model, properties); }
+  create_list(model, columns) { return new this.#classes.list(model, columns); }
+  create_view(model, properties) { return new this.#classes.view(model, properties); }
 
   /**
    * ADD DOCS
@@ -167,7 +121,7 @@ export class CN_module extends CN_base_object {
    */
   async load_classes() {
     // only load if there's an operation and the classes haven't already been loaded
-    if (null != this.#operation && !CN_common.is_object(this.#classes)) {
+    if (!CN_common.is_object(this.#classes)) {
       const classes = await import(`./model/${this.#name}.mjs`);
       const prefix = `CN_${this.#name}`;
       this.#classes = {
@@ -177,46 +131,5 @@ export class CN_module extends CN_base_object {
         view: classes[`${prefix}_view`] ? classes[`${prefix}_view`] : CN_base_view,
       };
     }
-  }
-
-  /**
-   * ADD DOCS
-   */
-  create_model() {
-    if (CN_common.is_object(this.#operation)) {
-      if (null == this.#operation.action) {
-        throw new Error(`Module ${this.#name} has no operation action."`);
-      } else if (
-        this.#operation.hasOwnProperty("identifier") &&
-        ["add", "list"].includes(this.#operation.action)
-      ) {
-        throw new Error(`Module ${this.#name} has identifier for ${this.#operation.action} action`);
-      } else if (!this.#operation.hasOwnProperty("identifier") && "view" == this.#operation.action) {
-        throw new Error(`Module ${this.#name} has no identifier for "${this.#operation.action}" action`);
-      }
-
-      this.#model = new this.#classes.model();
-    }
-  }
-
-  /**
-   * ADD DOCS
-   */
-  create_add(model, properties) {
-    return new this.#classes.add(model, properties);
-  }
-
-  /**
-   * ADD DOCS
-   */
-  create_list(model, columns) {
-    return new this.#classes.list(model, columns);
-  }
-
-  /**
-   * ADD DOCS
-   */
-  create_view(model, properties) {
-    return new this.#classes.view(model, properties);
   }
 }

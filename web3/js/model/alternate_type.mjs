@@ -50,7 +50,7 @@ export class CN_alternate_type_list extends CN_base_list {
     const leaf_module = CN_session.get_leaf_module();
     return (
       "alternate" == leaf_module.get_name() &&
-      "view" == leaf_module.get_action() &&
+      "view" == leaf_module.get_action_name() &&
       0 < record.role_count &&
       !record.access
     );

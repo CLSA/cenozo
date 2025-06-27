@@ -149,7 +149,7 @@ export class CN_base_action extends CN_base_object {
    */
   render() {
     const el = CN_element.create('<div name="model-action"></div>');
-    if (null == this.#parent_model.get_module().get_action()) return el;
+    if (null == this.#parent_model.get_module().get_action_name()) return el;
 
     el.append(CN_element.create_card());
 
@@ -163,9 +163,10 @@ export class CN_base_action extends CN_base_object {
 
   /**
    * Runs the dynamic parts of the action (loading data) and updates the element once ready
+   * @param boolean children: Whether to also run the action's childern (if any)
    */
-  async run() {
-    if (null == this.#parent_model.get_module().get_action()) return;
+  async run(children = false) {
+    if (null == this.#parent_model.get_module().get_action_name()) return;
 
     this.on_pre_loading();
     await this.on_load();

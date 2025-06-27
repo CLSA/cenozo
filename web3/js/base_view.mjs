@@ -296,14 +296,14 @@ export class CN_base_view extends CN_base_record {
           });
         };
 
-        const child_el = child_module.get_model().render("list");
+        const child_el = child_module.get_model().render();
         if (child_name == (new URL(window.location)).searchParams.get('tab')) {
           el.append(child_el);
         }
       });
     } else if (1 == child_list.length) {
       // render the only child directly
-      el.append(CN_session.get_module(child_list[0]).get_model().render("list"));
+      el.append(CN_session.get_module(child_list[0]).get_model().render());
     }
 
     return el;
@@ -311,17 +311,18 @@ export class CN_base_view extends CN_base_record {
 
   /**
    * Extends parent method
+   * @param boolean children: Whether to also run the action's childern (if any)
    */
   async run(children = false) {
     const module = this.get_parent_model().get_module();
-    if (null == module.get_action()) return;
+    if (null == module.get_action_name()) return;
 
-    await super.run();
+    await super.run(children);
 
     if (children) {
       // run all children and choosing models as well
       module.get_children().concat(module.get_choosing()).forEach(
-        async (name) => CN_session.get_module(name).get_model().run("list")
+        async (name) => CN_session.get_module(name).get_model().run()
       );
     }
   }

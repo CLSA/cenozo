@@ -129,7 +129,7 @@ export class CN_base_record extends CN_base_action {
           // if the column is a reference to the parent then use the parent's id
           prop.get_default = () => (
             parent_module && prop.name.match(`${parent_module.get_name()}_id`) ?
-            parent_module.get_model().get_view_action().get_property("id").state.get() :
+            parent_module.get_model().get_action().get_property("id").state.get() :
             (module_prop ? module_prop.default : null)
           );
         }

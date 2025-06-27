@@ -9,7 +9,7 @@ export class CN_base_model extends CN_base_object {
   #module;
   #wording;
   #element;
-  #actions = { add: null, list: null, view: null };
+  #action = null;
 
   /**
    * Constructor
@@ -26,13 +26,24 @@ export class CN_base_model extends CN_base_object {
     this.#unique_id = [this.get_name(), Math.round(Math.random()*10000000000)].join("-");
     this.#wording = params.wording;
 
-    // send the columns to the list action
-    if (params.columns) this.#actions.list = this.#module.create_list(this, params.columns);
+    const action_name = this.#module.get_action_name();
+    const identifier = this.#module.get_identifier();
 
-    // send the properties to the record actions (add and view)
-    if (params.properties) {
-      this.#actions.add = this.#module.create_add(this, params.properties);
-      this.#actions.view = this.#module.create_view(this, params.properties);
+    if ("add" == action_name) {
+      if (null != identifier) {
+        console.error(`The ADD action for the ${this.get_name()} module has an identifier (${identifier}).`);
+      }
+      this.#action = this.#module.create_add(this, params.properties);
+    } else if ("list" == action_name) {
+      if (null != identifier) {
+        console.error(`The LIST action for the ${this.get_name()} module has an identifier (${identifier}).`);
+      }
+      this.#action = this.#module.create_list(this, params.columns);
+    } else if ("view" == action_name) {
+      if (null == identifier) {
+        console.error(`The VIEW action for the ${this.get_name()} module has no identifier.`);
+      }
+      this.#action = this.#module.create_view(this, params.properties);
     }
   }
 
@@ -40,9 +51,7 @@ export class CN_base_model extends CN_base_object {
   get_module() { return this.#module; }
   get_element() { return this.#element; }
   get_unique_id() { return this.#unique_id; }
-  get_add_action() { return this.#actions.add; };
-  get_list_action() { return this.#actions.list; };
-  get_view_action() { return this.#actions.view; };
+  get_action() { return this.#action; }
   get_name() { return this.#module.get_name(); }
   get_singular() { return this.#wording.singular; }
   get_plural() { return this.#wording.plural; }
@@ -86,41 +95,19 @@ export class CN_base_model extends CN_base_object {
 
   /**
    * Creates the model's element including the header, body and footer sub-elements
-   * @param string action: Optionally render a specific action
    * @return Element
    */
-  render(action = null) {
+  render() {
     this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
-
-    // determine which action to use
-    if (null == action) action = this.#module.get_action();
-
-    // add the model_action
-    if ("add" == action) {
-      this.#element.append(this.#actions.add.render());
-    } else if ("list" == action) {
-      this.#element.append(this.#actions.list.render());
-    } else if ("view" == action) {
-      this.#element.append(this.#actions.view.render());
-    }
-
+    if (null != this.#action) this.#element.append(this.#action.render());
     return this.#element;
   }
 
   /**
    * Runs the dynamic parts of the model (loading data) and updates the element once ready
-   * @param string action: Optionally render a specific action
    */
-  async run(action = null) {
-    // determine which action to use
-    if (null == action) action = this.#module.get_action();
-
-    if ("add" == action) {
-      await this.#actions.add.run();
-    } else if ("list" == action) {
-      await this.#actions.list.run();
-    } else if ("view" == action) {
-      await this.#actions.view.run(true); // also render children
-    }
+  async run() {
+    // run the model's action and its children
+    if (null != this.#action) this.#action.run(true);
   }
 }
