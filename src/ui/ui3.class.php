@@ -262,9 +262,9 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'address' );
         $module->add_choose( 'alternate_type' );
         $module->add_child( 'phone' );
-        /*
         $module->add_child( 'alternate_consent' );
         $module->add_child( 'form' );
+        /*
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
         */
