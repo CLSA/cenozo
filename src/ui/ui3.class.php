@@ -78,7 +78,7 @@ class ui3 extends \cenozo\base_object
       $this->script_list[] = [
         'id' => NULL,
         'path' => CENOZO3_URL,
-        'file' => 'js/model/login.mjs',
+        'file' => 'js/login.js',
         'build' => APP_BUILD,
       ];
 
@@ -705,7 +705,7 @@ class ui3 extends \cenozo\base_object
     $this->script_list[] = [
       'id' => 'app',
       'path' => CENOZO3_URL,
-      'file' => 'js/app.mjs',
+      'file' => 'js/app.js',
       'build' => CENOZO_BUILD,
     ];
   }
