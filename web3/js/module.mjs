@@ -122,14 +122,27 @@ export class CN_module extends CN_base_object {
   async load_classes() {
     // only load if there's an operation and the classes haven't already been loaded
     if (!CN_common.is_object(this.#classes)) {
-      const classes = await import(`./model/${this.#name}.mjs`);
       const prefix = `CN_${this.#name}`;
       this.#classes = {
-        model: classes[`${prefix}_model`],
-        add: classes[`${prefix}_add`] ? classes[`${prefix}_add`] : CN_base_add,
-        list: classes[`${prefix}_list`] ? classes[`${prefix}_list`] : CN_base_list,
-        view: classes[`${prefix}_view`] ? classes[`${prefix}_view`] : CN_base_view,
+        model: null,
+        add: CN_base_add,
+        list: CN_base_list,
+        view: CN_base_view,
       };
+
+      // load the framework classes and use any that are found
+      let classes = await import(`./model/${this.#name}.mjs`);
+      if (classes[`${prefix}_model`]) this.#classes.model = classes[`${prefix}_model`];
+      if (classes[`${prefix}_add`]) this.#classes.add = classes[`${prefix}_add`];
+      if (classes[`${prefix}_list`]) this.#classes.list = classes[`${prefix}_list`];
+      if (classes[`${prefix}_view`]) this.#classes.view = classes[`${prefix}_view`];
+
+      // now load the application specific classes and use any that are found
+      classes = await import(`${ROOT_URL}/js/model/${this.#name}.mjs`);
+      if (classes[`${prefix}_model`]) this.#classes.model = classes[`${prefix}_model`];
+      if (classes[`${prefix}_add`]) this.#classes.add = classes[`${prefix}_add`];
+      if (classes[`${prefix}_list`]) this.#classes.list = classes[`${prefix}_list`];
+      if (classes[`${prefix}_view`]) this.#classes.view = classes[`${prefix}_view`];
     }
   }
 }
