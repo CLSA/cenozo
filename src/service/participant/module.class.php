@@ -70,6 +70,8 @@ class module extends \cenozo\service\site_restricted_participant_module
     $db_application = lib::create( 'business\session' )->get_application();
     $db_identifier = $db_application->get_identifier();
 
+    $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
+
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'participant.id', '=', 'participant_identifier.participant_id', false );
     $join_mod->where( 'participant_identifier.identifier_id', '=', is_null( $db_identifier ) ? NULL : $db_identifier->id );

@@ -82,7 +82,8 @@ export default {
           <option value="0">No</option>
         </select>
       `);
-    } else if ("date" == type) {
+    } else if (["date", "datetime", "dob", "dod"].includes(type)) {
+      // TODO: implement datetime, dob and dod
       if (undefined === el.params.placeholder) el.params.placeholder = "YYYY-MM-DD";
 
       control_el = this.create(`<input class="form-control"></input>`);
@@ -326,7 +327,27 @@ export default {
       };
     }
 
-    el.append(control_el);
+    if (CN_common.is_object(el.params.action)) {
+      // add an action button in-line with the control element
+      const action_el = this.create(`
+        <div class="row">
+          <div name="control" class="col-9"></div>
+          <div name="action" class="col-3"></div>
+        </div>
+      `);
+      action_el.querySelector("[name=control]").append(control_el);
+      const action_btn_el = this.create(`
+        <button
+          type="button"
+          class="w-100 btn ${el.params.action.class ? el.params.action.class : 'btn-outline-primary'}"
+        >${el.params.action.title}</button>
+      `);
+      action_btn_el.onclick = el.params.action.onclick;
+      action_el.querySelector("[name=action]").append(action_btn_el);
+      el.append(action_el);
+    } else {
+      el.append(control_el);
+    }
 
     if (undefined !== el.params.id) control_el.setAttribute("id", el.params.id);
     if (undefined !== el.params.name) control_el.setAttribute("name", el.params.name);
@@ -402,11 +423,14 @@ export default {
             path: null,
           });
         } else if ("view" == action_name) {
-          const name = await model.get_action().get_text("name");
-          crumb_list.push({
-            name: name,
+          const crumb = {
+            name: "...",
             path: model.get_view_url(),
-          });
+          };
+          crumb_list.push(crumb);
+
+          // get the name after we've added the crumb to the list, otherwise it may be out of order
+          crumb.name = await model.get_action().get_text("name");
         } else if ("list" == action_name) {
           crumb_list.push({
             name: CN_common.uc_words(model.get_plural()),
@@ -790,14 +814,15 @@ export default {
    * @return bootstrap.Modal
    */
   modal_message: function(config) {
-    if (!config.type) config.type = "light";
+    if (!config.type) config.type = "primary";
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog ${config.size ? 'modal-'+config.size : ''}">
           <div class="modal-content">
             <div class="modal-header text-bg-${config.type}">
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
               <button
+                name="close"
                 type="button"
                 class="btn-close btn-close-white"
                 data-bs-dismiss="modal"
@@ -815,7 +840,15 @@ export default {
       modal_el.setAttribute("data-bs-keyboard", "false");
     }
 
-    return new bootstrap.Modal(modal_el);
+    const bs = new bootstrap.Modal(modal_el);
+    bs.block = () => {
+      return new Promise((resolve, reject) => {
+        bs.show();
+        modal_el.querySelector("[name=close]").onclick = () => resolve(true);
+      });
+    };
+
+    return bs;
   },
 
   /**

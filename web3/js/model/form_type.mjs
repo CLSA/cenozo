@@ -11,7 +11,7 @@ export class CN_form_type_model extends CN_base_model {
       columns: {
         title: { title: "Title" },
         form_count: { title: "Forms", type: "integer", table_prefix: false },
-        description: { title: "Description", type: "text", align: "left" },
+        description: { title: "Description", type: "text" },
       },
       properties: {
         name: { title: "Name" },

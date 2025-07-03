@@ -264,10 +264,8 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'phone' );
         $module->add_child( 'alternate_consent' );
         $module->add_child( 'form' );
-        /*
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
-        */
       }
       else if( 'alternate_consent' == $module->get_subject() )
       {
@@ -358,20 +356,23 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'participant' == $module->get_subject() )
       {
+        /*
         if( $use_interview_module ) $module->add_child( 'interview' );
         if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
           $module->add_child( 'relation' );
+        */
         $module->add_child( 'address' );
+        $module->add_child( 'alternate' );
+        $module->add_child( 'hold' );
         $module->add_child( 'phone' );
+        /*
         $module->add_choose( 'study' );
         $module->add_child( 'participant_identifier' );
         $module->add_child( 'mail' );
-        $module->add_child( 'hold' );
         $module->add_child( 'trace' );
         $module->add_child( 'proxy' );
         $module->add_child( 'consent' );
         $module->add_child( 'hin' );
-        $module->add_child( 'alternate' );
         if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
         $module->add_child( 'event' );
         $module->add_child( 'form' );
@@ -379,9 +380,12 @@ class ui3 extends \cenozo\base_object
         $module->add_action( 'history',
           '/{identifier}?{address}&{alternate}'.
           ( $use_interview_module ? '&{assignment}' : '' ).
-          '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}' );
+          '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}'
+        );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'scripts', '/{identifier}' );
+        */
+
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );
       }

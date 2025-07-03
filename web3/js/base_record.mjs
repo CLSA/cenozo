@@ -84,7 +84,7 @@ export class CN_base_record extends CN_base_action {
         if (!prop.group) prop.group = null;
 
         // make sure all non meta columns properties exist in the module
-        if (!prop.meta_column) {
+        if (!prop.hasOwnProperty("meta")) {
           if (!module.has_property(prop.name)) {
             throw new Error(
               `Model property "${prop.name}" does not exist in parent "${module.get_name()}" module.`
@@ -283,7 +283,8 @@ export class CN_base_record extends CN_base_action {
   create_body_element() {
     const form_el = CN_element.create("<form></form>");
     const fieldset_el = CN_element.create("<fieldset></fieldset>");
-    fieldset_el.disabled = !this.get_parent_model().allow_edit();
+
+    fieldset_el.disabled = "view" == this.get_type() && !this.get_parent_model().allow_edit();
     form_el.append(fieldset_el);
 
     // create the main group above all others

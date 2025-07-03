@@ -42,8 +42,8 @@ export class CN_base_list extends CN_base_action {
       // by default always prefix the table name
       if (undefined === column.table_prefix) column.table_prefix = true;
 
-      // by default center align all columns
-      if (undefined === column.align) column.align = "center";
+      // by default center align all columns except for text columns
+      if (undefined === column.align) column.align = "text" == column.type ? "left" : "center";
 
       // define the is_hidden function if it hasn't been defined
       if (!CN_common.is_function(column.is_hidden)) {

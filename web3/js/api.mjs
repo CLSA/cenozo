@@ -40,24 +40,24 @@ export default {
       error.body = body;
 
       if (306 == response.status && body) {
-        error.name = "Please Note";
+        error.title = "Please Note";
         error.message = JSON.parse(body);
       } else {
         let message = null;
         if (403 == response.status) {
-          error.name = "Permission Denied";
+          error.title = "Permission Denied";
           message = "you do not have access to the requested resource.";
         } else if (404 == response.status) {
-          error.name = "Not Found";
+          error.title = "Not Found";
           message = "because the needed resource could not be found.";
         } else if (406 == response.status) {
-          error.name = "Format Unavailable";
+          error.title = "Format Unavailable";
           message = "because the requested format is not available.";
         } else if (409 == response.status) {
-          error.name = "Conflict";
+          error.title = "Conflict";
           message = "due to a pre-existing conflict.";
         } else {
-          error.name = "Server Error";
+          error.title = "Server Error";
           message = "due to a server-based error.";
           if (body) error.error_code = JSON.parse(body);
         }
@@ -65,7 +65,7 @@ export default {
         if (message) {
           error.message = error.message ? `${error.message} ${message}` : CN_common.uc_first(message);
         }
-        if (response.status) error.name += ` (${response.status})`;
+        if (response.status) error.title += ` (${response.status})`;
       }
 
       throw error;

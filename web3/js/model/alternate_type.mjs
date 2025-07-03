@@ -17,7 +17,7 @@ export class CN_alternate_type_model extends CN_base_model {
         role_list: { title: "Roles", table_prefix: false },
         has_alternate_consent_type: { title: "Has Consent", type: "boolean" },
         alternate_count: { title: "Alternates", table_prefix: false },
-        description: { title: "Description", type: "text", align: "left" },
+        description: { title: "Description", type: "text" },
 
         // used in the CN_alternate_type_list.is_choose_disabled method below
         access: { table_prefix: false, is_hidden: (model) => true },

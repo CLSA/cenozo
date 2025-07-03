@@ -1,4 +1,4 @@
-import CN_timezones from "./timezones.mjs"
+import CN_timezones from "../timezones.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
 

@@ -1,0 +1,97 @@
+import CN_element from "../element.mjs"
+import CN_session from "../session.mjs"
+
+import { CN_base_add } from "../base_add.mjs"
+import { CN_base_model } from "../base_model.mjs"
+
+export class CN_hold_model extends CN_base_model {
+  constructor() {
+    super({
+      wording: {
+        singular: "hold",
+        plural: "holds",
+        posessive: "hold's",
+      },
+      columns: {
+        hold_type: { column: "hold_type.type", title: "Type" },
+        hold_name: { column: "hold_type.name", title: "Name" },
+        datetime: { title: "Date & Time", type: "datetime" },
+      },
+      properties: {
+        hold_type_id: {
+          title: "Hold Type",
+          type: "enum",
+          enum: {
+            path: "hold_type",
+            select: { column: {
+              column: "CONCAT(hold_type.type, ': ', hold_type.name)",
+              alias: "name",
+              table_prefix: false,
+            } },
+          },
+          help: "If empty then the previous hold is cancelled.",
+        },
+        datetime: {
+          title: "Date & Time",
+          type: "datetime",
+          max: "now",
+          is_hidden: (model) => "add" == model.get_type(),
+        },
+        user: {
+          title: "User",
+          meta: {
+            column: "CONCAT(user.first_name, ' ', user.last_name, ' (', user.name, ')')",
+            table_prefix: false,
+          },
+          is_hidden: (model) => "add" == model.get_type(),
+        },
+        site: {
+          title: "Site",
+          meta: { table: "site", column: "name" },
+          is_hidden: (model) => "add" == model.get_type(),
+        },
+        role: {
+          title: "Role",
+          meta: { table: "role", column: "name" },
+          is_hidden: (model) => "add" == model.get_type(),
+        },
+        application: {
+          title: "Application",
+          meta: { table: "application", column: "title" },
+          is_hidden: (model) => "add" == model.get_type(),
+        },
+        note: { title: "Note", type: "text" },
+      },
+    });
+  }
+}
+
+export class CN_hold_add extends CN_base_add {
+  /**
+   * Extends the parent method
+   */
+  async on_submit() {
+    // show extra instructions when creating a deceased hold
+    const deceased_hold_type_id = CN_session.data.final_hold_type_list.find(
+      hold_type => "Deceased" == hold_type.name
+    ).id;
+    if (deceased_hold_type_id == this.get_property("hold_type_id").state.get()) {
+      await CN_element.modal_message({
+        title: "Date of Death",
+        size: "lg",
+        message: `
+          <div class="pb-2">
+            You have choosen to put the participant in a "Deceased" hold and you will now be returned to the
+            participant's file.
+          </div>
+          <div>
+            If you have any information about the participant's date of death please enter it in the participant's
+            defining details including whether only the year, year and month, or full date is known.
+          </div>
+        `,
+      }).block();
+    }
+
+    await super.on_submit();
+  }
+}

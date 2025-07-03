@@ -24,7 +24,8 @@ export class CN_phone_model extends CN_base_model {
           enum: {
             path: (model) => {
               // get a list of the owner's addresses
-              return `${model.get_parent_model().get_view_url(null, "api")}/address`;
+              const base_url = model.get_parent_model().get_parent_module().get_model().get_view_url(null, "api");
+              return `${base_url}/address`;
             },
             select: { column: [
               "id", {
@@ -59,7 +60,10 @@ export class CN_phone_view extends CN_base_view {
    */
   async get_text(type) {
     if ("name" == type) {
-      return `${this.get_property("rank").state.get()}) ${this.get_property("type").state.get()}`;
+      return [
+        this.get_property("rank").state.get(),
+        this.get_property("type").state.get(),
+      ].join(") ");
     }
     return await super.get_text(type);
   }

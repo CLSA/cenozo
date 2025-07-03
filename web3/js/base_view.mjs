@@ -54,8 +54,24 @@ export class CN_base_view extends CN_base_record {
   async on_load() {
     await super.on_load();
 
+    // add any meta columns to the record selection
+    let columns = [];
+
+      
+    this.for_each_property(prop => {
+      if (CN_common.is_object(prop.meta)) {
+        columns.push({ ...prop.meta, alias: prop.name });
+      }
+    });
+
+    let params = null;
+    if (0 < columns.length) {
+      columns.unshift("*");
+      params = { select: { column: columns } };
+    }
+
     // load the record
-    const response = await CN_api.get(this.get_parent_model().get_view_url(null, "api"));
+    const response = await CN_api.get(this.get_parent_model().get_view_url(null, "api"), params);
 
     const record = await response.json();
     this.for_each_property(prop => {
@@ -234,13 +250,15 @@ export class CN_base_view extends CN_base_record {
     (async () => { parent_btn_el.innerHTML = await this.get_text("view_parent"); })();
     parent_btn_el.onclick = async () => await this.on_navigate_to_parent();
 
-    const delete_btn_el = CN_element.create(`
-      <button name="delete" type="button" class="btn btn-danger">
-        Delete ${CN_common.uc_words(this.get_parent_model().get_singular())}
-      </button>
-    `);
-    btn_group_el.append(delete_btn_el);
-    delete_btn_el.onclick = async () => await this.on_delete();
+    if (this.get_parent_model().allow_delete()) {
+      const delete_btn_el = CN_element.create(`
+        <button name="delete" type="button" class="btn btn-danger">
+          Delete ${CN_common.uc_words(this.get_parent_model().get_singular())}
+        </button>
+      `);
+      btn_group_el.append(delete_btn_el);
+      delete_btn_el.onclick = async () => await this.on_delete();
+    }
 
     return btn_group_el;
   }

@@ -50,7 +50,6 @@ export class CN_address_model extends CN_base_model {
           enum: {
             path: "region",
             select: { column: {
-              table: "region",
               column: "CONCAT(region.name, ', ', country.name)",
               alias: "name",
               table_prefix: false,
@@ -154,7 +153,10 @@ export class CN_address_view extends CN_base_view {
    */
   async get_text(type) {
     if ("name" == type) {
-      return `${this.get_property("rank").state.get()}) ${this.get_property("city").state.get()}`;
+      return [
+        this.get_property("rank").state.get(),
+        this.get_property("city").state.get(),
+      ].join(") ");
     }
     return await super.get_text(type);
   }

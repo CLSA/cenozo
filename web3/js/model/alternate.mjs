@@ -18,7 +18,7 @@ export class CN_alternate_model extends CN_base_model {
         last_name: { title: "Last Name" },
         association: { title: "Association" },
         alternate_type_list: { title: "Types", table_prefix: false },
-        global_note: { title: "Special Note", type: "text", align: "left", limit: 100 },
+        global_note: { title: "Special Note", type: "text", limit: 100 },
       },
       properties: {
         participant_id: {
@@ -76,7 +76,7 @@ export class CN_alternate_model extends CN_base_model {
         email: { title: "Email", type: "email" },
         email2: { title: "Alternate Email", type: "email" },
         alternate_type_id: {
-          meta_column: true,
+          meta: true,
           title: "Specific Role",
           type: "enum",
           enum: { path: "alternate_type" },
@@ -101,7 +101,10 @@ export class CN_alternate_view extends CN_base_view {
    */
   async get_text(type) {
     if ("name" == type) {
-      return `${this.get_property("last_name").state.get()}) ${this.get_property("first_name").state.get()}`;
+      return [
+        this.get_property("last_name").state.get(),
+        this.get_property("first_name").state.get(),
+      ].join(", ");
     }
     return await super.get_text(type);
   }

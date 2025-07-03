@@ -132,17 +132,35 @@ export class CN_module extends CN_base_object {
 
       // load the framework classes and use any that are found
       let classes = await import(`./model/${this.#name}.mjs`);
-      if (classes[`${prefix}_model`]) this.#classes.model = classes[`${prefix}_model`];
-      if (classes[`${prefix}_add`]) this.#classes.add = classes[`${prefix}_add`];
-      if (classes[`${prefix}_list`]) this.#classes.list = classes[`${prefix}_list`];
-      if (classes[`${prefix}_view`]) this.#classes.view = classes[`${prefix}_view`];
+      for (const item in classes) {
+        if (`${prefix}_model` == item) {
+          this.#classes.model = classes[item];
+        } else if (`${prefix}_add` == item) {
+          this.#classes.add = classes[item];
+        } else if (`${prefix}_list` == item) {
+          this.#classes.list = classes[item];
+        } else if (`${prefix}_view` == item) {
+          this.#classes.view = classes[item];
+        } else {
+          console.warn(`Found unexpected export "${item}" in framework ${this.#name} model.`);
+        }
+      }
 
       // now load the application specific classes and use any that are found
       classes = await import(`${ROOT_URL}/js/model/${this.#name}.mjs`);
-      if (classes[`${prefix}_model`]) this.#classes.model = classes[`${prefix}_model`];
-      if (classes[`${prefix}_add`]) this.#classes.add = classes[`${prefix}_add`];
-      if (classes[`${prefix}_list`]) this.#classes.list = classes[`${prefix}_list`];
-      if (classes[`${prefix}_view`]) this.#classes.view = classes[`${prefix}_view`];
+      for (const item in classes) {
+        if (`${prefix}_model` == item) {
+          this.#classes.model = classes[item];
+        } else if (`${prefix}_add` == item) {
+          this.#classes.add = classes[item];
+        } else if (`${prefix}_list` == item) {
+          this.#classes.list = classes[item];
+        } else if (`${prefix}_view` == item) {
+          this.#classes.view = classes[item];
+        } else {
+          console.warn(`Found unexpected export "${item}" in application ${this.#name} model.`);
+        }
+      }
     }
   }
 }

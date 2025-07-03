@@ -93,7 +93,7 @@ export class CN_base_add extends CN_base_record {
       await CN_session.navigate_to(
         parent_model.allow_view() ?
         parent_model.get_view_url(id) :
-        parent_model.get_parent_module().model.get_view_url()
+        parent_model.get_parent_module().get_model().get_view_url()
       );
     } catch (error) {
       if ("Conflict (409)" == error.name) {
