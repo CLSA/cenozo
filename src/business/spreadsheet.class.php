@@ -170,7 +170,7 @@ class spreadsheet extends \cenozo\base_object
           if( !in_array( $sub_key, array( 'update_timestamp', 'create_timestamp' ) ) )
           {
             // convert timezones
-            if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
+            if( !is_null( $sub_value ) && preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $sub_value ) )
             {
               $datetime_obj = $util_class_name::get_datetime_object( $sub_value );
               if( !is_null( $db_user ) ) $datetime_obj->setTimezone( $db_user->get_timezone_object() );
@@ -193,7 +193,7 @@ class spreadsheet extends \cenozo\base_object
         if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
         {
           // convert timezones
-          if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+          if( !is_null( $sub_value ) && preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
           {
             $datetime_obj = $util_class_name::get_datetime_object( $value );
             if( !is_null( $db_user ) ) $datetime_obj->setTimezone( $db_user->get_timezone_object() );
@@ -369,7 +369,7 @@ class spreadsheet extends \cenozo\base_object
         foreach( $table['footer'] as $footer )
         {
           // the footer may be a function, convert if necessary
-          if( preg_match( '/[0-9a-zA-Z_]+\(\)/', $footer ) )
+          if( !is_null( $footer ) && preg_match( '/[0-9a-zA-Z_]+\(\)/', $footer ) )
           {
             if( $first_content_row == $last_content_row + 1 || !$contents_are_numeric[ $col ] )
             {
