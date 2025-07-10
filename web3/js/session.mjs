@@ -72,10 +72,16 @@ export default {
     delete this.data.modules;
     for(const module_name in modules) {
       const params = modules[module_name];
-      // a module is "root" if it's found in the lists menu
+      // a module is "root" if it's found in the list or utility menus
       params.root = false;
       for (const m in this.data.menu.lists) {
         if (this.data.menu.lists[m] === module_name) {
+          params.root = true;
+          break;
+        }
+      }
+      if (!params.root) for (const u in this.data.menu.utilities) {
+        if (this.data.menu.utilities[u].subject === module_name) {
           params.root = true;
           break;
         }
@@ -422,9 +428,15 @@ export default {
     }
 
     for (const title in this.data.menu.utilities) {
-      utilities_el.append(CN_element.create(`
+      const utility = this.data.menu.utilities[title];
+      const btn_el = CN_element.create(`
         <button type="button" class="btn btn-outline-primary">${title}</button>
-      `));
+      `);
+      btn_el.onclick = async () => {
+        main_menu_offcanvas_bs.hide();
+        await this.navigate_to(`${utility.subject}/${utility.action}`);
+      };
+      utilities_el.append(btn_el);
     }
 
     for (const title in this.data.menu.reports) {
