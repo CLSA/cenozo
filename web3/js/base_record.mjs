@@ -186,7 +186,11 @@ export class CN_base_record extends CN_base_action {
 
               const response = await CN_api.get(path, params);
               prop.enum.values = (await response.json()).reduce((list, record) => {
-                list.push({ key: record.id, value: record.name });
+                list.push({
+                  key: record.id,
+                  value: record.name,
+                  disabled: [true, 1, "1"].includes(record.disabled),
+                });
                 return list;
               }, []);
             };

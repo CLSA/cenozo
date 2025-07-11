@@ -160,6 +160,12 @@ export class CN_base_list extends CN_base_action {
           column: name,
           alias: col_name
         });
+      } else if (undefined !== this.#columns[col_name].column) {
+        params.select.column.push({
+          column: this.#columns[col_name].column,
+          alias: col_name,
+          table_prefix: false,
+        });
       } else {
         // no table prefix means just add the column name
         params.select.column.push(col_name);

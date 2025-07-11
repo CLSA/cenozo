@@ -131,9 +131,9 @@ export class CN_base_add extends CN_base_record {
           `<option value="">(Select a ${prop.title}...)</option>`
         );
         prop.enum.values.forEach(option => {
-          control_el.append(CN_element.create(`
-            <option value="${option.key}">${option.value}</option>
-          `));
+          const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+          if (option.disabled) option_el.setAttribute("disabled", true);
+          control_el.append(option_el);
         });
       }
 

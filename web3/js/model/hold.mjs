@@ -3,6 +3,7 @@ import CN_session from "../session.mjs"
 
 import { CN_base_add } from "../base_add.mjs"
 import { CN_base_model } from "../base_model.mjs"
+import { CN_base_view } from "../base_view.mjs"
 
 export class CN_hold_model extends CN_base_model {
   constructor() {
@@ -13,8 +14,11 @@ export class CN_hold_model extends CN_base_model {
         posessive: "hold's",
       },
       columns: {
-        hold_type: { column: "hold_type.type", title: "Type" },
-        hold_name: { column: "hold_type.name", title: "Name" },
+        hold_type: {
+          column: 'CONCAT(hold_type.type, ": ", hold_type.name)',
+          title: "Type",
+          table_prefix: false,
+        },
         datetime: { title: "Date & Time", type: "datetime" },
       },
       properties: {
@@ -23,11 +27,20 @@ export class CN_hold_model extends CN_base_model {
           type: "enum",
           enum: {
             path: "hold_type",
-            select: { column: {
-              column: "CONCAT(hold_type.type, ': ', hold_type.name)",
-              alias: "name",
-              table_prefix: false,
-            } },
+            select: { column: [
+              "access", // needed for the current_role_has_hold_type statement below
+              {
+                column: "CONCAT(hold_type.type, ': ', hold_type.name)",
+                alias: "name",
+                table_prefix: false,
+              },
+              {
+                // here, "current_role_has_hold_type.hold_type_id IS NULL" determines if the role has access
+                column: "hold_type.system OR current_role_has_hold_type.hold_type_id IS NULL",
+                alias: "disabled",
+                table_prefix: false,
+              }
+            ]},
           },
           help: "If empty then the previous hold is cancelled.",
         },
@@ -93,5 +106,18 @@ export class CN_hold_add extends CN_base_add {
     }
 
     await super.on_submit();
+  }
+}
+
+export class CN_hold_view extends CN_base_view {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("name" == type) {
+      const prop = this.get_property("hold_type_id");
+      return prop.enum.values.filter(e => e.key == prop.state.get())[0].value;
+    }
+    return await super.get_text(type);
   }
 }

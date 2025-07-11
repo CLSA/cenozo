@@ -19,7 +19,7 @@ export class CN_trace_model extends CN_base_model {
           title: "Cohort",
           is_hidden: (model) => "trace" != CN_session.get_leaf_module().get_name(),
         },
-        trace_type: { column: "trace_type.name", title: "Name" },
+        trace_type: { column: "trace_type.name", title: "Type" },
         datetime: { title: "Date & Time", type: "datetime" },
         user: { column: "user.name", title: "User" },
         note: { title: "Note", type: "text" },

@@ -174,9 +174,9 @@ export class CN_base_view extends CN_base_record {
       if ("boolean" != prop.type) {
         control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
         prop.enum.values.forEach(option => {
-          control_el.append(CN_element.create(`
-            <option value="${option.key}">${option.value}</option>
-          `));
+          const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+          if (option.disabled) option_el.setAttribute("disabled", true);
+          control_el.append(option_el);
         });
       }
 
