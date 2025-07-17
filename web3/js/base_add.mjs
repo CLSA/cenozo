@@ -66,21 +66,32 @@ export class CN_base_add extends CN_base_record {
   }
 
   /**
+   * Validates all properties before submitting the new record to the server
+   */
+  async validate() {
+    let valid = true;
+    this.for_each_property(prop => {
+      // validate all visible properties
+      if (!prop.is_hidden(this) && !prop.element.validate()) valid = false;
+    });
+
+    return valid;
+  }
+
+  /**
    * Validates all properties and creates a new record on the server side
    */
   async on_submit() {
-    // validate all property values
-    let valid = true;
+    const valid = await this.validate();
+    if (!valid) return;
+
     let record = {};
     this.for_each_property(prop => {
-      // set record value and validate all visible properties
+      // set record value
       if (!prop.is_hidden(this)) {
         record[prop.name] = this.get_formatted_property(prop.name);
-        if (!prop.element.validate()) valid = false;
       }
     });
-
-    if (!valid) return;
 
     try {
       const parent_model = this.get_parent_model();
