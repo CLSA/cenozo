@@ -46,7 +46,7 @@ export class CN_participant_model extends CN_base_model {
           properties: {
             honorific: {
               title: "Honorific",
-              help: 
+              help:
                 "English examples: Mr. Mrs. Miss Ms. Dr. Prof. Br. Sr. Fr. Rev. Pr.<br/>" +
                 "Exemples français: M. Mme Dr Dre Prof. F. Sr P. Révérend Pasteur Pasteure Me",
             },
@@ -130,7 +130,7 @@ export class CN_participant_model extends CN_base_model {
                 TODO: is constant should be
                   angular.isUndefined(model.viewModel.record.date_of_death) ||
                   null == model.viewModel.record.date_of_death
-              */              
+              */
               help: "Defines how accurate the date of death is.",
             },
             date_of_death_ministry: {
