@@ -48,16 +48,14 @@ export class CN_base_view extends CN_base_record {
     return await super.get_text(type);
   }
 
-  /**
-   * Extends parent method
-   */
-  async on_load() {
-    await super.on_load();
+  get_on_load_path() {
+    return this.get_parent_model().get_view_url(null, "api");
+  }
 
+  get_on_load_parameters() {
     // add any meta columns to the record selection
     let columns = [];
 
-      
     this.for_each_property(prop => {
       if (CN_common.is_object(prop.meta)) {
         columns.push({ ...prop.meta, alias: prop.name });
@@ -69,10 +67,17 @@ export class CN_base_view extends CN_base_record {
       columns.unshift("*");
       params = { select: { column: columns } };
     }
+    return params;
+  }
+
+  /**
+   * Extends parent method
+   */
+  async on_load() {
+    await super.on_load();
 
     // load the record
-    const response = await CN_api.get(this.get_parent_model().get_view_url(null, "api"), params);
-
+    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
     const record = await response.json();
     this.for_each_property(prop => {
       // check for the formatted value for this property
@@ -150,9 +155,7 @@ export class CN_base_view extends CN_base_record {
     const modal = CN_element.modal_confirm({
       static: true,
       title: "Please Confirm",
-      message: `
-        Are you sure you wish to delete this ${this.get_parent_model().get_singular()}?
-      `,
+      message: `Are you sure you wish to delete this ${this.get_parent_model().get_singular()}?`,
     });
 
     if (await modal.test()) {

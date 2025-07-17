@@ -77,10 +77,25 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
+   * Is called by the on_load() method to get the API query's path
+   * @return string
+   */
+  get_on_load_path() {
+    return null;
+  }
+
+  /**
+   * Is called by the on_load() method to get the API query's parameters
+   * @return object
+   */
+  get_on_load_parameters() {
+    return null;
+  }
+
+  /**
    * Is called whenever the action is run and is responsible for loading the action's dynamic data
    */
-  async on_load() {
-  }
+  async on_load() {}
 
   /**
    * When running the action this method is always called after on_load()

@@ -95,9 +95,7 @@ export class CN_base_list extends CN_base_action {
     const modal = CN_element.modal_confirm({
       static: true,
       title: "Please Confirm",
-      message: `
-        Are you sure you wish to delete the ${this.get_parent_model().get_singular()} record?
-      `,
+      message: `Are you sure you wish to delete the ${this.get_parent_model().get_singular()} record?`,
     });
 
     if (await modal.test()) {
@@ -134,11 +132,18 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * Extends parent method
+   * Override the parent method
    */
-  async on_load() {
+  get_on_load_path() {
+    return this.get_parent_model().get_base_path("api");
+  }
+
+  /**
+   * Extend the parent method
+   */
+  get_on_load_parameters() {
     // set the query's limit and offset based on the current page
-    const params = {
+    let params = {
       modifier: {
         limit: CN_session.data.application.list_row_size,
         offset: (this.#current_page-1) * 20,
@@ -172,7 +177,14 @@ export class CN_base_list extends CN_base_action {
       }
     }
 
-    const response = await CN_api.get(this.get_parent_model().get_base_path("api"), params);
+    return params;
+  }
+
+  /**
+   * Extends parent method
+   */
+  async on_load() {
+    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
     const limit = response.headers.get('X-Limit');
     const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
@@ -326,7 +338,8 @@ export class CN_base_list extends CN_base_action {
           </td>
         `;
 
-        tr_el.querySelector("[name=delete]").onclick = () => {
+        tr_el.querySelector("[name=delete]").onclick = (e) => {
+          e.stopPropagation();
           this.on_delete(record);
         };
       }
@@ -448,7 +461,7 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    if ("add" != this.#list_mode || this.get_parent_model().get_module().action_allowed("add")) {
+    if ("add" != this.#list_mode || this.get_parent_model().allow_add()) {
       const btn_el = CN_element.create(
         `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
       );
