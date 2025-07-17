@@ -24,7 +24,7 @@ class database extends base_exception
    * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $message, $sql = NULL, $context, $previous = NULL )
+  public function __construct( $message, $sql, $context, $previous = NULL )
   {
     $this->sql = $sql;
     $message .= is_null( $this->sql ) ? '' : ' for query'."\n".trim( $sql );
