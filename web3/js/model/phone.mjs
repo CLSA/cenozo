@@ -1,9 +1,6 @@
-import CN_session from "../session.mjs"
+import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
-
-export class CN_phone_model extends CN_base_model {
+export class CN_phone_model extends CN_traceable_model {
   constructor() {
     super({
       wording: {
@@ -54,7 +51,9 @@ export class CN_phone_model extends CN_base_model {
   }
 }
 
-export class CN_phone_view extends CN_base_view {
+export class CN_phone_add extends CN_traceable_add {}
+export class CN_phone_list extends CN_traceable_list {}
+export class CN_phone_view extends CN_traceable_view {
   /**
    * Extends the parent method
    */

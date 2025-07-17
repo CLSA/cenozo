@@ -489,7 +489,7 @@ export default {
               <form></form>
             </div>
             <div class="modal-footer text-bg-secondary">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
               <button name="save" type="button" class="btn btn-primary">Save</button>
             </div>
           </div>
@@ -506,6 +506,9 @@ export default {
       modal_bs.dispose();
       modal_el.remove();
     });
+
+    // used below
+    const save_btn_el = modal_el.querySelector("[name=save]");
 
     // add a timezone typeahead property
     const timezone_el = this.create('<div class="row mb-3"></div>');
@@ -529,6 +532,13 @@ export default {
           timezone_control_el.value = timezone_control_el.last_selected_value;
         },
       },
+      onchange: (control_el, valid, model) => {
+        if (valid) {
+          save_btn_el.removeAttribute("disabled");
+        } else {
+          save_btn_el.setAttribute("disabled", "disabled");
+        }
+      },
     }));
     const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
     timezone_control_el.value = CN_session.data.user.timezone;
@@ -546,7 +556,7 @@ export default {
     form_el.append(am_pm_el);
     document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
 
-    modal_el.querySelector("[name=save]").onclick = async () => {
+    save_btn_el.onclick = async () => {
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
       if (
@@ -590,7 +600,7 @@ export default {
               <form></form>
             </div>
             <div class="modal-footer text-bg-secondary">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
               <button name="save" type="button" class="btn btn-primary">Save</button>
             </div>
           </div>
@@ -608,9 +618,19 @@ export default {
       modal_el.remove();
     });
 
+    // used below
+    const save_btn_el = modal_el.querySelector("[name=save]");
+    const onchange_fn = (control_el, valid, model) => {
+      if (valid) {
+        save_btn_el.removeAttribute("disabled");
+      } else {
+        save_btn_el.setAttribute("disabled", "disabled");
+      }
+    };
+
     // create elements
     let element_list = [
-      { id: "first_name", title: "First Name", type: "string" },
+      { id: "first_name", title: "First Name", type: "string", },
       { id: "last_name", title: "Last Name", type: "string" },
       { id: "email", title: "Email", type: "email" },
     ];
@@ -619,12 +639,12 @@ export default {
       let id = `cn_account_modal_${element.id}`;
       const el = this.create('<div class="row mb-3"></div>');
       el.append(this.create_form_label({ for: id, value: element.title }));
-      el.append(this.create_form_element(element.type, { id: id, required: true }));
+      el.append(this.create_form_element(element.type, { id: id, required: true, onchange: onchange_fn }));
       form_el.append(el);
       document.getElementById(id).value = CN_session.data.user[element.id];
     });
 
-    modal_el.querySelector("[name=save]").onclick = async () => {
+    save_btn_el.onclick = async () => {
       let first_name = document.getElementById("cn_account_modal_first_name").value;
       let last_name = document.getElementById("cn_account_modal_last_name").value;
       let email = document.getElementById("cn_account_modal_email").value;
@@ -676,7 +696,7 @@ export default {
               <form></form>
             </div>
             <div class="modal-footer text-bg-secondary">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
               <button name="save" type="button" class="btn btn-primary" disabled>Save</button>
             </div>
           </div>
@@ -804,8 +824,15 @@ export default {
     }
 
     document.querySelector("#main-toast-container .toast-container").append(toast_el);
-    const bs = new bootstrap.Toast(toast_el);
-    bs.show();
+    const toast_bs = new bootstrap.Toast(toast_el);
+
+    // automatically dispose of the toast once finished
+    toast_el.addEventListener("hidden.bs.toast", () => {
+      toast_bs.dispose();
+      toast_el.remove();
+    });
+
+    toast_bs.show();
   },
 
   /**
@@ -840,24 +867,31 @@ export default {
       modal_el.setAttribute("data-bs-keyboard", "false");
     }
 
-    const bs = new bootstrap.Modal(modal_el);
-    bs.block = () => {
+    const modal_bs = new bootstrap.Modal(modal_el);
+    modal_bs.block = () => {
       return new Promise((resolve, reject) => {
-        bs.show();
+        modal_bs.show();
         modal_el.querySelector("[name=close]").onclick = () => resolve(true);
       });
     };
 
-    return bs;
+    // automatically dispose of the modal once finished
+    modal_el.addEventListener("hidden.bs.modal", () => {
+      modal_bs.dispose();
+      modal_el.remove();
+    });
+
+    return modal_bs;
   },
 
   /**
-   * Creates a modal config dialog
+   * Creates a modal confirm dialog
    * @param object config: An object that has type, title, message and static properties
    * @return bootstrap.Modal
    */
   modal_confirm: function(config) {
     if (!config.type) config.type = "primary";
+    if (!config.title) config.title = "Please Confirm";
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog">
@@ -890,15 +924,170 @@ export default {
       modal_el.setAttribute("data-bs-keyboard", "false");
     }
 
-    const bs = new bootstrap.Modal(modal_el);
-    bs.test = () => {
+    const modal_bs = new bootstrap.Modal(modal_el);
+    modal_bs.test = () => {
       return new Promise((resolve, reject) => {
-        bs.show();
+        modal_bs.show();
         modal_el.querySelector("[name=no]").onclick = () => resolve(false);
         modal_el.querySelector("[name=yes]").onclick = () => resolve(true);
       });
     };
 
-    return bs;
+    // automatically dispose of the modal once finished
+    modal_el.addEventListener("hidden.bs.modal", () => {
+      modal_bs.dispose();
+      modal_el.remove();
+    });
+
+    return modal_bs;
   },
+
+  /**
+   * Creates a modal input dialog
+   * @param object config: An object that has type, title, message, type, required, and static properties
+   * @return bootstrap.Modal
+   */
+  modal_input: function(config) {
+    if (!config.type) config.type = "primary";
+    if (!config.title) config.title = "Please Provide Input";
+    const modal_el = this.create(`
+      <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header text-bg-${config.type}">
+              <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
+            </div>
+            <div class="modal-body">
+              <label class="form-label" for="cn_modal_input">
+                ${config.message}
+              </label>
+            </div>
+            <div class="modal-footer text-bg-secondary py-1">
+              <button
+                name="cancel"
+                type="button"
+                class="btn btn-primary col-2"
+                data-bs-dismiss="modal"
+              >Cancel</button>
+              <button
+                name="confirm"
+                type="button"
+                class="btn btn-primary col-2"
+              >Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    const input_el = this.create_form_element(config.input, { id: "cn_modal_input", required: config.required });
+    input_el.classList.remove("col-sm-9");
+    modal_el.querySelector(".modal-body").append(input_el);
+
+    document.getElementById("main-content").append(modal_el);
+    if (config.static) {
+      modal_el.setAttribute("data-bs-backdrop", "static");
+      modal_el.setAttribute("data-bs-keyboard", "false");
+    }
+    const control_el = document.getElementById("cn_modal_input");
+
+    const modal_bs = new bootstrap.Modal(modal_el);
+    modal_bs.get = () => {
+      return new Promise((resolve, reject) => {
+        modal_bs.show();
+        modal_el.querySelector("[name=cancel]").onclick = () => resolve(undefined);
+        modal_el.querySelector("[name=confirm]").onclick = () => {
+          // only proceed if the input isn't required or it has been filled out
+          if (!config.required || ![null, ""].includes(control_el.value)) {
+            resolve(control_el.value);
+            modal_bs.hide();
+          } else {
+            control_el.onchange();
+          }
+        }
+      });
+    };
+
+    // automatically dispose of the modal once finished
+    modal_el.addEventListener("hidden.bs.modal", () => {
+      modal_bs.dispose();
+      modal_el.remove();
+    });
+
+    return modal_bs;
+  },
+
+  /**
+   * Pops up an input dialog to get the reason why a participant will be added to or removed from tracing
+   * as a result of adding/activating or removing/deactivating either an address or phone number.
+   * Note that this function should be called before making the change to the address or phone.
+   *
+   * If tracing is unaffected true is returned, if tracing is affected but no reason is provided then false
+   * is returned, otherwise the reason is returned as a string.
+   *
+   * @param string type: either "address" or "phone"
+   * @param boolean action: either "added" or "removed"
+   * @param string subject: either "participant" or "alternate"
+   * @param integer identifier: an object with identifer (id) and subject (participant or alternate) properties
+   * @param boolean|string True if no tracing is required, false if cancelled, a string if a reason is provided
+   * @return boolean|string
+   */
+  check_for_trace: async function(type, action, identifier) {
+    // sanitize inputs
+    if (!["address", "phone"].includes(type)) {
+      throw new Error(`First argument for check_for_trace, "${type}", must be either "address" or "phone".`);
+    }
+    if (!["added", "removed"].includes(action)) {
+      throw new Error(`First argument for check_for_trace, "${action}", must be either "added" or "removed".`);
+    }
+
+    // Activate tracing if the contact belongs to a participant who only has one valid contact of the
+    // requested type (address or phone) and the last trace is null
+    let changing_count_column = `active_${type}_count`;
+    let other_count_column = `active_${"address" == type ? "phone" : "address"}_count`;
+
+    const response = await CN_api.get(`participant/${identifier}`, {
+      select: {
+        column: [
+          "active_address_count",
+          "active_phone_count",
+          { table: "trace_type", column: "name", alias: "trace_type" },
+        ],
+      },
+    });
+    let data = await response.json();
+
+    let result = true;
+    if ("removed" == action) {
+      // check to see if tracing will be required after removing/deactivating the contact type
+      if (1 == data[changing_count_column] && null == data.trace_type) {
+        result = await this.modal_input({
+          title: "Tracing Required",
+          message: `
+            If you proceed the participant will no longer have an active ${type}.
+            In order to help with tracing, please provide the reason that you are changing the participant's ${type}:
+          `,
+          required: true,
+          input: "string",
+        }).get();
+      }
+    } else {
+      // check to see if tracing will be resolved after adding/activating the contact type
+      if (0 == data[changing_count_column] && 0 < data[other_count_column] && null != data.trace_type) {
+        result = await this.modal_input({
+          title: "Tracing Completed",
+          message: `
+            Before your change the participant did not have an active ${type}.
+            Please provide how the new ${type} information was determined:
+          `,
+          required: true,
+          input: "string",
+        }).get();
+      }
+    }
+
+    // if the modal_input was cancelled then the value will be undefined
+    return undefined === result ? false : result;
+  },
+
 }

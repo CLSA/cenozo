@@ -1,9 +1,8 @@
 import CN_session from "../session.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
 
-export class CN_address_model extends CN_base_model {
+export class CN_address_model extends CN_traceable_model {
   constructor() {
     super({
       wording: {
@@ -140,14 +139,16 @@ export class CN_address_model extends CN_base_model {
   get_base_path(type) {
     // restrict the application address list by application-type
     return (
-      "application" == this.get_parent_module().name ?
+      "application" == this.get_parent_module().get_name() ?
       `application_type/${CN_session.data.application.application_type_id}/address` :
       super.get_base_path(type)
     );
   }
 }
 
-export class CN_address_view extends CN_base_view {
+export class CN_address_add extends CN_traceable_add {}
+export class CN_address_list extends CN_traceable_list {}
+export class CN_address_view extends CN_traceable_view {
   /**
    * Extends the parent method
    */
