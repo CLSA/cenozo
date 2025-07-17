@@ -116,7 +116,8 @@ export class CN_hold_view extends CN_base_view {
   async get_text(type) {
     if ("name" == type) {
       const prop = this.get_property("hold_type_id");
-      return prop.enum.values.filter(e => e.key == prop.state.get())[0].value;
+      const hold_type = prop.enum.values.find(e => e.key == prop.state.get());
+      return null == hold_type ? "Removed" : hold_type.value;
     }
     return await super.get_text(type);
   }

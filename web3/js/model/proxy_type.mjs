@@ -26,5 +26,3 @@ export class CN_proxy_type_model extends CN_base_model {
     });
   }
 }
-
-// TODO allow administrators to add/delete roles from a proxy-type

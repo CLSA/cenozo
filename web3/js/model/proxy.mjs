@@ -1,5 +1,4 @@
 import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
 
 import { CN_base_add } from "../base_add.mjs"
 import { CN_base_model } from "../base_model.mjs"
@@ -19,13 +18,14 @@ export class CN_proxy_model extends CN_base_model {
       },
       properties: {
         proxy_type_id: {
-          title: "Hold Type",
+          title: "Trace Type",
           type: "enum",
           enum: {
             path: "proxy_type",
             select: { column: [
               "access", // needed for the current_role_has_proxy_type statement below
               "name",
+              "prompt",
               {
                 // here, "current_role_has_proxy_type.proxy_type_id IS NULL" determines if the role has access
                 column: "current_role_has_proxy_type.proxy_type_id IS NULL",
@@ -71,6 +71,24 @@ export class CN_proxy_model extends CN_base_model {
   }
 }
 
+export class CN_proxy_add extends CN_base_add {
+  async on_submit() {
+    let proceed = true;
+
+    // show the prompt before adding, if there is one
+    const prop = this.get_property("proxy_type_id");
+    const proxy_type = prop.enum.values.find(e => e.key == prop.state.get());
+    if (proxy_type && proxy_type.prompt) {
+      proceed = await CN_element.modal_confirm({
+        static: true,
+        message: prompt,
+      }).test();
+    }
+
+    return proceed ? await super.on_submit() : null;
+  }
+}
+
 export class CN_proxy_view extends CN_base_view {
   /**
    * Extends the parent method
@@ -78,7 +96,8 @@ export class CN_proxy_view extends CN_base_view {
   async get_text(type) {
     if ("name" == type) {
       const prop = this.get_property("proxy_type_id");
-      return prop.enum.values.filter(e => e.key == prop.state.get())[0].value;
+      const proxy_type = prop.enum.values.find(e => e.key == prop.state.get());
+      return null == proxy_type ? "Removed" : proxy_type.value;
     }
     return await super.get_text(type);
   }
