@@ -36,7 +36,6 @@ export class CN_form_association_list extends CN_base_list {
         module.create_model();
       }
 
-      // await module.load_classes(); <-- but we also have to create the model
       if (module.action_allowed("view")) {
         await CN_session.navigate_to(module.get_model().get_view_url(record.record_id));
       } else {
