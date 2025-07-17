@@ -54,8 +54,13 @@ export default {
           error.title = "Format Unavailable";
           message = "because the requested format is not available.";
         } else if (409 == response.status) {
-          error.title = "Conflict";
-          message = "due to a pre-existing conflict.";
+          if (CN_common.is_object(options) && "DELETE" == options.method && body) {
+            error.title = "Cannot Delete Record",
+            message = `because the record is being referenced by the "${JSON.parse(body)}" table.`;
+          } else {
+            error.title = "Conflict";
+            message = "due to a pre-existing conflict.";
+          }
         } else {
           error.title = "Server Error";
           message = "due to a server-based error.";
