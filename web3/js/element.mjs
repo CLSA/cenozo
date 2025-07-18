@@ -564,19 +564,16 @@ export default {
     document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
 
     save_btn_el.onclick = async () => {
+      modal_bs.hide();
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
       if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
-        // hide the modal so we only see the wait message
-        modal_bs.hide();
-
         await this.wait_for(async () => {
           // update the user then reload the UI so all datetimes are adjusted
           await CN_api.patch( "self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
           CN_session.reload();
         });
       }
-      modal_bs.hide();
     };
 
     return modal_bs;
@@ -647,6 +644,7 @@ export default {
     });
 
     save_btn_el.onclick = async () => {
+      modal_bs.hide();
       let first_name = document.getElementById("cn_account_modal_first_name").value;
       let last_name = document.getElementById("cn_account_modal_last_name").value;
       let email = document.getElementById("cn_account_modal_email").value;
@@ -655,21 +653,22 @@ export default {
         CN_session.data.user.last_name != last_name ||
         CN_session.data.user.email != email
       ) {
-        // update the server
-        await CN_api.patch("self/0", {
-          user: {
-            first_name: first_name,
-            last_name: last_name,
-            email: email,
-          },
-        });
+        await this.wait_for(async () => {
+          // update the server
+          await CN_api.patch("self/0", {
+            user: {
+              first_name: first_name,
+              last_name: last_name,
+              email: email,
+            },
+          });
 
-        // update the UI
-        CN_session.data.user.first_name = first_name;
-        CN_session.data.user.last_name = last_name;
-        CN_session.data.user.email = email;
+          // update the UI
+          CN_session.data.user.first_name = first_name;
+          CN_session.data.user.last_name = last_name;
+          CN_session.data.user.email = email;
+        });
       }
-      modal_bs.hide();
     };
 
     return modal_bs;
@@ -769,29 +768,31 @@ export default {
           type: "danger",
         });
       } else {
-        // update the server
-        try {
-          await CN_api.patch("self/0", {
-            user: {
-              password: {
-                current: current_password,
-                requested: new_password,
-              },
-            },
-          });
-        } catch (error) {
-          if (CN_common.is_object(error) && "invalid password" == error.error_code) {
-            this.toast({
-              title: "Password Failed",
-              message: "The password you provided as your current password is incorrect.",
-              type: "danger",
-            });
-          } else {
-            throw error;
-          }
-        }
-
         modal_bs.hide();
+
+        // update the server
+        await this.wait_for(async () => {
+          try {
+            await CN_api.patch("self/0", {
+              user: {
+                password: {
+                  current: current_password,
+                  requested: new_password,
+                },
+              },
+            });
+          } catch (error) {
+            if (CN_common.is_object(error) && "invalid password" == error.error_code) {
+              this.toast({
+                title: "Password Failed",
+                message: "The password you provided as your current password is incorrect.",
+                type: "danger",
+              });
+            } else {
+              throw error;
+            }
+          }
+        });
       }
     };
 
