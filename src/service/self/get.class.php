@@ -86,7 +86,7 @@ class get extends \cenozo\service\service
     );
     $pseudo_record['application']['identifier'] = is_null( $db_identifier ) ? NULL : $db_identifier->name;
     $pseudo_record['application']['build'] = sprintf( '%s-%s', CENOZO_BUILD, APP_BUILD );
-    $pseudo_record['application']['cenozo_url'] = CENOZO3_URL;
+    $pseudo_record['application']['cenozo_url'] = $session->version3 ? CENOZO3_URL : CENOZO_URL;
 
     // the following details are only provided if the user has access to the application
     if( !is_null( $db_user ) && !is_null( $db_role ) )
