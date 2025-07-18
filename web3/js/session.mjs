@@ -45,15 +45,26 @@ export default {
   },
 
   /**
+   * Reloads the page at a particular path
+   */
+  reload: function(path = null) {
+    this.update_breadcrumbs(true);
+    document.getElementById("main-content").innerHTML = "";
+    if (null == path) {
+      window.location.reload();
+    } else {
+      window.location.assign(path);
+    }
+  },
+
+  /**
    * Logs the user out of the application
    */
   logout: async function() {
-    try {
+    await CN_element.wait_for(async () => {
       await CN_api.delete("self/0");
-      window.location.assign(ROOT_URL);
-    } catch (error) {
-      console.error(error);
-    }
+      this.reload(ROOT_URL);
+    });
   },
 
   /**
@@ -108,11 +119,18 @@ export default {
   /**
    * Updates the breadcrumb trail based on the current URL
    */
-  update_breadcrumbs: function() {
+  update_breadcrumbs: function(loading = false) {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
-    (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail(OP_LIST)); })();
+    (async () => {
+      breadcrumbs_el.append(
+        await CN_element.create_breadcrumb_trail(
+          loading ? "Loading..." : null,
+          loading ? [] : OP_LIST,
+        )
+      );
+    })();
   },
 
   /**
@@ -339,7 +357,7 @@ export default {
         <div class="toast-container top-0 start-50 translate-middle-x p-3">
         </div>
       </div>
-      <div id="main-content" class="container-fluid my-2" />
+      <div id="main-content" class="container-fluid my-2"></div>
     `;
   },
 
@@ -376,20 +394,26 @@ export default {
     clock_el.onclick = () => {
       const bs = CN_element.create_clock_settings_modal();
       bs.show();
-    }
+    };
     account_btn_el.onclick = () => {
+      main_menu_offcanvas_bs.hide();
       const bs = CN_element.create_account_modal();
       bs.show();
-    }
+    };
     timezone_btn_el.onclick = () => {
+      main_menu_offcanvas_bs.hide();
       const bs = CN_element.create_clock_settings_modal();
       bs.show();
-    }
+    };
     password_btn_el.onclick = () => {
+      main_menu_offcanvas_bs.hide();
       const bs = CN_element.create_password_modal();
       bs.show();
-    }
-    logout_btn_el.onclick = async () => await this.logout();
+    };
+    logout_btn_el.onclick = async () => {
+      main_menu_offcanvas_bs.hide();
+      await this.logout();
+    };
 
     const lists_total = Object.keys(this.data.menu.lists).length;
 

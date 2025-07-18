@@ -22,19 +22,19 @@
 <body class="background user-select-none">
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
     <div class="container-fluid">
-      <button type="button" class="btn btn-primary my-1 py-1" disabled>
+      <button type="button" class="btn btn-outline-light my-1" disabled>
         <strong><?php echo APP_TITLE; ?></strong>
       </button>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item text-light fw-bold ms-2">/</li>
-          <li class="nav-item text-light fw-bold ms-2">Home</li>
-        </ul>
+      <div class="collapse navbar-collapse ms-2">
+        <div>
+          <i class="bi-chevron-compact-right text-light"></i>
+          <button class="home btn btn-primary px-1" disabled="true">Home</button>
+        </div>
       </div>
     </div>
   </nav>
 
-  <div class="bg-white pt-2 pb-4">
+  <div id="main-content" class="bg-white pt-2 pb-4">
     <div class="container my-3">
       <img id="logo" class="img-responsive w-50" onerror="this.style.display='none'"></img>
     </div>

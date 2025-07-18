@@ -364,7 +364,7 @@ export default {
       if (el.params.required) control_el.setAttribute("required", "required");
     }
 
-    el.show_error = async function(error, time = 500) {
+    el.show_error = async function(error, time = 300) {
       const control_el = document.getElementById(this.params.id);
       const error_el = this.querySelector('[name="error"]');
 
@@ -402,13 +402,20 @@ export default {
    * @param array module_list: A list of modules in their trail order
    * @return Element
    */
-  create_breadcrumb_trail: async function(module_list) {
+  create_breadcrumb_trail: async function(base_name, module_list) {
     // create a list of all crumbs (adding chevrons later)
-    const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
-    let crumb_list = [{
-      name: unread ? "Home" : 'Home <i class="bi-envelope-fill text-warning"></i>',
-      path: ""
-    }];
+    let crumb_list = [];
+
+    if (null == base_name) {
+      const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
+      crumb_list = [{
+        name: unread ? "Home" : 'Home <i class="bi-envelope-fill text-warning"></i>',
+        path: ""
+      }];
+    } else {
+      crumb_list.push({ name: base_name, path: null });
+    }
+
     let parent_module = null;
     await Promise.all(module_list.map(async module_name => {
       if ("error" == module_name) {
@@ -559,20 +566,15 @@ export default {
     save_btn_el.onclick = async () => {
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
-      if (
-        CN_session.data.user.timezone != timezone ||
-        CN_session.data.user.am_pm != am_pm
-      ) {
-        // update the server
-        await CN_api.patch("self/0", {
-          user: {
-            timezone: timezone,
-            use_12hour_clock: am_pm,
-          },
-        });
+      if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
+        // hide the modal so we only see the wait message
+        modal_bs.hide();
 
-        // update the UI by reloading (so all datetimes are adjusted)
-        window.location.reload();
+        await this.wait_for(async () => {
+          // update the user then reload the UI so all datetimes are adjusted
+          await CN_api.patch( "self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
+          CN_session.reload();
+        });
       }
       modal_bs.hide();
     };
@@ -833,6 +835,57 @@ export default {
     });
 
     toast_bs.show();
+  },
+
+  /**
+   * Creates a "please wait" blocking modal
+   * @return bootstrap.Modal
+   */
+  wait_for: async function(fn, delay = 500) {
+    const modal_el = this.create(`
+      <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header text-bg-primary">
+              <h1 class="modal-title fw-bold fs-5">Please Wait...</h1>
+            </div>
+            <div class="modal-body text-center">
+              <img src="${CENOZO_URL}/img/loading.gif"></img>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    document.getElementById("main-content").append(modal_el);
+    modal_el.setAttribute("data-bs-backdrop", "static");
+    modal_el.setAttribute("data-bs-keyboard", "false");
+
+    const modal_bs = new bootstrap.Modal(modal_el);
+
+    // wait for delay before showing the modal
+    let timeout_id = setTimeout(() => {
+      // automatically dispose of the modal once finished
+      modal_el.addEventListener("hidden.bs.modal", () => {
+        modal_bs.dispose();
+        modal_el.remove();
+      });
+
+      modal_bs.show();
+      timeout_id = null;
+    }, delay);
+
+    try {
+      // run the provided function
+      await fn();
+    } finally {
+      if (null != timeout_id) {
+        // if the timeout exists then the modal hasn't been shown, so just cancel it
+        clearTimeout(timeout_id);
+      } else {
+        // if the timeout no longer exists then the modal is showing, so hide it
+        modal_bs.hide();
+      }
+    }
   },
 
   /**

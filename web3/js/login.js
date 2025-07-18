@@ -86,6 +86,8 @@
               });
 
               if (201 == response.status) {
+                document.getElementById("main-content").innerHTML = "";
+                document.querySelector("button.home").innerHTML = "Loading...";
                 window.location.reload();
               } else if (202 == response.status) {
                 problem = "invalid";
