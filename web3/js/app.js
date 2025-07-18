@@ -29,7 +29,7 @@
         }
       }
 
-      const modal = CN_element.modal_message(params);
+      const modal = CN_element.message_modal(params);
       modal.show();
     });
 

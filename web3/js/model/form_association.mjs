@@ -39,7 +39,7 @@ export class CN_form_association_list extends CN_base_list {
       if (module.action_allowed("view")) {
         await CN_session.navigate_to(module.get_model().get_view_url(record.record_id));
       } else {
-        CN_element.modal_message({
+        CN_element.message_modal({
           title: "Permission Denied",
           message: `You do not have access to viewing ${module.get_model().get_plural()} records.`,
           type: "danger",

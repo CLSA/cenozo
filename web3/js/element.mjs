@@ -840,7 +840,7 @@ export default {
    * @param object config: An object that has type, title, message and static properties
    * @return bootstrap.Modal
    */
-  modal_message: function(config) {
+  message_modal: function(config) {
     if (!config.type) config.type = "primary";
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
@@ -889,7 +889,7 @@ export default {
    * @param object config: An object that has type, title, message and static properties
    * @return bootstrap.Modal
    */
-  modal_confirm: function(config) {
+  confirm_modal: function(config) {
     if (!config.type) config.type = "primary";
     if (!config.title) config.title = "Please Confirm";
     const modal_el = this.create(`
@@ -947,7 +947,7 @@ export default {
    * @param object config: An object that has type, title, message, type, required, and static properties
    * @return bootstrap.Modal
    */
-  modal_input: function(config) {
+  input_modal: function(config) {
     if (!config.type) config.type = "primary";
     if (!config.title) config.title = "Please Provide Input";
     const modal_el = this.create(`
@@ -958,7 +958,7 @@ export default {
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
             </div>
             <div class="modal-body">
-              <label class="form-label" for="cn_modal_input">
+              <label class="form-label" for="cn_input_modal">
                 ${config.message}
               </label>
             </div>
@@ -980,7 +980,7 @@ export default {
       </div>
     `);
 
-    const input_el = this.create_form_element(config.input, { id: "cn_modal_input", required: config.required });
+    const input_el = this.create_form_element(config.input, { id: "cn_input_modal", required: config.required });
     input_el.classList.remove("col-sm-9");
     modal_el.querySelector(".modal-body").append(input_el);
 
@@ -989,7 +989,7 @@ export default {
       modal_el.setAttribute("data-bs-backdrop", "static");
       modal_el.setAttribute("data-bs-keyboard", "false");
     }
-    const control_el = document.getElementById("cn_modal_input");
+    const control_el = document.getElementById("cn_input_modal");
 
     const modal_bs = new bootstrap.Modal(modal_el);
     modal_bs.get = () => {
@@ -1061,7 +1061,7 @@ export default {
     if ("removed" == action) {
       // check to see if tracing will be required after removing/deactivating the contact type
       if (1 == data[changing_count_column] && null == data.trace_type) {
-        result = await this.modal_input({
+        result = await this.input_modal({
           title: "Tracing Required",
           message: `
             If you proceed the participant will no longer have an active ${type}.
@@ -1074,7 +1074,7 @@ export default {
     } else {
       // check to see if tracing will be resolved after adding/activating the contact type
       if (0 == data[changing_count_column] && 0 < data[other_count_column] && null != data.trace_type) {
-        result = await this.modal_input({
+        result = await this.input_modal({
           title: "Tracing Completed",
           message: `
             Before your change the participant did not have an active ${type}.
@@ -1086,7 +1086,7 @@ export default {
       }
     }
 
-    // if the modal_input was cancelled then the value will be undefined
+    // if the input_modal was cancelled then the value will be undefined
     return undefined === result ? false : result;
   },
 

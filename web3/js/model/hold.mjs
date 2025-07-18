@@ -89,7 +89,7 @@ export class CN_hold_add extends CN_base_add {
       hold_type => "Deceased" == hold_type.name
     ).id;
     if (deceased_hold_type_id == this.get_property("hold_type_id").state.get()) {
-      await CN_element.modal_message({
+      await CN_element.message_modal({
         title: "Date of Death",
         size: "lg",
         message: `

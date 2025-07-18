@@ -73,7 +73,7 @@ export class CN_traceable_list extends CN_base_list {
     if ("participant" != parent_module.get_name()) return await super.on_delete(record);
 
     // first confirm
-    const modal = CN_element.modal_confirm({
+    const modal = CN_element.confirm_modal({
       static: true,
       title: "Please Confirm",
       message: `Are you sure you wish to delete the ${this.get_parent_model().get_singular()} record?`,
@@ -131,7 +131,7 @@ export class CN_traceable_view extends CN_base_view {
     if ("participant" != parent_module.get_name()) return await super.on_delete(record);
 
     // first confirm
-    const modal = CN_element.modal_confirm({
+    const modal = CN_element.confirm_modal({
       static: true,
       title: "Please Confirm",
       message: `Are you sure you wish to delete this ${this.get_parent_model().get_singular()}?`,

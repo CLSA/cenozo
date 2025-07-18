@@ -92,7 +92,7 @@ export class CN_base_list extends CN_base_action {
    */
   async on_delete(record) {
     // first confirm
-    const modal = CN_element.modal_confirm({
+    const modal = CN_element.confirm_modal({
       static: true,
       title: "Please Confirm",
       message: `Are you sure you wish to delete the ${this.get_parent_model().get_singular()} record?`,

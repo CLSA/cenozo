@@ -79,7 +79,7 @@ export class CN_proxy_add extends CN_base_add {
     const prop = this.get_property("proxy_type_id");
     const proxy_type = prop.enum.values.find(e => e.key == prop.state.get());
     if (proxy_type && proxy_type.prompt) {
-      proceed = await CN_element.modal_confirm({
+      proceed = await CN_element.confirm_modal({
         static: true,
         message: prompt,
       }).test();
