@@ -216,9 +216,8 @@ export class CN_base_record extends CN_base_action {
 
           const get_max_rank = async () => {
             const response = await CN_api.get(this.get_parent_model().get_base_path("api"), params);
-            const max_rank = (await response.json())[0].max_rank;
-
-            if (!max_rank) throw new Error(`Couldn't get max rank for ${prop.name}.`);
+            let max_rank = (await response.json())[0].max_rank;
+            if (null == max_rank) max_rank = 0;
             prop.enum = { values: [] };
             for(let r = 1; r <= max_rank; r++) {
               prop.enum.values.push({ key: r, value: CN_common.ordinal_suffix(r) });
