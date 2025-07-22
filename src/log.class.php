@@ -439,16 +439,13 @@ final class log extends singleton
     $util_class_name = lib::get_class_name( 'util' );
 
     $e = lib::create( 'exception\system', $message, $level );
-    $message = sprintf( '(%s) : %s in %s on line %d',
-                        $e->get_number(),
-                        $message,
-                        $file,
-                        $line );
-    if( E_PARSE == $level ||
-        E_COMPILE_ERROR == $level ||
-        E_USER_ERROR == $level ||
-        E_CORE_ERROR == $level ||
-        E_ERROR == $level )
+    $message = sprintf( '(%s) : %s in %s on line %d', $e->get_number(), $message, $file, $line );
+
+    $critical_list = [E_PARSE, E_COMPILE_ERROR, E_USER_ERROR, E_CORE_ERROR, E_ERROR];
+    $error_list = [E_COMPILE_WARNING, E_CORE_WARNING, E_WARNING, E_USER_WARNING, E_STRICT, E_RECOVERABLE_ERROR];
+    $warning_list = [E_NOTICE, E_USER_NOTICE, E_DEPRECATED, E_USER_DEPRECATED];
+
+    if( in_array( $level, $critical_list ) )
     {
       log::critical( $message );
 
@@ -471,29 +468,31 @@ final class log extends singleton
         );
       }
 
-      $title = ucwords( $e->get_type() ).' Error!';
-      $notice = 'There was a problem while trying to communicate with the server. '.
-                'Please contact support for help with this error.';
-      $code = $e->get_code();
-
       header( 'HTTP/1.1 500 Internal Server Error' );
-      if( false === strpos( $_SERVER['REDIRECT_URL'], '/src' ) ) include CENOZO_PATH.'/src/ui/error.php';
-      else print $e->get_code();
+      if( false === strpos( $_SERVER['REDIRECT_URL'], '/src' ) )
+      {
+        $ui = lib::create( 'ui\ui' );
+        $ui->get_error_interface([
+          'title' => ucwords( $e->get_type() ).' Error!',
+          'message' =>
+            'There was a problem while trying to communicate with the server. '.
+            'Please contact support for help with this error.',
+          'code' => $e->get_code()
+        ]);
+      }
+      else
+      {
+        print $e->get_code();
+      }
+
+      // do not proceed
       exit;
     }
-    else if( E_COMPILE_WARNING == $level ||
-             E_CORE_WARNING == $level ||
-             E_WARNING == $level ||
-             E_USER_WARNING == $level ||
-             E_STRICT == $level ||
-             E_RECOVERABLE_ERROR == $level )
+    else if( in_array( $level, $error_list ) )
     {
       log::error( $message );
     }
-    else if( E_NOTICE == $level ||
-             E_USER_NOTICE == $level ||
-             E_DEPRECATED == $level ||
-             E_USER_DEPRECATED == $level )
+    else if( in_array( $level, $warning_list ) )
     {
       log::warning( $message );
     }
