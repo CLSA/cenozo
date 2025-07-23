@@ -205,28 +205,6 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
-   * Extends parent method
-   */
-  show_placeholder() {
-    super.show_placeholder();
-
-    const body_el = this.get_element().querySelector("table [name=body]");
-    body_el.innerHTML = "";
-    for (let row=0; row<20; row++) {
-      let tr_el = document.createElement("tr");
-      for (const col_name in this.#columns) {
-        let col = Math.ceil(Math.random()*6)+6;
-        tr_el.innerHTML += `
-          <td class="text-center placeholder-glow">
-            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${col}"></span>
-          </td>
-        `;
-      }
-      body_el.append(tr_el);
-    }
-  }
-
-  /**
    * Determines whether a record cannot be selected when in choose mode
    * @param object record: One of the records from the #records array
    * @return boolean
@@ -277,11 +255,11 @@ export class CN_base_list extends CN_base_action {
 
     if ("choose" == this.#list_mode) {
       // update the choose buttons based on is_choosing
-      const btn_el = this.get_element().querySelector("[name=choose]");
+      const btn_el = this.get_footer_element().querySelector("[name=choose]");
       (async () => { btn_el.innerHTML = this.#is_choosing ? "Apply" : await this.get_text("choose"); })();
 
       // add or remove the cancel button depending on whether we're currently choosing or not
-      const cancel_btn_el = this.get_element().querySelector("[name=cancel_choose]");
+      const cancel_btn_el = this.get_footer_element().querySelector("[name=cancel_choose]");
       if (this.#is_choosing && null == cancel_btn_el) {
         // add the cancel button
         const cancel_btn_el = CN_element.create(
@@ -295,8 +273,8 @@ export class CN_base_list extends CN_base_action {
       }
     }
 
-    const body_el = this.get_element().querySelector("table [name=body]");
-    body_el.innerHTML = "";
+    const table_el = this.get_body_element().querySelector("table [name=body]");
+    table_el.innerHTML = "";
 
     const start_index = (this.#current_page-1)*20;
     this.#records.map(record => {
@@ -324,7 +302,9 @@ export class CN_base_list extends CN_base_action {
         } else if (CN_common.is_datetime_type(column.type, "time")) {
           value = CN_common.format_time(value, column.type);
         } else if (CN_common.is_string(value) && 0 < column.limit) {
-          value = value.substring(0, column.limit);
+          if (value.length > column.limit) {
+            value = value.substring(0, column.limit) + " ...";
+          }
         }
 
         tr_el.innerHTML += `<td class="text-${column.align}">${value}</td>`;
@@ -344,14 +324,14 @@ export class CN_base_list extends CN_base_action {
         };
       }
 
-      body_el.append(tr_el);
+      table_el.append(tr_el);
     });
 
-    const summary_el = this.get_element().querySelector(".card-footer [name=summary]");
+    const summary_el = this.get_footer_element().querySelector("[name=summary]");
     summary_el.innerHTML = `${this.#total_records} ${this.get_parent_model().get_plural()} total`;
 
     // rebuild the pagination buttons
-    const pagination_el = this.get_element().querySelector(".card-footer ul.pagination");
+    const pagination_el = this.get_footer_element().querySelector("ul.pagination");
     pagination_el.innerHTML = "";
 
     const pages = Math.ceil(this.#total_records / CN_session.data.application.list_row_size);
@@ -448,6 +428,28 @@ export class CN_base_list extends CN_base_action {
     }
 
     table_el.querySelector("thead[name=header]").append(header_tr_el);
+
+    return table_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_placeholder_element() {
+    const table_el = CN_element.create(`<table class="table table-striped"></table>`);
+
+    for (let row=0; row<20; row++) {
+      let tr_el = document.createElement("tr");
+      for (let col=0; col<4; col++) {
+        let width = Math.ceil(Math.random()*6)+6;
+        tr_el.innerHTML += `
+          <td class="text-center placeholder-glow">
+            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${width}"></span>
+          </td>
+        `;
+      }
+      table_el.append(tr_el);
+    }
 
     return table_el;
   }

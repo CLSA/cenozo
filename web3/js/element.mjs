@@ -54,13 +54,15 @@ export default {
    * @return Element
    */
   create_form_label: function(params) {
-    const el = this.create(`
-      <label class="col-sm-3 col-form-label text-end fw-bold">
-        ${params.value}
-      </label>
-    `);
+    const el = this.create(`<label class="col-sm-3 col-form-label text-end fw-bold">${params.value}</label>`);
     if (undefined !== params.for) el.setAttribute("for", params.for);
     if (undefined !== params.name) el.setAttribute("name", params.name);
+    if (params.help) {
+      el.innerHTML = `<i class="bi-info-circle-fill"></i> ${el.innerHTML}`;
+      el.setAttribute("data-bs-toggle", "tooltip");
+      el.setAttribute("data-bs-title", params.help);
+      new bootstrap.Tooltip(el);
+    }
     return el;
   },
 

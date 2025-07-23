@@ -8,6 +8,7 @@ import { CN_state } from "./state.mjs"
 
 export class CN_base_record extends CN_base_action {
   #property_groups;
+  #form_el;
 
   /**
    * Constructor
@@ -288,15 +289,15 @@ export class CN_base_record extends CN_base_action {
    */
   create_body_element() {
     const form_el = CN_element.create("<form></form>");
-    const fieldset_el = CN_element.create("<fieldset></fieldset>");
+    form_el.fieldset_el = CN_element.create("<fieldset></fieldset>");
 
-    fieldset_el.disabled = "view" == this.get_type() && !this.get_parent_model().allow_edit();
-    form_el.append(fieldset_el);
+    form_el.fieldset_el.disabled = "view" == this.get_type() && !this.get_parent_model().allow_edit();
+    form_el.append(form_el.fieldset_el);
 
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
       const parent_el = CN_element.create('<div class="px-3"></div>');
-      fieldset_el.append(parent_el);
+      form_el.fieldset_el.append(parent_el);
       for (var prop_name in this.#property_groups.$main.properties) {
         parent_el.append(this.create_property_element(prop_name));
       }
@@ -320,9 +321,27 @@ export class CN_base_record extends CN_base_action {
       }
     }
 
-    if (null != accordion_el) fieldset_el.append(accordion_el);
+    if (null != accordion_el) form_el.fieldset_el.append(accordion_el);
 
     return form_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_placeholder_element() {
+    const el_list = Array.from(Array(7).keys()).map((e,index) => `
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label text-end placeholder-glow">
+          <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
+        </label>
+        <div class="col-sm-9 placeholder-glow h-100">
+          <input class="form-control placeholder" disabled></input>
+        </div>
+      </div>
+    `);
+
+    return CN_element.create(`<div class="px-3">${el_list.join("")}</div>`);
   }
 
   /**
@@ -364,7 +383,7 @@ export class CN_base_record extends CN_base_action {
     const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    prop_el.append(CN_element.create_form_label({ for: prop.id, value: prop.title }));
+    prop_el.append(CN_element.create_form_label({ for: prop.id, value: prop.title, help: prop.help }));
 
     if (!prop.element) {
       // determine the property's UI element based on the type
@@ -404,8 +423,10 @@ export class CN_base_record extends CN_base_action {
     const observer = new MutationObserver((mutation, observer) => {
       mutation.filter(m => "childList" == m.type).forEach(m => {
         const control_el = document.getElementById(m.target.getAttribute("name"));
-        const prop = this.get_property(control_el.name);
-        prop.state.bind_element(control_el);
+        if (control_el) {
+          const prop = this.get_property(control_el.name);
+          prop.state.bind_element(control_el);
+        }
       });
       observer.disconnect();
     });

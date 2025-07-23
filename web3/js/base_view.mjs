@@ -93,38 +93,6 @@ export class CN_base_view extends CN_base_record {
     });
   }
 
-  /**
-   * Extends parent method
-   */
-  show_placeholder() {
-    super.show_placeholder();
-
-    // Replace the property elements with placeholders
-    this.for_each_property(prop => {
-      const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
-      if (prop.element) {
-        if (null == prop_el.querySelector("[name=placeholder]")) {
-          prop_el.replaceChild(prop.placeholder_el, prop.element);
-        }
-      }
-    });
-  }
-
-  /**
-   * Extends parent method
-   */
-  hide_placeholder() {
-    super.hide_placeholder();
-
-    // Replace the placeholders with the property elements
-    this.for_each_property(prop => {
-      const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
-      if (prop.element) {
-        prop_el.replaceChild(prop.element, prop_el.querySelector("[name=placeholder]"));
-      }
-    });
-  }
-
   async on_set_property(prop_name) {
     try {
       // update the server
@@ -211,24 +179,6 @@ export class CN_base_view extends CN_base_record {
     const old_style = control_el.style;
     control_el.style["border-color"] = "green";
     setTimeout(() => { control_el.style = old_style; }, 500);
-  }
-
-  /**
-   * Extends parent method
-   */
-  create_property_element(prop_name) {
-    const prop = this.get_property(prop_name);
-    const prop_el = super.create_property_element(prop_name);
-
-    if (!prop.placeholder_el) {
-      prop.placeholder_el = CN_element.create(`
-        <div name="placeholder" class="col-sm-9 placeholder-glow h-100">
-          <input class="form-control placeholder" disabled></input>
-        </div>
-      `);
-    }
-
-    return prop_el;
   }
 
   /**

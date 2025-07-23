@@ -9,8 +9,12 @@ import { CN_base_object } from "./base_object.mjs"
 export class CN_base_action extends CN_base_object {
   #type;
   #parent_model = null;
+  #header_el;
+  #body_el;
+  #placeholder_el;
+  #footer_el;
   #is_loading = false;
-  #is_placeholder = false;
+  #is_placeholder = true;
   #placeholder_timeout_id = null;
 
   /**
@@ -28,6 +32,10 @@ export class CN_base_action extends CN_base_object {
   get_type() { return this.#type }
   get_parent_model() { return this.#parent_model }
   get_element() { return this.#parent_model.get_element() }
+  get_header_element() { return this.#header_el; }
+  get_body_element() { return this.#body_el; }
+  get_placeholder_element() { return this.#placeholder_el; }
+  get_footer_element() { return this.#footer_el; }
 
   /**
    * Gets UI text values by type
@@ -43,6 +51,10 @@ export class CN_base_action extends CN_base_object {
    */
   show_placeholder() {
     this.#is_placeholder = true;
+
+    const card_body_el = this.get_element().querySelector(".card-body");
+    card_body_el.innerHTML = "";
+    card_body_el.append(this.#placeholder_el);
   }
 
   /**
@@ -50,6 +62,10 @@ export class CN_base_action extends CN_base_object {
    */
   hide_placeholder() {
     this.#is_placeholder = false;
+
+    const card_body_el = this.get_element().querySelector(".card-body");
+    card_body_el.innerHTML = "";
+    card_body_el.append(this.#body_el);
   }
 
   /**
@@ -62,18 +78,6 @@ export class CN_base_action extends CN_base_object {
       parent_module.get_model().get_view_url() :
       this.#parent_model.get_list_url()
     );
-  }
-
-  /**
-   * When running the action this method is always called before on_load()
-   */
-  on_pre_loading() {
-    this.#is_loading = true;
-
-    // Show placeholder while loading data, but only if it takes longer than 200 ms
-    this.#placeholder_timeout_id = setTimeout(() => {
-      this.show_placeholder();
-    }, 200);
   }
 
   /**
@@ -90,6 +94,18 @@ export class CN_base_action extends CN_base_object {
    */
   get_on_load_parameters() {
     return null;
+  }
+
+  /**
+   * When running the action this method is always called before on_load()
+   */
+  on_pre_loading() {
+    this.#is_loading = true;
+
+    // Show placeholder while loading data, but only if it takes longer than 200 ms
+    this.#placeholder_timeout_id = setTimeout(() => {
+      this.show_placeholder();
+    }, 200);
   }
 
   /**
@@ -151,6 +167,14 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
+   * Creates the action's element's body element
+   * @return Element
+   */
+  create_placeholder_element() {
+    return "";
+  }
+
+  /**
    * Creates the action's element's footer element
    * @return Element
    */
@@ -169,9 +193,13 @@ export class CN_base_action extends CN_base_object {
     el.append(CN_element.create_card());
 
     // add the header, body and footer
-    el.querySelector(".card-header").append(this.create_header_element());
-    el.querySelector(".card-body").append(this.create_body_element());
-    el.querySelector(".card-footer").append(this.create_footer_element());
+    this.#header_el = this.create_header_element();
+    el.querySelector(".card-header").append(this.#header_el);
+    this.#body_el = this.create_body_element();
+    this.#placeholder_el = this.create_placeholder_element();
+    el.querySelector(".card-body").append(this.#placeholder_el);
+    this.#footer_el = this.create_footer_element();
+    el.querySelector(".card-footer").append(this.#footer_el);
 
     return el;
   }
