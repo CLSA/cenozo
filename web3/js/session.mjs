@@ -38,10 +38,20 @@ export default {
   get_module: name => MODULE_MAP.get(name),
 
   /**
-   * ADD DOCS
+   * Returns the module at the very end of the breadcrumb trail (module currently showing on screen)
+   * @return module
    */
   get_leaf_module: function() {
     return 0 == OP_LIST.length ? null : this.get_module(OP_LIST[OP_LIST.length-1]);
+  },
+
+  /**
+   * Returns the name.action of the leaf module (or null if there is no leaf module)
+   * @return string
+   */
+  get_leaf_action: function() {
+    const leaf_module = this.get_leaf_module();
+    return leaf_module ? `${leaf_module.get_name()}.${leaf_module.get_action_name()}` : null;
   },
 
   /**

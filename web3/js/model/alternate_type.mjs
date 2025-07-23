@@ -47,10 +47,8 @@ export class CN_alternate_type_list extends CN_base_list {
    */
   is_choose_disabled(record) {
     // when selecting an alternate's alternate_type, restrict by role
-    const leaf_module = CN_session.get_leaf_module();
     return (
-      "alternate" == leaf_module.get_name() &&
-      "view" == leaf_module.get_action_name() &&
+      "alternate.view" == CN_session.get_leaf_action() &&
       0 < record.role_count &&
       !record.access
     );
