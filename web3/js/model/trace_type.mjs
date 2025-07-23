@@ -11,12 +11,12 @@ export class CN_trace_type_model extends CN_base_model {
       columns: {
         name: { title: "Name" },
         participant_count: { title: "Participants", type: "number", table_prefix: false },
-        role_count: { title: "Roles", type: "number", table_prefix: false },
+        role_list: { title: "Roles", table_prefix: false },
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name:  { title: "Name", format: "identifier" },
-        description:  { title: "Description", type: "text" },
+        name: { title: "Name", format: "identifier" },
+        description: { title: "Description", type: "text" },
       },
     });
   }

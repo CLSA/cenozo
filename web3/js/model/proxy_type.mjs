@@ -11,16 +11,18 @@ export class CN_proxy_type_model extends CN_base_model {
       columns: {
         name: { title: "Name" },
         participant_count: { title: "Participants", type: "number", table_prefix: false },
-        role_count: { title: "Roles", type: "number", table_prefix: false },
+        role_list: { title: "Roles", table_prefix: false },
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name:  { title: "Name", format: "identifier" },
-        description:  { title: "Description", type: "text" },
+        name: { title: "Name", format: "identifier" },
+        description: { title: "Description", type: "text" },
         prompt: {
           title: "Prompt",
           type: "text",
-          help: "This message will appear to any user adding this proxy type asking to confirm whether they wish to proceed.",
+          help:
+            "This message will appear to any user adding this proxy type asking to " +
+            "confirm whether they wish to proceed.",
         },
       },
     });
