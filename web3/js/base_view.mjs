@@ -11,11 +11,10 @@ export class CN_base_view extends CN_base_record {
   /**
    * Constructor
    *
-   * @param base_model parent_model: The model that the action belongs to
-   * @param object properties: A list of property definitions (see parent class for more details)
+   * @param base_model model: The model that the action belongs to
    */
-  constructor(parent_model, properties) {
-    super("view", parent_model, properties);
+  constructor(model) {
+    super("view", model);
   }
 
   /**
@@ -33,15 +32,15 @@ export class CN_base_view extends CN_base_record {
     }
 
     if ("header" == type) {
-      return `${CN_common.uc_words(this.get_parent_model().get_singular())} Details`;
+      return `${CN_common.uc_words(this.get_model().get_singular())} Details`;
     }
 
     if ("view_parent" == type) {
-      const parent_module = this.get_parent_model().get_parent_module();
+      const parent_model = this.get_model().get_parent_model();
       return (
-        parent_module ?
-        `View ${CN_common.uc_words(parent_module.get_model().get_singular())}` :
-        `View ${CN_common.uc_words(this.get_parent_model().get_singular())} List`
+        parent_model ?
+        `View ${CN_common.uc_words(parent_model.get_singular())}` :
+        `View ${CN_common.uc_words(this.get_model().get_singular())} List`
       );
     }
 
@@ -49,7 +48,7 @@ export class CN_base_view extends CN_base_record {
   }
 
   get_on_load_path() {
-    return this.get_parent_model().get_view_url(null, "api");
+    return this.get_model().get_view_url(null, "api");
   }
 
   get_on_load_parameters() {
@@ -99,7 +98,7 @@ export class CN_base_view extends CN_base_record {
       let data = {};
       data[prop_name] = this.get_formatted_property(prop_name);
 
-      await CN_api.patch(this.get_parent_model().get_view_url(null, "api"), data);
+      await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
       this.get_property(prop_name).state.undo();
       if ("Conflict (409)" == error.name) {
@@ -123,11 +122,11 @@ export class CN_base_view extends CN_base_record {
     const modal = CN_element.confirm_modal({
       static: true,
       title: "Please Confirm",
-      message: `Are you sure you wish to delete this ${this.get_parent_model().get_singular()}?`,
+      message: `Are you sure you wish to delete this ${this.get_model().get_singular()}?`,
     });
 
     if (await modal.test()) {
-      await CN_api.delete(this.get_parent_model().get_view_url(null, "api"));
+      await CN_api.delete(this.get_model().get_view_url(null, "api"));
       await this.on_navigate_to_parent();
     }
   }
@@ -136,7 +135,7 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   update_property_element(prop_name) {
-    const module_prop = this.get_parent_model().get_module().get_property(prop_name);
+    const module_prop = this.get_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
@@ -186,7 +185,7 @@ export class CN_base_view extends CN_base_record {
    */
   create_body_element() {
     const form_el = super.create_body_element();
-    form_el.querySelector("fieldset").disabled = !this.get_parent_model().allow_edit();
+    form_el.querySelector("fieldset").disabled = !this.get_model().allow_edit();
     return form_el;
   }
 
@@ -203,10 +202,10 @@ export class CN_base_view extends CN_base_record {
     (async () => { parent_btn_el.innerHTML = await this.get_text("view_parent"); })();
     parent_btn_el.onclick = async () => await this.on_navigate_to_parent();
 
-    if (this.get_parent_model().allow_delete()) {
+    if (this.get_model().allow_delete()) {
       const delete_btn_el = CN_element.create(`
         <button name="delete" type="button" class="btn btn-danger">
-          Delete ${CN_common.uc_words(this.get_parent_model().get_singular())}
+          Delete ${CN_common.uc_words(this.get_model().get_singular())}
         </button>
       `);
       btn_group_el.append(delete_btn_el);
@@ -223,9 +222,8 @@ export class CN_base_view extends CN_base_record {
     const el = super.render();
 
     // add a child list selector
-    const module = this.get_parent_model().get_module();
-    const child_list = module.get_children().concat(module.get_choosing());
-    if (1 < child_list.length) {
+    const model = this.get_model();
+    if (1 < model.get_child_model_list().length) {
       const list_selector_el = CN_element.create_card();
       el.append(list_selector_el);
 
@@ -243,38 +241,35 @@ export class CN_base_view extends CN_base_record {
       list_selector_el.querySelector(".card-footer").append(btn_group_el);
 
       // add children to the list selector and render them
-      child_list.forEach((child_name) => {
-        const child_module = CN_session.get_module(child_name);
-
+      model.get_child_model_list().forEach((child_model) => {
         const child_btn_el = CN_element.create(`
-          <button name="${child_module.get_name()}" type="button" class="col btn btn-primary mx-1">
-            ${CN_common.uc_words(child_module.get_model().get_singular())}
+          <button name="${child_model.get_name()}" type="button" class="col btn btn-primary mx-1">
+            ${CN_common.uc_words(child_model.get_singular())}
           </button>
         `);
         btn_group_el.append(child_btn_el);
 
         child_btn_el.onclick = async () => {
-          this.#tab = child_name;
+          this.#tab = child_model.get_name();
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
-          child_list.forEach(c => {
-            const child_el = CN_session.get_module(c).get_model().get_element();
-            if (c == child_name) {
-              el.append(child_el);
+          model.get_child_model_list().forEach(sub_child_model => {
+            if (sub_child_model.get_name() == child_model.get_name()) {
+              el.append(sub_child_model.get_element());
             } else {
-              child_el.remove();
+              sub_child_model.get_element().remove();
             }
           });
         };
 
-        const child_el = child_module.get_model().render();
-        if (child_name == (new URL(window.location)).searchParams.get('tab')) {
+        const child_el = child_model.render();
+        if (child_model.get_name() == (new URL(window.location)).searchParams.get('tab')) {
           el.append(child_el);
         }
       });
-    } else if (1 == child_list.length) {
+    } else if (1 == model.get_child_model_list().length) {
       // render the only child directly
-      el.append(CN_session.get_module(child_list[0]).get_model().render());
+      el.append(model.get_child_model_list()[0].render());
     }
 
     return el;
@@ -285,16 +280,13 @@ export class CN_base_view extends CN_base_record {
    * @param boolean children: Whether to also run the action's childern (if any)
    */
   async run(children = false) {
-    const module = this.get_parent_model().get_module();
-    if (null == module.get_action_name()) return;
+    if (null == this.get_model().get_action_name()) return;
 
     await super.run(children);
 
     if (children) {
-      // run all children and choosing models as well
-      module.get_children().concat(module.get_choosing()).forEach(
-        async (name) => CN_session.get_module(name).get_model().run()
-      );
+      // run all children as well
+      this.get_model().get_child_model_list().forEach(model => model.run());
     }
   }
 }

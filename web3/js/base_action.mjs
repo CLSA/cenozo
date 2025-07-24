@@ -8,7 +8,7 @@ import { CN_base_object } from "./base_object.mjs"
  */
 export class CN_base_action extends CN_base_object {
   #type;
-  #parent_model = null;
+  #model = null;
   #header_el;
   #body_el;
   #placeholder_el;
@@ -20,22 +20,34 @@ export class CN_base_action extends CN_base_object {
   /**
    * Constructor
    * @param string type: The type of action ("add", "list", "view", etc)
-   * @param base_model parent_model: The model that the action belongs to
+   * @param base_model model: The model that the action belongs to
    */
-  constructor(type, parent_model) {
+  constructor(type, model) {
     super();
     this.#type = type;
-    this.#parent_model = parent_model;
+    this.#model = model;
   }
 
   // access methods
   get_type() { return this.#type }
-  get_parent_model() { return this.#parent_model }
-  get_element() { return this.#parent_model.get_element() }
-  get_header_element() { return this.#header_el; }
-  get_body_element() { return this.#body_el; }
-  get_placeholder_element() { return this.#placeholder_el; }
-  get_footer_element() { return this.#footer_el; }
+  get_model() { return this.#model }
+  get_element() { return this.#model.get_element() }
+  get_header_element() {
+    if (!this.#header_el) this.#header_el = this.create_header_element();
+    return this.#header_el;
+  }
+  get_body_element() {
+    if (!this.#body_el) this.#body_el = this.create_body_element();
+    return this.#body_el;
+  }
+  get_placeholder_element() {
+    if (!this.#placeholder_el) this.#placeholder_el = this.create_placeholder_element();
+    return this.#placeholder_el;
+  }
+  get_footer_element() {
+    if (!this.#footer_el) this.#footer_el = this.create_footer_element();
+    return this.#footer_el;
+  }
 
   /**
    * Gets UI text values by type
@@ -54,7 +66,7 @@ export class CN_base_action extends CN_base_object {
 
     const card_body_el = this.get_element().querySelector(".card-body");
     card_body_el.innerHTML = "";
-    card_body_el.append(this.#placeholder_el);
+    card_body_el.append(this.get_placeholder_element());
   }
 
   /**
@@ -65,19 +77,15 @@ export class CN_base_action extends CN_base_object {
 
     const card_body_el = this.get_element().querySelector(".card-body");
     card_body_el.innerHTML = "";
-    card_body_el.append(this.#body_el);
+    card_body_el.append(this.get_body_element());
   }
 
   /**
    * Navigates to the action's parent action
    */
   async on_navigate_to_parent() {
-    const parent_module = this.#parent_model.get_parent_module();
-    await CN_session.navigate_to(
-      parent_module ?
-      parent_module.get_model().get_view_url() :
-      this.#parent_model.get_list_url()
-    );
+    const parent_model = this.#model.get_parent_model();
+    await CN_session.navigate_to(parent_model ? parent_model.get_view_url() : this.#model.get_list_url());
   }
 
   /**
@@ -188,18 +196,14 @@ export class CN_base_action extends CN_base_object {
    */
   render() {
     const el = CN_element.create('<div name="model-action"></div>');
-    if (null == this.#parent_model.get_module().get_action_name()) return el;
+    if (null == this.#model.get_action_name()) return el;
 
     el.append(CN_element.create_card());
 
     // add the header, body and footer
-    this.#header_el = this.create_header_element();
-    el.querySelector(".card-header").append(this.#header_el);
-    this.#body_el = this.create_body_element();
-    this.#placeholder_el = this.create_placeholder_element();
-    el.querySelector(".card-body").append(this.#placeholder_el);
-    this.#footer_el = this.create_footer_element();
-    el.querySelector(".card-footer").append(this.#footer_el);
+    el.querySelector(".card-header").append(this.get_header_element());
+    el.querySelector(".card-body").append(this.get_placeholder_element());
+    el.querySelector(".card-footer").append(this.get_footer_element());
 
     return el;
   }
@@ -209,7 +213,7 @@ export class CN_base_action extends CN_base_object {
    * @param boolean children: Whether to also run the action's childern (if any)
    */
   async run(children = false) {
-    if (null == this.#parent_model.get_module().get_action_name()) return;
+    if (null == this.#model.get_action_name()) return;
 
     this.on_pre_loading();
     await this.on_load();

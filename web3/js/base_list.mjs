@@ -19,22 +19,21 @@ export class CN_base_list extends CN_base_action {
    *
    * TODO: document a full description of the columns parameter
    *
-   * @param base_model parent_model: The model that the list action belongs to
-   * @param object columns: A list of column definitions
+   * @param base_model model: The model that the list action belongs to
    */
-  constructor(parent_model, columns) {
-    super("list", parent_model);
+  constructor(model) {
+    super("list", model);
 
     // determine whether the list is in choosing mode
-    const parent_module = parent_model.get_parent_module();
+    const parent_model = this.get_model().get_parent_model();
     this.#list_mode = (
-      null != parent_module && parent_module.has_choose(parent_model.get_name()) ?
+      null != parent_model && parent_model.get_module().has_choose(model.get_name()) ?
       "choose" :
       "add"
     );
 
     // setup each column
-    this.#columns = CN_common.clone(columns);
+    this.#columns = model.clone_columns();
     for (var col_name in this.#columns) {
       const column = this.#columns[col_name];
       if (!column.type) column.type = "string";
@@ -47,11 +46,12 @@ export class CN_base_list extends CN_base_action {
 
       // define the is_hidden function if it hasn't been defined
       if (!CN_common.is_function(column.is_hidden)) {
-        column.is_hidden = () => {
+        column.is_hidden = (model) => {
           if (!column.column) return false;
 
           // if there's a parent then don't show columns belonging to the parent's name
-          return null != parent_module && column.column.match(`${parent_module.get_name()}\.`);
+          const parent_model = model.get_parent_model();
+          return null != parent_model && column.column.match(`${parent_model.get_name()}\.`);
         };
       }
     }
@@ -65,15 +65,15 @@ export class CN_base_list extends CN_base_action {
    */
   async get_text(type) {
     if ("header" == type) {
-      return `${CN_common.uc_words(this.get_parent_model().get_singular())} List`;
+      return `${CN_common.uc_words(this.get_model().get_singular())} List`;
     }
 
     if ("add" == type) {
-      return `Add ${CN_common.uc_words(this.get_parent_model().get_singular())}`;
+      return `Add ${CN_common.uc_words(this.get_model().get_singular())}`;
     }
 
     if ("choose" == type) {
-      return `Choose ${CN_common.uc_words(this.get_parent_model().get_plural())}`;
+      return `Choose ${CN_common.uc_words(this.get_model().get_plural())}`;
     }
 
     return await super.get_text(type);
@@ -83,7 +83,7 @@ export class CN_base_list extends CN_base_action {
    * Called when the list's add button is clicked
    */
   async on_add() {
-    await CN_session.navigate_to(this.get_parent_model().get_add_url());
+    await CN_session.navigate_to(this.get_model().get_add_url());
   }
 
   /**
@@ -95,11 +95,11 @@ export class CN_base_list extends CN_base_action {
     const modal = CN_element.confirm_modal({
       static: true,
       title: "Please Confirm",
-      message: `Are you sure you wish to delete the ${this.get_parent_model().get_singular()} record?`,
+      message: `Are you sure you wish to delete the ${this.get_model().get_singular()} record?`,
     });
 
     if (await modal.test()) {
-      await CN_api.delete(`${this.get_parent_model().get_name()}/${record.id}`);
+      await CN_api.delete(`${this.get_model().get_name()}/${record.id}`);
       await this.run();
     }
   }
@@ -114,7 +114,7 @@ export class CN_base_list extends CN_base_action {
         const params = {};
         if (0 < this.#choosing_list.add.length) params.add = this.#choosing_list.add;
         if (0 < this.#choosing_list.remove.length) params.remove = this.#choosing_list.remove;
-        const response = await CN_api.post(this.get_parent_model().get_base_path("api"), params);
+        const response = await CN_api.post(this.get_model().get_base_path("api"), params);
       }
     }
 
@@ -135,7 +135,7 @@ export class CN_base_list extends CN_base_action {
    * Override the parent method
    */
   get_on_load_path() {
-    return this.get_parent_model().get_base_path("api");
+    return this.get_model().get_base_path("api");
   }
 
   /**
@@ -158,7 +158,7 @@ export class CN_base_list extends CN_base_action {
     for (const col_name in this.#columns) {
       if (this.#columns[col_name].table_prefix) {
         let column = this.#columns[col_name].column;
-        if (!column) column = `${this.get_parent_model().get_name()}.${col_name}`;
+        if (!column) column = `${this.get_model().get_name()}.${col_name}`;
         let [table, name] = column.split(".");
         params.select.column.push({
           table: table,
@@ -242,8 +242,8 @@ export class CN_base_list extends CN_base_action {
       }
 
       this.update_element();
-    } else if (this.get_parent_model().allow_view()) {
-      await CN_session.navigate_to(this.get_parent_model().get_view_url(record.id));
+    } else if (this.get_model().allow_view()) {
+      await CN_session.navigate_to(this.get_model().get_view_url(record.id));
     }
   }
 
@@ -288,7 +288,7 @@ export class CN_base_list extends CN_base_action {
         const column = this.#columns[col_name];
 
         // don't show hidden columns
-        if (column.is_hidden(this)) continue;
+        if (column.is_hidden(this.get_model())) continue;
 
         let value = record[col_name];
         if (null === value) {
@@ -311,7 +311,7 @@ export class CN_base_list extends CN_base_action {
       }
 
       // add an empty header for deleting records
-      if (this.get_parent_model().allow_delete()) {
+      if (this.get_model().allow_delete()) {
         tr_el.innerHTML += `
           <td class="col-auto p-0">
             <button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>
@@ -328,7 +328,7 @@ export class CN_base_list extends CN_base_action {
     });
 
     const summary_el = this.get_footer_element().querySelector("[name=summary]");
-    summary_el.innerHTML = `${this.#total_records} ${this.get_parent_model().get_plural()} total`;
+    summary_el.innerHTML = `${this.#total_records} ${this.get_model().get_plural()} total`;
 
     // rebuild the pagination buttons
     const pagination_el = this.get_footer_element().querySelector("ul.pagination");
@@ -417,13 +417,13 @@ export class CN_base_list extends CN_base_action {
       const column = this.#columns[col_name];
 
       // don't show hidden columns
-      if (column.is_hidden(this)) continue;
+      if (column.is_hidden(this.get_model())) continue;
 
       header_tr_el.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${column.title}</th>`;
     }
 
     // add an empty header for deleting records
-    if (this.get_parent_model().allow_delete()) {
+    if (this.get_model().allow_delete()) {
       header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
     }
 
@@ -463,7 +463,7 @@ export class CN_base_list extends CN_base_action {
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    if ("add" != this.#list_mode || this.get_parent_model().allow_add()) {
+    if ("add" != this.#list_mode || this.get_model().allow_add()) {
       const btn_el = CN_element.create(
         `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
       );
@@ -476,7 +476,7 @@ export class CN_base_list extends CN_base_action {
     footer_el.append(summary_el);
 
     footer_el.append(CN_element.create(`
-      <nav aria-label="${CN_common.uc_words(this.get_parent_model().get_singular())} List navigation">
+      <nav aria-label="${CN_common.uc_words(this.get_model().get_singular())} List navigation">
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));

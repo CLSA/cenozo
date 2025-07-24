@@ -19,7 +19,7 @@ export class CN_trace_model extends CN_base_model {
         cohort: {
           column: "cohort.name",
           title: "Cohort",
-          is_hidden: (model) => "trace.list" != CN_session.get_leaf_action(),
+          is_hidden: () => "trace.list" != CN_session.get_leaf_action_name(),
         },
         trace_type: { column: "trace_type.name", title: "Type" },
         datetime: { title: "Date & Time", type: "datetime" },
@@ -27,7 +27,7 @@ export class CN_trace_model extends CN_base_model {
         note: { title: "Note", type: "text" },
 
         // used in the CN_trace_list.on_row_click method below
-        participant_id: { is_hidden: (model) => true },
+        participant_id: { is_hidden: () => true },
       },
       properties: {
         trace_type_id: {
@@ -57,7 +57,7 @@ export class CN_trace_add extends CN_base_add {
     if (trace_type) trace_type.disabled = true;
 
     // get the participant's current trace type
-    const response = await CN_api.get(this.get_parent_model().get_base_path("api"), {
+    const response = await CN_api.get(this.get_model().get_base_path("api"), {
       select: { column: "trace_type_id" },
       modifier: { order: { "trace.datetime": true } } },
     );
@@ -77,7 +77,7 @@ export class CN_trace_list extends CN_base_list {
    */
   get_on_load_parameters() {
     let params = super.get_on_load_parameters();
-    if ("trace.list" == CN_session.get_leaf_action()) {
+    if ("trace.list" == CN_session.get_leaf_action_name()) {
       params.modifier.where = [{
         // restrict based on role's all_sites parameter
         column: "trace_type.name",
@@ -107,7 +107,7 @@ export class CN_trace_list extends CN_base_list {
    * Extends the parent method
    */
   async on_row_click(record) {
-    if ("trace.list" == CN_session.get_leaf_action()) {
+    if ("trace.list" == CN_session.get_leaf_action_name()) {
       await CN_session.navigate_to(`participant/view/${record.participant_id}`);
     }
   }

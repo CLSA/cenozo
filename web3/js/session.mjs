@@ -17,9 +17,9 @@ import { CN_module } from "./module.mjs"
 const MODULE_MAP = new Map();
 
 /**
- * A private array of operations based on the URL
+ * A private array of models based on the current path
  */
-const OP_LIST = [];
+var PATH_MODEL_LIST = [];
 
 /**
  * The session class which handles the application
@@ -38,20 +38,20 @@ export default {
   get_module: name => MODULE_MAP.get(name),
 
   /**
-   * Returns the module at the very end of the breadcrumb trail (module currently showing on screen)
-   * @return module
+   * Returns the last model in the path (model currently showing on screen)
+   * @return model
    */
-  get_leaf_module: function() {
-    return 0 == OP_LIST.length ? null : this.get_module(OP_LIST[OP_LIST.length-1]);
+  get_leaf_model: function() {
+    return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[PATH_MODEL_LIST.length-1];
   },
 
   /**
    * Returns the name.action of the leaf module (or null if there is no leaf module)
    * @return string
    */
-  get_leaf_action: function() {
-    const leaf_module = this.get_leaf_module();
-    return leaf_module ? `${leaf_module.get_name()}.${leaf_module.get_action_name()}` : null;
+  get_leaf_action_name: function() {
+    const model = this.get_leaf_model();
+    return model ? `${model.get_name()}.${model.get_action_name()}` : null;
   },
 
   /**
@@ -137,7 +137,7 @@ export default {
       breadcrumbs_el.append(
         await CN_element.create_breadcrumb_trail(
           loading ? "Loading..." : null,
-          loading ? [] : OP_LIST,
+          loading ? [] : PATH_MODEL_LIST,
         )
       );
     })();
@@ -161,33 +161,36 @@ export default {
    * Loads all modules and creates all models based on the current URL
    */
   load: async function() {
+    // reset the path model list
+    PATH_MODEL_LIST.length = 0;
+
+    // build the action list based on the path
     const href_parts = window.location.pathname
       .replace(new RegExp(`${ROOT_URL}/`), "")
       .split("/")
       .filter(str => 0 < str.length);
-
-    // reset all module operations
-    for (const [module_name, module] of MODULE_MAP) module.reset_operation();
-
-    // now set all new operations and import any missing models
-    OP_LIST.length = 0;
-    let parent_module_name = null;
-    let module_name = null;
-    let action = null;
+    let model_data_list = [];
+    let model_data = null;
     let module = null;
 
-    // parse the href and collect a list of all modules that need to be loaded
+    // parse the href and re-create the path model list, collecting all promises along the way
+    const promise_list = [];
     href_parts.forEach((str, index) => {
       const m = index % 3;
       const i = Math.floor(index / 3);
       if (0 == m) {
-        parent_module_name = null == module ? null : module.get_name();
+        const module_name = str;
 
-        // validate the module's parent
-        module = this.get_module(str);
-        if (!module) throw new Error(`Error loading session: module "${str}" does not exist`);
+        // validate the module
+        module = this.get_module(module_name);
+        if (!module) throw new Error(`Error loading session: module "${module_name}" does not exist`);
 
-        if (!module.set_operation_parent(parent_module_name)) {
+        if (CN_common.is_object(model_data)) {
+          // gather the promise from loading the module's classes
+          promise_list.push(model_data.module.load_classes());
+          model_data_list.push(model_data);
+        } else if (!module.is_root()) {
+          // make sure that only root modules can be the root action
           let error = new URIError();
           error.error_code = null;
           error.name = "Not Found";
@@ -195,25 +198,44 @@ export default {
           throw error;
         }
 
-        OP_LIST.push(module.get_name());
+        // create the next action
+        model_data = { module: this.get_module(module_name) };
       } else if (1 == m) {
-        // validate the module's action
-        const result = module.set_operation_action(str);
-        if ("not allowed" == result) {
-          throw new Error(`Error loading session: module ${module.get_name()} does not allow action "${str}".`);
-        }
+        model_data.action = str;
       } else if (2 == m) {
-        module.set_operation_identifier(str);
+        model_data.identifier = str;
       }
     });
 
-    // now load all models
-    const promise_list = [];
-    for (const [module_name, module] of MODULE_MAP) {
-      // only load the classes for modules that have an action
-      if (module.get_action_name()) promise_list.push(module.load_classes());
+    if (CN_common.is_object(model_data)) {
+      // add the child model to the list
+      promise_list.push(model_data.module.load_classes());
+      model_data_list.push(model_data);
+
+      // if viewing the child model then load its children and choosing module classes as well
+      if ("view" == model_data.action) {
+        promise_list.push(...model_data.module.get_children().map(m => this.get_module(m).load_classes()));
+        promise_list.push(...model_data.module.get_choosing().map(m => this.get_module(m).load_classes()));
+      }
     }
+
+    // now load all necessary classes
     await Promise.all(promise_list);
+
+    // create and configure all models
+    let parent_model = null;
+    PATH_MODEL_LIST = model_data_list.map(model_data => {
+      const model = model_data.module.create_model();
+      model.configure(model_data.action, model_data.identifier, parent_model);
+      parent_model = model;
+      return model;
+    });
+
+    // and finally, if the leaf model's action is view then configure its children
+    const leaf_model = this.get_leaf_model();
+    if (leaf_model && "view" == leaf_model.get_action_name()) {
+      leaf_model.configure_children();
+    }
   },
 
   /**
@@ -223,35 +245,16 @@ export default {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
 
-    // create all models and validate all operations
-    for (const [module_name, module] of MODULE_MAP) {
-      // only create the model for modules that have an action
-      if (module.get_action_name()) module.create_model();
-    }
+    // determine the leaf model
+    let leaf_model = this.get_leaf_model();
+    if (null == leaf_model) leaf_model = new CN_home_model();
 
-    // render the left module's content (or the home model if there are no operations
-    const leaf_module = this.get_leaf_module();
-    const model = leaf_module ? leaf_module.get_model() : new CN_home_model();
+    // first load all non-leaf models as their data may be needed by the leaf model
+    await Promise.all(PATH_MODEL_LIST.slice(0, -1).map(model => model.get_action().on_load()));
 
-    // TODO: The remaining codes used to be in the following try/catch block but it may not be necessary
-    // If errors aren't being handled correctly in the browser this may need to be re-introduced
-    /*
-    try {
-    } catch (error) {
-      throw error;
-    }
-    */
-    const module_el = model.render();
-    main_content_el.append(module_el);
-
-    // first load all parent views as their data may be needed by the leaf model
-    await Promise.all(OP_LIST
-      .filter(module_name => module_name != model.get_name())
-      .map(module_name => this.get_module(module_name).get_model().get_action().on_load())
-    );
-
-    // now run the model and update the breadcrumbs
-    await model.run();
+    // now render and run the leaf module
+    main_content_el.append(leaf_model.render());
+    await leaf_model.run();
     await this.update_breadcrumbs();
   },
 

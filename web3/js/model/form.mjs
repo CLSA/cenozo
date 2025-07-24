@@ -23,7 +23,7 @@ export class CN_form_model extends CN_base_model {
         date: { title: "Date", type: "date" },
 
         // needed by the CN_form_list.on_row_click() method below
-        form_type_id: { is_hidden: (model) => true }
+        form_type_id: { is_hidden: () => true }
       },
       properties: {
         form_type_id: {
@@ -39,7 +39,7 @@ export class CN_form_model extends CN_base_model {
 
 export class CN_form_list extends CN_base_list {
   async on_row_click(record) {
-    if (!this.is_choosing() && this.get_parent_model().allow_view()) {
+    if (!this.is_choosing() && this.get_model().allow_view()) {
       // always view forms using the form_type as the parent
       await CN_session.navigate_to(`form_type/view/${record.form_type_id}/form/view/${record.id}`);
     } else {

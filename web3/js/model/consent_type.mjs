@@ -16,7 +16,7 @@ export class CN_consent_type_model extends CN_base_model {
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name: { title: "Name" },
+        name: { title: "Name", format: "identifier" },
         description: { title: "Description", type: "text" },
       },
     });

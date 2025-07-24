@@ -24,17 +24,17 @@ export class CN_alternate_consent_model extends CN_base_model {
           title: "Consent Type",
           type: "enum",
           enum: { path: "alternate_consent_type" },
-          is_constant: (model) => "view" == model.get_type(),
+          is_constant: (model) => "view" == model.get_action_name(),
         },
         accept: {
           title: "Accept",
           type: "boolean",
-          is_constant: (model) => "view" == model.get_type(),
+          is_constant: (model) => "view" == model.get_action_name(),
         },
         written: {
           title: "Written",
           type: "boolean",
-          is_constant: (model) => "view" == model.get_type(),
+          is_constant: (model) => "view" == model.get_action_name(),
           is_hidden: () => 3 > CN_session.data.role.tier,
         },
         datetime: { title: "Date & Time", type: "date", max: "now" }, // TODO: change type to datetimesecond

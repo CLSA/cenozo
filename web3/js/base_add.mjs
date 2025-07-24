@@ -11,11 +11,10 @@ export class CN_base_add extends CN_base_record {
   /**
    * Constructor
    *
-   * @param base_model parent_model: The model that the action belongs to
-   * @param object properties: A list of property definitions (see parent class for more details)
+   * @param base_model model: The model that the action belongs to
    */
-  constructor(parent_model, properties) {
-    super("add", parent_model, properties);
+  constructor(model) {
+    super("add", model);
   }
 
   /**
@@ -23,11 +22,9 @@ export class CN_base_add extends CN_base_record {
    */
   async get_text(type) {
     if ("header" == type) {
-      let text = `Add ${CN_common.uc_words(this.get_parent_model().get_singular())}`;
-      const parent_module = this.get_parent_model().get_parent_module();
-      if (parent_module) {
-        text += ` to ${CN_common.uc_words(parent_module.get_model().get_singular())}`;
-      }
+      let text = `Add ${CN_common.uc_words(this.get_model().get_singular())}`;
+      const parent_model = this.get_model().get_parent_model();
+      if (parent_model) text += ` to ${CN_common.uc_words(parent_model.get_singular())}`;
       return text;
     }
 
@@ -72,7 +69,7 @@ export class CN_base_add extends CN_base_record {
     let valid = true;
     this.for_each_property(prop => {
       // validate all visible properties
-      if (!prop.is_hidden(this) && !prop.element.validate()) valid = false;
+      if (!prop.is_hidden(this.get_model()) && !prop.element.validate()) valid = false;
     });
 
     return valid;
@@ -88,24 +85,25 @@ export class CN_base_add extends CN_base_record {
     let record = {};
     this.for_each_property(prop => {
       // set record value
-      if (!prop.is_hidden(this)) {
+      if (!prop.is_hidden(this.get_model())) {
         record[prop.name] = this.get_formatted_property(prop.name);
       }
     });
 
     try {
-      const parent_model = this.get_parent_model();
+      const model = this.get_model();
+      const parent_model = model.get_parent_model();
 
       // post the new record
-      const response = await CN_api.post(parent_model.get_base_path("api"), record);
+      const response = await CN_api.post(model.get_base_path("api"), record);
 
-      // now view the new record
-      const id = await response.text();
-      await CN_session.navigate_to(
-        parent_model.allow_view() ?
-        parent_model.get_view_url(id) :
-        parent_model.get_parent_module().get_model().get_view_url()
-      );
+      if (parent_model) {
+        // go back to the parent
+        await CN_session.navigate_to(parent_model.get_view_url());
+      } else {
+        const new_id = await response.text();
+        await CN_session.navigate_to(model.allow_view() ? model.get_view_url(new_id) : model.get_list_url());
+      }
     } catch (error) {
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
@@ -149,7 +147,7 @@ export class CN_base_add extends CN_base_record {
       }
 
       control_el.querySelectorAll("option").forEach(option_el => {
-        let default_value = prop.get_default(this);
+        let default_value = prop.get_default(this.get_model());
         default_value = null == default_value ? "" : default_value.toString();
         if (option_el.value === default_value) {
           option_el.selected = true;
@@ -158,7 +156,7 @@ export class CN_base_add extends CN_base_record {
         }
       });
     } else {
-      let default_value = prop.get_default(this);
+      let default_value = prop.get_default(this.get_model());
       if (undefined !== default_value) control_el.value = default_value;
       if ("typeahead" == prop.type) control_el.last_selected_value = control_el.value;
     }

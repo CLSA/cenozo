@@ -253,29 +253,33 @@ export default {
       // determine if there was an error
       let error = null;
 
-      if (el.params.required && [null, ""].includes(control_el.value)) {
-        error = "Can't be empty";
-      } else if (
-        "email" == type &&
-        !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
-      ) {
-        error = `${control_el.value} is not a valid email address`;
-      } else if (
-        ["integer", "float"].includes(type) &&
-        null != el.params.min && control_el.value < el.params.min
-      ) {
-        error = `The smallest number allowed is ${el.params.min}`;
-      } else if (
-        ["integer", "float"].includes(type) &&
-        null != el.params.max && control_el.value > el.params.max
-      ) {
-        error = `The biggest number allowed is ${el.params.max}`;
-      } else if (
-        "time" == type &&
-        0 < control_el.value.length &&
-        !control_el.value.match(/^(2[0-3]|[01]?[0-9]):([0-5]?[0-9])$/)
-      ) {
-        error = `${control_el.value} is not a valid time`;
+      if ([null, ""].includes(control_el.value)) {
+        // the value is empty, so just make sure it isn't required
+        if (el.params.required) error = "Can't be empty";
+      } else {
+        // the value isn't empty, so validate further
+        if (
+          "email" == type &&
+          !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
+        ) {
+          error = `${control_el.value} is not a valid email address`;
+        } else if (
+          ["integer", "float"].includes(type) &&
+          null != el.params.min && control_el.value < el.params.min
+        ) {
+          error = `The smallest number allowed is ${el.params.min}`;
+        } else if (
+          ["integer", "float"].includes(type) &&
+          null != el.params.max && control_el.value > el.params.max
+        ) {
+          error = `The biggest number allowed is ${el.params.max}`;
+        } else if (
+          "time" == type &&
+          0 < control_el.value.length &&
+          !control_el.value.match(/^(2[0-3]|[01]?[0-9]):([0-5]?[0-9])$/)
+        ) {
+          error = `${control_el.value} is not a valid time`;
+        }
       }
 
       if (null == error && el.params.format) {
@@ -400,11 +404,11 @@ export default {
   },
 
   /**
-   * Creates a breadcrumb trail based on a module list
-   * @param array module_list: A list of modules in their trail order
+   * Creates a breadcrumb trail based on a model list
+   * @param [model] model_list: A list of models in their trail order
    * @return Element
    */
-  create_breadcrumb_trail: async function(base_name, module_list) {
+  create_breadcrumb_trail: async function(base_name, model_list) {
     // create a list of all crumbs (adding chevrons later)
     let crumb_list = [];
 
@@ -418,35 +422,26 @@ export default {
       crumb_list.push({ name: base_name, path: null });
     }
 
-    let parent_module = null;
-    await Promise.all(module_list.map(async module_name => {
-      if ("error" == module_name) {
-        crumb_list.push({ name: "Error", path: null });
-      } else {
-        const module = CN_session.get_module(module_name);
-        const action_name = module.get_action_name();
-        const model = module.get_model();
-        if ("add" == action_name) {
-          crumb_list.push({
-            name: `Add ${CN_common.uc_words(model.get_singular())}`,
-            path: null,
-          });
-        } else if ("view" == action_name) {
-          const crumb = {
-            name: "...",
-            path: model.get_view_url(),
-          };
-          crumb_list.push(crumb);
+    await Promise.all(model_list.map(async model => {
+      if ("add" == model.get_action_name()) {
+        crumb_list.push({
+          name: `Add ${CN_common.uc_words(model.get_singular())}`,
+          path: null,
+        });
+      } else if ("view" == model.get_action_name()) {
+        const crumb = {
+          name: "...",
+          path: model.get_view_url(),
+        };
+        crumb_list.push(crumb);
 
-          // get the name after we've added the crumb to the list, otherwise it may be out of order
-          crumb.name = await model.get_action().get_text("name");
-        } else if ("list" == action_name) {
-          crumb_list.push({
-            name: CN_common.uc_words(model.get_plural()),
-            path: null == parent_module ? `${module_name}/list` : parent_model.get_view_url(),
-          });
-        }
-        parent_module = module;
+        // get the name after we've added the crumb to the list, otherwise it may be out of order
+        crumb.name = await model.get_action().get_text("name");
+      } else if ("list" == model.get_action_name()) {
+        crumb_list.push({
+          name: CN_common.uc_words(model.get_plural()),
+          path: null, // TODO: re-implement
+        });
       }
     }));
 

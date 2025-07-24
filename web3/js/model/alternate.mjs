@@ -81,17 +81,32 @@ export class CN_alternate_model extends CN_base_model {
           type: "enum",
           enum: { path: "alternate_type" },
           help: "You can add more than one role after the alternate has been created.",
-          is_hidden: (model) => "view" == model.get_type(),
+          is_hidden: (model) => "view" == model.get_action_name(),
         },
         global_note: { title: "Special Note", type: "text" },
       },
     });
   }
 
-  // only allow adding when the parent module is participant or there is no parent)
+  /**
+   * Only allow adding when the parent model is participant or there is no parent)
+   */
   allow_add() {
-    const parent_module = this.get_parent_module();
-    return super.allow_add() && (null == parent_module || "participant" == this.get_name());
+    const parent_model = this.get_parent_model();
+    return super.allow_add() && (null == parent_model || "participant" == parent_model.get_name());
+  }
+
+  /**
+   * Override the default get_base_path() method when alternate_consent_type is the parent model.
+   * This is because there is no direct relationship between alternate and alternate_consent_type.
+   */
+  get_base_path(type) {
+    const parent_model = this.get_parent_model();
+    return (
+      "url" == type && parent_model && "alternate_consent_type" == parent_model.get_name() ?
+      "alternate" :
+      super.get_base_path(type)
+    );
   }
 }
 

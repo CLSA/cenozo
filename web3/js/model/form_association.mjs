@@ -30,18 +30,17 @@ export class CN_form_association_list extends CN_base_list {
     } else {
       const module = CN_session.get_module(record.subject);
 
-      // create the model if it doesn't already exist
-      if (!module.get_model()) {
-        await module.load_classes();
-        module.create_model();
-      }
-
-      if (module.action_allowed("view")) {
-        await CN_session.navigate_to(module.get_model().get_view_url(record.record_id));
+      // Make sure the module's classes have been loaded, then create a new model
+      // Note that we don't have to configure it because we're not using it to render anything
+      await module.load_classes();
+      const model = module.create_model();
+      
+      if (model.allow_view()) {
+        await CN_session.navigate_to(model.get_view_url(record.record_id));
       } else {
         CN_element.message_modal({
           title: "Permission Denied",
-          message: `You do not have access to viewing ${module.get_model().get_plural()} records.`,
+          message: `You do not have access to viewing ${model.get_plural()} records.`,
           type: "danger",
         }).show();
       }

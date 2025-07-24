@@ -21,7 +21,7 @@ export class CN_phone_model extends CN_traceable_model {
           enum: {
             path: (model) => {
               // get a list of the owner's addresses
-              const base_url = model.get_parent_model().get_parent_module().get_model().get_view_url(null, "api");
+              const base_url = model.get_parent_model().get_view_url(null, "api");
               return `${base_url}/address`;
             },
             select: { column: [
@@ -40,7 +40,7 @@ export class CN_phone_model extends CN_traceable_model {
           title: "International",
           type: "boolean",
           help: "Cannot be changed once the phone has been created.",
-          is_constant: (model) => "view" == model.get_type(),
+          is_constant: (model) => "view" == model.get_action_name(),
         },
         rank: { title: "Rank", type: "rank" },
         type: { title: "Type", type: "enum" },

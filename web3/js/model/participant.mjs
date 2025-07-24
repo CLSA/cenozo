@@ -27,17 +27,17 @@ export class CN_participant_model extends CN_base_model {
       },
       columns: columns,
       properties: {
-        uid: { title: "UID", is_constant: (model) => true },
+        uid: { title: "UID", is_constant: () => true },
         cohort: {
           column: "cohort.name",
           title: "Cohort",
           meta: { table: "cohort", column: "name" },
-          is_constant: (model) => true,
+          is_constant: () => true,
         },
         status: {
           title: "Status",
           meta: { column: "status" },
-          is_constant: (model) => true
+          is_constant: () => true
         },
         global_note: { title: "Special Note", type: "text" },
 
@@ -62,7 +62,7 @@ export class CN_participant_model extends CN_base_model {
             exclusion: {
               title: "Enrolled",
               meta: { column: "exclusion" },
-              is_constant: (model) => true,
+              is_constant: () => true,
               help: "Whether the participant has been enrolled into the study, and if not then the reason they have been excluded.",
             },
             hold: {
@@ -72,7 +72,7 @@ export class CN_participant_model extends CN_base_model {
                 title: "Change",
                 onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
               },
-              is_constant: (model) => true,
+              is_constant: () => true,
             },
             trace: {
               title: "Trace",
@@ -81,7 +81,7 @@ export class CN_participant_model extends CN_base_model {
                 title: "Change",
                 onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
               },
-              is_constant: (model) => true,
+              is_constant: () => true,
             },
             proxy: {
               title: "Proxy",
@@ -90,7 +90,7 @@ export class CN_participant_model extends CN_base_model {
                 title: "Change",
                 onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
               },
-              is_constant: (model) => true,
+              is_constant: () => true,
             },
           },
         },
@@ -101,11 +101,11 @@ export class CN_participant_model extends CN_base_model {
             source: {
               title: "Source",
               meta: { table: "source", column: "name" },
-              is_constant: (model) => true,
+              is_constant: () => true,
             },
             sex: {
               title: "Sex at Birth",
-              is_constant: (model) => true,
+              is_constant: () => true,
             },
             gender_identity: { title: "Gender Identity", type: "enum" },
             pronouns: { title: "Pronouns" },
@@ -113,19 +113,19 @@ export class CN_participant_model extends CN_base_model {
               title: "Date of Birth",
               type: "dob",
               max: "now",
-              is_constant: (model) => 3 <= CN_session.data.role.tier,
+              is_constant: () => 3 <= CN_session.data.role.tier,
             },
             date_of_death: {
               title: "Date of Death",
               type: "dod",
               min: "date_of_birth",
               max: "now",
-              is_constant: (model) => true,
+              is_constant: () => true,
             },
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
               type: "enum",
-              is_constant: (model) => true,
+              is_constant: () => true,
               /*
                 TODO: is constant should be
                   angular.isUndefined(model.viewModel.record.date_of_death) ||
@@ -137,7 +137,7 @@ export class CN_participant_model extends CN_base_model {
               title: "Death Confirmed by Ministry",
               type: "boolean",
               help: "Determines whether information about the participant's death is confirmed by a ministry",
-              is_constant: (model) => true,
+              is_constant: () => true,
               /*
                 TODO: is constant should be
                   angular.isUndefined(model.viewModel.record.date_of_death) ||

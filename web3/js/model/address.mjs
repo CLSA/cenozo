@@ -38,7 +38,7 @@ export class CN_address_model extends CN_traceable_model {
               model.get_property("international").state.undo();
             }
           },
-          is_constant: (model) => "view" == model.get_type(),
+          is_constant: (model) => "view" == model.get_action_name(),
         },
         address1: { title: "Address Line 1", type: "string" },
         address2: { title: "Address Line 2", type: "string" },
@@ -55,7 +55,10 @@ export class CN_address_model extends CN_traceable_model {
             } },
             modifier: { order: ["country.name", "region.name"] },
           },
-          is_hidden: (model) => "add" == model.get_type() || model.get_property("international").state.get(),
+          is_hidden: (model) => (
+            "add" == model.get_action_name() ||
+            model.get_action().get_property("international").state.get()
+          ),
           is_constant: () => true,
           help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
         },
@@ -63,9 +66,9 @@ export class CN_address_model extends CN_traceable_model {
           title: "Region",
           type: "string",
           is_hidden: (model) => !(
-            "add" == model.get_type() ?
-            1 == model.get_property("international").element.querySelector("select").value :
-            model.get_property("international").state.get()
+            "add" == model.get_action_name() ?
+            1 == model.get_action().get_property("international").element.querySelector("select").value :
+            model.get_action().get_property("international").state.get()
           ),
           help: "International regions are unrestricted and are not automatically set by the postcode.",
         },
@@ -88,9 +91,9 @@ export class CN_address_model extends CN_traceable_model {
             },
           },
           is_hidden: (model) => !(
-            "add" == model.get_type() ?
-            1 == model.get_property("international").element.querySelector("select").value :
-            model.get_property("international").state.get()
+            "add" == model.get_action_name() ?
+            1 == model.get_action().get_property("international").element.querySelector("select").value :
+            model.get_action().get_property("international").state.get()
           ),
         },
         postcode: {
@@ -101,13 +104,13 @@ export class CN_address_model extends CN_traceable_model {
         timezone_offset: {
           title: "Timezone Offset",
           type: "float",
-          is_hidden: (model) => "add" == model.get_type(),
+          is_hidden: (model) => "add" == model.get_action_name(),
           help: "The number of hours difference between the address' timezone and UTC.",
         },
         daylight_savings: {
           title: "Daylight Savings",
           type: "boolean",
-          is_hidden: (model) => "add" == model.get_type(),
+          is_hidden: (model) => "add" == model.get_action_name(),
           help: "Whether the address observes daylight savings.",
         },
         note: { title: "Note", type: "text" },
@@ -131,18 +134,6 @@ export class CN_address_model extends CN_traceable_model {
         },
       },
     });
-  }
-
-  /**
-   * Extends the parent method
-   */
-  get_base_path(type) {
-    // restrict the application address list by application-type
-    return (
-      "application" == this.get_parent_module().get_name() ?
-      `application_type/${CN_session.data.application.application_type_id}/address` :
-      super.get_base_path(type)
-    );
   }
 }
 

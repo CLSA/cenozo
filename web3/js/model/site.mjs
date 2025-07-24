@@ -37,7 +37,7 @@ export class CN_site_model extends CN_base_model {
             modifier: { order: ["country.name", "region.name"] },
           },
           is_constant: () => true,
-          is_hidden: (model) => "add" == model.get_type(),
+          is_hidden: (model) => "add" == model.get_action_name(),
         },
         postcode: { title: "Postal or Zip Code", },
       },

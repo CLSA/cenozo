@@ -16,19 +16,16 @@ export class CN_base_record extends CN_base_action {
    * TODO: document a full description of the properties parameter
    *
    * @param string type: The type of action (either "add" or "view")
-   * @param base_model parent_model: The model that the action belongs to
-   * @param object properties: A list of property definitions
+   * @param base_model model: The model that the action belongs to
    */
-  constructor(type, parent_model, properties) {
-    super(type, parent_model);
-
-    const module = this.get_parent_model().get_module();
-    const parent_module = this.get_parent_model().get_parent_module();
+  constructor(type, model) {
+    super(type, model);
 
     // while setting up all property groups keep track of all property names to ensure they are unique
     let existing_properties = {};
 
     // setup all property group
+    const properties = this.get_model().clone_properties();
     this.#property_groups = {};
     for (var key in properties) {
       let entry = properties[key];
@@ -39,7 +36,7 @@ export class CN_base_record extends CN_base_action {
         for (var prop_name in entry.properties) {
           if (existing_properties.hasOwnProperty(prop_name)) {
             throw new Error(
-              `The "${module.get_name()}" model contains a duplicate propery name "${prop_name}" ` +
+              `The "${this.get_model().get_name()}" model contains a duplicate propery name "${prop_name}" ` +
               `that already exists in the "${existing_properties[prop_name]}" group.`
             );
           }
@@ -74,11 +71,13 @@ export class CN_base_record extends CN_base_action {
     }
 
     // setup properties in each group
+    const module = this.get_model().get_module();
+    const parent_model = this.get_model().get_parent_model();
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
         const module_prop = module.get_property(prop_name);
         const prop = this.#property_groups[group_name].properties[prop_name];
-        prop.id = [this.get_parent_model().get_unique_id(), prop_name].join("-");
+        prop.id = [this.get_model().get_unique_id(), prop_name].join("-");
         prop.name = prop_name;
         prop.state = new CN_state();
         if (!prop.type) prop.type = "string";
@@ -88,7 +87,7 @@ export class CN_base_record extends CN_base_action {
         if (!prop.hasOwnProperty("meta")) {
           if (!module.has_property(prop.name)) {
             throw new Error(
-              `Model property "${prop.name}" does not exist in parent "${module.get_name()}" module.`
+              `Model property "${prop.name}" does not exist in "${this.get_model().get_name()}" module.`
             );
           }
         }
@@ -124,15 +123,21 @@ export class CN_base_record extends CN_base_action {
         // make sure all properties have the is_constant, is_hidden and get_default functions
         if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
         if (!CN_common.is_function(prop.is_hidden)) {
-          prop.is_hidden = () => parent_module && prop.name.match(`${parent_module.get_name()}_id`);
+          prop.is_hidden = (model) => {
+            const parent_model = model.get_parent_model();
+            return parent_model && prop.name.match(`${parent_model.get_name()}_id`);
+          };
         }
         if (!CN_common.is_function(prop.get_default)) {
           // if the column is a reference to the parent then use the parent's id
-          prop.get_default = () => (
-            parent_module && prop.name.match(`${parent_module.get_name()}_id`) ?
-            parent_module.get_model().get_action().get_property("id").state.get() :
-            (module_prop ? module_prop.default : null)
-          );
+          prop.get_default = (model) => {
+            const parent_model = model.get_parent_model();
+            return (
+              parent_model && prop.name.match(`${parent_model.get_name()}_id`) ?
+              parent_model.get_identifier() :
+              (module_prop ? module_prop.default : null)
+            );
+          };
         }
       }
     }
@@ -171,7 +176,7 @@ export class CN_base_record extends CN_base_action {
     const promise_list = [];
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
-        const module_prop = this.get_parent_model().get_module().get_property(prop_name);
+        const module_prop = this.get_model().get_module().get_property(prop_name);
         const prop = this.#property_groups[group_name].properties[prop_name];
 
         if ("enum" == prop.type) {
@@ -185,7 +190,11 @@ export class CN_base_record extends CN_base_action {
             // create an async function and add it to the promise list so they can be run in parallel
             const get_enums = async () => {
               // the path may be dynamic
-              let path = CN_common.is_function(prop.enum.path) ? await prop.enum.path(this) : prop.enum.path;
+              let path = (
+                CN_common.is_function(prop.enum.path) ?
+                await prop.enum.path(this.get_model()) :
+                prop.enum.path
+              );
 
               const response = await CN_api.get(path, params);
               prop.enum.values = (await response.json()).reduce((list, record) => {
@@ -209,14 +218,14 @@ export class CN_base_record extends CN_base_action {
           // populate the rank enum based on the max rank
           const params = {
             select: { column: {
-              column: `max(${this.get_parent_model().get_name()}.rank)`,
+              column: `max(${this.get_model().get_name()}.rank)`,
               alias: "max_rank",
               table_prefix: false
             } },
           };
 
           const get_max_rank = async () => {
-            const response = await CN_api.get(this.get_parent_model().get_base_path("api"), params);
+            const response = await CN_api.get(this.get_model().get_base_path("api"), params);
             let max_rank = (await response.json())[0].max_rank;
             if (null == max_rank) max_rank = 0;
             prop.enum = { values: [] };
@@ -269,14 +278,14 @@ export class CN_base_record extends CN_base_action {
         prop.element.hide_error();
 
         // remove any properties that evaluate to hidden
-        if (prop.is_hidden(this)) {
+        if (prop.is_hidden(this.get_model())) {
           prop_el.style.display = "none";
         } else {
           prop_el.style.removeProperty("display");
         }
 
         // disable any properties that evaluate to constant
-        control_el.disabled = prop.is_constant(this);
+        control_el.disabled = prop.is_constant(this.get_model());
 
         // now update the property element (this varies in the child base_add and base_view classes)
         this.update_property_element(prop.name);
@@ -291,7 +300,7 @@ export class CN_base_record extends CN_base_action {
     const form_el = CN_element.create("<form></form>");
     form_el.fieldset_el = CN_element.create("<fieldset></fieldset>");
 
-    form_el.fieldset_el.disabled = "view" == this.get_type() && !this.get_parent_model().allow_edit();
+    form_el.fieldset_el.disabled = "view" == this.get_type() && !this.get_model().allow_edit();
     form_el.append(form_el.fieldset_el);
 
     // create the main group above all others
@@ -351,7 +360,7 @@ export class CN_base_record extends CN_base_action {
    */
   create_property_group_element(group_name) {
     const group = this.#property_groups[group_name];
-    const group_id = [this.get_parent_model().get_unique_id(), group_name].join("-");
+    const group_id = [this.get_model().get_unique_id(), group_name].join("-");
     return CN_element.create(`
       <div class="accordion-item px-0">
         <div class="accordion-header">
@@ -378,7 +387,7 @@ export class CN_base_record extends CN_base_action {
    * @return Element
    */
   create_property_element(prop_name) {
-    const module_prop = this.get_parent_model().get_module().get_property(prop_name);
+    const module_prop = this.get_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
     const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 

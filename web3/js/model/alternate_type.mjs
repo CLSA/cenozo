@@ -20,8 +20,8 @@ export class CN_alternate_type_model extends CN_base_model {
         description: { title: "Description", type: "text" },
 
         // used in the CN_alternate_type_list.is_choose_disabled method below
-        access: { table_prefix: false, is_hidden: (model) => true },
-        role_count: { table_prefix: false, is_hidden: (model) => true },
+        access: { table_prefix: false, is_hidden: () => true },
+        role_count: { table_prefix: false, is_hidden: () => true },
       },
       properties: {
         name: {
@@ -48,7 +48,7 @@ export class CN_alternate_type_list extends CN_base_list {
   is_choose_disabled(record) {
     // when selecting an alternate's alternate_type, restrict by role
     return (
-      "alternate.view" == CN_session.get_leaf_action() &&
+      "alternate.view" == CN_session.get_leaf_action_name() &&
       0 < record.role_count &&
       !record.access
     );
