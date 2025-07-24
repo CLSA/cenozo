@@ -48,7 +48,7 @@
     } else {
       const submit_button_el = document.querySelector("button[name=submit]");
 
-      submit_button_el.onclick = function() {
+      submit_button_el.addEventListener("click", () => {
         const username_label_el = document.querySelector("label[for=username]");
         const username_el = document.querySelector("#username");
         const password_label_el = document.querySelector("label[for=password]");
@@ -75,8 +75,8 @@
 
         if (proceed) {
           const login = async () => {
-            this.setAttribute("disabled", true);
-            this.innerHTML = "Processing...";
+            submit_button_el.setAttribute("disabled", true);
+            submit_button_el.innerHTML = "Processing...";
 
             let problem = null;
             try {
@@ -104,23 +104,23 @@
                   "There was an error communicating with the server (" + problem + ")."
                 );
 
-                this.removeAttribute("disabled");
-                this.innerHTML = "Submit";
+                submit_button_el.removeAttribute("disabled");
+                submit_button_el.innerHTML = "Submit";
               }
             }
           };
 
           login();
         }
-      };
+      });
 
       // when the enter key is pressed click the submit form
-      document.onkeydown = function(event) {
+      document.addEventListener("keydown", (event) => {
         if ("Enter" == event.key) {
           submit_button_el.click();
           event.preventDefault();
         }
-      };
+      });
     }
   });
 

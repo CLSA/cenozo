@@ -89,13 +89,13 @@ export default {
       if (undefined === el.params.placeholder) el.params.placeholder = "YYYY-MM-DD";
 
       control_el = this.create(`<input class="form-control"></input>`);
-      control_el.onkeyup = () => {
+      control_el.addEventListener("keyup", () => {
         control_el.value = control_el.value
           .replace(/[^0-9]/g, "")
           .replace(/^([0-9]{4})([0-9]*)/, "$1-$2")
           .replace(/^([0-9]{4}-[0-9]{2})([0-9]*)/, "$1-$2")
           .replace(/^([0-9]{4}-[0-9]{2}-[0-9]{2}).*/, "$1");
-      };
+      });
     } else if ("email" == type) {
       control_el = this.create(`<input type="email" class="form-control"></input>`);
     } else if ("enum" == type) {
@@ -129,12 +129,12 @@ export default {
       if (undefined === el.params.placeholder) el.params.placeholder = "HH:MM";
 
       control_el = this.create(`<input class="form-control"></input>`);
-      control_el.onkeyup = () => {
+      control_el.addEventListener("keyup", () => {
         control_el.value = control_el.value
           .replace(/[^0-9]/g, "")
           .replace(/^([0-9]{2})([0-9]*)/, "$1:$2")
           .replace(/^([0-9]{2}:[0-9]{2}).*/, "$1");
-      };
+      });
     } else if ("typeahead" == type) {
       control_el = this.create(`<input class="form-control" autocomplete="off"></input>`);
 
@@ -162,7 +162,7 @@ export default {
         typeahead_el.addEventListener("hidden.bs.dropdown", () => { el.params.typeahead.open = false; });
 
         // cancel the typeahead when the escape key is pressed
-        control_el.onkeydown = (event) => {
+        control_el.addEventListener("keydown", (event) => {
           if ("Escape" == event.key) {
             if (el.params.typeahead.open) {
               if (CN_common.is_function(el.params.typeahead.on_cancel)) {
@@ -171,8 +171,8 @@ export default {
               dropdown_bs.hide()
             }
           }
-        };
-        control_el.onblur = async () => {
+        });
+        control_el.addEventListener("blur", async () => {
           // we may be blurring after a button click, so give it time to process
           await CN_common.sleep(200);
 
@@ -188,7 +188,7 @@ export default {
               el.parent_model.get_property(el.params.name).state.undo(true);
             }
           }
-        }
+        });
 
         // listen for when the input's value has changed
         control_el.addEventListener('input', async () => {
@@ -228,11 +228,11 @@ export default {
               .filter(item => item.value.match(new RegExp(control_el.value, "i")))
               .map(item => {
                 const item_el = this.create(`<li><btn class="dropdown-item">${item.value}</btn></li>`)
-                item_el.onclick = () => {
+                item_el.addEventListener("click", () => {
                   control_el.value = item.value;
                   if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
                   dropdown_bs.hide();
-                }
+                });
                 return item_el;
               }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
 
@@ -315,6 +315,7 @@ export default {
     };
 
     // add an onchange function to all properties except typeaheads (they use on_select instead)
+    // TODO: need to change this code block from using .onchange() to addEventListener("change",...)
     if ("typeahead" != type && !CN_common.is_function(control_el.onchange)) {
       control_el.onchange = async () => {
         if (["date", "time"].includes(type)) {
@@ -348,7 +349,7 @@ export default {
           class="w-100 btn ${el.params.action.class ? el.params.action.class : 'btn-outline-primary'}"
         >${el.params.action.title}</button>
       `);
-      action_btn_el.onclick = el.params.action.onclick;
+      action_btn_el.addEventListener("click", el.params.action.onclick);
       action_el.querySelector("[name=action]").append(action_btn_el);
       el.append(action_el);
     } else {
@@ -462,7 +463,7 @@ export default {
       if (null == crumb.path) {
         crumb_el.setAttribute("disabled", true);
       } else {
-        crumb_el.onclick = () => CN_session.navigate_to(crumb.path);
+        crumb_el.addEventListener("click", () => CN_session.navigate_to(crumb.path));
       }
     });
 
@@ -547,11 +548,11 @@ export default {
     const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
     timezone_control_el.value = CN_session.data.user.timezone;
     timezone_control_el.last_selected_value = CN_session.data.user.timezone;
-    timezone_control_el.onblur = () => {
+    timezone_control_el.addEventListener("blur", () => {
       if (!CN_timezones.includes(timezone_control_el.value)) {
         timezone_control_el.value = timezone_control_el.last_selected_value;
       }
-    }
+    });
 
     // add a use 12-hour clock boolean property
     const am_pm_el = this.create('<div class="row mb-3"></div>');
@@ -560,7 +561,7 @@ export default {
     form_el.append(am_pm_el);
     document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
 
-    save_btn_el.onclick = async () => {
+    save_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
@@ -571,7 +572,7 @@ export default {
           CN_session.reload();
         });
       }
-    };
+    });
 
     return modal_bs;
   },
@@ -640,7 +641,7 @@ export default {
       document.getElementById(id).value = CN_session.data.user[element.id];
     });
 
-    save_btn_el.onclick = async () => {
+    save_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
       let first_name = document.getElementById("cn_account_modal_first_name").value;
       let last_name = document.getElementById("cn_account_modal_last_name").value;
@@ -666,7 +667,7 @@ export default {
           CN_session.data.user.email = email;
         });
       }
-    };
+    });
 
     return modal_bs;
   },
@@ -749,11 +750,11 @@ export default {
       }
     };
 
-    current_password_control_el.onkeyup = update_save_btn;
-    new_password_control_el.onkeyup = update_save_btn;
-    new_password_control_check_el.onkeyup = update_save_btn;
+    current_password_control_el.addEventListener("keyup", update_save_btn);
+    new_password_control_el.addEventListener("keyup", update_save_btn);
+    new_password_control_check_el.addEventListener("keyup", update_save_btn);
 
-    save_btn_el.onclick = async () => {
+    save_btn_el.addEventListener("click", async () => {
       let current_password = current_password_control_el.value;
       let new_password = new_password_control_el.value;
       let new_password_check = new_password_control_check_el.value;
@@ -791,7 +792,7 @@ export default {
           }
         });
       }
-    };
+    });
 
     return modal_bs;
   },
@@ -922,7 +923,7 @@ export default {
     modal_bs.block = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
-        modal_el.querySelector("[name=close]").onclick = () => resolve(true);
+        modal_el.querySelector("[name=close]").addEventListener("click", () => resolve(true));
       });
     };
 
@@ -979,8 +980,8 @@ export default {
     modal_bs.test = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
-        modal_el.querySelector("[name=no]").onclick = () => resolve(false);
-        modal_el.querySelector("[name=yes]").onclick = () => resolve(true);
+        modal_el.querySelector("[name=no]").addEventListener("click", () => resolve(false));
+        modal_el.querySelector("[name=yes]").addEventListener("click", () => resolve(true));
       });
     };
 
@@ -1046,8 +1047,8 @@ export default {
     modal_bs.get = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
-        modal_el.querySelector("[name=cancel]").onclick = () => resolve(undefined);
-        modal_el.querySelector("[name=confirm]").onclick = () => {
+        modal_el.querySelector("[name=cancel]").addEventListener("click", () => resolve(undefined));
+        modal_el.querySelector("[name=confirm]").addEventListener("click", () => {
           // only proceed if the input isn't required or it has been filled out
           if (!config.required || ![null, ""].includes(control_el.value)) {
             resolve(control_el.value);
@@ -1055,7 +1056,7 @@ export default {
           } else {
             control_el.onchange();
           }
-        }
+        });
       });
     };
 

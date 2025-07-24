@@ -200,7 +200,7 @@ export class CN_base_view extends CN_base_record {
     );
     btn_group_el.append(parent_btn_el);
     (async () => { parent_btn_el.innerHTML = await this.get_text("view_parent"); })();
-    parent_btn_el.onclick = async () => await this.on_navigate_to_parent();
+    parent_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
 
     if (this.get_model().allow_delete()) {
       const delete_btn_el = CN_element.create(`
@@ -209,7 +209,7 @@ export class CN_base_view extends CN_base_record {
         </button>
       `);
       btn_group_el.append(delete_btn_el);
-      delete_btn_el.onclick = async () => await this.on_delete();
+      delete_btn_el.addEventListener("click", async () => await this.on_delete());
     }
 
     return btn_group_el;
@@ -249,7 +249,7 @@ export class CN_base_view extends CN_base_record {
         `);
         btn_group_el.append(child_btn_el);
 
-        child_btn_el.onclick = async () => {
+        child_btn_el.addEventListener("click", async () => {
           this.#tab = child_model.get_name();
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
@@ -260,7 +260,7 @@ export class CN_base_view extends CN_base_record {
               sub_child_model.get_element().remove();
             }
           });
-        };
+        });
 
         const child_el = child_model.render();
         if (child_model.get_name() == (new URL(window.location)).searchParams.get('tab')) {

@@ -265,7 +265,7 @@ export class CN_base_list extends CN_base_action {
         const cancel_btn_el = CN_element.create(
           '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
         );
-        cancel_btn_el.onclick = async () => await this.on_cancel_choose();
+        cancel_btn_el.addEventListener("click", async () => await this.on_cancel_choose());
         btn_el.parentElement.prepend(cancel_btn_el);
       } else if (!this.#is_choosing && null != cancel_btn_el) {
         // remove the cancel button
@@ -283,7 +283,7 @@ export class CN_base_list extends CN_base_action {
         if (record.chosen) tr_el.classList.add("table-primary");
         if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
       }
-      tr_el.onclick = async () => await this.on_row_click(record);
+      tr_el.addEventListener("click", async () => await this.on_row_click(record));
       for (const col_name in this.#columns) {
         const column = this.#columns[col_name];
 
@@ -318,10 +318,10 @@ export class CN_base_list extends CN_base_action {
           </td>
         `;
 
-        tr_el.querySelector("[name=delete]").onclick = (e) => {
+        tr_el.querySelector("[name=delete]").addEventListener("click", (e) => {
           e.stopPropagation();
           this.on_delete(record);
-        };
+        });
       }
 
       table_el.append(tr_el);
@@ -343,12 +343,12 @@ export class CN_base_list extends CN_base_action {
       `);
       if (1 == this.#current_page) prev_el.classList.add("disabled");
       pagination_el.append(prev_el);
-      prev_el.querySelector("button").onclick = () => {
+      prev_el.querySelector("button").addEventListener("click", () => {
         if (1 != this.#current_page) {
           this.#current_page = 1;
           this.run();
         }
-      };
+      });
 
       // add pages by number
       // start by assuming we're at the start of the list
@@ -376,12 +376,12 @@ export class CN_base_list extends CN_base_action {
         `);
         if (page == this.#current_page) page_el.classList.add("active");
         pagination_el.append(page_el);
-        page_el.querySelector("button").onclick = () => {
+        page_el.querySelector("button").addEventListener("click", () => {
           if (page != this.#current_page) {
             this.#current_page = page;
             this.run();
           }
-        };
+        });
       }
 
       // add the next button
@@ -390,12 +390,12 @@ export class CN_base_list extends CN_base_action {
       `);
       if (pages == this.#current_page) next_el.classList.add("disabled");
       pagination_el.append(next_el);
-      next_el.querySelector("button").onclick = () => {
+      next_el.querySelector("button").addEventListener("click", () => {
         if (pages != this.#current_page) {
           this.#current_page = pages;
           this.run();
         }
-      };
+      });
     }
   }
 
@@ -469,7 +469,10 @@ export class CN_base_list extends CN_base_action {
       );
       btn_group_el.append(btn_el);
       (async () => { btn_el.innerHTML = await this.get_text(this.#list_mode); })();
-      btn_el.onclick = async () => await ("choose" == this.#list_mode ? this.on_choose() : this.on_add());
+      btn_el.addEventListener(
+        "click",
+        async () => await ("choose" == this.#list_mode ? this.on_choose() : this.on_add())
+      );
     }
 
     const summary_el = CN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');

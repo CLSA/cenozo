@@ -404,29 +404,29 @@ export default {
     setInterval(update_clock, 1000);
 
     // wire up the clock and menu buttons
-    clock_el.onclick = () => {
+    clock_el.addEventListener("click", () => {
       const bs = CN_element.create_clock_settings_modal();
       bs.show();
-    };
-    account_btn_el.onclick = () => {
+    });
+    account_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       const bs = CN_element.create_account_modal();
       bs.show();
-    };
-    timezone_btn_el.onclick = () => {
+    });
+    timezone_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       const bs = CN_element.create_clock_settings_modal();
       bs.show();
-    };
-    password_btn_el.onclick = () => {
+    });
+    password_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       const bs = CN_element.create_password_modal();
       bs.show();
-    };
-    logout_btn_el.onclick = async () => {
+    });
+    logout_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
       await this.logout();
-    };
+    });
 
     const lists_total = Object.keys(this.data.menu.lists).length;
 
@@ -446,10 +446,10 @@ export default {
       const btn_el = CN_element.create(`
         <button type="button" class="btn btn-outline-primary w-100">${title}</button>
       `);
-      btn_el.onclick = async () => {
+      btn_el.addEventListener("click", async () => {
         main_menu_offcanvas_bs.hide();
         await this.navigate_to(`${name}/list`);
-      };
+      });
 
       if (20 <= lists_total) {
         if (2*index < lists_total) {
@@ -469,10 +469,10 @@ export default {
       const btn_el = CN_element.create(`
         <button type="button" class="btn btn-outline-primary">${title}</button>
       `);
-      btn_el.onclick = async () => {
+      btn_el.addEventListener("click", async () => {
         main_menu_offcanvas_bs.hide();
         await this.navigate_to(`${utility.subject}/${utility.action}`);
-      };
+      });
       utilities_el.append(btn_el);
     }
 

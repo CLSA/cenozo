@@ -98,11 +98,11 @@ export class CN_home_model extends CN_base_object {
         `);
 
         const btn_el = message_el.querySelector("button");
-        btn_el.onclick = async () => {
+        btn_el.addEventListener("click", async () => {
           btn_el.disabled = true;
           await this.mark_message(message);
           btn_el.disabled = false;
-        };
+        });
         sm_el.append(message_el);
       });
     }
