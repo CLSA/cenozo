@@ -84,8 +84,8 @@ export default {
           <option value="0">No</option>
         </select>
       `);
-    } else if (["date", "datetime", "dob", "dod"].includes(type)) {
-      // TODO: implement datetime, dob and dod
+    } else if (["date", "datetime", "datetimesecond", "dob", "dod"].includes(type)) {
+      // TODO: implement datetimesecond, datetime, dob and dod
       if (undefined === el.params.placeholder) el.params.placeholder = "YYYY-MM-DD";
 
       control_el = this.create(`<input class="form-control"></input>`);

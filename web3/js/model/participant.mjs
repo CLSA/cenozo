@@ -186,6 +186,26 @@ export class CN_participant_model extends CN_base_model {
       },
     });
   }
+
+  /**
+   * Override the default get_base_path() method for certain parent models.
+   * This is because there is no direct relationship between participant and those models.
+   */
+  get_base_path(type) {
+    const parent_model = this.get_parent_model();
+    const model_list = [
+      "consent_type",
+      "event_type",
+      "hold_type",
+      "proxy_type",
+      "trace_type"
+    ];
+    return (
+      "url" == type && parent_model && model_list.includes(parent_model.get_name()) ?
+      "participant" :
+      super.get_base_path(type)
+    );
+  }
 }
 
 export class CN_participant_view extends CN_base_view {
