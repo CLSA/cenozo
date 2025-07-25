@@ -4,7 +4,32 @@
   background-position: center center;
 }
 
-.background {
+div[name="app_bg"] {
+  position: relative;
+}
+
+div[name="app_bg"]:before {
+  content: ' ';
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   background-image: url('../img/background.gif');
   background-repeat: repeat;
+  opacity: 0.333;
+}
+
+.bg-loading:before {
+  animation: pulse 1s linear infinite alternate;
+}
+
+div[name="app_body"] {
+  position: relative;
+}
+
+@keyframes pulse {
+  0% { opacity: 0; }
+  100% { opacity: 0.666; }
 }

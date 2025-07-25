@@ -55,11 +55,17 @@ export default {
   },
 
   /**
+   * Clears out the background and shows the loading background
+   */
+
+
+  /**
    * Reloads the page at a particular path
    */
   reload: function(path = null) {
-    this.update_breadcrumbs(true);
+    document.querySelector("div[name=app_bg]").classList.add("bg-loading");
     document.getElementById("main-content").innerHTML = "";
+    this.update_breadcrumbs(true);
     if (null == path) {
       window.location.reload();
     } else {
@@ -291,10 +297,9 @@ export default {
    * Creates the main UI body
    */
   create_body: function() {
-    const body_el = document.querySelector("div[name=appbody]");
     const split_lists = 20 <= Object.keys(this.data.menu.lists).length;
 
-    body_el.innerHTML = `
+    document.querySelector("div[name=app_body]").innerHTML = `
       <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
         <div class="container-fluid">
           <button
@@ -494,6 +499,8 @@ export default {
       }, 300000);
     } catch (error) {
       this.render_error(error);
+    } finally {
+      document.querySelector("div[name=app_bg]").classList.remove("bg-loading");
     }
   },
 }

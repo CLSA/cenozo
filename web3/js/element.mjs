@@ -575,11 +575,11 @@ export default {
       const site_id = document.getElementById("cn_site_role_modal_site").value;
       const role_id = document.getElementById("cn_role_role_modal_role").value;
       if (CN_session.data.site.id != site_id || CN_session.data.role.id != role_id) {
-        await this.wait_for(async () => {
-          // update the user's site and role
-          await CN_api.patch("self/0", { site: { id: site_id }, role: { id: role_id } });
-          CN_session.reload(ROOT_URL);
-        });
+        // update the user's site and role
+        document.querySelector("div[name=app_bg]").classList.add("bg-loading");
+        document.getElementById("main-content").innerHTML = "";
+        await CN_api.patch("self/0", { site: { id: site_id }, role: { id: role_id } });
+        CN_session.reload(ROOT_URL);
       }
     });
 
@@ -679,11 +679,11 @@ export default {
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
       if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
-        await this.wait_for(async () => {
-          // update the user then reload the UI so all datetimes are adjusted
-          await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
-          CN_session.reload();
-        });
+        // update the user then reload the UI so all datetimes are adjusted
+        document.querySelector("div[name=app_bg]").classList.add("bg-loading");
+        document.getElementById("main-content").innerHTML = "";
+        await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
+        CN_session.reload();
       }
     });
 
