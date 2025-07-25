@@ -477,6 +477,119 @@ export default {
    * Creates a clock settings modal (for changing the user's time-based preferences)
    * @return bootstrap.Modal
    */
+  create_site_role_modal: function() {
+    const modal_el = this.create(`
+      <div id="cn_site_role_modal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header text-bg-primary">
+              <h2 class="modal-title fw-bold fs-5">Select Site and Role</h2>
+            </div>
+            <div class="modal-body">
+              <span class="text-secondary">
+                Select which site and role you would like to switch to:
+              </span>
+              <hr />
+              <form></form>
+            </div>
+            <div class="modal-footer text-bg-secondary">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+              <button name="ok" type="button" class="btn btn-primary">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    document.getElementById("main-content").append(modal_el);
+    const form_el = modal_el.querySelector("form");
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false });
+
+    // automatically dispose of the modal once finished
+    modal_el.addEventListener("hidden.bs.modal", () => {
+      modal_bs.dispose();
+      modal_el.remove();
+    });
+
+    // used below
+    const ok_btn_el = modal_el.querySelector("[name=ok]");
+
+    // add a site enum property
+    const site_el = this.create('<div class="row mb-3"></div>');
+    site_el.append(this.create_form_label({ for: "cn_site_role_modal_site", value: "Site" }));
+    site_el.append(this.create_form_element("enum", { id: "cn_site_role_modal_site", required: true }));
+    form_el.append(site_el);
+
+    // add a role enum property
+    const role_el = this.create('<div class="row mb-3"></div>');
+    role_el.append(this.create_form_label({ for: "cn_role_role_modal_role", value: "Role" }));
+    role_el.append(this.create_form_element("enum", { id: "cn_role_role_modal_role", required: true }));
+    form_el.append(role_el);
+
+    // populate the site and role inputs when opening the modal
+    modal_el.addEventListener("show.bs.modal", async () => {
+      const response = await CN_api.get("self/0/access");
+      let data = await response.json();
+      const site_list = data.reduce((list, item) => {
+        let site = list.find(s => s.id == item.site_id);
+        if (!site) {
+          site = { id: item.site_id, name: item.site_name, role_list: [] };
+          list.push(site);
+        }
+        site.role_list.push({ id: item.role_id, name: item.role_name });
+        return list;
+      }, []);
+
+      const site_control_el = document.getElementById("cn_site_role_modal_site");
+      const role_control_el = document.getElementById("cn_role_role_modal_role");
+
+      // create a function to update the role list based on the currently selected site list
+      const update_role_list = () => {
+        role_control_el.innerHTML = "";
+        let current_site = site_list.find(site => site.id == site_control_el.value);
+        if (current_site) {
+          current_site.role_list.forEach(
+            role => role_control_el.append(
+              this.create(`<option value="${role.id}">${role.name}</option>`)
+            )
+          );
+        }
+      };
+
+      // populate the site list and set the current site
+      site_list.forEach(
+        site => site_control_el.append(
+          this.create(`<option value="${site.id}">${site.name}</option>`)
+        )
+      );
+      site_control_el.addEventListener("change", update_role_list);
+      site_control_el.value = CN_session.data.site.id;
+
+      // populate the role list and set the current role
+      update_role_list();
+      role_control_el.value = CN_session.data.role.id;
+    });
+
+    ok_btn_el.addEventListener("click", async () => {
+      modal_bs.hide();
+      const site_id = document.getElementById("cn_site_role_modal_site").value;
+      const role_id = document.getElementById("cn_role_role_modal_role").value;
+      if (CN_session.data.site.id != site_id || CN_session.data.role.id != role_id) {
+        await this.wait_for(async () => {
+          // update the user's site and role
+          await CN_api.patch("self/0", { site: { id: site_id }, role: { id: role_id } });
+          CN_session.reload(ROOT_URL);
+        });
+      }
+    });
+
+    return modal_bs;
+  },
+
+  /**
+   * Creates a clock settings modal (for changing the user's time-based preferences)
+   * @return bootstrap.Modal
+   */
   create_clock_settings_modal: function() {
     const modal_el = this.create(`
       <div id="cn_clock_settings_modal" class="modal fade" tabindex="-1">
@@ -495,7 +608,7 @@ export default {
             </div>
             <div class="modal-footer text-bg-secondary">
               <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-              <button name="save" type="button" class="btn btn-primary">Save</button>
+              <button name="ok" type="button" class="btn btn-primary">OK</button>
             </div>
           </div>
         </div>
@@ -513,7 +626,7 @@ export default {
     });
 
     // used below
-    const save_btn_el = modal_el.querySelector("[name=save]");
+    const ok_btn_el = modal_el.querySelector("[name=ok]");
 
     // add a timezone typeahead property
     const timezone_el = this.create('<div class="row mb-3"></div>');
@@ -539,9 +652,9 @@ export default {
       },
       onchange: (control_el, valid, model) => {
         if (valid) {
-          save_btn_el.removeAttribute("disabled");
+          ok_btn_el.removeAttribute("disabled");
         } else {
-          save_btn_el.setAttribute("disabled", "disabled");
+          ok_btn_el.setAttribute("disabled", "disabled");
         }
       },
     }));
@@ -561,14 +674,14 @@ export default {
     form_el.append(am_pm_el);
     document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
 
-    save_btn_el.addEventListener("click", async () => {
+    ok_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
       let timezone = timezone_control_el.last_selected_value;
       let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
       if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
         await this.wait_for(async () => {
           // update the user then reload the UI so all datetimes are adjusted
-          await CN_api.patch( "self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
+          await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
           CN_session.reload();
         });
       }
@@ -598,7 +711,7 @@ export default {
             </div>
             <div class="modal-footer text-bg-secondary">
               <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-              <button name="save" type="button" class="btn btn-primary">Save</button>
+              <button name="ok" type="button" class="btn btn-primary">OK</button>
             </div>
           </div>
         </div>
@@ -616,12 +729,12 @@ export default {
     });
 
     // used below
-    const save_btn_el = modal_el.querySelector("[name=save]");
+    const ok_btn_el = modal_el.querySelector("[name=ok]");
     const onchange_fn = (control_el, valid, model) => {
       if (valid) {
-        save_btn_el.removeAttribute("disabled");
+        ok_btn_el.removeAttribute("disabled");
       } else {
-        save_btn_el.setAttribute("disabled", "disabled");
+        ok_btn_el.setAttribute("disabled", "disabled");
       }
     };
 
@@ -641,7 +754,7 @@ export default {
       document.getElementById(id).value = CN_session.data.user[element.id];
     });
 
-    save_btn_el.addEventListener("click", async () => {
+    ok_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
       let first_name = document.getElementById("cn_account_modal_first_name").value;
       let last_name = document.getElementById("cn_account_modal_last_name").value;
@@ -696,7 +809,7 @@ export default {
             </div>
             <div class="modal-footer text-bg-secondary">
               <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-              <button name="save" type="button" class="btn btn-primary" disabled>Save</button>
+              <button name="ok" type="button" class="btn btn-primary" disabled>OK</button>
             </div>
           </div>
         </div>
@@ -705,7 +818,7 @@ export default {
 
     document.getElementById("main-content").append(modal_el);
     const form_el = modal_el.querySelector("form");
-    const save_btn_el = modal_el.querySelector("[name=save]");
+    const ok_btn_el = modal_el.querySelector("[name=ok]");
     const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false });
 
     // automatically dispose of the modal once finished
@@ -733,28 +846,28 @@ export default {
       el.children[1].classList.replace("col-sm-9", "col-sm-8");
     });
 
-    // track when the save button should be enabled
+    // track when the ok button should be enabled
     const current_password_control_el = document.getElementById("cn_password_modal_current_password");
     const new_password_control_el = document.getElementById("cn_password_modal_new_password");
     const new_password_control_check_el = document.getElementById("cn_password_modal_new_password_check");
 
-    const update_save_btn = () => {
+    const update_ok_btn = () => {
       if (
         0 < current_password_control_el.value.length &&
         8 <= new_password_control_el.value.length &&
         8 <= new_password_control_check_el.value.length
       ) {
-        save_btn_el.removeAttribute("disabled");
+        ok_btn_el.removeAttribute("disabled");
       } else {
-        save_btn_el.setAttribute("disabled", "disabled");
+        ok_btn_el.setAttribute("disabled", "disabled");
       }
     };
 
-    current_password_control_el.addEventListener("keyup", update_save_btn);
-    new_password_control_el.addEventListener("keyup", update_save_btn);
-    new_password_control_check_el.addEventListener("keyup", update_save_btn);
+    current_password_control_el.addEventListener("keyup", update_ok_btn);
+    new_password_control_el.addEventListener("keyup", update_ok_btn);
+    new_password_control_check_el.addEventListener("keyup", update_ok_btn);
 
-    save_btn_el.addEventListener("click", async () => {
+    ok_btn_el.addEventListener("click", async () => {
       let current_password = current_password_control_el.value;
       let new_password = new_password_control_el.value;
       let new_password_check = new_password_control_check_el.value;

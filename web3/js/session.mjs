@@ -291,7 +291,7 @@ export default {
    * Creates the main UI body
    */
   create_body: function() {
-    const body_el = document.querySelector("body");
+    const body_el = document.querySelector("div[name=appbody]");
     const split_lists = 20 <= Object.keys(this.data.menu.lists).length;
 
     body_el.innerHTML = `
@@ -309,11 +309,11 @@ export default {
           <div name="breadcrumbs" class="collapse navbar-collapse ms-2">
           </div>
           <div class="d-flex">
-            <span name="access" class="nav-item text-light"></span>
-            <div name="clock" class="nav-item text-light px-3">
+            <button name="access" class="btn btn-primary"></button>
+            <button name="clock" class="btn btn-primary">
               <i class="bi-clock-fill"></i>
               <span name="time" class="nav-item"></span>
-            </div>
+            </button>
           </div>
         </div>
       </nav>
@@ -385,8 +385,8 @@ export default {
     const main_menu_header_el = document.getElementById("main-menu-header");
     const main_menu_offcanvas_el = document.getElementById("main-menu-offcanvas");
     const main_menu_offcanvas_bs = new bootstrap.Offcanvas(main_menu_offcanvas_el);
-    const access_el = main_menu_header_el.querySelector("span[name=access]");
-    const clock_el = main_menu_header_el.querySelector("div[name=clock]");
+    const access_el = main_menu_header_el.querySelector("button[name=access]");
+    const clock_el = main_menu_header_el.querySelector("button[name=clock]");
     const time_el = main_menu_header_el.querySelector("span[name=time]");
     const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
     const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
@@ -397,6 +397,10 @@ export default {
     const reports_el = main_menu_offcanvas_el.querySelector("div[name=reports]");
 
     access_el.innerHTML = `${this.data.role.name} @ ${this.data.site.name}`;
+    access_el.addEventListener("click", () => {
+      main_menu_offcanvas_bs.hide();
+      CN_element.create_site_role_modal().show();
+    });
 
     // keep the clock running
     const update_clock = () => time_el.innerHTML = this.get_time();
@@ -405,23 +409,20 @@ export default {
 
     // wire up the clock and menu buttons
     clock_el.addEventListener("click", () => {
-      const bs = CN_element.create_clock_settings_modal();
-      bs.show();
+      main_menu_offcanvas_bs.hide();
+      CN_element.create_clock_settings_modal().show();
     });
     account_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      const bs = CN_element.create_account_modal();
-      bs.show();
+      CN_element.create_account_modal().show();
     });
     timezone_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      const bs = CN_element.create_clock_settings_modal();
-      bs.show();
+      CN_element.create_clock_settings_modal().show();
     });
     password_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      const bs = CN_element.create_password_modal();
-      bs.show();
+      CN_element.create_password_modal().show();
     });
     logout_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
