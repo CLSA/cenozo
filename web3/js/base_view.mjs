@@ -58,6 +58,8 @@ export class CN_base_view extends CN_base_record {
     this.for_each_property(prop => {
       if (CN_common.is_object(prop.meta)) {
         columns.push({ ...prop.meta, alias: prop.name });
+      } else if (true === prop.meta) {
+        columns.push({ column: prop.name });
       }
     });
 

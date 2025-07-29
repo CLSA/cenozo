@@ -36,7 +36,7 @@ export class CN_participant_model extends CN_base_model {
         },
         status: {
           title: "Status",
-          meta: { column: "status" },
+          meta: true,
           is_constant: () => true
         },
         global_note: { title: "Special Note", type: "text" },
@@ -61,13 +61,13 @@ export class CN_participant_model extends CN_base_model {
           properties: {
             exclusion: {
               title: "Enrolled",
-              meta: { column: "exclusion" },
+              meta: true,
               is_constant: () => true,
               help: "Whether the participant has been enrolled into the study, and if not then the reason they have been excluded.",
             },
             hold: {
               title: "Hold",
-              meta: { column: "hold" },
+              meta: true,
               action: {
                 title: "Change",
                 onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
@@ -76,7 +76,7 @@ export class CN_participant_model extends CN_base_model {
             },
             trace: {
               title: "Trace",
-              meta: { column: "trace" },
+              meta: true,
               action: {
                 title: "Change",
                 onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
@@ -85,7 +85,7 @@ export class CN_participant_model extends CN_base_model {
             },
             proxy: {
               title: "Proxy",
-              meta: { column: "proxy" },
+              meta: true,
               action: {
                 title: "Change",
                 onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
