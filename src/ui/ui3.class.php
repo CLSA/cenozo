@@ -368,9 +368,9 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'hold' );
         $module->add_child( 'phone' );
         $module->add_child( 'proxy' );
+        $module->add_choose( 'study' );
         $module->add_child( 'trace' );
         /*
-        $module->add_choose( 'study' );
         $module->add_child( 'participant_identifier' );
         $module->add_child( 'mail' );
         $module->add_child( 'hin' );
