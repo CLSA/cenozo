@@ -43,10 +43,6 @@ export class CN_home_model extends CN_base_object {
       return CN_common.format_datetime(data.user.last_activity.end_datetime, "datetime");
     }
 
-    if ("uptime" == type) {
-      return data.application.uptime;
-    }
-
     if ("active_users" == type) {
       return data.application.active_users;
     }
@@ -139,10 +135,6 @@ export class CN_home_model extends CN_base_object {
               <div class="col-sm-9 col-form-label">
                 ${this.get_text("last_access_start")} until ${this.get_text("last_access_end")}
               </div>
-            </div>
-            <div class="row ms-3">
-              <label class="col-sm-3 col-form-label fw-bold">Uptime:</label>
-              <div class="col-sm-9 col-form-label">${this.get_text("uptime")}</div>
             </div>
             <div class="row ms-3">
               <label class="col-sm-3 col-form-label fw-bold">Active Users:</label>
