@@ -436,19 +436,19 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   create_placeholder_element() {
-    const table_el = CN_element.create(`<table class="table table-striped"></table>`);
+    const table_el = CN_element.create(`<table class="table table-striped"><tbody name="body"></tbody></table>`);
 
     for (let row=0; row<20; row++) {
       let tr_el = document.createElement("tr");
       for (let col=0; col<4; col++) {
         let width = Math.ceil(Math.random()*6)+6;
         tr_el.innerHTML += `
-          <td class="text-center placeholder-glow">
+          <td class="text-center placeholder-glow" style="">
             <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${width}"></span>
           </td>
         `;
       }
-      table_el.append(tr_el);
+      table_el.querySelector("tbody").append(tr_el);
     }
 
     return table_el;
