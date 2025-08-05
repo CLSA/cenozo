@@ -270,6 +270,12 @@ export class CN_base_record extends CN_base_action {
   update_element() {
     super.update_element();
 
+    // update whether the record can be edited
+    this.get_body_element().querySelector('fieldset').disabled = (
+      "view" == this.get_type() &&
+      !this.get_model().allow_edit()
+    );
+
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
         const prop = this.#property_groups[group_name].properties[prop_name];
@@ -300,16 +306,12 @@ export class CN_base_record extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
-    const form_el = CN_element.create("<form></form>");
-    form_el.fieldset_el = CN_element.create("<fieldset></fieldset>");
-
-    form_el.fieldset_el.disabled = "view" == this.get_type() && !this.get_model().allow_edit();
-    form_el.append(form_el.fieldset_el);
+    const form_el = CN_element.create("<form><fieldset></fieldset></form>");
 
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
       const parent_el = CN_element.create('<div class="px-3"></div>');
-      form_el.fieldset_el.append(parent_el);
+      form_el.querySelector("fieldset").append(parent_el);
       for (var prop_name in this.#property_groups.$main.properties) {
         parent_el.append(this.create_property_element(prop_name));
       }
@@ -333,7 +335,7 @@ export class CN_base_record extends CN_base_action {
       }
     }
 
-    if (null != accordion_el) form_el.fieldset_el.append(accordion_el);
+    if (null != accordion_el) form_el.querySelector("fieldset").append(accordion_el);
 
     return form_el;
   }

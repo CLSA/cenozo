@@ -64,9 +64,15 @@ export class CN_base_action extends CN_base_object {
   show_placeholder() {
     this.#is_placeholder = true;
 
+    const card_header_el = this.get_element().querySelector(".card-header");
+    card_header_el.innerHTML = "Loading...";
+
     const card_body_el = this.get_element().querySelector(".card-body");
     card_body_el.innerHTML = "";
     card_body_el.append(this.get_placeholder_element());
+
+    const card_footer_el = this.get_element().querySelector(".card-footer");
+    card_footer_el.innerHTML = "&nbsp;";
   }
 
   /**
@@ -75,9 +81,17 @@ export class CN_base_action extends CN_base_object {
   hide_placeholder() {
     this.#is_placeholder = false;
 
+    const card_header_el = this.get_element().querySelector(".card-header");
+    card_header_el.innerHTML = "";
+    card_header_el.append(this.get_header_element());
+
     const card_body_el = this.get_element().querySelector(".card-body");
     card_body_el.innerHTML = "";
     card_body_el.append(this.get_body_element());
+
+    const card_footer_el = this.get_element().querySelector(".card-footer");
+    card_footer_el.innerHTML = "";
+    card_footer_el.append(this.get_footer_element());
   }
 
   /**
@@ -201,9 +215,9 @@ export class CN_base_action extends CN_base_object {
     el.append(CN_element.create_card());
 
     // add the header, body and footer
-    el.querySelector(".card-header").append(this.get_header_element());
+    el.querySelector(".card-header").innerHTML = "Loading...";
     el.querySelector(".card-body").append(this.get_placeholder_element());
-    el.querySelector(".card-footer").append(this.get_footer_element());
+    el.querySelector(".card-footer").innerHTML = "&nbsp;";
 
     return el;
   }

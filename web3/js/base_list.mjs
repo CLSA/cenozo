@@ -253,23 +253,52 @@ export class CN_base_list extends CN_base_action {
   update_element() {
     super.update_element();
 
-    if ("choose" == this.#list_mode) {
-      // update the choose buttons based on is_choosing
-      const btn_el = this.get_footer_element().querySelector("[name=choose]");
-      (async () => { btn_el.innerHTML = this.#is_choosing ? "Apply" : await this.get_text("choose"); })();
+    const btn_group_el = this.get_footer_element().querySelector("div.btn-group");
+    let btn_el = this.get_footer_element().querySelector(`[name=${this.#list_mode}]`);
 
-      // add or remove the cancel button depending on whether we're currently choosing or not
-      const cancel_btn_el = this.get_footer_element().querySelector("[name=cancel_choose]");
-      if (this.#is_choosing && null == cancel_btn_el) {
-        // add the cancel button
-        const cancel_btn_el = CN_element.create(
-          '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
-        );
-        cancel_btn_el.addEventListener("click", async () => await this.on_cancel_choose());
-        btn_el.parentElement.prepend(cancel_btn_el);
-      } else if (!this.#is_choosing && null != cancel_btn_el) {
-        // remove the cancel button
-        cancel_btn_el.remove();
+    if ("add" == this.#list_mode) {
+      // if we have no add button and adding is allowed then create it
+      if (null == btn_el && this.get_model().allow_add()) {
+        btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary"></button>');
+        btn_group_el.append(btn_el);
+        (async () => { btn_el.innerHTML = await this.get_text("add"); })();
+        btn_el.addEventListener("click", async () => await this.on_add());
+      } else if (null != btn_el && !this.get_model().allow_add()) {
+        // if we have an add button but adding isn't allowed then remove it
+        btn_group_el.removeChild(btn_el);
+      }
+    } else if ("choose" == this.#list_mode) {
+      // if choosing is allowed then create the choose button (if needed) and configure it
+      if (this.get_model().allow_choose()) {
+        if (null == btn_el) {
+          btn_el = CN_element.create('<button name="choose" type="button" class="btn btn-primary"></button>');
+          btn_group_el.append(btn_el);
+          btn_el.addEventListener("click", async () => await this.on_choose());
+        }
+
+        let cancel_btn_el = this.get_footer_element().querySelector("[name=cancel_choose]");
+        if (this.#is_choosing) {
+          // we're currently choosing records
+          btn_el.innerHTML = "Apply";
+
+          // create the cancel button if it doesn't exist
+          if (null == cancel_btn_el) {
+            cancel_btn_el = CN_element.create(
+              '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
+            );
+            cancel_btn_el.addEventListener("click", async () => await this.on_cancel_choose());
+            btn_el.parentElement.prepend(cancel_btn_el);
+          }
+        } else {
+          // we're viewing which records are chosen (not choosing)
+          (async () => { btn_el.innerHTML = await this.get_text("choose"); })();
+
+          // remove the cancel button if it exists
+          if (null != cancel_btn_el) cancel_btn_el.remove();
+        }
+      } else if (null != btn_el) {
+        // remove the button since it isn't allowed
+        btn_group_el.removeChild(btn_el);
       }
     }
 
@@ -310,18 +339,25 @@ export class CN_base_list extends CN_base_action {
         tr_el.innerHTML += `<td class="text-${column.align}">${value}</td>`;
       }
 
-      // add an empty header for deleting records
-      if (("choose" != this.#list_mode) && this.get_model().allow_delete()) {
+      if ("choose" != this.#list_mode) {
+        // add the delete button row, only including a button if deleting is allowed
         tr_el.innerHTML += `
           <td class="col-auto p-0">
-            <button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>
+            ${
+              this.get_model().allow_delete() ?
+              '<button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>' :
+              ''
+            }
           </td>
         `;
 
-        tr_el.querySelector("[name=delete]").addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.on_delete(record);
-        });
+        // wire up the delete button if there is one
+        if (this.get_model().allow_delete()) {
+          tr_el.querySelector("[name=delete]").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.on_delete(record);
+          });
+        }
       }
 
       table_el.append(tr_el);
@@ -422,8 +458,8 @@ export class CN_base_list extends CN_base_action {
       header_tr_el.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${column.title}</th>`;
     }
 
-    // add an empty header for deleting records
-    if (this.get_model().allow_delete()) {
+    if ("choose" != this.#list_mode) {
+      // add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
       header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
     }
 
@@ -462,18 +498,6 @@ export class CN_base_list extends CN_base_action {
 
     const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
-
-    if ("add" != this.#list_mode || this.get_model().allow_add()) {
-      const btn_el = CN_element.create(
-        `<button name="${this.#list_mode}" type="button" class="btn btn-primary"></button>`
-      );
-      btn_group_el.append(btn_el);
-      (async () => { btn_el.innerHTML = await this.get_text(this.#list_mode); })();
-      btn_el.addEventListener(
-        "click",
-        async () => await ("choose" == this.#list_mode ? this.on_choose() : this.on_add())
-      );
-    }
 
     const summary_el = CN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
     footer_el.append(summary_el);

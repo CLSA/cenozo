@@ -185,36 +185,40 @@ export class CN_base_view extends CN_base_record {
   /**
    * Extends parent method
    */
-  create_body_element() {
-    const form_el = super.create_body_element();
-    form_el.querySelector("fieldset").disabled = !this.get_model().allow_edit();
-    return form_el;
+  update_element() {
+    super.update_element();
+
+    // add a delete button (if allowed)
+    let delete_btn_el = this.get_footer_element().querySelector("button[name=delete]");
+    if (null == delete_btn_el && this.get_model().allow_delete()) {
+      delete_btn_el = CN_element.create(`
+        <button name="delete" type="button" class="btn btn-danger">
+          Delete ${CN_common.uc_words(this.get_model().get_singular())}
+        </button>
+      `);
+      this.get_footer_element().append(delete_btn_el);
+      delete_btn_el.addEventListener("click", async () => await this.on_delete());
+    } else if (null != delete_btn_el && !this.get_model().allow_delete()) {
+      this.get_footer_element().removeChild(delete_btn_el);
+    }
   }
 
   /**
    * Extends parent method
    */
   create_footer_element() {
-    const btn_group_el = CN_element.create(`<div class="btn-group" role="group"></div>`);
+    const footer_el = CN_element.create(`
+      <div class="btn-group" role="group">
+        <button name="back" type="button" class="btn btn-primary">Back</button>
+      </div>
+    `);
 
-    const parent_btn_el = CN_element.create(
-      '<button name="back" type="button" class="btn btn-primary">Back</button>'
-    );
-    btn_group_el.append(parent_btn_el);
-    (async () => { parent_btn_el.innerHTML = await this.get_text("view_parent"); })();
-    parent_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+    // wire up the back button
+    const back_btn_el = footer_el.querySelector("button[name=back]");
+    (async () => { back_btn_el.innerHTML = await this.get_text("view_parent"); })();
+    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
 
-    if (this.get_model().allow_delete()) {
-      const delete_btn_el = CN_element.create(`
-        <button name="delete" type="button" class="btn btn-danger">
-          Delete ${CN_common.uc_words(this.get_model().get_singular())}
-        </button>
-      `);
-      btn_group_el.append(delete_btn_el);
-      delete_btn_el.addEventListener("click", async () => await this.on_delete());
-    }
-
-    return btn_group_el;
+    return footer_el;
   }
 
   /**
