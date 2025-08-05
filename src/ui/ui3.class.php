@@ -293,7 +293,7 @@ class ui3 extends \cenozo\base_object
       {
         $module->add_choose( 'participant' );
         $module->add_choose( 'user' );
-        if( 2 < $db_role->tier ) $module->add_choose( 'application' );
+//        if( 2 < $db_role->tier ) $module->add_choose( 'application' );
       }
       else if( 'consent' == $module->get_subject() )
       {
@@ -363,6 +363,7 @@ class ui3 extends \cenozo\base_object
         */
         $module->add_child( 'address' );
         $module->add_child( 'alternate' );
+        $module->add_choose( 'collection' );
         $module->add_child( 'consent' );
         $module->add_child( 'event' );
         $module->add_child( 'hold' );
@@ -376,7 +377,6 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'hin' );
         if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
         $module->add_child( 'form' );
-        $module->add_choose( 'collection' );
         $module->add_action( 'history',
           '/{identifier}?{address}&{alternate}'.
           ( $use_interview_module ? '&{assignment}' : '' ).
@@ -414,7 +414,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'script' == $module->get_subject() )
       {
-        $module->add_choose( 'application' );
+//        $module->add_choose( 'application' );
       }
       else if( 'site' == $module->get_subject() )
       {
