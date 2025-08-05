@@ -187,6 +187,9 @@ export class CN_base_record extends CN_base_action {
               modifier: prop.enum.modifier ? prop.enum.modifier : { order: "name" },
             };
 
+            // always add a limit to make sure that list isn't truncated
+            if (!params.modifier.limit) params.modifier.limit = 1000;
+
             // create an async function and add it to the promise list so they can be run in parallel
             const get_enums = async () => {
               // the path may be dynamic
