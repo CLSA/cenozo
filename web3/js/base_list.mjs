@@ -311,7 +311,7 @@ export class CN_base_list extends CN_base_action {
       }
 
       // add an empty header for deleting records
-      if (this.get_model().allow_delete()) {
+      if (("choose" != this.#list_mode) && this.get_model().allow_delete()) {
         tr_el.innerHTML += `
           <td class="col-auto p-0">
             <button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>
