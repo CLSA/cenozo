@@ -16,9 +16,7 @@ export class CN_base_list extends CN_base_action {
 
   /**
    * Constructor
-   *
    * TODO: document a full description of the columns parameter
-   *
    * @param base_model model: The model that the list action belongs to
    */
   constructor(model) {
@@ -59,6 +57,7 @@ export class CN_base_list extends CN_base_action {
 
   // access methods
   is_choosing() { return this.#is_choosing; }
+  get_total_records() { return this.#total_records; }
 
   /**
    * Extends the parent method
@@ -188,6 +187,18 @@ export class CN_base_list extends CN_base_action {
     const limit = response.headers.get('X-Limit');
     const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
+
+    // update the parent's list selector count
+    const parent_model = this.get_model().get_parent_model();
+    if (parent_model && "view" == parent_model.get_action_name()) {
+      const list_selector_el = parent_model.get_element().querySelector("div[name=list-selector]");
+      if (list_selector_el) {
+        const btn_el = list_selector_el.querySelector(`button[name=${this.get_model().get_name()}]`);
+        if (btn_el) {
+          btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\]/, ` [${this.#total_records}]`);
+        }
+      }
+    }
 
     // replace the records at the current page with the returned records
     this.#records = await response.json();

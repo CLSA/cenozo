@@ -10,11 +10,35 @@ export class CN_base_view extends CN_base_record {
 
   /**
    * Constructor
-   *
    * @param base_model model: The model that the action belongs to
    */
   constructor(model) {
     super("view", model);
+  }
+
+  /**
+   * Returns a list of all child models for the list selector
+   * @return [model]
+   */
+  get_selector_child_list() {
+    return this.get_model().get_child_model_list().reduce((list, model) => {
+      if (null == model.get_element()) model.render();
+      list.push({
+        name: model.get_name(),
+        title: this.get_selector_child_title(model),
+        total: model.get_action().get_total_records(),
+        element: model.get_element(),
+      });
+      return list;
+    }, []).sort((a,b) => a<b);
+  }
+
+  /**
+   * Returns the title of the button for a model found in the list selector
+   * @return string
+   */
+  get_selector_child_title(model) {
+    return CN_common.uc_words(model.get_plural());
   }
 
   /**
@@ -47,10 +71,18 @@ export class CN_base_view extends CN_base_record {
     return await super.get_text(type);
   }
 
+  /**
+   * Returns the URL to use when loading the record.  Used by child classes to customize the path.
+   * @return string
+   */
   get_on_load_path() {
     return this.get_model().get_view_url(null, "api");
   }
 
+  /**
+   * Returns the parameters to use when loading the record.  Used by child classes to customize the parameters.
+   * @return object
+   */
   get_on_load_parameters() {
     // add any meta columns to the record selection
     let columns = [];
@@ -94,6 +126,10 @@ export class CN_base_view extends CN_base_record {
     });
   }
 
+  /**
+   * Called after a property's value is changed in the DOM
+   * @param string prop_name: The name of the property
+   */
   async on_set_property(prop_name) {
     try {
       // update the server
@@ -228,9 +264,10 @@ export class CN_base_view extends CN_base_record {
     const el = super.render();
 
     // add a child list selector
-    const model = this.get_model();
-    if (1 < model.get_child_model_list().length) {
+    const selector_model_list = this.get_selector_child_list();
+    if (1 < selector_model_list.length) {
       const list_selector_el = CN_element.create_card();
+      list_selector_el.setAttribute("name", "list-selector");
       el.append(list_selector_el);
 
       list_selector_el.querySelector(".card-header").append(CN_element.create(`
@@ -247,35 +284,34 @@ export class CN_base_view extends CN_base_record {
       list_selector_el.querySelector(".card-footer").append(btn_group_el);
 
       // add children to the list selector and render them
-      model.get_child_model_list().forEach((child_model) => {
+      selector_model_list.forEach(child_model => {
         const child_btn_el = CN_element.create(`
-          <button name="${child_model.get_name()}" type="button" class="col btn btn-primary mx-1">
-            ${CN_common.uc_words(child_model.get_singular())}
+          <button name="${child_model.name}" type="button" class="col btn btn-primary mx-1">
+            ${child_model.title} [...]
           </button>
         `);
         btn_group_el.append(child_btn_el);
 
         child_btn_el.addEventListener("click", async () => {
-          this.#tab = child_model.get_name();
+          this.#tab = child_model.name;
           window.history.replaceState(null, null, `?tab=${this.#tab}`);
 
-          model.get_child_model_list().forEach(sub_child_model => {
-            if (sub_child_model.get_name() == child_model.get_name()) {
-              el.append(sub_child_model.get_element());
+          selector_model_list.forEach(sub_child_model => {
+            if (sub_child_model.name == child_model.name) {
+              el.append(sub_child_model.element);
             } else {
-              sub_child_model.get_element().remove();
+              sub_child_model.element.remove();
             }
           });
         });
 
-        const child_el = child_model.render();
-        if (child_model.get_name() == (new URL(window.location)).searchParams.get('tab')) {
-          el.append(child_el);
+        if (child_model.name == (new URL(window.location)).searchParams.get('tab')) {
+          el.append(child_model.element);
         }
       });
-    } else if (1 == model.get_child_model_list().length) {
+    } else if (1 == selector_model_list.length) {
       // render the only child directly
-      el.append(model.get_child_model_list()[0].render());
+      el.append(selector_model_list[0].element);
     }
 
     return el;
