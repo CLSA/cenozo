@@ -12,9 +12,7 @@ export class CN_base_record extends CN_base_action {
 
   /**
    * Constructor
-   *
    * TODO: document a full description of the properties parameter
-   *
    * @param string type: The type of action (either "add" or "view")
    * @param base_model model: The model that the action belongs to
    */
@@ -144,7 +142,9 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Convenience method to gets a property by name (no matter which group it belongs to)
+   * @param string prop_name: The name of the property
+   * @return object
    */
   get_property(prop_name) {
     for (var group_name in this.#property_groups) {
@@ -156,7 +156,8 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Runs a callback function on all properties
+   * @param function callback: A function that is passed the property as the first argument
    */
   for_each_property(callback) {
     for (var group_name in this.#property_groups) {

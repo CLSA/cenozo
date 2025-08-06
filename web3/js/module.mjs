@@ -21,7 +21,8 @@ export class CN_module extends CN_base_object {
   #classes;
 
   /**
-   * ADD DOCS
+   * Constructor
+   * @param object params: The module properties returned from the server.
    */
   constructor(params) {
     super();
@@ -48,7 +49,7 @@ export class CN_module extends CN_base_object {
   create_view(model) { return new this.#classes.view(model); }
 
   /**
-   * ADD DOCS
+   * Loads all classes used by this module including the model and all actions
    */
   async load_classes() {
     // only load if the classes haven't already been loaded
