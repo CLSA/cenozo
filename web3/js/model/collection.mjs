@@ -1,4 +1,5 @@
 import { CN_base_model } from "../base_model.mjs"
+import { CN_base_view } from "../base_view.mjs"
 
 export class CN_collection_model extends CN_base_model {
   constructor() {
@@ -62,5 +63,11 @@ export class CN_collection_model extends CN_base_model {
       "view" != this.get_action_name() ||
       this.get_action().get_property("access").state.get()
     );
+  }
+}
+
+export class CN_collection_view extends CN_base_view {
+  get_selector_child_title(model) {
+    return "user" == model.get_name() ? "User Control List" : super.get_selector_child_title(model);
   }
 }

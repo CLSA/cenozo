@@ -1,5 +1,6 @@
 import CN_timezones from "../timezones.mjs"
 
+import { CN_base_list } from "../base_list.mjs"
 import { CN_base_model } from "../base_model.mjs"
 
 export class CN_user_model extends CN_base_model {
@@ -38,5 +39,21 @@ export class CN_user_model extends CN_base_model {
         },
       },
     });
+  }
+}
+
+export class CN_user_list extends CN_base_list {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("header" == type) {
+      const parent_model = this.get_model().get_parent_model();
+      if (parent_model && "collection" == parent_model.get_name()) {
+        return "User Control List";
+      }
+    }
+
+    return await super.get_text(type);
   }
 }

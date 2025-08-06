@@ -30,7 +30,7 @@ export class CN_base_view extends CN_base_record {
         element: model.get_element(),
       });
       return list;
-    }, []).sort((a,b) => a<b);
+    }, []).sort((a,b) => a.title>b.title);
   }
 
   /**

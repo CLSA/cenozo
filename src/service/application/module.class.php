@@ -20,6 +20,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $modifier->join( 'application_type', 'application.application_type_id', 'application_type.id' );
     $modifier->join( 'country', 'application.country_id', 'country.id' );
     $modifier->left_join( 'study_phase', 'application.study_phase_id', 'study_phase.id' );
     $modifier->left_join( 'study', 'study_phase.study_id', 'study.id' );
