@@ -9,7 +9,7 @@ export class CN_base_list extends CN_base_action {
   #list_mode;
   #columns;
   #records = [];
-  #total_records = 0;
+  #total_records = null;
   #current_page = 1;
   #is_choosing = false;
   #choosing_list;

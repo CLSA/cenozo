@@ -252,7 +252,9 @@ export class CN_base_view extends CN_base_record {
         if (index) {
           // update the title and remove it from the missing list
           const child = selector_model_list[index];
-          child.innerHTML = `${child.title} [${child.model.get_action().get_total_records()}]`;
+          let total = child.model.get_action().get_total_records();
+          if (null == total) total = "...";
+          child.innerHTML = `${child.title} [${total}]`;
           selector_model_list.splice(index, 1);
         } else {
           // remove the button
@@ -263,7 +265,9 @@ export class CN_base_view extends CN_base_record {
       // now add all remaining models to the button list (alphabetically by title)
       selector_model_list.forEach(child => {
         // get the button's title and create it
-        const title = `${child.title} [${child.model.get_action().get_total_records()}]`;
+        let total = child.model.get_action().get_total_records();
+        if (null == total) total = "...";
+        const title = `${child.title} [${total}]`;
         const child_btn_el = CN_element.create(`
           <button
             name="${child.model.get_name()}"
