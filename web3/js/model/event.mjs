@@ -1,9 +1,4 @@
-import CN_session from "../session.mjs"
-
-import { CN_base_add } from "../base_add.mjs"
 import { CN_base_model } from "../base_model.mjs"
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_view } from "../base_view.mjs"
 
 export class CN_event_model extends CN_base_model {
   constructor() {

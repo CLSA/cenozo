@@ -1,7 +1,6 @@
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
 
 export class CN_mail_model extends CN_base_model {
   constructor() {

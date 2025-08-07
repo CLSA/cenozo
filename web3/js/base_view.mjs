@@ -1,7 +1,6 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"
-import CN_session from "./session.mjs"
 
 import { CN_base_record } from "./base_record.mjs"
 
