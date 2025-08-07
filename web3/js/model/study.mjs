@@ -23,7 +23,7 @@ export class CN_study_model extends CN_base_model {
           type: "enum",
           enum: { path: "consent_type" },
           help: "If selected then participants have withdrawn from the study when this consent-type is negative.",
-        },  
+        },
         completed_event_type_id: {
           title: "Completed Event Type",
           type: "enum",

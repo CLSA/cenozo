@@ -67,7 +67,13 @@ export class CN_collection_model extends CN_base_model {
 }
 
 export class CN_collection_view extends CN_base_view {
-  get_selector_child_title(model) {
-    return "user" == model.get_name() ? "User Control List" : super.get_selector_child_title(model);
+  /**
+   * Extend parent method to change the user's child title
+   */
+  get_selector_child_list() {
+    const child_list = super.get_selector_child_list();
+    const child = child_list.find(child => "user" == child.model.get_name());
+    if (child) child.title = "User Control List";
+    return child_list;
   }
 }

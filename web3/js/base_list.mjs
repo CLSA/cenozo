@@ -188,12 +188,12 @@ export class CN_base_list extends CN_base_action {
     const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
 
-    // update the parent's list selector count
+    // update the parent's child list record count
     const parent_model = this.get_model().get_parent_model();
     if (parent_model && "view" == parent_model.get_action_name()) {
-      const list_selector_el = parent_model.get_element().querySelector("div[name=list-selector]");
-      if (list_selector_el) {
-        const btn_el = list_selector_el.querySelector(`button[name=${this.get_model().get_name()}]`);
+      const child_lists_el = parent_model.get_element().querySelector("div[name=child-lists]");
+      if (child_lists_el) {
+        const btn_el = child_lists_el.querySelector(`button[name=${this.get_model().get_name()}]`);
         if (btn_el) {
           btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\]/, ` [${this.#total_records}]`);
         }

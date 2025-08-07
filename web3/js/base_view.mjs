@@ -7,6 +7,8 @@ import { CN_base_record } from "./base_record.mjs"
 
 export class CN_base_view extends CN_base_record {
   #tab = null;
+  #child_lists_el = null;
+  #list_selector_el = null;
 
   /**
    * Constructor
@@ -24,21 +26,11 @@ export class CN_base_view extends CN_base_record {
     return this.get_model().get_child_model_list().reduce((list, model) => {
       if (null == model.get_element()) model.render();
       list.push({
-        name: model.get_name(),
-        title: this.get_selector_child_title(model),
-        total: model.get_action().get_total_records(),
-        element: model.get_element(),
+        title: CN_common.uc_words(model.get_plural()),
+        model: model,
       });
       return list;
     }, []).sort((a,b) => a.title>b.title);
-  }
-
-  /**
-   * Returns the title of the button for a model found in the list selector
-   * @return string
-   */
-  get_selector_child_title(model) {
-    return CN_common.uc_words(model.get_plural());
   }
 
   /**
@@ -237,6 +229,84 @@ export class CN_base_view extends CN_base_record {
     } else if (null != delete_btn_el && !this.get_model().allow_delete()) {
       this.get_footer_element().removeChild(delete_btn_el);
     }
+
+    // update the child lists
+    const btn_group_el = this.#list_selector_el.querySelector(".card-footer > div.row");
+    const selector_model_list = this.get_selector_child_list();
+    if (1 >= selector_model_list.length) {
+      // remove all buttons from the list selector
+      btn_group_el.innerHTML = "";
+
+      // only display the sole child, if there is one
+      this.#child_lists_el.innerHTML = "";
+      if (0 < selector_model_list.length) {
+        this.#child_lists_el.append(selector_model_list[0].model.element);
+      }
+    } else {
+      // there are multiple children so add the selector to the DOM and update its buttons
+      const button_list = [...this.#list_selector_el.querySelectorAll("button")];
+      this.#child_lists_el.append(this.#list_selector_el);
+
+      // go through the button list and update or remove buttons based on the selector model list
+      button_list.forEach(btn_el => {
+        let index = selector_model_list.findIndex(child => btn_el.name == child.model.get_name());
+        if (index) {
+          // update the title and remove it from the missing list
+          const child = selector_model_list[index];
+          child.innerHTML = `${child.title} [${child.model.get_action().get_total_records()}]`;
+          selector_model_list.splice(index, 1);
+        } else {
+          // remove the button
+          btn_el.remove();
+        }
+      });
+
+      // now add all remaining models to the button list (alphabetically by title)
+      selector_model_list.forEach(child => {
+        console.log(child);
+        // get the button's title and create it
+        const title = `${child.title} [${child.model.get_action().get_total_records()}]`;
+        const child_btn_el = CN_element.create(`
+          <button
+            name="${child.model.get_name()}"
+            type="button"
+            class="col btn btn-primary mx-1"
+          >${title}</button>
+        `);
+
+        child_btn_el.addEventListener("click", async () => {
+          this.#tab = child.model.get_name();
+          window.history.replaceState(null, null, `?tab=${this.#tab}`);
+
+          this.get_selector_child_list().forEach(sub_child => {
+            if (sub_child.model.get_name() == child.model.get_name()) {
+              this.#child_lists_el.append(sub_child.model.get_element());
+            } else {
+              sub_child.model.get_element().remove();
+            }
+          });
+        });
+
+        // insert the new button alphabetically
+        const added = button_list.some(btn_el => {
+          if (title < btn_el.innerHTML) {
+            btn_group_el.insertBefore(child_btn_el, btn_el);
+            return true;
+          }
+        });
+
+        // if we didn't find the next existing button then add the new one at the end of the button group
+        if (!added) btn_group_el.append(child_btn_el);
+      });
+
+      // if a tab has been selected then add its model to the DOM
+      const current_tab = (new URL(window.location)).searchParams.get('tab');
+      if (current_tab) {
+        this.get_selector_child_list().forEach(child => {
+          if (child.model.get_name() == current_tab) this.#child_lists_el.append(child.model.get_element());
+        })
+      }
+    }
   }
 
   /**
@@ -263,14 +333,33 @@ export class CN_base_view extends CN_base_record {
   render() {
     const el = super.render();
 
-    // add a child list selector
+    // create the child list element
+    this.#child_lists_el = CN_element.create('<div name="child-lists"></div>');
+    el.append(this.#child_lists_el);
+
+    // create the list-selector control element
+    this.#list_selector_el = CN_element.create_card();
+    this.#list_selector_el.setAttribute("name", "list-selector");
+
+    this.#list_selector_el.querySelector(".card-header").append(CN_element.create(`
+      <div class="d-flex">
+        <div class="flex-grow-1">
+          List Selector
+        </div>
+      </div>
+    `));
+
+    this.#list_selector_el.querySelector(".card-body").remove();
+    this.#list_selector_el.querySelector(".card-footer").append(CN_element.create(`<div class="row"></div>`));
+
+    /*
     const selector_model_list = this.get_selector_child_list();
     if (1 < selector_model_list.length) {
-      const list_selector_el = CN_element.create_card();
-      list_selector_el.setAttribute("name", "list-selector");
-      el.append(list_selector_el);
+      this.#list_selector_el = CN_element.create_card();
+      this.#list_selector_el.setAttribute("name", "list-selector");
+      this.#child_lists_el.append(this.#list_selector_el);
 
-      list_selector_el.querySelector(".card-header").append(CN_element.create(`
+      this.#list_selector_el.querySelector(".card-header").append(CN_element.create(`
         <div class="d-flex">
           <div class="flex-grow-1">
             List Selector
@@ -278,10 +367,10 @@ export class CN_base_view extends CN_base_record {
         </div>
       `));
 
-      list_selector_el.querySelector(".card-body").remove();
+      this.#list_selector_el.querySelector(".card-body").remove();
 
       const btn_group_el = CN_element.create(`<div class="row"></div>`);
-      list_selector_el.querySelector(".card-footer").append(btn_group_el);
+      this.#list_selector_el.querySelector(".card-footer").append(btn_group_el);
 
       // add children to the list selector and render them
       selector_model_list.forEach(child_model => {
@@ -298,7 +387,7 @@ export class CN_base_view extends CN_base_record {
 
           selector_model_list.forEach(sub_child_model => {
             if (sub_child_model.name == child_model.name) {
-              el.append(sub_child_model.element);
+              this.#child_lists_el.append(sub_child_model.element);
             } else {
               sub_child_model.element.remove();
             }
@@ -306,13 +395,14 @@ export class CN_base_view extends CN_base_record {
         });
 
         if (child_model.name == (new URL(window.location)).searchParams.get('tab')) {
-          el.append(child_model.element);
+          this.#child_lists_el.append(child_model.element);
         }
       });
     } else if (1 == selector_model_list.length) {
       // render the only child directly
-      el.append(selector_model_list[0].element);
+      this.#child_lists_el.append(selector_model_list[0].element);
     }
+    */
 
     return el;
   }

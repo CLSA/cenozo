@@ -132,13 +132,15 @@ export class CN_application_model extends CN_base_model {
 }
 
 export class CN_application_view extends CN_base_view {
+  /**
+   * Extend the parent method to remove the collection and role list for all applications except the current one.
+   * This is because only the current application can get collections and roles from the server.
+   */
   get_selector_child_list() {
-    // The server will not show the correct collections or roles to any application other than the current one
-    // TODO: this won't work because the name property's value hasn't loaded yet
     return (
       CN_session.data.application.name == this.get_property("name").state.get() ?
       super.get_selector_child_list() :
-      super.get_selector_child_list().filter(model => !["collection", "role"].includes(model.name))
+      super.get_selector_child_list().filter(child => !["collection", "role"].includes(child.model.get_name()))
     );
   }
 }

@@ -34,7 +34,7 @@ export class CN_form_association_list extends CN_base_list {
       // Note that we don't have to configure it because we're not using it to render anything
       await module.load_classes();
       const model = module.create_model();
-      
+
       if (model.allow_view()) {
         await CN_session.navigate_to(model.get_view_url(record.record_id));
       } else {
