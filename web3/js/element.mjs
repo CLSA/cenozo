@@ -409,7 +409,7 @@ export default {
    * @param [model] model_list: A list of models in their trail order
    * @return Element
    */
-  create_breadcrumb_trail: async function(base_name, model_list) {
+  create_breadcrumb_trail: async function(base_name, model_list = []) {
     // create a list of all crumbs (adding chevrons later)
     let crumb_list = [];
 

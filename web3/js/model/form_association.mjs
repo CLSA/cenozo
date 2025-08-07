@@ -1,3 +1,4 @@
+import CN_api from "../api.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
@@ -36,7 +37,25 @@ export class CN_form_association_list extends CN_base_list {
       const model = module.create_model();
 
       if (model.allow_view()) {
-        await CN_session.navigate_to(model.get_view_url(record.record_id));
+        let path = model.get_view_url(record.record_id);
+        if ("consent" == record.subject) {
+          // add the parent participant to the path
+          const response = await CN_api.get(
+            model.get_view_url(record.record_id, "api"),
+            { select: { column: "participant_id" } },
+          );
+          const row = await response.json();
+          if (row) path = `participant/view/${row.participant_id}/${path}`;
+        } else if ("alternate_consent" == record.subject) {
+          // add the parent alternate to the path
+          const response = await CN_api.get(
+            model.get_view_url(record.record_id, "api"),
+            { select: { column: "alternate_id" } },
+          );
+          const row = await response.json();
+          if (row) path = `alternate/view/${row.alternate_id}/${path}`;
+        }
+        await CN_session.navigate_to(path);
       } else {
         CN_element.message_modal({
           title: "Permission Denied",
