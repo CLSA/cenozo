@@ -119,29 +119,18 @@ export class CN_participant_model extends CN_base_model {
               type: "dod",
               min: "date_of_birth",
               max: "now",
-              is_constant: () => true,
             },
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
               type: "enum",
-              is_constant: () => true,
-              /*
-                TODO: is constant should be
-                  angular.isUndefined(model.viewModel.record.date_of_death) ||
-                  null == model.viewModel.record.date_of_death
-              */
+              is_constant: (model) => !model.get_action().get_property("date_of_death").state.get(),
               help: "Defines how accurate the date of death is.",
             },
             date_of_death_ministry: {
               title: "Death Confirmed by Ministry",
               type: "boolean",
+              is_constant: (model) => !model.get_action().get_property("date_of_death").state.get(),
               help: "Determines whether information about the participant's death is confirmed by a ministry",
-              is_constant: () => true,
-              /*
-                TODO: is constant should be
-                  angular.isUndefined(model.viewModel.record.date_of_death) ||
-                  null == model.viewModel.record.date_of_death
-              */
             },
             language_id: {
               title: "Preferred Language",
