@@ -44,7 +44,7 @@ export class CN_base_view extends CN_base_record {
       const title_prop = this.get_property("title");
       if (title_prop) return title_prop.state.get();
 
-      return undefined;
+      return CN_common.uc_words(this.get_model().get_singular());
     }
 
     if ("header" == type) {
@@ -240,7 +240,7 @@ export class CN_base_view extends CN_base_record {
       // only display the sole child, if there is one
       this.#child_lists_el.innerHTML = "";
       if (0 < selector_model_list.length) {
-        this.#child_lists_el.append(selector_model_list[0].model.element);
+        this.#child_lists_el.append(selector_model_list[0].model.get_element());
       }
     } else {
       // there are multiple children so add the selector to the DOM and update its buttons
@@ -350,58 +350,6 @@ export class CN_base_view extends CN_base_record {
 
     this.#list_selector_el.querySelector(".card-body").remove();
     this.#list_selector_el.querySelector(".card-footer").append(CN_element.create(`<div class="row"></div>`));
-
-    /*
-    const selector_model_list = this.get_selector_child_list();
-    if (1 < selector_model_list.length) {
-      this.#list_selector_el = CN_element.create_card();
-      this.#list_selector_el.setAttribute("name", "list-selector");
-      this.#child_lists_el.append(this.#list_selector_el);
-
-      this.#list_selector_el.querySelector(".card-header").append(CN_element.create(`
-        <div class="d-flex">
-          <div class="flex-grow-1">
-            List Selector
-          </div>
-        </div>
-      `));
-
-      this.#list_selector_el.querySelector(".card-body").remove();
-
-      const btn_group_el = CN_element.create(`<div class="row"></div>`);
-      this.#list_selector_el.querySelector(".card-footer").append(btn_group_el);
-
-      // add children to the list selector and render them
-      selector_model_list.forEach(child_model => {
-        const child_btn_el = CN_element.create(`
-          <button name="${child_model.name}" type="button" class="col btn btn-primary mx-1">
-            ${child_model.title} [...]
-          </button>
-        `);
-        btn_group_el.append(child_btn_el);
-
-        child_btn_el.addEventListener("click", async () => {
-          this.#tab = child_model.name;
-          window.history.replaceState(null, null, `?tab=${this.#tab}`);
-
-          selector_model_list.forEach(sub_child_model => {
-            if (sub_child_model.name == child_model.name) {
-              this.#child_lists_el.append(sub_child_model.element);
-            } else {
-              sub_child_model.element.remove();
-            }
-          });
-        });
-
-        if (child_model.name == (new URL(window.location)).searchParams.get('tab')) {
-          this.#child_lists_el.append(child_model.element);
-        }
-      });
-    } else if (1 == selector_model_list.length) {
-      // render the only child directly
-      this.#child_lists_el.append(selector_model_list[0].element);
-    }
-    */
 
     return el;
   }
