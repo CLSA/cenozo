@@ -214,10 +214,7 @@ export class CN_participant_view extends CN_base_view {
    */
   async get_text(type) {
     if ("name" == type) {
-      return [
-        this.get_property("last_name").state.get(),
-        this.get_property("first_name").state.get(),
-      ].join(", ");
+      return this.get_property("uid").state.get();
     }
     return await super.get_text(type);
   }

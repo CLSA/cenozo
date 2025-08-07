@@ -1,0 +1,43 @@
+import { CN_base_model } from "../base_model.mjs"
+
+export class CN_hin_model extends CN_base_model {
+  constructor() {
+    super({
+      wording: {
+        singular: "HIN",
+        plural: "HINs",
+        posessive: "HIN's",
+      },
+      columns: {
+        region: { column: "region.name", title: "Region" },
+        datetime: { title: "Date & Time", type: "datetime" },
+      },
+      properties: {
+        code: { title: "Code" },  
+        region_id: {
+          title: "Region",
+          type: "enum",
+          enum: {
+            path: "region",
+            select: { column: {
+              column: "CONCAT(region.name, ', ', country.name)",
+              alias: "name",
+              table_prefix: false,
+            } },
+            modifier: {
+              order: ["country.name", "region.name"],
+            },
+          },
+          help: "The region from which the HIN is registered in.",
+        },  
+        datetime: {
+          title: "Date",
+          type: "datetime",
+          is_hidden: (model) => "add" == model.get_action_name(),
+        },
+      },
+    });
+  }
+}
+
+// TODO: do not allow reports (exports) of HIN lists
