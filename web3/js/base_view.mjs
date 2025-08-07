@@ -263,7 +263,6 @@ export class CN_base_view extends CN_base_record {
 
       // now add all remaining models to the button list (alphabetically by title)
       selector_model_list.forEach(child => {
-        console.log(child);
         // get the button's title and create it
         const title = `${child.title} [${child.model.get_action().get_total_records()}]`;
         const child_btn_el = CN_element.create(`
