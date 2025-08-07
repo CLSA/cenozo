@@ -1,0 +1,20 @@
+import { CN_base_model } from "../base_model.mjs"
+
+export class CN_availability_type_model extends CN_base_model {
+  constructor() {
+    super({
+      wording: {
+        singular: "availability type",
+        plural: "availability types",
+        posessive: "availability type's",
+      },
+      columns: {
+        name: { title: "Name", },
+        participant_count: { title: "Participants", type: "number", table_prefix: false },
+      },
+      properties: {
+        name: { title: "Name" },
+      },
+    });
+  }
+}

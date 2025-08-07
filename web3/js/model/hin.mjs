@@ -13,7 +13,7 @@ export class CN_hin_model extends CN_base_model {
         datetime: { title: "Date & Time", type: "datetime" },
       },
       properties: {
-        code: { title: "Code" },  
+        code: { title: "Code" },
         region_id: {
           title: "Region",
           type: "enum",
@@ -29,7 +29,7 @@ export class CN_hin_model extends CN_base_model {
             },
           },
           help: "The region from which the HIN is registered in.",
-        },  
+        },
         datetime: {
           title: "Date",
           type: "datetime",
