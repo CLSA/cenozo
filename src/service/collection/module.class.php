@@ -171,24 +171,26 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add the total number of users
-    if( $select->has_column( 'user_count' ) )
+    if( $select->has_column( 'user_list' ) )
     {
+      \cenozo\database\database::$debug = true;
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'user_has_collection' );
       $join_sel->add_column( 'collection_id' );
-      $join_sel->add_column( 'COUNT( DISTINCT user_has_collection.user_id )', 'user_count', false );
+      $join_sel->add_column( 'GROUP_CONCAT( DISTINCT user.name ORDER BY user.name SEPARATOR ", " )', 'user_list', false );
 
       $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( 'user', 'user_has_collection.user_id', 'user.id' );
       $join_mod->group( 'collection_id' );
 
       // restrict to users who have access to this application
-      $join_mod->join( 'access', 'user_has_collection.user_id', 'access.user_id' );
+      $join_mod->join( 'access', 'user.id', 'access.user_id' );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS collection_join_user', $join_sel->get_sql(), $join_mod->get_sql() ),
         'collection.id',
         'collection_join_user.collection_id' );
-      $select->add_column( 'IFNULL( user_count, 0 )', 'user_count', false );
+      $select->add_column( 'IFNULL( user_list, "any" )', 'user_list', false );
     }
   }
 }

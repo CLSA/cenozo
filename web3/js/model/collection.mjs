@@ -14,7 +14,7 @@ export class CN_collection_model extends CN_base_model {
         active: { title: "Active", type: "boolean" },
         locked: { title: "Locked", type: "boolean" },
         participant_count: { title: "Participants", type: "number", table_prefix: false },
-        user_count: { title: "Users", type: "number", table_prefix: false },
+        user_list: { title: "Users", table_prefix: false },
       },
       properties: {
         name: {
