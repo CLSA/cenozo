@@ -96,45 +96,6 @@ class ui extends \cenozo\base_object
   }
 
   /**
-   * Returns a list of all modules provided by the framework
-   * 
-   * @return array( string )
-   * @access protected
-   */
-  protected function get_framework_module_list()
-  {
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $list = [
-      'access', 'activity', 'address', 'alternate', 'alternate_consent', 'alternate_consent_type',
-      'alternate_type', 'application', 'application_type', 'availability_type', 'callback', 'cohort',
-      'collection', 'consent', 'consent_type', 'custom_report', 'event', 'event_mail', 'event_type',
-      'event_type_mail', 'export', 'export_file', 'failed_login', 'form', 'form_association', 'form_type',
-      'hin', 'hold', 'hold_type', 'identifier', 'jurisdiction', 'language', 'log_entry', 'mail', 'notation',
-      'overview', 'participant', 'participant_identifier', 'phone', 'proxy', 'proxy_type', 'region',
-      'region_site', 'relation', 'relation_type', 'role', 'report', 'report_restriction', 'report_schedule',
-      'report_type', 'search_result', 'site', 'source', 'stratum', 'study', 'study_phase', 'system_message',
-      'trace', 'trace_type', 'user', 'user_ip_address', 'writelog'
-    ];
-
-    if( $setting_manager->get_setting( 'module', 'equipment' ) )
-      $list = array_merge( $list, [ 'equipment', 'equipment_loan', 'equipment_type' ] );
-
-    if( $setting_manager->get_setting( 'module', 'interview' ) )
-      $list = array_merge( $list, [ 'assignment', 'interview', 'phone_call' ] );
-
-    if( $setting_manager->get_setting( 'module', 'recording' ) )
-      $list = array_merge( $list, [ 'recording', 'recording_file' ] );
-
-    if( $setting_manager->get_setting( 'module', 'relation' ) )
-      $list = array_merge( $list, [ 'relation', 'relation_type' ] );
-
-    if( $setting_manager->get_setting( 'module', 'script' ) )
-      $list = array_merge( $list, [ 'script' ] );
-
-    return $list;
-  }
-
-  /**
    * Returns an array of all modules the current role has access to
    * 
    * @return array( title, add )
@@ -842,21 +803,13 @@ class ui extends \cenozo\base_object
   /**
    * Prints JSON encoded lists for Javascript
    * 
-   * @param string $type One of 'framework_modules', 'modules', 'lists', 'utilities', or 'reports'
+   * @param string $type One of 'modules', 'lists', 'utilities', or 'reports'
    */
   protected function print_list( $type )
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    if( 'framework_modules' == $type )
-    {
-      // prepare the framework module list (used to identify which modules are provided by the framework)
-      $list = $this->get_framework_module_list();
-      sort( $list );
-
-      print $util_class_name::json_encode( $list );
-    }
-    else if( 'modules' == $type )
+    if( 'modules' == $type )
     {
       // prepare the module list (used to create all necessary states needed by the active role)
       $this->build_module_list();

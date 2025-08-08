@@ -24,8 +24,7 @@
     // determine whether we are in development mode
     if( window.cenozo.development ) console.info( 'Development mode' );
 
-    // define framework modules, set the applications module list then route them all
-    window.cenozo.defineFrameworkModules( <?php $this->print_list( 'framework_modules' ); ?> );
+    // set the applications module list then route them all
     window.cenozoApp.setModuleList( <?php $this->print_list( 'modules' ); ?> );
     window.cenozoApp.config( [
       '$stateProvider',

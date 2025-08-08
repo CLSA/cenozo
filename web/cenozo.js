@@ -438,7 +438,6 @@
           } catch (err) {} // do nothing if an exception was thrown
           delete this.moduleList.note;
         } else {
-          var framework = cenozo.isFrameworkModule(name);
           angular.extend(this.moduleList[name], {
             marked: false,
             deferred: null,
@@ -447,7 +446,6 @@
               camel: name.snakeToCamel(false),
               Camel: name.snakeToCamel(true),
             },
-            framework: framework,
             getFileUrl: function (file) {
               var url = cenozo.getBaseUrl(
                 this.framework ? cenozo.baseUrl : cenozoApp.baseUrl,
@@ -859,7 +857,6 @@
   // extend the framework object
   angular.extend(cenozo, {
     providers: {},
-    frameworkModules: {},
 
     xor: function (a, b) {
       return (a || b) && !(a && b);
@@ -923,16 +920,6 @@
         object[prop] = properties[prop];
         if (afterProperty === prop) object[newProperty] = value;
       }
-    },
-
-    // defines all modules belonging to the framework
-    defineFrameworkModules: function (list) {
-      this.frameworkModules = list;
-    },
-
-    // returns whether a module belongs to the framework or not
-    isFrameworkModule: function (moduleName) {
-      return this.frameworkModules.includes(moduleName);
     },
 
     objectsAreEqual: function (obj1, obj2) {
