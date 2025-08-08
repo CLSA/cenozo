@@ -206,7 +206,15 @@ export class CN_base_view extends CN_base_record {
     // flash the border green to show the data has been updated
     const old_style = control_el.style;
     control_el.style["border-color"] = "green";
-    setTimeout(() => { control_el.style = old_style; }, 500);
+    setTimeout(() => {
+      control_el.style = old_style;
+
+      // we also have to update text input heights since depending on the old_style doesn't seem to work
+      if ("text" == prop.type) {
+        control_el.style.height = "";
+        control_el.style.height = control_el.scrollHeight + "px";
+      }
+    }, 500);
   }
 
   /**

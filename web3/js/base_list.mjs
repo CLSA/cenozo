@@ -490,7 +490,7 @@ export class CN_base_list extends CN_base_action {
       for (let col=0; col<4; col++) {
         let width = Math.ceil(Math.random()*6)+6;
         tr_el.innerHTML += `
-          <td class="text-center placeholder-glow" style="">
+          <td class="text-center placeholder-glow">
             <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${width}"></span>
           </td>
         `;

@@ -15,9 +15,7 @@
       const params = {
         static: true,
         title: "Unexpected Error",
-        message: `
-          Sorry, but an unexpected error has occurred which may cause the application to behave incorrectly.
-        `,
+        message: "Sorry, but an unexpected error has occurred which may cause the application to behave incorrectly.",
         type: "danger",
       };
       if (CN_common.is_object(event.reason)) {
