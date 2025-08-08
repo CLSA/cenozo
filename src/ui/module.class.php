@@ -296,40 +296,40 @@ class module extends \cenozo\base_object
    * The module's subject
    * @var string
    */
-  private $subject;
+  protected $subject;
 
   /**
    * Whether the module belongs to the framework
    * @var boolean
    */
-  private $framework;
+  protected $framework;
 
   /**
    * The module's column list
    * @var array
    */
-  private $column_list = [];
+  protected $column_list = [];
 
   /**
    * The module's action list
    * @var array
    */
-  private $action_list = array();
+  protected $action_list = array();
 
   /**
    * The module's child list
    * @var array
    */
-  private $child_list = array();
+  protected $child_list = array();
 
   /**
    * The module's choose list
    * @var array
    */
-  private $choose_list = array();
+  protected $choose_list = array();
 
   /**
    * The module's list menu
    */
-  private $list_menu = false;
+  protected $list_menu = false;
 }
