@@ -1,3 +1,4 @@
+import CN_api from "./api.mjs"
 import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
 
@@ -162,6 +163,30 @@ export class CN_base_action extends CN_base_object {
   create_header_element() {
     const el = CN_element.create('<div class="d-flex"><div class="flex-grow-1"></div></div>');
     (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
+
+    // add a data notation button
+    const notation_btn_el = CN_element.create(`
+      <button class="btn btn-primary px-2 py-0">
+        <i class="bi-info-circle fs-5"></i>
+      </button>
+    `);
+    notation_btn_el.addEventListener("click", async (event) => {
+      const module = this.get_model().get_module();
+      const result = await CN_element.input_modal({
+        title: "Page Documentation",
+        message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
+        input: "text",
+        value: module.get_notation(this.#type),
+      }).get();
+
+      if (undefined !== result) module.set_notation(this.#type, result);
+    });
+    el.append(notation_btn_el);
+    new bootstrap.Tooltip(notation_btn_el, {
+      title: "Documentation",
+      trigger: "hover",
+      delay: { "show": 500, "hide": 100 },
+    });
 
     // add a data refresh button
     const refresh_btn_el = CN_element.create(`

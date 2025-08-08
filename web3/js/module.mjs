@@ -1,5 +1,6 @@
 // SESSION
 
+import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 
 import { CN_base_add } from "./base_add.mjs"
@@ -13,6 +14,8 @@ import { CN_base_view } from "./base_view.mjs"
 export class CN_module extends CN_base_object {
   #name;
   #root = false;
+  #framework = false;
+  #notations = {};
   #properties = {};
   #actions = {};
   #children = [];
@@ -27,6 +30,8 @@ export class CN_module extends CN_base_object {
     super();
     this.#name = params.subject;
     if (params.hasOwnProperty("root")) this.#root = params.root;
+    if (params.hasOwnProperty("framework")) this.#framework = params.framework;
+    if (params.hasOwnProperty("notations")) this.#notations = params.notations;
     if (params.hasOwnProperty("properties")) this.#properties = params.properties;
     if (params.hasOwnProperty("actions")) this.#actions = params.actions;
     if (params.hasOwnProperty("children")) this.#children = params.children.sort();
@@ -35,7 +40,10 @@ export class CN_module extends CN_base_object {
 
   get_name() { return this.#name; }
   is_root() { return this.#root; }
+  is_framework() { return this.#framework; }
   action_allowed(action) { return this.#actions.hasOwnProperty(action); }
+  has_notation(type) { return this.#notations.hasOwnProperty(type); }
+  get_notation(type) { return this.has_notation(type) ? this.#notations[type] : null; }
   has_property(name) { return this.#properties.hasOwnProperty(name); }
   get_property(name) { return this.#properties[name]; }
   has_child(module_name) { return this.#children.includes(module_name); }
@@ -46,6 +54,35 @@ export class CN_module extends CN_base_object {
   create_add(model) { return new this.#classes.add(model); }
   create_list(model) { return new this.#classes.list(model); }
   create_view(model) { return new this.#classes.view(model); }
+
+  /**
+   * Updates a notation
+   */
+  async set_notation(type, description) {
+    if (CN_common.is_string(description) && 0 == description.length) description = null;
+    const current_description = this.get_notation(type);
+    if (description == current_description) return;
+
+    const application_type_id = this.#framework ? null : CN_session.data.application.application_type_id;
+    const path = `notation/application_type_id=${application_type_id};subject=${this.#name};type=${type}`;
+
+    if (!description) {
+      await CN_api.delete(path);
+    } else {
+      if (current_description) {
+        await CN_api.patch(path, { description: description });
+      } else {
+        await CN_api.post("notation", {
+          application_type_id: application_type_id,
+          subject: this.#name,
+          type: type,
+          description: description,
+        });
+      }
+    }
+
+    this.#notations[type] = description;
+  }
 
   /**
    * Loads all classes used by this module including the model and all actions

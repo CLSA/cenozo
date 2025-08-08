@@ -91,11 +91,19 @@ export default {
     this.data.user.am_pm = this.data.user.use_12hour_clock;
     delete this.data.user.use_12hour_clock;
 
+    // prepare notations
+    const notations = this.data.notation.reduce((list, notation) => {
+      if (!list.hasOwnProperty(notation.subject)) list[notation.subject] = {};
+      list[notation.subject][notation.type] = notation.description;
+      return list;
+    }, {});
+
     // create all modules
     const modules = this.data.modules;
     delete this.data.modules;
     for(const module_name in modules) {
       const params = modules[module_name];
+
       // a module is "root" if it's found in the list or utility menus
       params.root = false;
       for (const m in this.data.menu.lists) {
@@ -110,6 +118,10 @@ export default {
           break;
         }
       }
+
+      // add the module's notations
+      params.notations = notations.hasOwnProperty(module_name) ? notations[module_name] : {};
+
       MODULE_MAP.set(module_name, new CN_module(params));
     }
   },
