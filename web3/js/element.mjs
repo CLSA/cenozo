@@ -1123,7 +1123,7 @@ export default {
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
             </div>
             <div class="modal-body">
-              <label class="form-label" for="cn_input_modal">
+              <label class="form-label text-info" for="cn_input_modal">
                 ${config.message}
               </label>
             </div>
@@ -1155,6 +1155,7 @@ export default {
       modal_el.setAttribute("data-bs-keyboard", "false");
     }
     const control_el = document.getElementById("cn_input_modal");
+    if (config.value) control_el.value = config.value;
 
     const modal_bs = new bootstrap.Modal(modal_el);
     modal_bs.get = () => {
@@ -1172,6 +1173,14 @@ export default {
         });
       });
     };
+
+    // update the size of text inputs after the modal is showing
+    modal_el.addEventListener("shown.bs.modal", () => {
+      if (config.value && "text" == config.input) {
+        control_el.style.height = '';
+        control_el.style.height = control_el.scrollHeight + 'px';
+      }
+    });
 
     // automatically dispose of the modal once finished
     modal_el.addEventListener("hidden.bs.modal", () => {
