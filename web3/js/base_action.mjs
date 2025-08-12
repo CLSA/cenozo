@@ -68,12 +68,13 @@ export class CN_base_action extends CN_base_object {
     const card_header_el = this.get_element().querySelector(".card-header");
     card_header_el.innerHTML = "Loading...";
 
+    const placeholder_el = this.get_placeholder_element();
     const card_body_el = this.get_element().querySelector(".card-body");
     card_body_el.innerHTML = "";
-    card_body_el.append(this.get_placeholder_element());
+    if (placeholder_el) card_body_el.append(placeholder_el);
 
     const card_footer_el = this.get_element().querySelector(".card-footer");
-    card_footer_el.innerHTML = "&nbsp;";
+    card_footer_el.innerHTML = "";
   }
 
   /**
@@ -82,17 +83,20 @@ export class CN_base_action extends CN_base_object {
   hide_placeholder() {
     this.#is_placeholder = false;
 
+    const header_el = this.get_header_element();
     const card_header_el = this.get_element().querySelector(".card-header");
     card_header_el.innerHTML = "";
-    card_header_el.append(this.get_header_element());
+    if (header_el) card_header_el.append(this.get_header_element());
 
+    const body_el = this.get_body_element();
     const card_body_el = this.get_element().querySelector(".card-body");
     card_body_el.innerHTML = "";
-    card_body_el.append(this.get_body_element());
+    if (body_el) card_body_el.append(this.get_body_element());
 
+    const footer_el = this.get_footer_element();
     const card_footer_el = this.get_element().querySelector(".card-footer");
     card_footer_el.innerHTML = "";
-    card_footer_el.append(this.get_footer_element());
+    if (footer_el) card_footer_el.append(this.get_footer_element());
   }
 
   /**
@@ -237,12 +241,12 @@ export class CN_base_action extends CN_base_object {
     const el = CN_element.create('<div name="model-action"></div>');
     if (null == this.#model.get_action_name()) return el;
 
-    el.append(CN_element.create_card());
-
-    // add the header, body and footer
-    el.querySelector(".card-header").innerHTML = "Loading...";
-    el.querySelector(".card-body").append(this.get_placeholder_element());
-    el.querySelector(".card-footer").innerHTML = "&nbsp;";
+    const placeholder_el = this.get_placeholder_element();
+    el.append(CN_element.create_card({
+      header: "Loading...",
+      body: placeholder_el ? placeholder_el : "",
+      footer: "",
+    }));
 
     return el;
   }

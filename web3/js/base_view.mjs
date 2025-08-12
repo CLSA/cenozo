@@ -348,19 +348,18 @@ export class CN_base_view extends CN_base_record {
     el.append(this.#child_lists_el);
 
     // create the list-selector control element
-    this.#list_selector_el = CN_element.create_card();
-    this.#list_selector_el.setAttribute("name", "list-selector");
-
-    this.#list_selector_el.querySelector(".card-header").append(CN_element.create(`
-      <div class="d-flex">
-        <div class="flex-grow-1">
-          List Selector
+    this.#list_selector_el = CN_element.create_card({
+      header: CN_element.create(`
+        <div class="d-flex">
+          <div class="flex-grow-1">
+            List Selector
+          </div>
         </div>
-      </div>
-    `));
-
-    this.#list_selector_el.querySelector(".card-body").remove();
-    this.#list_selector_el.querySelector(".card-footer").append(CN_element.create(`<div class="row"></div>`));
+      `),
+      body: null,
+      footer: CN_element.create(`<div class="row"></div>`),
+    });
+    this.#list_selector_el.setAttribute("name", "list-selector");
 
     return el;
   }
