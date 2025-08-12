@@ -15,6 +15,7 @@ export default {
   is_type: function(x, type) {
     if ("object" == type) return "object" === typeof x && null != x;
     if ("array" == type) return Array.isArray(x);
+    if ("element" == type) return this.is_type(x, "object") && (x instanceof Element || x instanceof HTMLDocument);
     if ("function" == type) return "function" === typeof x;
     if ("string" == type) return "string" === typeof x;
     if ("float" == type) return !isNaN(parseFloat(x)) && !isNaN(x-0);
@@ -35,6 +36,13 @@ export default {
    * @return boolean
    */
   is_array: function (x) { return this.is_type(x, "array"); },
+
+  /**
+   * Returns whether a variable is an element
+   * @param (dynamic) x: the variable to test
+   * @return boolean
+   */
+  is_element: function(x) { return this.is_type(x, "element"); },
 
   /**
    * Returns whether a variable is a function
