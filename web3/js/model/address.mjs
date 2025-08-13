@@ -1,4 +1,6 @@
 import CN_api from "../api.mjs"
+import CN_element from "../element.mjs"
+import CN_session from "../session.mjs"
 
 import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
 
@@ -153,5 +155,26 @@ export class CN_address_view extends CN_traceable_view {
       ].join(") ");
     }
     return await super.get_text(type);
+  }
+
+  /**
+   * Add operations to the footer element
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    // add the timezone action
+    const timezone_btn_el = CN_element.create(
+      '<button name="timezone" type="button" class="btn btn-light btn-outline-primary">Use Timezone</button>'
+    );
+    timezone_btn_el.addEventListener("click", async () => {
+      await CN_session.set_timezone(
+        { address_id: this.get_model().get_identifier() },
+        CN_session.data.user.am_pm,
+      );
+    });
+    footer_el.append(timezone_btn_el);
+
+    return footer_el;
   }
 }

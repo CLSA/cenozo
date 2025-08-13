@@ -356,11 +356,6 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'participant' == $module->get_subject() )
       {
-        /*
-        if( $use_interview_module ) $module->add_child( 'interview' );
-        if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
-          $module->add_child( 'relation' );
-        */
         $module->add_child( 'address' );
         $module->add_child( 'alternate' );
         $module->add_choose( 'collection' );
@@ -370,10 +365,13 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'form' );
         $module->add_child( 'hin' );
         $module->add_child( 'hold' );
+        if( $use_interview_module ) $module->add_child( 'interview' );
         $module->add_child( 'mail' );
         $module->add_child( 'participant_identifier' );
         $module->add_child( 'phone' );
         $module->add_child( 'proxy' );
+        if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
+          $module->add_child( 'relation' );
         $module->add_choose( 'study' );
         $module->add_child( 'trace' );
 

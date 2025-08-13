@@ -1,3 +1,4 @@
+import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
@@ -205,5 +206,57 @@ export class CN_participant_view extends CN_base_view {
       return this.get_property("uid").state.get();
     }
     return await super.get_text(type);
+  }
+
+  /**
+   * Add operation to the footer element
+   */
+  create_footer_element() {
+    const model = this.get_model();
+    const footer_el = super.create_footer_element();
+
+    // add the notes action
+    const notes_btn_el = CN_element.create(
+      '<button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>'
+    );
+    notes_btn_el.addEventListener("click", async () => {
+      CN_session.navigate_to([model.get_base_path("url"), "notes", model.get_identifier()].join("/"));
+    });
+    footer_el.append(notes_btn_el);
+
+    // add the history action
+    const history_btn_el = CN_element.create(
+      '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'
+    );
+    history_btn_el.addEventListener("click", async () => {
+      CN_session.navigate_to([model.get_base_path("url"), "history", model.get_identifier()].join("/"));
+    });
+    footer_el.append(history_btn_el);
+
+    // add the timezone action
+    const timezone_btn_el = CN_element.create(
+      '<button name="timezone" type="button" class="btn btn-light btn-outline-primary">Use Timezone</button>'
+    );
+    timezone_btn_el.addEventListener("click", async () => {
+      await CN_session.set_timezone(
+        { participant_id: model.get_identifier() },
+        CN_session.data.user.am_pm,
+      );
+    });
+    footer_el.append(timezone_btn_el);
+
+    // add the scripts action
+    const token_module = CN_session.get_module("token");
+    if (token_module && token_module.action_allowed("add")) {
+      const scripts_btn_el = CN_element.create(
+        '<button name="scripts" type="button" class="btn btn-light btn-outline-primary">Scripts</button>'
+      );
+      scripts_btn_el.addEventListener("click", async () => {
+        CN_session.navigate_to([model.get_base_path("url"), "scripts", model.get_identifier()].join("/"));
+      });
+      footer_el.append(scripts_btn_el);
+    }
+
+    return footer_el;
   }
 }

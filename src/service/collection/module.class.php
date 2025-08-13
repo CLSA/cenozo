@@ -173,7 +173,6 @@ class module extends \cenozo\service\site_restricted_module
     // add the total number of users
     if( $select->has_column( 'user_list' ) )
     {
-      \cenozo\database\database::$debug = true;
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'user_has_collection' );
       $join_sel->add_column( 'collection_id' );
