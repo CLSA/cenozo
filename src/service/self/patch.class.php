@@ -63,26 +63,34 @@ class patch extends \cenozo\service\service
             $timezone = $user_array['timezone'];
             if( is_object( $timezone ) )
             {
-              if( property_exists( $timezone, 'address_id' ) )
+              try
               {
-                $db_address = lib::create( 'database\address', $timezone->address_id );
-                if( is_null( $db_address ) ) $this->status->set_code( 409 );
+                if( property_exists( $timezone, 'address_id' ) )
+                {
+                  // make sure the address exists
+                  lib::create( 'database\address', $timezone->address_id );
+                }
+                else if( property_exists( $timezone, 'participant_id' ) )
+                {
+                  // make sure the participant exists and has an address
+                  $db_participant = lib::create( 'database\participant', $timezone->participant_id );
+                  if( is_null( $db_participant->get_first_address() ) ) $this->status->set_code( 409 );
+                }
+                else if( property_exists( $timezone, 'alternate_id' ) )
+                {
+                  // make sure the alternate exists and has an address
+                  $db_alternate = lib::create( 'database\alternate', $timezone->alternate_id );
+                  if( is_null( $db_alternate->get_first_address() ) ) $this->status->set_code( 409 );
+                }
+                else
+                {
+                  $this->status->set_code( 400 );
+                }
               }
-              else if( property_exists( $timezone, 'participant_id' ) )
+              catch( \cenozo\exception\runtime $e )
               {
-                $db_participant = lib::create( 'database\participant', $timezone->participant_id );
-                $db_first_address = $db_participant->get_first_address();
-                if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
-              }
-              else if( property_exists( $timezone, 'alternate_id' ) )
-              {
-                $db_alternate = lib::create( 'database\alternate', $timezone->alternate_id );
-                $db_first_address = $db_alternate->get_first_address();
-                if( is_null( $db_first_address ) ) $this->status->set_code( 409 );
-              }
-              else
-              {
-                $this->status->set_code( 400 );
+                if( preg_match( '/^Load failed/', $e->get_raw_message() ) ) $this->status->set_code( 409 );
+                else throw $e;
               }
             }
           }
