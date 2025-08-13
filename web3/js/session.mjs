@@ -60,9 +60,16 @@ export default {
    * Reloads the page at a particular path
    */
   reload: function(path = null) {
+    this.update_breadcrumbs(true);
+    const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
+    menu_btn_group.innerHTML = "";
+    menu_btn_group.append(CN_element.create(`
+      <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    `));
     document.querySelector("div[name=app_bg]").classList.add("bg-loading");
     document.getElementById("main-content").innerHTML = "";
-    this.update_breadcrumbs(true);
     if (null == path) {
       window.location.reload();
     } else {
@@ -170,6 +177,54 @@ export default {
       false,
       true
     );
+  },
+
+  set_timezone: async function(timezone, am_pm) {
+    if (this.data.user.timezone != timezone || this.data.user.am_pm != am_pm) {
+      this.update_breadcrumbs(true);
+      const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
+      menu_btn_group.innerHTML = "";
+      menu_btn_group.append(CN_element.create(`
+        <div class="spinner-border text-light" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      `));
+      document.querySelector("div[name=app_bg]").classList.add("bg-loading");
+      document.getElementById("main-content").innerHTML = "";
+
+      // update the user then reload the UI so all datetimes are adjusted
+      try {
+        await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
+      } catch (error) {
+        if (409 == error.response.status) {
+          // a 409 error means the address, participant or alternate was not found
+          let type = null;
+          if (CN_common.is_object(timezone)) {
+            const keys = Object.keys(timezone);
+            if (0 < keys.length) type = keys[0].replace(/_id$/, "");
+          }
+
+          const params = { static: true, type: "danger" };
+          if (null == type) {
+            params.title = "";
+            params.message = "";
+          } else {
+            params.title = "No Timezone Available";
+            params.message = (
+              "address" == type ?
+              "The selected address was not found.  The page will now reload so you may try again." :
+              `The ${type} does not have an active address so there is no way determine their timezone.`
+            );
+          }
+
+          await CN_element.message_modal(params).block();
+        } else {
+          throw error;
+        }
+      } finally {
+        window.location.reload(); // do not use the session's reload function
+      }
+    }
   },
 
   /**
@@ -322,7 +377,7 @@ export default {
           </button>
           <div name="breadcrumbs" class="collapse navbar-collapse ms-2">
           </div>
-          <div class="d-flex">
+          <div name="menu-btn-group" class="d-flex">
             <button name="access" class="btn btn-primary"></button>
             <button name="clock" class="btn btn-primary">
               <i class="bi-clock-fill"></i>

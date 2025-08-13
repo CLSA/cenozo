@@ -30,6 +30,11 @@
               <button class="home btn btn-primary px-1" disabled="true">Loading...</button>
             </div>
           </div>
+          <div name="menu-btn-group" class="d-flex">
+            <div class="spinner-border text-light" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
         </div>
       </nav>
     </div>

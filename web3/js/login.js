@@ -78,6 +78,13 @@
             submit_button_el.setAttribute("disabled", true);
             submit_button_el.innerHTML = "Processing...";
 
+            const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
+            menu_btn_group.innerHTML = `
+              <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            `;
+
             let problem = null;
             try {
               const response = await fetch(ROOT_URL + "/api/self/0", {
@@ -98,6 +105,7 @@
               problem = "network";
             } finally {
               if (problem) {
+                menu_btn_group.innerHTML = "";
                 const login_footer_el = document.querySelector("span[name=login-message]");
                 login_footer_el.innerHTML = (
                   "invalid" == problem ? "Invalid username and/or password, please try again." :

@@ -31,6 +31,7 @@
           <button class="home btn btn-primary px-1" disabled="true">Home</button>
         </div>
       </div>
+      <div name="menu-btn-group" class="d-flex"></div>
     </div>
   </nav>
 

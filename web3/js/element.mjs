@@ -711,15 +711,10 @@ export default {
 
     ok_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
-      let timezone = timezone_control_el.last_selected_value;
-      let am_pm = 1 == document.getElementById("cn_clock_settings_modal_am_pm").value;
-      if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
-        // update the user then reload the UI so all datetimes are adjusted
-        document.querySelector("div[name=app_bg]").classList.add("bg-loading");
-        document.getElementById("main-content").innerHTML = "";
-        await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
-        CN_session.reload();
-      }
+      await CN_session.set_timezone(
+        timezone_control_el.last_selected_value,
+        1 == document.getElementById("cn_clock_settings_modal_am_pm").value,
+      );
     });
 
     return modal_bs;
