@@ -365,6 +365,7 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'alternate' );
         $module->add_choose( 'collection' );
         $module->add_child( 'consent' );
+        if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
         $module->add_child( 'event' );
         $module->add_child( 'form' );
         $module->add_child( 'hin' );
@@ -375,8 +376,7 @@ class ui3 extends \cenozo\base_object
         $module->add_child( 'proxy' );
         $module->add_choose( 'study' );
         $module->add_child( 'trace' );
-        /*
-        if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
+
         $module->add_action( 'history',
           '/{identifier}?{address}&{alternate}'.
           ( $use_interview_module ? '&{assignment}' : '' ).
@@ -384,7 +384,6 @@ class ui3 extends \cenozo\base_object
         );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'scripts', '/{identifier}' );
-        */
 
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );

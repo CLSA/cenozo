@@ -585,7 +585,7 @@ export default {
         if (current_site) {
           current_site.role_list.forEach(
             role => role_control_el.append(
-              this.create(`<option value="${role.id}">${role.name}</option>`)
+              this.create(`<option value="${role.id}">${CN_common.uc_words(role.name)}</option>`)
             )
           );
         }

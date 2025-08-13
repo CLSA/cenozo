@@ -410,7 +410,7 @@ export default {
     const utilities_el = main_menu_offcanvas_el.querySelector("div[name=utilities]");
     const reports_el = main_menu_offcanvas_el.querySelector("div[name=reports]");
 
-    access_el.innerHTML = `${this.data.role.name} @ ${this.data.site.name}`;
+    access_el.innerHTML = `${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}`;
     access_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       CN_element.create_site_role_modal().show();
