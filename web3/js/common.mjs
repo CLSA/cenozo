@@ -13,6 +13,7 @@ export default {
    * @return boolean
    */
   is_type: function(x, type) {
+    if ("class" == type) return this.is_type(x, "function") && x.toString().match(/^class/);
     if ("object" == type) return "object" === typeof x && null != x;
     if ("array" == type) return Array.isArray(x);
     if ("element" == type) return this.is_type(x, "object") && (x instanceof Element || x instanceof HTMLDocument);
@@ -22,6 +23,13 @@ export default {
     if ("integer" == type) return !isNaN(x) && parseInt(Number(x)) == x && !isNaN(parseInt(x, 10));
     return false;
   },
+
+  /**
+   * Returns whether a variable is an class
+   * @param (dynamic) x: the variable to test
+   * @return boolean
+   */
+  is_class: function(x) { return this.is_type(x, "class"); },
 
   /**
    * Returns whether a variable is an object
