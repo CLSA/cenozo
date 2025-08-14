@@ -123,27 +123,30 @@ export class CN_base_model extends CN_base_object {
     this.#identifier = identifier;
     this.#parent_model = parent_model;
 
-    if ("add" == action_name) {
-      if (!this.allow_add()) {
-        throw new Error(`Error configuring ${this.get_name()} model: add action is not allowed.`);
-      } else if (null != identifier) {
-        console.error(`The ADD action for the ${this.get_name()} module has an identifier (${identifier}).`);
+    // validate and create the action, if possible
+    const allow_fn = `allow_${action_name}`;
+    let problem = null;
+    if (CN_common.is_function(this[allow_fn]) && !this[allow_fn]()) {
+      problem = "is not allowed";
+    } else if (!CN_common.is_function(this[allow_fn]) && !this.#module.action_allowed(action_name)) {
+      problem = "is not allowed or doesn't exist";
+    } else {
+      const action_query = this.#module.get_action(action_name);
+      if (null == identifier && action_query.match(/{identifier}/)) {
+        problem = "requires an identifier but none provided";
+      } else if (null != identifier && !action_query.match(/{identifier}/)) {
+        problem = "does not require an identifier but one was provided";
+      } else if (!this.#module.action_class_exists(action_name)) {
+        problem = "is not implemented in the model";
+      } else {
+        this.#action = this.#module.create_action(action_name, this);
       }
-      this.#action = this.#module.create_add(this);
-    } else if ("list" == action_name) {
-      if (!this.allow_list()) {
-        throw new Error(`Error configuring ${this.get_name()} model: list action is not allowed.`);
-      } else if (null != identifier) {
-        console.error(`The LIST action for the ${this.get_name()} module has an identifier (${identifier}).`);
-      }
-      this.#action = this.#module.create_list(this);
-    } else if ("view" == action_name) {
-      if (!this.allow_view()) {
-        throw new Error(`Error configuring ${this.get_name()} model: view action is not allowed.`);
-      } else if (null == identifier) {
-        console.error(`The VIEW action for the ${this.get_name()} module has no identifier.`);
-      }
-      this.#action = this.#module.create_view(this);
+    }
+
+    if (problem) {
+      const error = new URIError();
+      error.message = `Error configuring ${this.get_name()} model: "${action_name}" action ${problem}.`;
+      throw error;
     }
   }
 

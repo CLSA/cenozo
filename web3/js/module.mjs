@@ -38,6 +38,8 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("choosing")) this.#choosing = params.choosing.sort();
   }
 
+  get_action(name) { return this.#actions[name]; }
+
   get_name() { return this.#name; }
   is_root() { return this.#root; }
   is_framework() { return this.#framework; }
@@ -51,9 +53,8 @@ export class CN_module extends CN_base_object {
   has_choose(module_name) { return this.#choosing.includes(module_name); }
   get_choosing() { return this.#choosing; }
   create_model() { return new this.#classes.model(); }
-  create_add(model) { return new this.#classes.add(model); }
-  create_list(model) { return new this.#classes.list(model); }
-  create_view(model) { return new this.#classes.view(model); }
+  action_class_exists(name) { return CN_common.is_class(this.#classes[name]); }
+  create_action(name, model) { return new this.#classes[name](model); }
 
   /**
    * Updates a notation
@@ -99,34 +100,32 @@ export class CN_module extends CN_base_object {
       };
 
       // load the framework classes and use any that are found
-      let classes = await import(`./model/${this.#name}.mjs`);
-      for (const item in classes) {
-        if (`${prefix}_model` == item) {
-          this.#classes.model = classes[item];
-        } else if (`${prefix}_add` == item) {
-          this.#classes.add = classes[item];
-        } else if (`${prefix}_list` == item) {
-          this.#classes.list = classes[item];
-        } else if (`${prefix}_view` == item) {
-          this.#classes.view = classes[item];
+      let exports = await import(`./model/${this.#name}.mjs`);
+      for (const name in exports) {
+        const re = new RegExp(`^${prefix}_([a-z][a-z0-9_]*)`);
+        const matches = name.match(re);
+        if (null == matches) {
+          console.warn(`Found unexpected export "${name}" in framework ${this.#name} model.`);
+        } else if (!CN_common.is_class(exports[name])) {
+          console.warn(`Found non-class export "${name}" in framework ${this.#name} model.`);
         } else {
-          console.warn(`Found unexpected export "${item}" in framework ${this.#name} model.`);
+          const class_name = matches[1];
+          this.#classes[class_name] = exports[name];
         }
       }
 
-      // now load the application specific classes and use any that are found
-      classes = await import(`${ROOT_URL}/js/model/${this.#name}.mjs`);
-      for (const item in classes) {
-        if (`${prefix}_model` == item) {
-          this.#classes.model = classes[item];
-        } else if (`${prefix}_add` == item) {
-          this.#classes.add = classes[item];
-        } else if (`${prefix}_list` == item) {
-          this.#classes.list = classes[item];
-        } else if (`${prefix}_view` == item) {
-          this.#classes.view = classes[item];
+      // now load the application classes and use any that are found
+      exports = await import(`${ROOT_URL}/js/model/${this.#name}.mjs`);
+      for (const name in exports) {
+        const re = new RegExp(`^${prefix}_([a-z][a-z0-9_]*)`);
+        const matches = name.match(re);
+        if (null == matches) {
+          console.warn(`Found unexpected export "${name}" in application ${this.#name} model.`);
+        } else if (!CN_common.is_class(exports[name])) {
+          console.warn(`Found non-class export "${name}" in application ${this.#name} model.`);
         } else {
-          console.warn(`Found unexpected export "${item}" in application ${this.#name} model.`);
+          const class_name = matches[1];
+          this.#classes[class_name] = exports[name];
         }
       }
     }
