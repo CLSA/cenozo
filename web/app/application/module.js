@@ -15,6 +15,10 @@ cenozoApp.defineModule({
         application_type: { column: "application_type.name", title: "Type" },
         study_phase: { title: "Study Phase" },
         version: { title: "Version" },
+        active: {
+          title: "Active",
+          type: "boolean",
+        },
         release_based: {
           title: "Released",
           type: "boolean",
@@ -75,6 +79,10 @@ cenozoApp.defineModule({
         title: "Version",
         type: "string",
         isConstant: true,
+      },
+      active: {
+        title: "Active",
+        type: "boolean",
       },
       release_based: {
         title: "Release Based",
