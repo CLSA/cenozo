@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE application.sql
 SOURCE export.sql
 SOURCE notation.sql
 SOURCE user_ip_address.sql
