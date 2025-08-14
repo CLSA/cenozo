@@ -18,6 +18,7 @@ export class CN_application_model extends CN_base_model {
         application_type: { column: "application_type.name", title: "Type" },
         study_phase: { title: "Study Phase", table_prefix: false },
         version: { title: "Version" },
+        active: { title: "Released", type: "boolean" },
         release_based: { title: "Released", type: "boolean" },
         site_based: { title: "Site Based", type: "boolean" },
         update_queue: { title: "Queued", type: "boolean" },
@@ -53,6 +54,7 @@ export class CN_application_model extends CN_base_model {
           help: "The root web address of the application. This is used for intra-application communication.",
         },
         version: { title: "Version", is_constant: () => true },
+        active: { title: "Active", type: "boolean" },
         release_based: {
           title: "Release Based",
           type: "boolean",
