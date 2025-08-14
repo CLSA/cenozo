@@ -1,6 +1,9 @@
+import CN_api from "../api.mjs"
+import CN_common from "../common.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
+import { CN_base_action } from "../base_action.mjs"
 import { CN_base_model } from "../base_model.mjs"
 import { CN_base_view } from "../base_view.mjs"
 
@@ -258,5 +261,336 @@ export class CN_participant_view extends CN_base_view {
     }
 
     return footer_el;
+  }
+}
+
+export class CN_participant_history extends CN_base_action {
+  #category_list = [];
+
+  /**
+   * ADD DOCS
+   */
+  constructor(model) {
+    super("history", model);
+    this.set_footer_at_top(true);
+
+    this.#category_list = [{
+      subject: "address",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/address`, {
+          select: { column: [
+            "create_timestamp",
+            "rank",
+            "address1",
+            "address2",
+            "city",
+            "postcode",
+            "international",
+            { table: "region", column: "name", alias: "region" },
+            { table: "country", column: "name", alias: "country" },
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "alternate",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/alternate`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "consent",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/consent`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "event",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/event`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "form",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/form`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "hold",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/hold`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "mail",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/mail`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "note",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/note`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "phone",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/phone`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "proxy",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/proxy`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }, {
+      subject: "trace",
+      active: true,
+      get_data: async () => {
+        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/trace`, {
+          select: { column: [
+          ]},
+        });
+        return await response.json();
+      },
+    }];
+
+    if(CN_session.get_module("assignment")) {
+      this.#category_list.push({
+        subject: "assignment",
+        active: true,
+        get_data: async () => {
+          const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/assignment`, {
+            select: { column: [
+            ]},
+          });
+          return await response.json();
+        },
+      });
+    }
+
+    if(CN_session.get_module("equipment")) {
+      this.#category_list.push({
+        subject: "equipment",
+        active: true,
+        get_data: async () => {
+          const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/equipment`, {
+            select: { column: [
+            ]},
+          });
+          return await response.json();
+        },
+      });
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async get_text(type) {
+    if ("header" == type) {
+      return "Participant History";
+    }
+    return await super.get_text(type);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_navigate_to_parent() {
+    await CN_session.navigate_to(`participant/view/${this.get_model().get_identifier()}`);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_body_element() {
+    const body_el = CN_element.create(`
+      <div>
+        <div name="button_list" class="container-fluid"></div>
+        <hr></hr>
+        <div name="history_list" class="container-fluid"></div>
+      </div>
+    `);
+
+    // add the visibility toggles
+    const button_list_el = body_el.querySelector("[name=button_list]");
+
+    button_list_el.append(CN_element.create(`
+      <div class="row">
+        <button name="select_all" class="col btn btn-primary">Select All</button>
+        <button name="select_none" class="col btn btn-primary">Select None</button>
+      </div>
+    `));
+
+    const select_group_el = CN_element.create('<div name="select_group" class="row"></div>');
+    button_list_el.append(select_group_el);
+
+    this.#category_list.forEach(category => {
+      select_group_el.append(CN_element.create(`
+        <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
+          ${CN_common.uc_words(category.subject)}
+        </button>
+      `));
+    });
+
+    return body_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_all_footer_elements(el) {
+    // wire up the buttons
+    const back_btn_el = el.querySelector("button[name=back]");
+    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+
+    const notes_btn_el = el.querySelector("button[name=notes]");
+    notes_btn_el.addEventListener(
+      "click",
+      async () => await CN_session.navigate_to(`participant/notes/${this.get_model().get_identifier()}`)
+    );
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_footer_element() {
+    const footer_el = CN_element.create(`
+      <div class="btn-group" role="group">
+        <button name="back" type="button" class="btn btn-primary">View Participant</button>
+        <button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>
+      </div>
+    `);
+    this.create_all_footer_elements(footer_el);
+    return footer_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_topfooter_element() {
+    // no need to create the top-footer as it gets cloned from the footer
+    const topfooter_el = super.create_topfooter_element();
+    this.create_all_footer_elements(topfooter_el);
+    return topfooter_el;
+  }
+
+}
+
+export class CN_participant_notes extends CN_base_action {
+  /**
+   * ADD DOCS
+   */
+  constructor(model) {
+    super("notes", model);
+    this.set_footer_at_top(true);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async get_text(type) {
+    if ("header" == type) {
+      return "Participant Notes";
+    }
+    return await super.get_text(type);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_navigate_to_parent() {
+    await CN_session.navigate_to(`participant/view/${this.get_model().get_identifier()}`);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_body_element() {
+    const body_el = CN_element.create("<form><fieldset></fieldset></form>");
+
+
+
+    return body_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_all_footer_elements(el) {
+    // wire up the buttons
+    const back_btn_el = el.querySelector("button[name=back]");
+    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+
+    const history_btn_el = el.querySelector("button[name=history]");
+    history_btn_el.addEventListener(
+      "click",
+      async () => await CN_session.navigate_to(`participant/history/${this.get_model().get_identifier()}`)
+    );
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_footer_element() {
+    const footer_el = CN_element.create(`
+      <div class="btn-group" role="group">
+        <button name="back" type="button" class="btn btn-primary">View Participant</button>
+        <button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>
+      </div>
+    `);
+    this.create_all_footer_elements(footer_el);
+    return footer_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  create_topfooter_element() {
+    // no need to create the top-footer as it gets cloned from the footer
+    const topfooter_el = super.create_topfooter_element();
+    this.create_all_footer_elements(topfooter_el);
+    return topfooter_el;
   }
 }
