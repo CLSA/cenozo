@@ -14,9 +14,11 @@ export class CN_base_action extends CN_base_object {
   #body_el;
   #placeholder_el;
   #footer_el;
+  #topfooter_el;
   #is_loading = false;
   #is_placeholder = true;
   #placeholder_timeout_id = null;
+  #footer_at_top = false;
 
   /**
    * Constructor
@@ -49,6 +51,12 @@ export class CN_base_action extends CN_base_object {
     if (!this.#footer_el) this.#footer_el = this.create_footer_element();
     return this.#footer_el;
   }
+  get_topfooter_element() {
+    if (!this.#topfooter_el) this.#topfooter_el = this.create_topfooter_element();
+    return this.#topfooter_el;
+  }
+  get_footer_at_top() { return this.#footer_at_top; }
+  set_footer_at_top(value) { this.#footer_at_top = !!value; }
 
   /**
    * Gets UI text values by type
@@ -67,6 +75,11 @@ export class CN_base_action extends CN_base_object {
 
     const card_header_el = this.get_element().querySelector(".card-header");
     card_header_el.innerHTML = "Loading...";
+
+    if (this.#footer_at_top) {
+      const card_topfooter_el = this.get_element().querySelector(".card-topfooter");
+      card_topfooter_el.innerHTML = "";
+    }
 
     const placeholder_el = this.get_placeholder_element();
     const card_body_el = this.get_element().querySelector(".card-body");
@@ -87,6 +100,13 @@ export class CN_base_action extends CN_base_object {
     const card_header_el = this.get_element().querySelector(".card-header");
     card_header_el.innerHTML = "";
     if (header_el) card_header_el.append(this.get_header_element());
+
+    if (this.#footer_at_top) {
+      const topfooter_el = this.get_topfooter_element();
+      const card_topfooter_el = this.get_element().querySelector(".card-topfooter");
+      card_topfooter_el.innerHTML = "";
+      if (topfooter_el) card_topfooter_el.append(this.get_topfooter_element());
+    }
 
     const body_el = this.get_body_element();
     const card_body_el = this.get_element().querySelector(".card-body");
@@ -210,6 +230,14 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
+   * Creates the action's element's topfooter element
+   * @return Element
+   */
+  create_topfooter_element() {
+    return this.get_footer_element().cloneNode(true);
+  }
+
+  /**
    * Creates the action's element's body element
    * @return Element
    */
@@ -247,6 +275,18 @@ export class CN_base_action extends CN_base_object {
       body: placeholder_el ? placeholder_el : "",
       footer: "",
     }));
+
+    if (this.#footer_at_top) {
+      el.querySelector(".card-header").after(CN_element.create(`
+        <div
+          class="card-topfooter text-bg-secondary fs-5"
+          style="
+            padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x);
+            border-top: var(--bs-card-border-width) solid var(--bs-card-border-color);
+          "
+        ></div>
+      `));
+    }
 
     return el;
   }
