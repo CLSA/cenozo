@@ -131,10 +131,11 @@ export class CN_base_model extends CN_base_object {
     } else if (!CN_common.is_function(this[allow_fn]) && !this.#module.action_allowed(action_name)) {
       problem = "is not allowed or doesn't exist";
     } else {
-      const action_query = this.#module.get_action(action_name);
-      if (null == identifier && action_query.match(/{identifier}/)) {
+      // make sure the action-query matches the identifier
+      const has_identifier = this.#module.action_has_identifier(action_name);
+      if (null == identifier && has_identifier) {
         problem = "requires an identifier but none provided";
-      } else if (null != identifier && !action_query.match(/{identifier}/)) {
+      } else if (null != identifier && !has_identifier) {
         problem = "does not require an identifier but one was provided";
       } else if (!this.#module.action_class_exists(action_name)) {
         problem = "is not implemented in the model";

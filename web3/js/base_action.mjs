@@ -34,6 +34,12 @@ export class CN_base_action extends CN_base_object {
   // access methods
   get_type() { return this.#type }
   get_model() { return this.#model }
+  get_query_parameter(key) {
+    return this.#model.get_module().get_action_query_parameter(this.#type, key);
+  }
+  set_query_parameter(key, value) {
+    return this.#model.get_module().set_action_query_parameter(this.#type, key, value);
+  }
   get_element() { return this.#model.get_element() }
   get_header_element() {
     if (!this.#header_el) this.#header_el = this.create_header_element();

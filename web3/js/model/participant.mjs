@@ -278,7 +278,6 @@ export class CN_participant_history extends CN_base_action {
 
     this.#category_list = [{
       subject: "address",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/address`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -308,7 +307,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "alternate",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/alternate`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -332,7 +330,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "consent",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/consent`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -354,7 +351,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "event",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/event`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -373,7 +369,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "form",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/form`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -392,7 +387,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "hold",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/hold`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -412,7 +406,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "mail",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/mail`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -431,7 +424,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "note",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/note`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -451,7 +443,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "phone",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/phone`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -472,7 +463,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "proxy",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/proxy`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -491,7 +481,6 @@ export class CN_participant_history extends CN_base_action {
       },
     }, {
       subject: "trace",
-      active: true,
       path: `${this.get_model().get_view_url(null, "api")}/trace`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
@@ -517,7 +506,6 @@ export class CN_participant_history extends CN_base_action {
     if(CN_session.get_module("assignment")) {
       this.#category_list.push({
         subject: "assignment",
-        active: true,
         path: `${this.get_model().get_view_url(null, "api")}/assignment`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
@@ -552,7 +540,6 @@ export class CN_participant_history extends CN_base_action {
     if(CN_session.get_module("equipment")) {
       this.#category_list.push({
         subject: "equipment",
-        active: true,
         path: `${this.get_model().get_view_url(null, "api")}/equipment_loan`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
@@ -587,6 +574,8 @@ export class CN_participant_history extends CN_base_action {
         },
       });
     }
+
+    this.#category_list.sort((a,b) => a.subject > b.subject);
   }
 
   /**
@@ -633,7 +622,7 @@ export class CN_participant_history extends CN_base_action {
 
     const data_list_el = this.get_element().querySelector("[name=data_list]");
     data_list_el.innerHTML = "";
-    this.#data_list.filter(data => data.category.active).forEach(data => {
+    this.#data_list.filter(data => null === this.get_query_parameter(data.category.subject)).forEach(data => {
       data_list_el.append(CN_element.create(`
         <div class="card">
           <div class="card-body row p-2">
@@ -650,6 +639,28 @@ export class CN_participant_history extends CN_base_action {
         <div>
       `));
     });
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_placeholder_element() {
+    const card_list = Array.from(Array(10).keys()).map((e,index) => `
+      <div class="card">
+        <div class="card-body row p-2">
+          <div class="col-4 placeholder-glow">
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*3)+4}"></span><br/>
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*3)+2}"></span>
+          </div>
+          <div class="col-8 placeholder-glow">
+            <span class="placeholder placeholder-lg col-12"></span>
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
+          </div>
+        </div>
+      </div>
+    `);
+
+    return CN_element.create(`<div name="data_list" class="container-fluid">${card_list.join("")}</div>`);
   }
 
   /**
@@ -675,7 +686,12 @@ export class CN_participant_history extends CN_base_action {
     `));
 
     button_list_el.querySelector("[name=select_all]").addEventListener("click", () => {
-      this.#category_list.forEach(category => { category.active = true; });
+      /*
+      this.#category_list.forEach(category => {
+        this.set_query_parameter(category.subject, null);
+      });
+      */
+      window.history.replaceState(null, null, "?");
       this.get_element().querySelectorAll("[name=select_group] i").forEach(i_el => {
         i_el.classList.remove("bi-x-circle");
         i_el.classList.add("bi-check-circle");
@@ -684,7 +700,9 @@ export class CN_participant_history extends CN_base_action {
     });
 
     button_list_el.querySelector("[name=select_none]").addEventListener("click", () => {
-      this.#category_list.forEach(category => { category.active = false; });
+      this.#category_list.forEach(category => {
+        this.set_query_parameter(category.subject, "0");
+      });
       this.get_element().querySelectorAll("[name=select_group] i").forEach(i_el => {
         i_el.classList.remove("bi-check-circle");
         i_el.classList.add("bi-x-circle");
@@ -698,16 +716,18 @@ export class CN_participant_history extends CN_base_action {
     this.#category_list.forEach(category => {
       const btn_el = CN_element.create(`
         <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
-          ${CN_common.uc_words(category.subject)} <i class="bi-check-circle"></i>
+          ${CN_common.uc_words(category.subject)}
+          <i class="bi-${null === this.get_query_parameter(category.subject) ? "check" : "x"}-circle"></i>
         </button>
       `);
       btn_el.addEventListener("click", () => {
-        category.active = !category.active;
         const i_el = btn_el.querySelector("i");
-        if (category.active) {
-          i_el.classList.replace("bi-x-circle", "bi-check-circle");
-        } else {
+        if (null === this.get_query_parameter(category.subject)) {
+          this.set_query_parameter(category.subject, "0");
           i_el.classList.replace("bi-check-circle", "bi-x-circle");
+        } else {
+          this.set_query_parameter(category.subject, null);
+          i_el.classList.replace("bi-x-circle", "bi-check-circle");
         }
         this.update_element();
       });

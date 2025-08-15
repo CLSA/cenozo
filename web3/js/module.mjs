@@ -33,17 +33,63 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("framework")) this.#framework = params.framework;
     if (params.hasOwnProperty("notations")) this.#notations = params.notations;
     if (params.hasOwnProperty("properties")) this.#properties = params.properties;
-    if (params.hasOwnProperty("actions")) this.#actions = params.actions;
     if (params.hasOwnProperty("children")) this.#children = params.children.sort();
     if (params.hasOwnProperty("choosing")) this.#choosing = params.choosing.sort();
+
+    // parse the action parameters
+    if (params.hasOwnProperty("actions")) {
+      for(const action_name in params.actions) {
+        // separate the query parameters into pre-query and post-query
+        const parts = params.actions[action_name].match(/^([^?]*)\??(.*)$/);
+        this.#actions[action_name] = {
+          // the identifier can only be named "identifier"
+          identifier: "/{identifier}" == parts[1],
+          // split the query parameters into arguments (all will be enclosed in {})
+          query_list: parts[2]
+            .split("&")
+            .filter(x => x.match(/^{[^{}]+}$/)) // only match arguments enclosed in {}
+            .map(x => x.replace(/^{([^{}]+)}$/, "$1")), // remove the {} enclosing the argument
+        };
+      }
+    }
   }
 
-  get_action(name) { return this.#actions[name]; }
+  action_allowed(action) { return this.#actions.hasOwnProperty(action); }
+  action_has_identifier(name) {
+    if (!this.action_allowed(name)) {
+      throw new Error(`Tried to get query identifier details for invalid action "${name}"`);
+    }
+    return this.#actions[name].identifier;
+  }
+  get_action_query_parameter(name, key) {
+    if (!this.action_allowed(name)) {
+      throw new Error(`Tried to get query parameter "${key}" for invalid action "${name}"`);
+    } else if (!this.#actions[name].query_list.includes(key)) {
+      throw new Error(`Tried to get invalid query parameter "${key}" for action "${name}"`);
+    }
 
+    return (new URL(window.location)).searchParams.get(key);
+  }
+  set_action_query_parameter(name, key, value) {
+    if (!this.action_allowed(name)) {
+      throw new Error(`Tried to set query parameter "${key}" for invalid action "${name}"`);
+    } else if (!this.#actions[name].query_list.includes(key)) {
+      throw new Error(`Tried to set invalid query parameter "${key}" for action "${name}"`);
+    }
+
+    const params = (new URL(window.location)).searchParams;
+    if (null === value) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+      params.sort();
+    }
+
+    window.history.replaceState(null, null, `?${params.toString()}`);
+  }
   get_name() { return this.#name; }
   is_root() { return this.#root; }
   is_framework() { return this.#framework; }
-  action_allowed(action) { return this.#actions.hasOwnProperty(action); }
   has_notation(type) { return this.#notations.hasOwnProperty(type); }
   get_notation(type) { return this.has_notation(type) ? this.#notations[type] : null; }
   has_property(name) { return this.#properties.hasOwnProperty(name); }

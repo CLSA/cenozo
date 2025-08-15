@@ -375,11 +375,13 @@ class ui3 extends \cenozo\base_object
         $module->add_choose( 'study' );
         $module->add_child( 'trace' );
 
-        $module->add_action( 'history',
-          '/{identifier}?{address}&{alternate}'.
-          ( $use_interview_module ? '&{assignment}' : '' ).
-          '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}'
-        );
+        $param_list = [
+          '{address}', '{alternate}', '{consent}', '{event}', '{form}',
+          '{hold}', '{mail}', '{note}', '{phone}', '{proxy}', '{trace}',
+        ];
+        if( $use_interview_module ) $param_list[] = '{assignment}';
+        if( $use_equipment_module ) $param_list[] = '{equipment}';
+        $module->add_action( 'history', sprintf( '/{identifier}?%s', implode( "&", $param_list ) ) );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'scripts', '/{identifier}' );
 

@@ -5,7 +5,6 @@ import CN_element from "./element.mjs"
 import { CN_base_record } from "./base_record.mjs"
 
 export class CN_base_view extends CN_base_record {
-  #tab = null;
   #child_lists_el = null;
   #list_selector_el = null;
 
@@ -285,8 +284,7 @@ export class CN_base_view extends CN_base_record {
         `);
 
         child_btn_el.addEventListener("click", async () => {
-          this.#tab = child.model.get_name();
-          window.history.replaceState(null, null, `?tab=${this.#tab}`);
+          this.set_query_parameter("tab", child.model.get_name());
 
           this.get_selector_child_list().forEach(sub_child => {
             if (sub_child.model.get_name() == child.model.get_name()) {
@@ -310,7 +308,7 @@ export class CN_base_view extends CN_base_record {
       });
 
       // if a tab has been selected then add its model to the DOM
-      const current_tab = (new URL(window.location)).searchParams.get('tab');
+      const current_tab = this.get_query_parameter("tab");
       if (current_tab) {
         this.get_selector_child_list().forEach(child => {
           if (child.model.get_name() == current_tab) this.#child_lists_el.append(child.model.get_element());
