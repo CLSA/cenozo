@@ -266,9 +266,11 @@ export class CN_participant_view extends CN_base_view {
 
 export class CN_participant_history extends CN_base_action {
   #category_list = [];
+  #data_list = [];
 
   /**
-   * ADD DOCS
+   * Constructor
+   * @param base_model model: The model that the action belongs to
    */
   constructor(model) {
     super("history", model);
@@ -277,8 +279,9 @@ export class CN_participant_history extends CN_base_action {
     this.#category_list = [{
       subject: "address",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/address`, {
+      path: `${this.get_model().get_view_url(null, "api")}/address`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
             "create_timestamp",
             "rank",
@@ -291,107 +294,223 @@ export class CN_participant_history extends CN_base_action {
             { table: "country", column: "name", alias: "country" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.create_timestamp,
+          title: "added rank " + row.rank,
+          description: [
+            row.address1,
+            row.address2,
+            `${row.city}, ${row.region}, ${row.country}, ${row.postcode}`,
+            row.international ? '(international)' : null,
+          ].filter(x => null != x).join("\n"),
+        }));
       },
     }, {
       subject: "alternate",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/alternate`, {
+      path: `${this.get_model().get_view_url(null, "api")}/alternate`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "create_timestamp",
+            "association",
+            "alternate_type_list",
+            "first_name",
+            "last_name",
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.create_timestamp,
+          title: `added ${row.first_name} ${row.last_name}`,
+          description:
+            `${row.first_name} ${row.last_name} ` +
+            `(${row.association ? row.association : "unknown association"})\n` +
+            `Current roles: ${row.alternate_type_list ? row.alternate_type_list : "(none)"}`,
+        }));
       },
     }, {
       subject: "consent",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/consent`, {
+      path: `${this.get_model().get_view_url(null, "api")}/consent`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "datetime",
+            "accept",
+            "written",
+            "note",
+            { table: "consent_type", column: "name" },
+            { table: "consent_type", column: "description" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.datetime,
+          title: `added "${row.name}"`,
+          description: row.description + (row.note ? `\nNote: ${row.note}` : ""),
+        }));
       },
     }, {
       subject: "event",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/event`, {
+      path: `${this.get_model().get_view_url(null, "api")}/event`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "datetime",
+            { table: "event_type", column: "name" },
+            { table: "event_type", column: "description" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.datetime,
+          title: `added "${row.name}"`,
+          description: row.description,
+        }));
       },
     }, {
       subject: "form",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/form`, {
+      path: `${this.get_model().get_view_url(null, "api")}/form`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "date",
+            { table: "form_type", column: "name" },
+            { table: "form_type", column: "description" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.date,
+          title: `added "${row.name}"`,
+          description: row.description,
+        }));
       },
     }, {
       subject: "hold",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/hold`, {
+      path: `${this.get_model().get_view_url(null, "api")}/hold`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "datetime",
+            { table: "hold_type", column: "name" },
+            { table: "hold_type", column: "type" },
+            { table: "hold_type", column: "description" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.datetime,
+          title: null == row.type ? "removed hold" : `added "${row.type} ${row.name}"`,
+          description: null == row.type ? "" : row.description,
+        }));
       },
     }, {
       subject: "mail",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/mail`, {
+      path: `${this.get_model().get_view_url(null, "api")}/mail`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "sent_datetime",
+            "subject",
+            "note",
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.sent_datetime,
+          title: `sent "${row.subject}"`,
+          description: row.note,
+        }));
       },
     }, {
       subject: "note",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/note`, {
+      path: `${this.get_model().get_view_url(null, "api")}/note`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "datetime",
+            "note",
+            { table: "user", column: "first_name", alias: "user_first" },
+            { table: "user", column: "last_name", alias: "user_last" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.datetime,
+          title: `added by ${row.user_first} ${row.user_last}`,
+          description: row.note,
+        }));
       },
     }, {
       subject: "phone",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/phone`, {
+      path: `${this.get_model().get_view_url(null, "api")}/phone`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "create_timestamp",
+            "rank",
+            "type",
+            "number",
+            "international",
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.create_timestamp,
+          title: `added rank ${row.rank}`,
+          description: `${row.type}: ${row.number}${row.international ? " (international)" : ""}`,
+        }));
       },
     }, {
       subject: "proxy",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/proxy`, {
+      path: `${this.get_model().get_view_url(null, "api")}/proxy`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "datetime",
+            { table: "proxy_type", column: "name" },
+            { table: "proxy_type", column: "description" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.datetime,
+          title: null == row.name ? "removed proxy" : `added proxy "${row.name}"`,
+          description: null == row.name ? "" : row.description,
+        }));
       },
     }, {
       subject: "trace",
       active: true,
-      get_data: async () => {
-        const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/trace`, {
+      path: `${this.get_model().get_view_url(null, "api")}/trace`,
+      get_data: async function () {
+        const response = await CN_api.get(this.path, {
           select: { column: [
+            "datetime",
+            "note",
+            { table: "trace_type", column: "name" },
+            { table: "user", column: "first_name" },
+            { table: "user", column: "last_name" },
           ]},
         });
-        return await response.json();
+        return (await response.json()).map(row => ({
+          category: this,
+          datetime: row.datetime,
+          title:
+            (null == row.name ? "removed trace" : `added to "${row.name}"`) +
+            ` by ${row.first_name} ${row.last_name}`,
+          description: row.note,
+        }));
       },
     }];
 
@@ -399,12 +518,33 @@ export class CN_participant_history extends CN_base_action {
       this.#category_list.push({
         subject: "assignment",
         active: true,
-        get_data: async () => {
-          const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/assignment`, {
+        path: `${this.get_model().get_view_url(null, "api")}/assignment`,
+        get_data: async function () {
+          const response = await CN_api.get(this.path, {
             select: { column: [
+              "start_datetime",
+              "end_datetime",
+              { table: "user", column: "first_name", alias: "user_first" },
+              { table: "user", column: "last_name", alias: "user_last" },
+              { table: "site", column: "name", alias: "site" },
+              { table: "script", column: "name", alias: "script" },
             ]},
           });
-          return await response.json();
+          return (await response.json()).reduce((list, row) => {
+            list.push({
+              category: this,
+              datetime: row.start_datetime,
+              title: `started by ${row.user_first} ${row.user_last}`,
+              description: `Started an assignment for the "${row.script}" questionnaire.\nAssigned from the ${row.site} site.`,
+            });
+            list.push({
+              category: this,
+              datetime: row.end_datetime,
+              title: `completed by ${row.user_first} ${row.user_last}`,
+              description: `Completed an assignment for the "${row.script}" questionnaire.\nAssigned from the ${row.site} site.`,
+            });
+            return list;
+          }, []);
         },
       });
     }
@@ -413,43 +553,114 @@ export class CN_participant_history extends CN_base_action {
       this.#category_list.push({
         subject: "equipment",
         active: true,
-        get_data: async () => {
-          const response = await CN_api.get(`participant/${this.get_model().get_identifier()}/equipment`, {
+        path: `${this.get_model().get_view_url(null, "api")}/equipment_loan`,
+        get_data: async function () {
+          const response = await CN_api.get(this.path, {
             select: { column: [
+              "start_datetime",
+              "end_datetime",
+              "note",
+              { table: "equipment", column: "serial_number" },
+              { table: "equipment_type", column: "name" },
             ]},
           });
-          return await response.json();
+          return (await response.json()).reduce((list, row) => {
+            list.push({
+              category: this,
+              datetime: row.start_datetime,
+              title: `loaned ${row.name}`,
+              description:
+                `Loaned ${row.name} with serial number "${row.serial_number}"` +
+                (row.end_datetime ? "" : " (not yet returned)") +
+                (row.note ? `\nNote: ${row.note}` : ""),
+            });
+            list.push({
+              category: this,
+              datetime: row.end_datetime,
+              title: `returned ${row.name}`,
+              description:
+                `Returned ${row.name} with serial number "${row.serial_number}"` +
+                (row.note ? `\nNote: ${row.note}` : ""),
+            });
+            return list;
+          }, []);
         },
       });
     }
   }
 
   /**
-   * ADD DOCS
+   * Extend Parent method
    */
   async get_text(type) {
     if ("header" == type) {
-      return "Participant History";
+      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), {
+        select: { column: ["uid", "first_name", "last_name"] },
+      });
+      const data = await response.json();
+      return `Participant History for ${data.first_name} ${data.last_name} (${data.uid})`;
     }
     return await super.get_text(type);
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   async on_navigate_to_parent() {
     await CN_session.navigate_to(`participant/view/${this.get_model().get_identifier()}`);
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
+   */
+  async on_load() {
+    await super.on_load();
+
+    // load all category data
+    const response = await Promise.all(this.#category_list.map(category => category.get_data()));
+    this.#data_list = response.reduce((list, a) => {
+      list = list.concat(a);
+      return list;
+    }, []);
+    this.#data_list.sort((a,b) => new Date(a.datetime) < new Date(b.datetime));
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    const data_list_el = this.get_element().querySelector("[name=data_list]");
+    data_list_el.innerHTML = "";
+    this.#data_list.filter(data => data.category.active).forEach(data => {
+      data_list_el.append(CN_element.create(`
+        <div class="card">
+          <div class="card-body row p-2">
+            <div class="col-4">
+              <span class="fw-bold">
+                ${CN_common.uc_words(data.category.subject.replace("_", " "))}:
+              </span> ${data.title}<br/>
+              ${CN_common.format_datetime(data.datetime, "datetimesecond")}
+            </div>
+            <div class="col-8">
+              <span style="white-space: pre-wrap;">${null == data.description ? "" : data.description}</span>
+            </div>
+          <div>
+        <div>
+      `));
+    });
+  }
+
+  /**
+   * Extend parent method
    */
   create_body_element() {
     const body_el = CN_element.create(`
       <div>
         <div name="button_list" class="container-fluid"></div>
         <hr></hr>
-        <div name="history_list" class="container-fluid"></div>
+        <div name="data_list" class="container-fluid"></div>
       </div>
     `);
 
@@ -463,15 +674,44 @@ export class CN_participant_history extends CN_base_action {
       </div>
     `));
 
+    button_list_el.querySelector("[name=select_all]").addEventListener("click", () => {
+      this.#category_list.forEach(category => { category.active = true; });
+      this.get_element().querySelectorAll("[name=select_group] i").forEach(i_el => {
+        i_el.classList.remove("bi-x-circle");
+        i_el.classList.add("bi-check-circle");
+      });
+      this.update_element();
+    });
+
+    button_list_el.querySelector("[name=select_none]").addEventListener("click", () => {
+      this.#category_list.forEach(category => { category.active = false; });
+      this.get_element().querySelectorAll("[name=select_group] i").forEach(i_el => {
+        i_el.classList.remove("bi-check-circle");
+        i_el.classList.add("bi-x-circle");
+      });
+      this.update_element();
+    });
+
     const select_group_el = CN_element.create('<div name="select_group" class="row"></div>');
     button_list_el.append(select_group_el);
 
     this.#category_list.forEach(category => {
-      select_group_el.append(CN_element.create(`
+      const btn_el = CN_element.create(`
         <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
-          ${CN_common.uc_words(category.subject)}
+          ${CN_common.uc_words(category.subject)} <i class="bi-check-circle"></i>
         </button>
-      `));
+      `);
+      btn_el.addEventListener("click", () => {
+        category.active = !category.active;
+        const i_el = btn_el.querySelector("i");
+        if (category.active) {
+          i_el.classList.replace("bi-x-circle", "bi-check-circle");
+        } else {
+          i_el.classList.replace("bi-check-circle", "bi-x-circle");
+        }
+        this.update_element();
+      });
+      select_group_el.append(btn_el);
     });
 
     return body_el;
@@ -493,7 +733,7 @@ export class CN_participant_history extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   create_footer_element() {
     const footer_el = CN_element.create(`
@@ -507,7 +747,7 @@ export class CN_participant_history extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   create_topfooter_element() {
     // no need to create the top-footer as it gets cloned from the footer
@@ -528,24 +768,28 @@ export class CN_participant_notes extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   async get_text(type) {
     if ("header" == type) {
-      return "Participant Notes";
+      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), {
+        select: { column: ["uid", "first_name", "last_name"] },
+      });
+      const data = await response.json();
+      return `Participant Notes for ${data.first_name} ${data.last_name} (${data.uid})`;
     }
     return await super.get_text(type);
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   async on_navigate_to_parent() {
     await CN_session.navigate_to(`participant/view/${this.get_model().get_identifier()}`);
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   create_body_element() {
     const body_el = CN_element.create("<form><fieldset></fieldset></form>");
@@ -571,7 +815,7 @@ export class CN_participant_notes extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   create_footer_element() {
     const footer_el = CN_element.create(`
@@ -585,7 +829,7 @@ export class CN_participant_notes extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Extend parent method
    */
   create_topfooter_element() {
     // no need to create the top-footer as it gets cloned from the footer

@@ -65,6 +65,7 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    $modifier->join( 'user', 'note.user_id', 'user.id' );
     $modifier->left_join( 'participant', 'note.participant_id', 'participant.id' );
     $modifier->left_join( 'alternate', 'note.alternate_id', 'alternate.id' );
 

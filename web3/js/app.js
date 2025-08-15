@@ -27,8 +27,11 @@
         }
       }
 
-      const modal = CN_element.message_modal(params);
-      modal.show();
+      // annoyingly, Firefox tends to throw this exception a lot but we can ignore it
+      if ('can\'t access property "includes", args.site.enabledFeatures is undefined' != params.message) {
+        const modal = CN_element.message_modal(params);
+        modal.show();
+      }
     });
 
     // reload modules anytime the browser navigation buttons are clicked
