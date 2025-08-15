@@ -1,7 +1,7 @@
 import CN_api from "../api.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_base_person_view, CN_base_person_history, CN_base_person_notes } from "../base_person_model.mjs"
 
 export class CN_alternate_model extends CN_base_model {
   constructor() {
@@ -110,7 +110,7 @@ export class CN_alternate_model extends CN_base_model {
   }
 }
 
-export class CN_alternate_view extends CN_base_view {
+export class CN_alternate_view extends CN_base_person_view {
   /**
    * Extends the parent method
    */
@@ -124,3 +124,7 @@ export class CN_alternate_view extends CN_base_view {
     return await super.get_text(type);
   }
 }
+
+export class CN_alternate_history extends CN_base_person_history {}
+
+export class CN_alternate_notes extends CN_base_person_notes {}
