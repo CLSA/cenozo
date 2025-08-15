@@ -686,12 +686,9 @@ export class CN_participant_history extends CN_base_action {
     `));
 
     button_list_el.querySelector("[name=select_all]").addEventListener("click", () => {
-      /*
       this.#category_list.forEach(category => {
         this.set_query_parameter(category.subject, null);
       });
-      */
-      window.history.replaceState(null, null, "?");
       this.get_element().querySelectorAll("[name=select_group] i").forEach(i_el => {
         i_el.classList.remove("bi-x-circle");
         i_el.classList.add("bi-check-circle");
