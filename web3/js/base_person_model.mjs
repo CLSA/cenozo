@@ -59,9 +59,10 @@ export class CN_base_person_history extends CN_base_action {
     super("history", model);
     this.set_footer_at_top(true);
 
+    const base_path = this.get_model().get_view_url(null, "api");
     this.#category_list = [{
       subject: "address",
-      path: `${this.get_model().get_view_url(null, "api")}/address`,
+      path: `${base_path}/address`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
           select: { column: [
@@ -90,7 +91,7 @@ export class CN_base_person_history extends CN_base_action {
       },
     }, {
       subject: "note",
-      path: `${this.get_model().get_view_url(null, "api")}/note`,
+      path: `${base_path}/note`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
           select: { column: [
@@ -109,7 +110,7 @@ export class CN_base_person_history extends CN_base_action {
       },
     }, {
       subject: "phone",
-      path: `${this.get_model().get_view_url(null, "api")}/phone`,
+      path: `${base_path}/phone`,
       get_data: async function () {
         const response = await CN_api.get(this.path, {
           select: { column: [
@@ -133,7 +134,7 @@ export class CN_base_person_history extends CN_base_action {
       // add participant-only categories
       this.#category_list = this.#category_list.concat([{
         subject: "alternate",
-        path: `${this.get_model().get_view_url(null, "api")}/alternate`,
+        path: `${base_path}/alternate`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -156,7 +157,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "consent",
-        path: `${this.get_model().get_view_url(null, "api")}/consent`,
+        path: `${base_path}/consent`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -177,7 +178,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "event",
-        path: `${this.get_model().get_view_url(null, "api")}/event`,
+        path: `${base_path}/event`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -195,7 +196,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "form",
-        path: `${this.get_model().get_view_url(null, "api")}/form`,
+        path: `${base_path}/form`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -213,7 +214,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "hold",
-        path: `${this.get_model().get_view_url(null, "api")}/hold`,
+        path: `${base_path}/hold`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -232,7 +233,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "mail",
-        path: `${this.get_model().get_view_url(null, "api")}/mail`,
+        path: `${base_path}/mail`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -250,7 +251,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "proxy",
-        path: `${this.get_model().get_view_url(null, "api")}/proxy`,
+        path: `${base_path}/proxy`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -268,7 +269,7 @@ export class CN_base_person_history extends CN_base_action {
         },
       }, {
         subject: "trace",
-        path: `${this.get_model().get_view_url(null, "api")}/trace`,
+        path: `${base_path}/trace`,
         get_data: async function () {
           const response = await CN_api.get(this.path, {
             select: { column: [
@@ -293,7 +294,7 @@ export class CN_base_person_history extends CN_base_action {
       if (CN_session.get_module("assignment")) {
         this.#category_list.push({
           subject: "assignment",
-          path: `${this.get_model().get_view_url(null, "api")}/assignment`,
+          path: `${base_path}/assignment`,
           get_data: async function () {
             const response = await CN_api.get(this.path, {
               select: { column: [
@@ -331,7 +332,7 @@ export class CN_base_person_history extends CN_base_action {
       if(CN_session.get_module("equipment")) {
         this.#category_list.push({
           subject: "equipment",
-          path: `${this.get_model().get_view_url(null, "api")}/equipment_loan`,
+          path: `${base_path}/equipment_loan`,
           get_data: async function () {
             const response = await CN_api.get(this.path, {
               select: { column: [
@@ -577,6 +578,8 @@ export class CN_base_person_history extends CN_base_action {
 }
 
 export class CN_base_person_notes extends CN_base_action {
+  #note_list = [];
+
   /**
    * ADD DOCS
    */
@@ -615,10 +618,187 @@ export class CN_base_person_notes extends CN_base_action {
   /**
    * Extend parent method
    */
+  async on_load() {
+    await super.on_load();
+
+    // load all notes
+    const response = await CN_api.get(`${this.get_model().get_view_url(null, "api")}/note`, {
+      select: { column: [
+          "id", "sticky", "datetime", "note",
+          {table: "user", column: "first_name"},
+          {table: "user", column: "last_name"},
+      ], },
+      modifier: { order: [{ sticky: true }, { datetime: true }] },
+    });
+    this.#note_list = await response.json();
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    // determine note permissions
+    const note_module = CN_session.get_module("note");
+    const allow_delete = note_module.action_allowed("delete");
+    const allow_edit = note_module.action_allowed("edit");
+
+    const note_list_el = this.get_element().querySelector("[name=note_list]");
+    note_list_el.innerHTML = "";
+    this.#note_list.forEach(note => {
+      const note_path = `${this.get_model().get_name()}/${this.get_model().get_identifier()}/note/${note.id}`;
+      let details = `${note.first_name} ${note.last_name}<br/>`;
+      if (allow_edit) {
+        details = `
+          <button
+            name="sticky"
+            type="button"
+            class="btn btn-${note.sticky ? "warning" : "secondary"} px-1 py-0 me-1"
+          ><i class="bi-pin-fill"></i></button>
+          ${details}
+        `;
+      }
+
+      if (allow_delete) {
+        details += `
+          <button
+            name="delete"
+            type="button"
+            class="btn btn-danger px-1 py-0 me-1"
+          ><i class="bi-x-lg"></i></button>
+        `;
+      }
+      details += `${CN_common.format_datetime(note.datetime, "datetimesecond")}`;
+
+      const note_el = CN_element.create(`
+        <div class="card">
+          <div class="card-body row p-2">
+            <div class="col-4 ${note.sticky ? "text-primary fw-bold" : ""}">${details}</div>
+            <div class="col-8" name="note">
+            </div>
+          <div>
+        <div>
+      `);
+
+      if (allow_edit) {
+        note_el.querySelector("[name=sticky]").addEventListener("click", async () => {
+          await CN_api.patch(note_path, { sticky: !note.sticky });
+          await this.run();
+        });
+
+        note_el.querySelector("[name=delete]").addEventListener("click", async () => {
+          const modal = CN_element.confirm_modal({
+            static: true,
+            title: "Please Confirm",
+            message: `Are you sure you wish to delete the note by ${note.first_name} ${note.last_name}?`,
+          });
+
+          if (await modal.test()) {
+            await CN_api.delete(note_path);
+            await this.run();
+          }
+        });
+      }
+
+      const input_el = CN_element.create_form_element("text", {
+        id: `note-${note.id}`,
+        required: true,
+        onchange: async (control_el, success) => {
+          if (success) {
+            await CN_api.patch(note_path, { note: control_el.value });
+            control_el.backup_value = control_el.value;
+
+            // flash the border green to show the data has been updated
+            const old_style = control_el.style;
+            control_el.style["border-color"] = "green";
+            setTimeout(() => {
+              control_el.style = old_style;
+              control_el.style.height = "";
+              control_el.style.height = control_el.scrollHeight + "px";
+            }, 500);
+          } else {
+            control_el.value = control_el.backup_value;
+            control_el.style.height = "";
+            control_el.style.height = control_el.scrollHeight + "px";
+          }
+        },
+      });
+      input_el.classList.remove("col-sm-9");
+      note_el.querySelector("[name=note]").append(input_el);
+
+      // set the note and resize the textarea
+      const textarea_el = note_el.querySelector("textarea");
+      textarea_el.backup_value = note.note;
+      textarea_el.value = note.note;
+      if (!allow_edit) textarea_el.setAttribute("disabled", true);
+      note_list_el.append(note_el);
+
+      textarea_el.style.height = "";
+      textarea_el.style.height = textarea_el.scrollHeight + "px";
+    });
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_placeholder_element() {
+    const card_list = Array.from(Array(10).keys()).map((e,index) => `
+      <div class="card">
+        <div class="card-body row p-2">
+          <div class="col-4 placeholder-glow">
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*3)+4}"></span><br/>
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*3)+2}"></span>
+          </div>
+          <div class="col-8 placeholder-glow">
+            <span class="placeholder placeholder-lg col-12"></span>
+            <span class="placeholder placeholder-lg col-12"></span>
+            <span class="placeholder placeholder-lg col-12"></span>
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
+          </div>
+        </div>
+      </div>
+    `);
+
+    return CN_element.create(`<div name="note_list" class="container-fluid">${card_list.join("")}</div>`);
+  }
+
+  /**
+   * Extend parent method
+   */
   create_body_element() {
-    const body_el = CN_element.create("<form><fieldset></fieldset></form>");
+    const body_el = CN_element.create(`
+      <div>
+        <div name="note_add" class="container-fluid px-0">
+          <div class="card">
+            <div class="card-header text-bg-secondary fw-bold fs-5">Add Note</div>
+            <div class="card-body p-0"></div>
+            <div class="card-footer p-0">
+              <button name="add" type="button" class="btn btn-secondary w-100">Submit</button>
+            </div>
+          </div>
+        </div>
+        <hr></hr>
+        <div name="note_list" class="container-fluid"></div>
+      </div>
+    `);
 
+    const card_body_el = body_el.querySelector(".card-body");
 
+    const new_note_el = CN_element.create_form_element("text", { id: "new_note" });
+    new_note_el.classList.remove("col-sm-9");
+    card_body_el.append(new_note_el);
+
+    body_el.querySelector("[name=add]").addEventListener("click", async () => {
+      const textarea_el = new_note_el.querySelector("textarea");
+      await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
+        user_id: CN_session.data.user.id,
+        datetime: (new Date()).toISOString(),
+        note: textarea_el.value,
+      });
+      textarea_el.value = "";
+      await this.run();
+    });
 
     return body_el;
   }
