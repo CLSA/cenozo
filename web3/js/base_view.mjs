@@ -274,16 +274,25 @@ export class CN_base_view extends CN_base_record {
         // get the button's title and create it
         let total = child.model.get_action().get_total_records();
         if (null == total) total = "...";
+        const selected = this.get_query_parameter("tab") == child.model.get_name();
         const title = `${child.title} [${total}]`;
         const child_btn_el = CN_element.create(`
           <button
             name="${child.model.get_name()}"
             type="button"
-            class="col btn btn-primary mx-1"
+            class="col btn ${selected ? "btn-light fw-bold" : "btn-primary"} mx-1"
           >${title}</button>
         `);
 
         child_btn_el.addEventListener("click", async () => {
+          const selected_btn_el = btn_group_el.querySelector("button.btn-light");
+          if (selected_btn_el) {
+            selected_btn_el.classList.replace("btn-light", "btn-primary");
+            selected_btn_el.classList.remove("fw-bold");
+          }
+          child_btn_el.classList.replace("btn-primary", "btn-light");
+          child_btn_el.classList.add("fw-bold");
+
           this.set_query_parameter("tab", child.model.get_name());
 
           this.get_selector_child_list().forEach(sub_child => {
