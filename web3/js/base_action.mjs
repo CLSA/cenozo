@@ -79,20 +79,20 @@ export class CN_base_action extends CN_base_object {
   show_placeholder() {
     this.#is_placeholder = true;
 
-    const card_header_el = this.get_element().querySelector(".card-header");
+    const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
     card_header_el.innerHTML = "Loading...";
 
     if (this.#footer_at_top) {
-      const card_topfooter_el = this.get_element().querySelector(".card-topfooter");
+      const card_topfooter_el = this.get_element().querySelector(":scope > div > div.card > .card-topfooter");
       card_topfooter_el.innerHTML = "";
     }
 
     const placeholder_el = this.get_placeholder_element();
-    const card_body_el = this.get_element().querySelector(".card-body");
+    const card_body_el = this.get_element().querySelector(":scope > div > div.card > .card-body");
     card_body_el.innerHTML = "";
     if (placeholder_el) card_body_el.append(placeholder_el);
 
-    const card_footer_el = this.get_element().querySelector(".card-footer");
+    const card_footer_el = this.get_element().querySelector(":scope > div > div.card > .card-footer");
     card_footer_el.innerHTML = "";
   }
 
@@ -103,24 +103,24 @@ export class CN_base_action extends CN_base_object {
     this.#is_placeholder = false;
 
     const header_el = this.get_header_element();
-    const card_header_el = this.get_element().querySelector(".card-header");
+    const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
     card_header_el.innerHTML = "";
     if (header_el) card_header_el.append(this.get_header_element());
 
     if (this.#footer_at_top) {
       const topfooter_el = this.get_topfooter_element();
-      const card_topfooter_el = this.get_element().querySelector(".card-topfooter");
+      const card_topfooter_el = this.get_element().querySelector(":scope > div > div.card > .card-topfooter");
       card_topfooter_el.innerHTML = "";
       if (topfooter_el) card_topfooter_el.append(this.get_topfooter_element());
     }
 
     const body_el = this.get_body_element();
-    const card_body_el = this.get_element().querySelector(".card-body");
+    const card_body_el = this.get_element().querySelector(":scope > div > div.card > .card-body");
     card_body_el.innerHTML = "";
     if (body_el) card_body_el.append(this.get_body_element());
 
     const footer_el = this.get_footer_element();
-    const card_footer_el = this.get_element().querySelector(".card-footer");
+    const card_footer_el = this.get_element().querySelector(":scope > div > div.card > .card-footer");
     card_footer_el.innerHTML = "";
     if (footer_el) card_footer_el.append(this.get_footer_element());
   }
@@ -272,8 +272,10 @@ export class CN_base_action extends CN_base_object {
    * @return Element
    */
   render() {
-    const el = CN_element.create('<div name="model-action"></div>');
+    const el = CN_element.create(`<div></div>`);
     if (null == this.#model.get_action_name()) return el;
+
+    el.setAttribute("name", this.#model.get_action_name());
 
     const placeholder_el = this.get_placeholder_element();
     el.append(CN_element.create_card({

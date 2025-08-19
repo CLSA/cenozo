@@ -29,7 +29,10 @@ export class CN_base_model extends CN_base_object {
 
     const module_name = this.get_class_name().match(/CN_(.+)_model/)[1];
     this.#module = CN_session.get_module(module_name);
-    this.#unique_id = [this.get_name(), Math.round(Math.random()*10000000000)].join("-");
+    this.#unique_id = [
+      this.get_name(),
+      [...Array(4)].map(() => Math.floor(Math.random()*16).toString(16)).join('')
+    ].join("-");
     this.#wording = params.wording;
 
     // Note that the properties and columns props are only used when configuring the model.
@@ -190,12 +193,12 @@ export class CN_base_model extends CN_base_object {
   allow_view() { return this.#module.action_allowed("view"); }
 
   /**
-   * Creates the model's element including the header, body and footer sub-elements
+   * Creates the model's element
    * @return Element
    */
   render() {
-    this.#element = CN_element.create(`<div id="${this.#unique_id}" name="model"></div>`);
-    if (null != this.#action) this.#element.append(this.#action.render());
+    this.#element = null == this.#action ? CN_element.create("<div></div>") : this.#action.render();
+    this.#element.id = this.#unique_id;
     return this.#element;
   }
 

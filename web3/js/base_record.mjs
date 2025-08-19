@@ -458,8 +458,7 @@ export class CN_base_record extends CN_base_action {
   render() {
     // remove the card body's padding to make better use of space
     const el = super.render();
-    el.querySelector(".card-body").classList.add("pb-0");
-    el.querySelector(".card-body").classList.add("px-0");
+    el.querySelector(":scope > div > div.card > .card-body").classList.add("pb-0", "px-0");
     return el;
   }
 }
