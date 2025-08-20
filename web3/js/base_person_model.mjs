@@ -668,9 +668,10 @@ export class CN_base_person_notes extends CN_base_action {
     const allow_delete = note_module.action_allowed("delete");
     const allow_edit = note_module.action_allowed("edit");
 
+    const search = document.getElementById("note_search").value;
     const note_list_el = this.get_element().querySelector("[name=note_list]");
     note_list_el.innerHTML = "";
-    this.#note_list.forEach(note => {
+    this.#note_list.filter(note => 0 <= note.note.search(search)).forEach(note => {
       const note_path = `${this.get_model().get_name()}/${this.get_model().get_identifier()}/note/${note.id}`;
       let details = `${note.first_name} ${note.last_name}<br/>`;
       if (allow_edit) {
@@ -803,7 +804,8 @@ export class CN_base_person_notes extends CN_base_action {
           </div>
         </div>
         <hr></hr>
-        <div name="note_list" class="container-fluid"></div>
+        <div class="row pb-3"></div>
+        <div name="note_list" class="container-fluid px-0"></div>
       </div>
     `);
 
@@ -823,6 +825,21 @@ export class CN_base_person_notes extends CN_base_action {
       textarea_el.value = "";
       await this.run();
     });
+
+    // add the search field
+    body_el.querySelector("div.row").append(
+      CN_element.create_form_label({ for: "note_search", value: "Search" })
+    );
+
+    const search_el = CN_element.create_form_element("string", { id: "note_search" })
+    const input_el = search_el.querySelector("input");
+    input_el.value = this.get_query_parameter("search");
+    input_el.addEventListener("input", () => {
+      this.set_query_parameter("search", input_el.value);
+      this.update_element();
+    });
+
+    body_el.querySelector("div.row").append(search_el);
 
     return body_el;
   }
