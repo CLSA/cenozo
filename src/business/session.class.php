@@ -227,12 +227,15 @@ class session extends \cenozo\singleton
         try { $db_access = lib::create( 'database\access', $_SESSION['access.id'] ); }
         catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
 
-        // don't use the access if it has lapsed
-        if( !is_null( $db_access ) && $db_access->has_expired() )
+        if( $setting_manager->get_setting( 'general', 'track_activity' ) )
         {
-          // we'll need the user to close the activity, so set it before making db_access NULL
-          $this->db_user = $db_access->get_user();
-          $db_access = NULL;
+          // don't use the access if it has lapsed
+          if( !is_null( $db_access ) && $db_access->has_expired() )
+          {
+            // we'll need the user to close the activity, so set it before making db_access NULL
+            $this->db_user = $db_access->get_user();
+            $db_access = NULL;
+          }
         }
       }
 

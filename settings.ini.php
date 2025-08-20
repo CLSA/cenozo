@@ -38,6 +38,9 @@ $settings['general']['login_failure_limit'] = 7;
 // how long before a search result is considered out of date (in minutes)
 $settings['general']['search_timeout'] = 10;
 
+// whether to track user activity (may slow down the application as activity table grows in size)
+$settings['general']['track_activity'] = true;
+
 // how much inactivity before activity logs are considered closed (in minutes)
 $settings['general']['activity_timeout'] = 60;
 
