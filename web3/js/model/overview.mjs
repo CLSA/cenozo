@@ -30,7 +30,7 @@ export class CN_overview_view extends CN_base_view {
   async get_text(type) {
     if ("header" == type) {
       return this.#record.description;
-    } else if ("name" == type) {
+    } else if (["crumb", "name"].includes(type)) {
       return `Overview: ${this.#record.title}`;
     }
     return super.get_text(type);

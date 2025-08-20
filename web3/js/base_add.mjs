@@ -21,6 +21,10 @@ export class CN_base_add extends CN_base_record {
    * Extends the parent method
    */
   async get_text(type) {
+    if ("crumb" == type) {
+      return `Add ${CN_common.uc_words(this.get_model().get_singular())}`;
+    }
+
     if ("header" == type) {
       let text = `Add ${CN_common.uc_words(this.get_model().get_singular())}`;
       const parent_model = this.get_model().get_parent_model();

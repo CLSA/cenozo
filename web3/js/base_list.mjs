@@ -63,6 +63,10 @@ export class CN_base_list extends CN_base_action {
    * Extends the parent method
    */
   async get_text(type) {
+    if ("crumb" == type) {
+      return CN_common.uc_words(this.get_model().get_plural());
+    }
+
     if ("header" == type) {
       return `${CN_common.uc_words(this.get_model().get_singular())} List`;
     }

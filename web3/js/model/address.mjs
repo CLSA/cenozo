@@ -148,7 +148,7 @@ export class CN_address_view extends CN_traceable_view {
    * Extends the parent method
    */
   async get_text(type) {
-    if ("name" == type) {
+    if (["crumb", "name"].includes(type)) {
       return [
         this.get_property("rank").state.get(),
         this.get_property("city").state.get(),

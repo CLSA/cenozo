@@ -94,7 +94,7 @@ export class CN_proxy_view extends CN_base_view {
    * Extends the parent method
    */
   async get_text(type) {
-    if ("name" == type) {
+    if (["crumb", "name"].includes(type)) {
       const prop = this.get_property("proxy_type_id");
       const proxy_type = prop.enum.values.find(e => e.key == prop.state.get());
       return null == proxy_type ? "Removed" : proxy_type.value;

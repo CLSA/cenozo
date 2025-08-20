@@ -17,7 +17,7 @@ export class CN_error_model extends CN_base_object {
    * @return string
    */
   async get_text(type) {
-    if ("name" == type) {
+    if (["crumb", "name"].includes(type)) {
       if (404 == this.status) return "Page not found (404)";
       else if (this.error.name) return this.error.name;
       return "Unknown error";

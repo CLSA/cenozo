@@ -114,7 +114,7 @@ export class CN_hold_view extends CN_base_view {
    * Extends the parent method
    */
   async get_text(type) {
-    if ("name" == type) {
+    if (["crumb", "name"].includes(type)) {
       const prop = this.get_property("hold_type_id");
       const hold_type = prop.enum.values.find(e => e.key == prop.state.get());
       return null == hold_type ? "Removed" : hold_type.value;

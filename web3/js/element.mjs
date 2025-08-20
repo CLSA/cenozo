@@ -459,26 +459,11 @@ export default {
     }
 
     await Promise.all(model_list.map(async model => {
-      if ("add" == model.get_action_name()) {
-        crumb_list.push({
-          name: `Add ${CN_common.uc_words(model.get_singular())}`,
-          path: null,
-        });
-      } else if ("view" == model.get_action_name()) {
-        const crumb = {
-          name: "...",
-          path: model.get_view_url(),
-        };
-        crumb_list.push(crumb);
+      let crumb = { name: '...', path: "view" == model.get_action_name() ? model.get_view_url() : null };
+      crumb_list.push(crumb);
 
-        // get the name after we've added the crumb to the list, otherwise it may be out of order
-        crumb.name = await model.get_action().get_text("name");
-      } else if ("list" == model.get_action_name()) {
-        crumb_list.push({
-          name: CN_common.uc_words(model.get_plural()),
-          path: null, // TODO: re-implement
-        });
-      }
+      // get the name after we've added the crumb to the list, otherwise it may be out of order
+      crumb.name = await model.get_action().get_text("crumb");
     }));
 
     // add each crumb to the trail, interspersed by chevrons

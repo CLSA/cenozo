@@ -375,6 +375,18 @@ export class CN_base_person_history extends CN_base_action {
    * Extend Parent method
    */
   async get_text(type) {
+    if ("crumb" == type) {
+      const select = {
+        select: {
+          column: "participant" == this.get_model().get_name() ? "uid" : ["first_name", "last_name"]
+        }
+      };
+
+      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
+      const data = await response.json();
+      return "participant" == this.get_model().get_name() ? data.uid : `${data.first_name} ${data.last_name}`;
+    }
+
     if ("header" == type) {
       const columns = ["first_name", "last_name"];
       if ("participant" == this.get_model().get_name()) columns.push("uid");
@@ -592,6 +604,18 @@ export class CN_base_person_notes extends CN_base_action {
    * Extend parent method
    */
   async get_text(type) {
+    if ("crumb" == type) {
+      const select = {
+        select: {
+          column: "participant" == this.get_model().get_name() ? "uid" : ["first_name", "last_name"]
+        }
+      };
+
+      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
+      const data = await response.json();
+      return "participant" == this.get_model().get_name() ? data.uid : `${data.first_name} ${data.last_name}`;
+    }
+
     if ("header" == type) {
       const columns = ["first_name", "last_name"];
       if ("participant" == this.get_model().get_name()) columns.push("uid");

@@ -35,7 +35,7 @@ export class CN_base_view extends CN_base_record {
    * Extends the parent method
    */
   async get_text(type) {
-    if ("name" == type) {
+    if (["crumb", "name"].includes(type)) {
       const name_prop = this.get_property("name");
       if (name_prop) return name_prop.state.get();
 
