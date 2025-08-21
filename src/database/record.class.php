@@ -523,6 +523,67 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * ADD DOCS
+   */
+  protected static function set_column_type( $column, &$value, $select = NULL, $modifier = NULL )
+  {
+    if( !is_null( $select ) && !is_a( $select, lib::get_class_name( 'database\select' ) ) )
+      throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
+    if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
+      throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
+
+    // do nothing if the value is null
+    if( is_null( $value ) ) return;
+
+    // see if the column is an alias in the select object
+    $type = NULL;
+    $alias_details = NULL;
+    $current_column_name = $column;
+    $current_table_name = NULL;
+    if( !is_null( $select ) && $select->has_alias( $column ) )
+    {
+      $alias_details = $select->get_alias_details( $column );
+      $type = $alias_details['type'];
+      if( is_null( $type ) )
+      {
+        $current_column_name = $alias_details['column'];
+        $current_table_name = (
+          0 == strlen( $alias_details['table'] ) ?
+          $select->get_table_name() :
+          $alias_details['table']
+        );
+
+        // the table name may be an alias to a join in the modifier
+        if( !is_null( $modifier ) && $modifier->has_join( $current_table_name ) )
+          $current_table_name = $modifier->get_alias_table( $current_table_name );
+      }
+    }
+    else if( static::column_exists( $column ) ) $current_table_name = static::get_table_name();
+
+    if( is_null( $type ) )
+    {
+      // we come here if the column is an alias in the select but has no type,
+      // or the column exists in the local (static) table's column list
+      if( static::db()->column_exists( $current_table_name, $current_column_name ) )
+      {
+        $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
+      }
+      else if( '_count' == substr( $column, -6 ) )
+      {
+        $type = 'integer';
+      }
+    }
+
+    if(
+      !is_null( $type ) &&
+      'string' != $type &&
+      'time' != $type &&
+      'datetime' != $type &&
+      'timestamp' != $type
+    ) settype( $value, $type );
+  }
+
+  /**
    * Returns all column values in the record as an associative array
    * 
    * @param database\select $select Defines which columns to return
@@ -557,52 +618,11 @@ abstract class record extends \cenozo\base_object
         $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
         $columns = static::db()->get_row( $sql );
 
-        // convert non-null values
+        // set all value types
         if( is_array( $columns ) )
         {
           foreach( $columns as $column => $value )
-          {
-            if( !is_null( $value ) )
-            {
-              // see if the column is an alias in the select object
-              $type = NULL;
-              $alias_details = NULL;
-              $current_column_name = $column;
-              $current_table_name = NULL;
-              if( $select->has_alias( $column ) )
-              {
-                $alias_details = $select->get_alias_details( $column );
-                $type = $alias_details['type'];
-                if( is_null( $type ) )
-                {
-                  $current_column_name = $alias_details['column'];
-                  $current_table_name = 0 == strlen( $alias_details['table'] )
-                                      ? $select->get_table_name()
-                                      : $alias_details['table'];
-
-                  // the table name may be an alias to a join in the modifier
-                  if( $modifier->has_join( $current_table_name ) )
-                    $current_table_name = $modifier->get_alias_table( $current_table_name );
-                }
-              }
-              else if( static::column_exists( $column ) ) $current_table_name = $table_name;
-
-              if( is_null( $type ) )
-              {
-                // we come here if the column is an alias in the select but has no type,
-                // or the column exists in the local (static) table's column list
-                if( static::db()->column_exists( $current_table_name, $current_column_name ) )
-                  $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
-                else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
-              }
-
-              if( !is_null( $type ) &&
-                  'string' != $type &&
-                  'time' != $type &&
-                  'datetime' != $type &&
-                  'timestamp' != $type ) settype( $columns[$column], $type );
-            }
-          }
+            static::set_column_type( $column, $columns[$column], $select, $modifier );
         }
       }
       else // all data comes from the current table
@@ -628,12 +648,14 @@ abstract class record extends \cenozo\base_object
             $columns[$alias] = $alias_details['column'];
 
             $type = $alias_details['type'];
-            if( !is_null( $columns[$alias] ) &&
-                !is_null( $type ) &&
-                'string' != $type &&
-                'time' != $type &&
-                'datetime' != $type &&
-                'timestamp' != $type ) settype( $columns[$alias], $type );
+            if(
+              !is_null( $columns[$alias] ) &&
+              !is_null( $type ) &&
+              'string' != $type &&
+              'time' != $type &&
+              'datetime' != $type &&
+              'timestamp' != $type
+            ) settype( $columns[$alias], $type );
           }
         }
       }
@@ -1220,6 +1242,43 @@ abstract class record extends \cenozo\base_object
   }
 
   /**
+   * ADD DOCS
+   */
+  protected static function get_select_sql( $select, $modifier, $return_alt = '' )
+  {
+    if( !static::has_archive_table() )
+    {
+      return sprintf(
+        '%s %s',
+        $select->get_sql(),
+        is_null( $modifier ) ? '' : $modifier->get_sql( 'count' == $return_alt )
+      );
+    }
+
+    // we have an archive table so we have to combine this table with the archive table in a union
+    $select_sql = $select->get_sql();
+    $modifier_sql = is_null( $modifier ) ? '' : $modifier->get_sql( true );
+
+    $post_sql = '';
+    if( 'count' != $return_alt )
+    {
+      if( $order = $modifier->get_order() ) $post_sql .= sprintf( "\nORDER BY %s", $order );
+      if( !is_null( $modifier->get_limit() ) )
+        $post_sql .= sprintf( "\nLIMIT %d OFFSET %d", $modifier->get_limit(), $modifier->get_offset() );
+    }
+
+    return sprintf(
+      'SELECT %s FROM ( %s %s UNION %s %s ) AS activity %s',
+      'count' == $return_alt ? 'SUM(total)' : '*',
+      $select_sql,
+      $modifier_sql,
+      preg_replace( '/\bactivity\b/', 'activity_archive', $select_sql ),
+      preg_replace( '/\bactivity\b/', 'activity_archive', $modifier_sql ),
+      $post_sql
+    );
+  }
+
+  /**
    * Selects a number of records as array data
    * 
    * @param database\select $select Defines which columns to select
@@ -1234,9 +1293,6 @@ abstract class record extends \cenozo\base_object
       throw lib::create( 'exception\argument', 'select', $select, __METHOD__ );
     if( !is_null( $modifier ) && !is_a( $modifier, lib::get_class_name( 'database\modifier' ) ) )
       throw lib::create( 'exception\argument', 'modifier', $modifier, __METHOD__ );
-
-    $table_name = static::get_table_name();
-    $return_value = 'count' == $return_alt ? 0 : array();
 
     // create the select statement one isn't provided
     if( is_null( $select ) )
@@ -1257,85 +1313,33 @@ abstract class record extends \cenozo\base_object
     }
 
     // select this table if one hasn't been selected yet
-    if( is_null( $select->get_table_name() ) ) $select->from( $table_name );
+    if( is_null( $select->get_table_name() ) ) $select->from( static::get_table_name() );
 
+    // now generate the SQL statement and query the database
+    $sql = static::get_select_sql( $select, $modifier, $return_alt );
     if( 'count' == $return_alt )
     {
-      $sql = sprintf( '%s %s',
-                      $select->get_sql(),
-                      is_null( $modifier ) ? '' : $modifier->get_sql( true ) );
-
       // if the modifier has a group statement then we want the number of returned rows
-      $return_value = !is_null( $modifier ) && 0 < count( $modifier->get_group_columns() )
-                    ? count( static::db()->get_all( $sql ) )
-                    : intval( static::db()->get_one( $sql ) );
-    }
-    else
-    {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $sql = sprintf( '%s %s',
-                      $select->get_sql(),
-                      is_null( $modifier ) ? '' : $modifier->get_sql() );
-      $return_value = static::db()->get_all( $sql );
-      if( 'object' == $return_alt )
-      { // convert ids to records
-        $records = array();
-        foreach( $return_value as $row ) $records[] = new static( $row[static::$primary_key_name] );
-        $return_value = $records;
-      }
-      else
-      { // convert data types
-        foreach( $return_value as $index => $row )
-        {
-          foreach( $row as $column => $value )
-          {
-            if( !is_null( $value ) )
-            {
-              // see if the column is an alias in the select object
-              $type = NULL;
-              $alias_details = NULL;
-              $current_column_name = $column;
-              $current_table_name = NULL;
-              if( $select->has_alias( $column ) )
-              {
-                $alias_details = $select->get_alias_details( $column );
-                $type = $alias_details['type'];
-                if( is_null( $type ) )
-                {
-                  $current_column_name = $alias_details['column'];
-                  $current_table_name = 0 == strlen( $alias_details['table'] )
-                                      ? $select->get_table_name()
-                                      : $alias_details['table'];
-
-                  // the table name may be an alias to a join in the modifier
-                  if( $modifier->has_join( $current_table_name ) )
-                    $current_table_name = $modifier->get_alias_table( $current_table_name );
-                }
-              }
-              else if( static::column_exists( $column ) ) $current_table_name = $table_name;
-
-              if( is_null( $type ) )
-              {
-                // we come here if the column is an alias in the select but has no type,
-                // or the column exists in the local (static) table's column list
-                if( static::db()->column_exists( $current_table_name, $current_column_name ) )
-                  $type = static::db()->get_column_variable_type( $current_table_name, $current_column_name );
-                else if( '_count' == substr( $column, -6 ) ) $type = 'integer';
-              }
-
-              if( !is_null( $type ) &&
-                  'string' != $type &&
-                  'time' != $type &&
-                  'datetime' != $type &&
-                  'timestamp' != $type ) settype( $return_value[$index][$column], $type );
-            }
-          }
-        }
-      }
+      return (
+        !is_null( $modifier ) && 0 < count( $modifier->get_group_columns() ) ?
+        count( static::db()->get_all( $sql ) ) :
+        intval( static::db()->get_one( $sql ) )
+      );
     }
 
-    if( is_array( $return_value ) ) reset( $return_value );
-    return $return_value;
+    $rows = static::db()->get_all( $sql );
+    if( 'object' == $return_alt )
+    { // convert ids to records
+      $records = array();
+      foreach( $rows as $row ) $records[] = new static( $row[static::$primary_key_name] );
+      return $records;
+    }
+
+    // convert data types
+    foreach( $rows as $index => $row ) foreach( $row as $column => $value )
+      static::set_column_type( $column, $rows[$index][$column], $select, $modifier );
+
+    return $rows;
   }
 
   /**
@@ -1570,6 +1574,17 @@ abstract class record extends \cenozo\base_object
   public static function column_exists( $column_name )
   {
     return static::db()->column_exists( static::get_table_name(), $column_name );
+  }
+
+  /**
+   * Defines whether this table has an archive table
+   * @return boolean
+   * @static
+   * @access protected
+   */
+  public static function has_archive_table()
+  {
+    return static::db()->has_archive_table( static::get_table_name() );
   }
 
   /**

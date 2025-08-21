@@ -71,18 +71,13 @@ class database extends \cenozo\base_object
     {
       $setting_manager = lib::create( 'business\setting_manager' );
 
-      // determine the database version number and whether defaults are defined in quotes
-      $database_version = $this->get_one( 'SELECT VERSION()' );
-      $quoted_defaults = false;
-      if( 1 == preg_match( '/^10\.([0-9]+)\./', $database_version, $matches ) )
-        $quoted_defaults = 2 < intval( $matches[1] );
-
       // determine the framework name
       $framework_name = sprintf(
         '%s%s',
         $setting_manager->get_setting( 'db', 'database_prefix' ),
-        $setting_manager->get_setting( 'general', 'framework_name' ) );
-      $schema_list = array( '"'.$this->name.'"', '"'.$framework_name.'"' );
+        $setting_manager->get_setting( 'general', 'framework_name' )
+      );
+      $schema_list = [sprintf( '"%s"', $this->name ), sprintf( '"%s"', $framework_name )];
 
       $column_mod = lib::create( 'database\modifier' );
       $column_mod->where( 'table_schema', 'IN', $schema_list, false );
@@ -92,12 +87,15 @@ class database extends \cenozo\base_object
       $column_mod->order( 'column_name' );
 
       $rows = $this->get_all(
-        sprintf( 'SELECT table_schema, table_name, column_name, column_type, data_type, '."\n".
-                 'character_maximum_length, column_key, column_default, '."\n".
-                 'is_nullable != "YES" AS is_nullable '."\n".
-                 'FROM information_schema.columns %s ',
-                 $column_mod->get_sql() ),
-        false ); // do not add table names
+        sprintf(
+          'SELECT table_schema, table_name, column_name, column_type, data_type, '.
+          'character_maximum_length, column_key, column_default, '.
+          'is_nullable != "YES" AS is_nullable '.
+          'FROM information_schema.columns %s ',
+          $column_mod->get_sql()
+        ),
+        false // do not add table names
+      );
 
       // record the tables, columns and types
       foreach( $rows as $row )
@@ -105,45 +103,54 @@ class database extends \cenozo\base_object
         extract( $row ); // defines variables based on column values in query
 
         // convert the column default if defaults are quoted
-        if( $quoted_defaults )
-          $column_default = is_null( $column_default ) || 'NULL' == $column_default
-                          ? NULL
-                          : preg_replace( "/^'(.*)'$/", '$1', $column_default );
+        $column_default = (
+          is_null( $column_default ) || 'NULL' == $column_default ?
+          NULL :
+          preg_replace( "/^'(.*)'$/", '$1', $column_default )
+        );
 
         if( !array_key_exists( $table_name, $this->tables ) )
-          $this->tables[$table_name] =
-            array( 'database' => $table_schema,
-                   'primary' => array(),
-                   'constraints' => array(),
-                   'columns' => array() );
+        {
+          $this->tables[$table_name] = [
+            'database' => $table_schema,
+            'primary' => [],
+            'constraints' => [],
+            'columns' => [],
+          ];
+        }
 
-        if( 'PRI' == strtoupper( $column_key ) )
-          $this->tables[$table_name]['primary'][] = $column_name;
+        if( 'PRI' == strtoupper( $column_key ) ) $this->tables[$table_name]['primary'][] = $column_name;
 
-        $this->tables[$table_name]['columns'][$column_name] =
-          array( 'data_type' => $data_type,
-                 'type' => $column_type,
-                 'json' => false,
-                 'default' => $column_default,
-                 'max_length' => $character_maximum_length,
-                 'required' => $is_nullable,
-                 'key' => $column_key );
+        $this->tables[$table_name]['columns'][$column_name] = [
+          'data_type' => $data_type,
+          'type' => $column_type,
+          'json' => false,
+          'default' => $column_default,
+          'max_length' => $character_maximum_length,
+          'required' => $is_nullable,
+          'key' => $column_key,
+        ];
       }
 
-      if( $this->get_one(
-        'SELECT COUNT(*) '.
-        'FROM information_schema.tables '.
-        'WHERE table_schema = "information_schema" '.
-        'AND table_name = "check_constraints"' ) )
-      {
+      if(
+        $this->get_one(
+          'SELECT COUNT(*) '.
+          'FROM information_schema.tables '.
+          'WHERE table_schema = "information_schema" '.
+          'AND table_name = "check_constraints"'
+        )
+      ) {
         $check_mod = lib::create( 'database\modifier' );
         $check_mod->where( 'constraint_schema', 'IN', $schema_list, false );
 
         $rows = $this->get_all(
-          sprintf( 'SELECT table_name, constraint_name AS column_name '."\n".
-                   'FROM information_schema.check_constraints %s',
-                   $check_mod->get_sql() ),
-          false ); // do not add table names
+          sprintf(
+            'SELECT table_name, constraint_name AS column_name '.
+            'FROM information_schema.check_constraints %s',
+            $check_mod->get_sql()
+          ),
+          false // do not add table names
+        );
 
         // record the check constraints
         foreach( $rows as $row )
@@ -156,7 +163,12 @@ class database extends \cenozo\base_object
       $constraint_mod = lib::create( 'database\modifier' );
       $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', 'IN', $schema_list, false );
       $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', '"UNIQUE"', false );
-      $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
+      $constraint_mod->where(
+        'TABLE_CONSTRAINTS.CONSTRAINT_NAME',
+        '=',
+        'KEY_COLUMN_USAGE.CONSTRAINT_NAME',
+        false
+      );
       $constraint_mod->group( 'table_name' );
       $constraint_mod->group( 'constraint_name' );
       $constraint_mod->group( 'column_name' );
@@ -165,12 +177,16 @@ class database extends \cenozo\base_object
       $constraint_mod->order( 'ordinal_position' );
 
       $rows = $this->get_all(
-        sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
-                        'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
-                        'KEY_COLUMN_USAGE.COLUMN_NAME AS column_name '.
-                 'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
-                 $constraint_mod->get_sql() ),
-        false ); // do not add table names
+        sprintf(
+          'SELECT '.
+            'TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
+            'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
+            'KEY_COLUMN_USAGE.COLUMN_NAME AS column_name '.
+          'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
+          $constraint_mod->get_sql()
+        ),
+        false // do not add table names
+      );
 
       // record the constraints
       foreach( $rows as $row )
@@ -183,9 +199,10 @@ class database extends \cenozo\base_object
       $result = file_put_contents( $filename, serialize( $this->tables ) );
       if( false === $result )
       {
-        log::warning(
-          sprintf( 'Unable to write schema cache to "%s", make sure permissions are set correctly.',
-                   $filename ) );
+        log::warning( sprintf(
+          'Unable to write schema cache to "%s", make sure permissions are set correctly.',
+          $filename
+        ) );
       }
       else
       {
@@ -338,6 +355,17 @@ class database extends \cenozo\base_object
            is_string( $column_name ) &&
            array_key_exists( $table_name, $this->tables ) &&
            array_key_exists( $column_name, $this->tables[$table_name]['columns'] );
+  }
+
+  /**
+   * Defines whether this table has an archive table
+   * @return boolean
+   * @static
+   * @access protected
+   */
+  public function has_archive_table( $table_name )
+  {
+    return $this->table_exists( sprintf( '%s_archive', $table_name ) );
   }
 
   /**

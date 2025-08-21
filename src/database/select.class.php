@@ -440,6 +440,11 @@ class select extends \cenozo\base_object
     return $alias_list;
   }
 
+  public function set_apply_aliases( $enable )
+  {
+    $this->apply_aliases = $enable;
+  }
+
   /**
    * Replaces all of this select's aliases in a modifier with the column name instead.
    * 
@@ -448,6 +453,8 @@ class select extends \cenozo\base_object
    */
   public function apply_aliases_to_modifier( $modifier )
   {
+    if( !$this->apply_aliases ) return;
+
     foreach( $this->column_list as $table => $column_details )
     {
       // resolve the table name
@@ -677,4 +684,11 @@ class select extends \cenozo\base_object
    * @access protected
    */
   protected $distinct = false;
+
+  /**
+   * Whether to apply aliases to modifiers (when calling apply_aliases_to_modifier() method)
+   * @var boolean
+   * @access protected
+   */
+  protected $apply_aliases = true;
 }

@@ -5,7 +5,7 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
-namespace cenozo\service\activity;
+namespace cenozo\service\application;
 use cenozo\lib, cenozo\log;
 
 class query extends \cenozo\service\query
@@ -15,7 +15,7 @@ class query extends \cenozo\service\query
    */
   protected function prepare()
   {
-    if( !$this->get_argument( 'close_lapsed', false ) ) parent::prepare();
+    if( !$this->get_argument( 'archive', false ) ) parent::prepare();
   }
 
   /**
@@ -23,11 +23,11 @@ class query extends \cenozo\service\query
    */
   protected function execute()
   {
-    $activity_class_name = lib::get_class_name( 'database\activity' );
+    $application_class_name = lib::get_class_name( 'database\application' );
 
-    if( $this->get_argument( 'close_lapsed', false ) )
+    if( $this->get_argument( 'archive', false ) )
     {
-      $this->set_data( $activity_class_name::close_lapsed() );
+      $this->set_data( $application_class_name::archive() );
     }
     else
     {
