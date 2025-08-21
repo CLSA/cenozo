@@ -22,6 +22,7 @@ class read extends service
 
     $select_class_name = lib::get_class_name( 'database\select' );
     $modifier_class_name = lib::get_class_name( 'database\modifier' );
+    $class_name = $this->get_leaf_record_class_name();
 
     // set up the select
     $sel_string = $this->get_argument( 'select', NULL );
@@ -46,7 +47,6 @@ class read extends service
       try
       {
         // make sure the primary key is in the select list
-        $class_name = $this->get_leaf_record_class_name();
         $this->select->add_column( $class_name::get_primary_key_name() );
       }
       catch( \cenozo\exception\runtime $e )
@@ -55,6 +55,9 @@ class read extends service
         $this->status->set_code( 404 );
       }
     }
+
+    // do not apply aliases if the leaf record has an archive table (see database\record::get_select_sql())
+    if( $class_name::has_archive_table() ) $this->select->set_apply_aliases( false );
 
     // set up the modifier
     $mod_string = $this->get_argument( 'modifier', NULL );

@@ -199,9 +199,7 @@ class session extends \cenozo\singleton
    */
   public function login( $username = NULL, $db_site = NULL, $db_role = NULL )
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $access_class_name = lib::get_class_name( 'database\access' );
-    $activity_class_name = lib::get_class_name( 'database\activity' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $site_class_name = lib::get_class_name( 'database\site' );
     $role_class_name = lib::get_class_name( 'database\role' );

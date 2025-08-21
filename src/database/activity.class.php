@@ -94,7 +94,7 @@ class activity extends record
     $setting_manager = lib::create( 'business\setting_manager' );
 
     // do nothing if the application has been setup to not track activity
-    if( !$setting_manager->get_setting( 'general', 'track_activity' ) ) return;
+    if( !$setting_manager->get_setting( 'general', 'track_activity' ) ) return 0;
 
     $db_application = lib::create( 'business\session' )->get_application();
 

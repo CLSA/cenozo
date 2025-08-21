@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE activity_archive.sql
 SOURCE application.sql
 SOURCE export.sql
 SOURCE notation.sql

@@ -288,4 +288,53 @@ class application extends record
     if( !is_null( $db_study_phase ) ) $db_extra_consent_type = $db_study_phase->get_study()->get_consent_type();
     return $db_extra_consent_type;
   }
+
+  /**
+   * Archives old records by moving rows to the <table_name>_archive table (only if one exists)
+   * 
+   * @return associative array
+   * @access public
+   * @static
+   */
+  public static function archive()
+  {
+    $setting_manager = lib::create( 'business\setting_manager' );
+
+    $offset = $setting_manager->get_setting( 'general', 'table_archive_offset' );
+
+    $results = [];
+    foreach( static::db()->get_table_names() as $table )
+    {
+      if( static::db()->has_archive_table( $table ) )
+      {
+        $select = lib::create( 'database\select' );
+        $select->from( $table );
+        $select->add_column( '*' );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where(
+          static::db()->column_exists( $table, 'end_datetime' ) ? 'end_datetime' : 'create_timestamp',
+          '<=',
+          sprintf( 'UTC_TIMESTAMP() - INTERVAL %d DAY', $offset ),
+          false
+        );
+
+        static::db()->execute( sprintf(
+          'INSERT IGNORE INTO %s_archive %s %s',
+          $table,
+          $select->get_sql(),
+          $modifier->get_sql()
+        ) );
+
+        static::db()->execute( sprintf(
+          'DELETE FROM %s %s',
+          $table,
+          $modifier->get_sql()
+        ) );
+
+        $results[$table] = intval( static::db()->get_one( 'SELECT ROW_COUNT()' ) );
+      }
+    }
+
+    return $results;
+  }
 }

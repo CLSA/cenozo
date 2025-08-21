@@ -358,6 +358,17 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Defines whether this table has an archive table
+   * @return boolean
+   * @static
+   * @access protected
+   */
+  public function has_archive_table( $table_name )
+  {
+    return $this->table_exists( sprintf( '%s_archive', $table_name ) );
+  }
+
+  /**
    * Returns an array of all table names.
    * @return array( string )
    * @access public
