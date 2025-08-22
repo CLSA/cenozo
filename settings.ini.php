@@ -42,7 +42,7 @@ $settings['general']['search_timeout'] = 10;
 $settings['general']['track_activity'] = true;
 
 // the number of days after which tables with an archive table will have records archived
-$settings['general']['table_archive_offset'] = 365;
+$settings['general']['table_archive_offset'] = 30;
 
 // how much inactivity before activity logs are considered closed (in minutes)
 $settings['general']['activity_timeout'] = 60;
