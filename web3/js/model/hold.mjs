@@ -1,3 +1,4 @@
+import CN_api from "../api.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
@@ -85,9 +86,15 @@ export class CN_hold_add extends CN_base_add {
    */
   async on_submit() {
     // show extra instructions when creating a deceased hold
-    const deceased_hold_type_id = CN_session.data.final_hold_type_list.find(
-      hold_type => "Deceased" == hold_type.name
-    ).id;
+    let deceased_hold_type_id = null;
+    try {
+      const response = await CN_api.get("hold_type/type=final;name=Deceased", { select: { column: "id" } });
+      deceased_hold_type_id = (await response.json()).id;
+    } catch (error) {
+      // ignore 404
+      if (404 != error.response.status) throw error;
+    }
+
     if (deceased_hold_type_id == this.get_property("hold_type_id").state.get()) {
       await CN_element.message_modal({
         title: "Date of Death",
