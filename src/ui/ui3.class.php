@@ -630,8 +630,11 @@ class ui3 extends \cenozo\base_object
    */
   public static function get_ui_data()
   {
-    $data = self::generate();
+    $data = static::generate();
 
+    ksort( $data['menu']['lists'] );
+    ksort( $data['menu']['utilities'] );
+    ksort( $data['menu']['reports'] );
     ksort( $data['module_list'] );
     $modules = [];
     foreach( $data['module_list'] as $module ) $modules[$module->get_subject()] = $module->as_array();

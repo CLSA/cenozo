@@ -124,7 +124,6 @@ class get extends \cenozo\service\service
         ]
       );
 
-      log::debug( $session->version3 ? "Y" : "N" );
       if( $session->version3 )
       {
         $ui_data = lib::create( 'ui\ui3' )::get_ui_data();
