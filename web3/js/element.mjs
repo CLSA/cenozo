@@ -548,8 +548,7 @@ export default {
 
     // populate the site and role inputs when opening the modal
     modal_el.addEventListener("show.bs.modal", async () => {
-      const response = await CN_api.get("self/0/access");
-      let data = await response.json();
+      const data = await CN_api.get("self/0/access");
       const site_list = data.reduce((list, item) => {
         let site = list.find(s => s.id == item.site_id);
         if (!site) {
@@ -1235,7 +1234,7 @@ export default {
     let changing_count_column = `active_${type}_count`;
     let other_count_column = `active_${"address" == type ? "phone" : "address"}_count`;
 
-    const response = await CN_api.get(`participant/${identifier}`, {
+    const data = await CN_api.get(`participant/${identifier}`, {
       select: {
         column: [
           "active_address_count",
@@ -1244,7 +1243,6 @@ export default {
         ],
       },
     });
-    let data = await response.json();
 
     let result = true;
     if ("removed" == action) {

@@ -109,7 +109,7 @@ export class CN_application_model extends CN_base_model {
           type: "typeahead",
           typeahead: {
             get_list: async (value) => {
-              const response = await CN_api.get("country", {
+              return await CN_api.get("country", {
                 select: {
                   column: [
                     { column: "id", alias: "key" },
@@ -121,7 +121,6 @@ export class CN_application_model extends CN_base_model {
                   order: 'name',
                 },
               });
-              return (await response.json());
             },
           },
         },

@@ -199,8 +199,7 @@ export class CN_base_record extends CN_base_action {
                 prop.enum.path
               );
 
-              const response = await CN_api.get(path, params);
-              prop.enum.values = (await response.json()).reduce((list, record) => {
+              prop.enum.values = (await CN_api.get(path, params)).reduce((list, record) => {
                 list.push({
                   ...record,
                   key: record.id,
@@ -228,8 +227,7 @@ export class CN_base_record extends CN_base_action {
           };
 
           const get_max_rank = async () => {
-            const response = await CN_api.get(this.get_model().get_base_path("api"), params);
-            let max_rank = (await response.json())[0].max_rank;
+            const max_rank = (await CN_api.get(this.get_model().get_base_path("api"), params))[0].max_rank;
             if (null == max_rank) max_rank = 0;
             prop.enum = { values: [] };
             for(let r = 1; r <= max_rank; r++) {

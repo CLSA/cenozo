@@ -88,8 +88,10 @@ export class CN_hold_add extends CN_base_add {
     // show extra instructions when creating a deceased hold
     let deceased_hold_type_id = null;
     try {
-      const response = await CN_api.get("hold_type/type=final;name=Deceased", { select: { column: "id" } });
-      deceased_hold_type_id = (await response.json()).id;
+      deceased_hold_type_id = (await CN_api.get(
+        "hold_type/type=final;name=Deceased",
+        { select: { column: "id" } }
+      )).id;
     } catch (error) {
       // ignore 404
       if (404 != error.response.status) throw error;

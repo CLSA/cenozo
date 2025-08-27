@@ -79,7 +79,7 @@ export class CN_address_model extends CN_traceable_model {
           type: "typeahead",
           typeahead: {
             get_list: async (value) => {
-              const response = await CN_api.get("country", {
+              return await CN_api.get("country", {
                 select: {
                   column: [
                     { column: "id", alias: "key" },
@@ -91,7 +91,6 @@ export class CN_address_model extends CN_traceable_model {
                   order: 'name',
                 },
               });
-              return (await response.json());
             },
           },
           is_hidden: (model) => !(

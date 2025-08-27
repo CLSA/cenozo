@@ -117,7 +117,7 @@ export class CN_base_list extends CN_base_action {
         const params = {};
         if (0 < this.#choosing_list.add.length) params.add = this.#choosing_list.add;
         if (0 < this.#choosing_list.remove.length) params.remove = this.#choosing_list.remove;
-        const response = await CN_api.post(this.get_model().get_base_path("api"), params);
+        await CN_api.post(this.get_model().get_base_path("api"), params);
       }
     }
 
@@ -187,7 +187,7 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   async on_load() {
-    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
+    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
     const limit = response.headers.get('X-Limit');
     const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');

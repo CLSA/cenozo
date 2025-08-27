@@ -40,19 +40,17 @@ export class CN_form_association_list extends CN_base_list {
         let path = model.get_view_url(record.record_id);
         if ("consent" == record.subject) {
           // add the parent participant to the path
-          const response = await CN_api.get(
+          const row = await CN_api.get(
             model.get_view_url(record.record_id, "api"),
             { select: { column: "participant_id" } },
           );
-          const row = await response.json();
           if (row) path = `participant/view/${row.participant_id}/${path}`;
         } else if ("alternate_consent" == record.subject) {
           // add the parent alternate to the path
-          const response = await CN_api.get(
+          const row = await CN_api.get(
             model.get_view_url(record.record_id, "api"),
             { select: { column: "alternate_id" } },
           );
-          const row = await response.json();
           if (row) path = `alternate/view/${row.alternate_id}/${path}`;
         }
         await CN_session.navigate_to(path);

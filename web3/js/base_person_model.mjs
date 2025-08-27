@@ -64,7 +64,7 @@ export class CN_base_person_history extends CN_base_action {
       subject: "address",
       path: `${base_path}/address`,
       get_data: async function () {
-        const response = await CN_api.get(this.path, {
+        const rows = await CN_api.get(this.path, {
           select: { column: [
             "create_timestamp",
             "rank",
@@ -77,7 +77,7 @@ export class CN_base_person_history extends CN_base_action {
             { table: "country", column: "name", alias: "country" },
           ]},
         });
-        return (await response.json()).map(row => ({
+        return rows.map(row => ({
           category: this,
           datetime: row.create_timestamp,
           title: "added rank " + row.rank,
@@ -93,7 +93,7 @@ export class CN_base_person_history extends CN_base_action {
       subject: "note",
       path: `${base_path}/note`,
       get_data: async function () {
-        const response = await CN_api.get(this.path, {
+        const rows = await CN_api.get(this.path, {
           select: { column: [
             "datetime",
             "note",
@@ -101,7 +101,7 @@ export class CN_base_person_history extends CN_base_action {
             { table: "user", column: "last_name", alias: "user_last" },
           ]},
         });
-        return (await response.json()).map(row => ({
+        return rows.map(row => ({
           category: this,
           datetime: row.datetime,
           title: `added by ${row.user_first} ${row.user_last}`,
@@ -112,7 +112,7 @@ export class CN_base_person_history extends CN_base_action {
       subject: "phone",
       path: `${base_path}/phone`,
       get_data: async function () {
-        const response = await CN_api.get(this.path, {
+        const rows = await CN_api.get(this.path, {
           select: { column: [
             "create_timestamp",
             "rank",
@@ -121,7 +121,7 @@ export class CN_base_person_history extends CN_base_action {
             "international",
           ]},
         });
-        return (await response.json()).map(row => ({
+        return rows.map(row => ({
           category: this,
           datetime: row.create_timestamp,
           title: `added rank ${row.rank}`,
@@ -136,7 +136,7 @@ export class CN_base_person_history extends CN_base_action {
         subject: "alternate",
         path: `${base_path}/alternate`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "create_timestamp",
               "association",
@@ -145,7 +145,7 @@ export class CN_base_person_history extends CN_base_action {
               "last_name",
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.create_timestamp,
             title: `added ${row.first_name} ${row.last_name}`,
@@ -159,7 +159,7 @@ export class CN_base_person_history extends CN_base_action {
         subject: "consent",
         path: `${base_path}/consent`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "datetime",
               "accept",
@@ -169,7 +169,7 @@ export class CN_base_person_history extends CN_base_action {
               { table: "consent_type", column: "description" },
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.datetime,
             title: `added "${row.name}"`,
@@ -180,14 +180,14 @@ export class CN_base_person_history extends CN_base_action {
         subject: "event",
         path: `${base_path}/event`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "datetime",
               { table: "event_type", column: "name" },
               { table: "event_type", column: "description" },
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.datetime,
             title: `added "${row.name}"`,
@@ -198,14 +198,14 @@ export class CN_base_person_history extends CN_base_action {
         subject: "form",
         path: `${base_path}/form`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "date",
               { table: "form_type", column: "name" },
               { table: "form_type", column: "description" },
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.date,
             title: `added "${row.name}"`,
@@ -216,7 +216,7 @@ export class CN_base_person_history extends CN_base_action {
         subject: "hold",
         path: `${base_path}/hold`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "datetime",
               { table: "hold_type", column: "name" },
@@ -224,7 +224,7 @@ export class CN_base_person_history extends CN_base_action {
               { table: "hold_type", column: "description" },
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.datetime,
             title: null == row.type ? "removed hold" : `added "${row.type} ${row.name}"`,
@@ -235,14 +235,14 @@ export class CN_base_person_history extends CN_base_action {
         subject: "mail",
         path: `${base_path}/mail`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "sent_datetime",
               "subject",
               "note",
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.sent_datetime,
             title: `sent "${row.subject}"`,
@@ -253,14 +253,14 @@ export class CN_base_person_history extends CN_base_action {
         subject: "proxy",
         path: `${base_path}/proxy`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "datetime",
               { table: "proxy_type", column: "name" },
               { table: "proxy_type", column: "description" },
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.datetime,
             title: null == row.name ? "removed proxy" : `added proxy "${row.name}"`,
@@ -271,7 +271,7 @@ export class CN_base_person_history extends CN_base_action {
         subject: "trace",
         path: `${base_path}/trace`,
         get_data: async function () {
-          const response = await CN_api.get(this.path, {
+          const rows = await CN_api.get(this.path, {
             select: { column: [
               "datetime",
               "note",
@@ -280,7 +280,7 @@ export class CN_base_person_history extends CN_base_action {
               { table: "user", column: "last_name" },
             ]},
           });
-          return (await response.json()).map(row => ({
+          return rows.map(row => ({
             category: this,
             datetime: row.datetime,
             title:
@@ -296,7 +296,7 @@ export class CN_base_person_history extends CN_base_action {
           subject: "assignment",
           path: `${base_path}/assignment`,
           get_data: async function () {
-            const response = await CN_api.get(this.path, {
+            const rows = await CN_api.get(this.path, {
               select: { column: [
                 "start_datetime",
                 "end_datetime",
@@ -306,7 +306,7 @@ export class CN_base_person_history extends CN_base_action {
                 { table: "script", column: "name", alias: "script" },
               ]},
             });
-            return (await response.json()).reduce((list, row) => {
+            return rows.reduce((list, row) => {
               list.push({
                 category: this,
                 datetime: row.start_datetime,
@@ -334,7 +334,7 @@ export class CN_base_person_history extends CN_base_action {
           subject: "equipment",
           path: `${base_path}/equipment_loan`,
           get_data: async function () {
-            const response = await CN_api.get(this.path, {
+            const rows = await CN_api.get(this.path, {
               select: { column: [
                 "start_datetime",
                 "end_datetime",
@@ -343,7 +343,7 @@ export class CN_base_person_history extends CN_base_action {
                 { table: "equipment_type", column: "name" },
               ]},
             });
-            return (await response.json()).reduce((list, row) => {
+            return rows.reduce((list, row) => {
               list.push({
                 category: this,
                 datetime: row.start_datetime,
@@ -382,18 +382,14 @@ export class CN_base_person_history extends CN_base_action {
         }
       };
 
-      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
-      const data = await response.json();
+      const data = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
       return "participant" == this.get_model().get_name() ? data.uid : `${data.first_name} ${data.last_name}`;
     }
 
     if ("header" == type) {
       const columns = ["first_name", "last_name"];
       if ("participant" == this.get_model().get_name()) columns.push("uid");
-      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), {
-        select: { column: columns }
-      });
-      const data = await response.json();
+      const data = await CN_api.get(this.get_model().get_view_url(null, "api"), { select: { column: columns } });
       return (
         CN_common.uc_words(this.get_model().get_singular()) +
         ` History for ${data.first_name} ${data.last_name}` +
@@ -417,12 +413,9 @@ export class CN_base_person_history extends CN_base_action {
     await super.on_load();
 
     // load all category data
-    const response = await Promise.all(this.#category_list.map(category => category.get_data()));
-    this.#data_list = response.reduce((list, a) => {
-      list = list.concat(a);
-      return list;
-    }, []);
-    this.#data_list.sort((a,b) => new Date(a.datetime) < new Date(b.datetime));
+    this.#data_list = (await Promise.all( this.#category_list.map(category => category.get_data())))
+      .reduce((list, a) => { list = list.concat(a); return list; }, [])
+      .sort((a,b) => new Date(a.datetime) < new Date(b.datetime));
   }
 
   /**
@@ -611,18 +604,14 @@ export class CN_base_person_notes extends CN_base_action {
         }
       };
 
-      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
-      const data = await response.json();
+      const data = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
       return "participant" == this.get_model().get_name() ? data.uid : `${data.first_name} ${data.last_name}`;
     }
 
     if ("header" == type) {
       const columns = ["first_name", "last_name"];
       if ("participant" == this.get_model().get_name()) columns.push("uid");
-      const response = await CN_api.get(this.get_model().get_view_url(null, "api"), {
-        select: { column: columns }
-      });
-      const data = await response.json();
+      const data = await CN_api.get(this.get_model().get_view_url(null, "api"), { select: { column: columns } });
       return (
         CN_common.uc_words(this.get_model().get_singular()) +
         ` Notes for ${data.first_name} ${data.last_name}` +
@@ -646,7 +635,7 @@ export class CN_base_person_notes extends CN_base_action {
     await super.on_load();
 
     // load all notes
-    const response = await CN_api.get(`${this.get_model().get_view_url(null, "api")}/note`, {
+    this.#note_list = await CN_api.get(`${this.get_model().get_view_url(null, "api")}/note`, {
       select: { column: [
           "id", "sticky", "datetime", "note",
           {table: "user", column: "first_name"},
@@ -654,7 +643,6 @@ export class CN_base_person_notes extends CN_base_action {
       ], },
       modifier: { order: [{ sticky: true }, { datetime: true }] },
     });
-    this.#note_list = await response.json();
   }
 
   /**

@@ -26,7 +26,7 @@ export class CN_alternate_model extends CN_base_model {
           type: "typeahead",
           typeahead: {
             get_list: async (value) => {
-              const response = await CN_api.get("participant", {
+              return await CN_api.get("participant", {
                 select: {
                   column: [{
                     table: "participant",
@@ -48,7 +48,6 @@ export class CN_alternate_model extends CN_base_model {
                   order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
                 },
               });
-              return (await response.json());
             },
           },
         },

@@ -100,8 +100,7 @@ export class CN_base_view extends CN_base_record {
     await super.on_load();
 
     // load the record
-    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
-    const record = await response.json();
+    const record = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
     this.for_each_property(prop => {
       // check for the formatted value for this property
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {

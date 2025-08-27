@@ -83,13 +83,20 @@ export default {
    * Convenience method for all GET API calls
    * @param strign path: The relative API path
    * @param object params: Query URI parameters
+   * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response
    */
-  get: async function(path, params) {
-    return await this.fetch(
+  get: async function(path, params, return_response = false) {
+    const response = await this.fetch(
       path,
       params,
       { headers: { "X-No-Activity": true } },
+    );
+
+    return (
+      return_response ?
+      response :
+      await response.json()
     );
   },
 
@@ -117,8 +124,8 @@ export default {
    * @param object data: The data to post
    * @return Response
    */
-  post: async function(path, data) {
-    return await this.fetch(
+  post: async function(path, data, ) {
+    const response = await this.fetch(
       path,
       null,
       {
@@ -127,6 +134,8 @@ export default {
         headers: { "Content-type": "application/json" },
       }
     );
+
+    return await response.text();
   },
 
   /**
@@ -140,6 +149,35 @@ export default {
       null,
       { method: "DELETE" }
     );
+  },
+
+  /**
+   * Convenience method for getting files from the API
+   * @param strign path: The relative API path
+   * @param object params: Query URI parameters
+   * @param boolean open: Whether to open the file in a new browser tab
+   * @return Response
+   */
+  file: async function(path, mime_type, params = {}, open = false) {
+    params.download = true;
+    const response = await this.fetch(
+      path,
+      params,
+      { headers: { "X-No-Activity": true, "Accept": mime_type } },
+    );
+
+    if (open) {
+      const blob = await response.blob();
+
+      // create a temporary link element and click it so the file is downloaded by the browser
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = response.headers.get('content-disposition').match(/filename=(.*);/)[1];
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    return response;
   },
 
   /**

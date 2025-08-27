@@ -99,13 +99,12 @@ export class CN_base_add extends CN_base_record {
       const parent_model = model.get_parent_model();
 
       // post the new record
-      const response = await CN_api.post(model.get_base_path("api"), record);
+      const new_id = await CN_api.post(model.get_base_path("api"), record);
 
       if (parent_model) {
         // go back to the parent
         await CN_session.navigate_to(parent_model.get_view_url());
       } else {
-        const new_id = await response.text();
         await CN_session.navigate_to(model.allow_view() ? model.get_view_url(new_id) : model.get_list_url());
       }
     } catch (error) {

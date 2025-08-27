@@ -24,7 +24,7 @@ export class CN_equipment_loan_model extends CN_base_model {
           type: "typeahead",
           typeahead: {
             get_list: async (value) => {
-              const response = await CN_api.get("participant", {
+              return await CN_api.get("participant", {
                 select: {
                   column: [{
                     table: "participant",
@@ -46,7 +46,6 @@ export class CN_equipment_loan_model extends CN_base_model {
                   order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
                 },
               });
-              return (await response.json());
             },
           },
           is_constant: (model) => "view" == model.get_action_name(),
@@ -56,7 +55,7 @@ export class CN_equipment_loan_model extends CN_base_model {
           type: "typeahead",
           typeahead: {
             get_list: async (value) => {
-              const response = await CN_api.get("equipment", {
+              return await CN_api.get("equipment", {
                 select: {
                   column: [{
                     table: "equipment",
@@ -78,7 +77,6 @@ export class CN_equipment_loan_model extends CN_base_model {
                   order: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )'
                 },
               });
-              return (await response.json());
             },
             table: "equipment",
             select: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )',

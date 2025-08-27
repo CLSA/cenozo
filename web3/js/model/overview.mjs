@@ -41,8 +41,7 @@ export class CN_overview_view extends CN_base_view {
    */
   async on_load() {
     // we don't need states since all data will be static
-    const response = await CN_api.get(this.get_on_load_path());
-    this.#record = await response.json();
+    this.#record = await CN_api.get(this.get_on_load_path());
   }
 
   /**

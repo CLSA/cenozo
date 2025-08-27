@@ -91,8 +91,7 @@ export default {
    * Reads the user's session data from the server
    */
   update_data: async function() {
-    const response = await CN_api.get("self/0");
-    this.data = await response.json();
+    this.data = await CN_api.get("self/0");
 
     // convert use_12hour_clock to am_pm
     this.data.user.am_pm = this.data.user.use_12hour_clock;
@@ -137,7 +136,7 @@ export default {
    * Updates the system message list
    */
   update_system_messages: async function() {
-    const response = await CN_api.get(
+    this.system_message_list = await CN_api.get(
       "self/0/system_message",
       {
         no_activity: 1,
@@ -145,7 +144,6 @@ export default {
         modifier: { order: { unread: true, id: false } },
       },
     );
-    this.system_message_list = await response.json();
   },
 
   /**

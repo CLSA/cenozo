@@ -56,11 +56,10 @@ export class CN_trace_add extends CN_base_add {
     if (trace_type) trace_type.disabled = true;
 
     // get the participant's current trace type
-    const response = await CN_api.get(this.get_model().get_base_path("api"), {
+    const trace_list = await CN_api.get(this.get_model().get_base_path("api"), {
       select: { column: "trace_type_id" },
       modifier: { order: { "trace.datetime": true } } },
     );
-    const trace_list = await response.json();
 
     // disable that trace type from the available enum list to prevent duplicates
     if (0 < trace_list.length) {

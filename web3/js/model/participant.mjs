@@ -262,17 +262,16 @@ export class CN_participant_scripts extends CN_base_action {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      const response = await CN_api.get(`participant/${this.get_model().get_identifier()}`, {
-        select: { column: "uid" },
-      });
-      return (await response.json()).uid;
+      return (await CN_api.get(
+        `participant/${this.get_model().get_identifier()}`,
+        { select: { column: "uid" },
+      })).uid;
     }
 
     if ("header" == type) {
-      const response = await CN_api.get(`participant/${this.get_model().get_identifier()}`, {
+      const data = await CN_api.get(`participant/${this.get_model().get_identifier()}`, {
         select: { column: ["uid", "first_name", "last_name"] },
       });
-      const data = await response.json();
       return `Utility scripts for ${data.first_name} ${data.last_name} (${data.uid})`;
     }
 
@@ -293,7 +292,7 @@ export class CN_participant_scripts extends CN_base_action {
     await super.on_load();
 
     // get the script list for this application
-    const response = await CN_api.get(`application/${CN_session.data.application.id}/script`, {
+    this.#script_list = await CN_api.get(`application/${CN_session.data.application.id}/script`, {
       select: { column: ["id", "name", "url"] },
       modifier: {
         where: {
@@ -304,7 +303,6 @@ export class CN_participant_scripts extends CN_base_action {
         order: "name",
       },
     });
-    this.#script_list = await response.json();
 
     // load the participant's status for all utility scripts in parallel
     await Promise.all(
@@ -313,10 +311,9 @@ export class CN_participant_scripts extends CN_base_action {
           script.token = null;
           script.end_datetime = null;
           try {
-            const response = await CN_api.get(
+            const data = await CN_api.get(
               `script/${script.id}/pine_response/${this.get_model().get_identifier()}`
             );
-            let data = await response.json();
             script.token = data.token;
             script.end_datetime = data.end_datetime;
           } catch (error) {

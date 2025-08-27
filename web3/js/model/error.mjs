@@ -38,7 +38,11 @@ export class CN_error_model extends CN_base_object {
    */
   render() {
     // report the error to the console
-    console.error(this.error);
+    let message = this.error;
+    if (this.error.fileName) {
+      message += ` (at ${this.error.fileName}:${this.error.lineNumber}:${this.error.columnNumber}`;
+    }
+    console.error(message);
 
     const card_el = CN_element.create_card();
     const header_el = card_el.querySelector(".card-header");
