@@ -371,7 +371,7 @@ export class CN_base_record extends CN_base_action {
       <div class="accordion-item px-0">
         <div class="accordion-header">
           <button
-            class="accordion-button collapsed fw-bold py-2"
+            class="accordion-button ${group.open ? "" : "collapsed"} fw-bold py-2"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#${group_id}"
@@ -380,8 +380,7 @@ export class CN_base_record extends CN_base_action {
           >${group.title}</button>
         </div>
         <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
-          <div class="accordion-body">
-          </div>
+          <div class="accordion-body"></div>
         </div>
       </div>
     `);
