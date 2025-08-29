@@ -43,6 +43,15 @@ export default {
   },
 
   /**
+   * Returns the name.action of the root module (or null if there is no root module)
+   * @return string
+   */
+  get_root_action_name: function() {
+    const model = 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
+    return model ? `${model.get_name()}.${model.get_action_name()}` : null;
+  },
+
+  /**
    * Returns the name.action of the leaf module (or null if there is no leaf module)
    * @return string
    */
@@ -50,11 +59,6 @@ export default {
     const model = this.get_leaf_model();
     return model ? `${model.get_name()}.${model.get_action_name()}` : null;
   },
-
-  /**
-   * Clears out the background and shows the loading background
-   */
-
 
   /**
    * Reloads the page at a particular path
@@ -112,16 +116,20 @@ export default {
 
       // a module is "root" if it's found in the list or utility menus
       params.root = false;
-      for (const m in this.data.menu.lists) {
-        if (this.data.menu.lists[m] === module_name) {
-          params.root = true;
-          break;
+      if (null != this.data.menu.lists) {
+        for (const m in this.data.menu.lists) {
+          if (this.data.menu.lists[m] === module_name) {
+            params.root = true;
+            break;
+          }
         }
-      }
-      if (!params.root) for (const u in this.data.menu.utilities) {
-        if (this.data.menu.utilities[u].subject === module_name) {
-          params.root = true;
-          break;
+        if (!params.root && null != this.data.menu.utilities) {
+          for (const u in this.data.menu.utilities) {
+            if (this.data.menu.utilities[u].subject === module_name) {
+              params.root = true;
+              break;
+            }
+          }
         }
       }
 
@@ -229,6 +237,11 @@ export default {
    * Loads all modules and creates all models based on the current URL
    */
   load: async function() {
+    // un-highlight any selected menu button
+    const menu_el = document.getElementById("main-menu-offcanvas").querySelector("div[name=menu]");
+    const selected_menu_btn_el = menu_el.querySelector("button.fw-bold");
+    if (selected_menu_btn_el) selected_menu_btn_el.classList.remove("fw-bold");
+
     // reset the path model list
     PATH_MODEL_LIST.length = 0;
 
@@ -299,6 +312,17 @@ export default {
       return model;
     });
 
+    // highlight menu item corresponding with the path's first model
+    if (0 < PATH_MODEL_LIST.length) {
+      let menu_btn_el = menu_el.querySelector(`button[name="${this.get_root_action_name()}"]`);
+      if (menu_btn_el) {
+        menu_btn_el.classList.add("fw-bold");
+      } else {
+        menu_btn_el = menu_el.querySelector(`button[name="${PATH_MODEL_LIST[0].get_name()}.list"]`);
+        if (menu_btn_el) menu_btn_el.classList.add("fw-bold");
+      }
+    }
+
     // and finally, if the leaf model's action is view then configure its children
     const leaf_model = this.get_leaf_model();
     if (leaf_model && "view" == leaf_model.get_action_name()) {
@@ -359,8 +383,6 @@ export default {
    * Creates the main UI body
    */
   create_body: function() {
-    const split_lists = 20 <= Object.keys(this.data.menu.lists).length;
-
     document.querySelector("div[name=app_body]").innerHTML = `
       <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
         <div class="container-fluid">
@@ -408,23 +430,7 @@ export default {
               <button name="logout" type="button" class="btn btn-secondary w-100">Logout</button>
             </div>
           </div>
-          <div class="row mt-1 g-2">
-            <div class="col-${split_lists ? 6 : 4}">
-              <div name="lists" class="btn-group-vertical w-100">
-                <button type="button" class="btn btn-primary" disabled>Lists</button>
-              </div>
-            </div>
-            <div class="col-${split_lists ? 3 : 4}">
-              <div name="utilities" class="btn-group-vertical w-100">
-                <button type="button" class="btn btn-primary" disabled>Utilities</button>
-              </div>
-            </div>
-            <div class="col-${split_lists ? 3 : 4}">
-              <div name="reports" class="btn-group-vertical w-100">
-                <button type="button" class="btn btn-primary" disabled>Reports</button>
-              </div>
-            </div>
-          </div>
+          <div name="menu" class="row mt-1 g-2"></div>
         </div>
       </div>
 
@@ -449,20 +455,12 @@ export default {
     if (this.data.application.development_mode) console.info("Development mode");
     this.create_body();
 
+    const split_lists = null != this.data.menu.lists && 20 <= Object.keys(this.data.menu.lists).length;
     const main_menu_header_el = document.getElementById("main-menu-header");
     const main_menu_offcanvas_el = document.getElementById("main-menu-offcanvas");
     const main_menu_offcanvas_bs = new bootstrap.Offcanvas(main_menu_offcanvas_el);
-    const access_el = main_menu_header_el.querySelector("button[name=access]");
-    const clock_el = main_menu_header_el.querySelector("button[name=clock]");
-    const time_el = main_menu_header_el.querySelector("span[name=time]");
-    const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
-    const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
-    const password_btn_el = main_menu_offcanvas_el.querySelector("button[name=password]");
-    const logout_btn_el = main_menu_offcanvas_el.querySelector("button[name=logout]");
-    const lists_el = main_menu_offcanvas_el.querySelector("div[name=lists]");
-    const utilities_el = main_menu_offcanvas_el.querySelector("div[name=utilities]");
-    const reports_el = main_menu_offcanvas_el.querySelector("div[name=reports]");
 
+    const access_el = main_menu_header_el.querySelector("button[name=access]");
     access_el.innerHTML = `${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}`;
     access_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
@@ -470,84 +468,140 @@ export default {
     });
 
     // keep the clock running
+    const time_el = main_menu_header_el.querySelector("span[name=time]");
     const update_clock = () => time_el.innerHTML = this.get_time();
     update_clock();
     setInterval(update_clock, 1000);
 
     // wire up the clock and menu buttons
+    const clock_el = main_menu_header_el.querySelector("button[name=clock]");
     clock_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       CN_element.create_clock_settings_modal().show();
     });
+    const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
     account_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       CN_element.create_account_modal().show();
     });
+    const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
     timezone_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       CN_element.create_clock_settings_modal().show();
     });
+    const password_btn_el = main_menu_offcanvas_el.querySelector("button[name=password]");
     password_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
       CN_element.create_password_modal().show();
     });
+    const logout_btn_el = main_menu_offcanvas_el.querySelector("button[name=logout]");
     logout_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
       await this.logout();
     });
 
-    const lists_total = Object.keys(this.data.menu.lists).length;
+    // determine the column width of each sub-menu
+    const total_menus = (
+      (null == this.data.menu.lists ? 0 : 1) +
+      (null == this.data.menu.utilities ? 0 : 1) +
+      (null == this.data.menu.reports ? 0 : 1)
+    );
+    const col_width = 1 < total_menus ?  12/(total_menus + (split_lists?1:0)) : null;
 
-    if (20 <= lists_total) {
-      lists_el.append(CN_element.create(`
-        <div class="row w-100 g-0">
-          <div name="first-col" class="col btn-group-vertical pe-0"></div>
-          <div name="second-col" class="col btn-group-vertical ps-0"></div>
+    // build the lists sub-menu
+    if (null != this.data.menu.lists) {
+      const sub_menu_el = CN_element.create(`
+        <div name="lists">
+          <div class="btn-group-vertical w-100">
+            <button type="button" class="btn btn-primary" disabled>Lists</button>
+          </div>
         </div>
-      `));
-    }
-
-    let index = 0;
-    for (const title in this.data.menu.lists) {
-      const name = this.data.menu.lists[title];
-
-      const btn_el = CN_element.create(`
-        <button type="button" class="btn btn-outline-primary w-100">${title}</button>
       `);
-      btn_el.addEventListener("click", async () => {
-        main_menu_offcanvas_bs.hide();
-        await this.navigate_to(`${name}/list`);
-      });
+      if (null != col_width) sub_menu_el.classList.add(`col-${split_lists ? 2*col_width : col_width}`);
+      main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
 
-      if (20 <= lists_total) {
-        if (2*index < lists_total) {
-          lists_el.querySelector("[name=first-col]").append(btn_el);
-        } else {
-          lists_el.querySelector("[name=second-col]").append(btn_el);
-        }
-      } else {
-        lists_el.append(btn_el);
+      const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
+      if (split_lists) {
+        btn_group_el.append(CN_element.create(`
+          <div class="row w-100 g-0">
+            <div name="a" class="col btn-group-vertical pe-0"></div>
+            <div name="b" class="col btn-group-vertical ps-0"></div>
+          </div>
+        `));
       }
 
-      index++;
+      const lists_total = Object.keys(this.data.menu.lists).length;
+      let index = 0;
+      for (const title in this.data.menu.lists) {
+        const name = this.data.menu.lists[title];
+        const btn_el = CN_element.create(`
+          <button name="${name}.list" type="button" class="btn btn-outline-primary">${title}</button>
+        `);
+        btn_el.addEventListener("click", async () => {
+          main_menu_offcanvas_bs.hide();
+          await this.navigate_to(`${name}/list`);
+        });
+
+        // split lists need to distribute menu items across two button groups
+        const parent_el = (
+          split_lists ?
+          btn_group_el.querySelector(`[name=${2*index < lists_total ? "a" : "b"}]`) :
+          btn_group_el
+        );
+        parent_el.append(btn_el);
+
+        index++;
+      }
     }
 
-    for (const title in this.data.menu.utilities) {
-      const utility = this.data.menu.utilities[title];
-      const btn_el = CN_element.create(`
-        <button type="button" class="btn btn-outline-primary">${title}</button>
+    // build the utilities sub-menu
+    if (null != this.data.menu.utilities) {
+      const sub_menu_el = CN_element.create(`
+        <div name="utilities">
+          <div class="btn-group-vertical w-100">
+            <button type="button" class="btn btn-primary" disabled>Utilities</button>
+          </div>
+        </div>
       `);
-      btn_el.addEventListener("click", async () => {
-        main_menu_offcanvas_bs.hide();
-        await this.navigate_to(`${utility.subject}/${utility.action}`);
-      });
-      utilities_el.append(btn_el);
+      if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
+      main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
+
+      const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
+      for (const title in this.data.menu.utilities) {
+        const utility = this.data.menu.utilities[title];
+        const btn_el = CN_element.create(`
+          <button
+            name="${utility.subject}.${utility.action}"
+            type="button"
+            class="btn btn-outline-primary"
+          >${title}</button>
+        `);
+        btn_el.addEventListener("click", async () => {
+          main_menu_offcanvas_bs.hide();
+          await this.navigate_to(`${utility.subject}/${utility.action}`);
+        });
+        btn_group_el.append(btn_el);
+      }
     }
 
-    for (const title in this.data.menu.reports) {
-      reports_el.append(CN_element.create(`
-        <button type="button" class="btn btn-outline-primary">${title}</button>
-      `));
+    // build the reports sub-menu
+    if (null != this.data.menu.reports) {
+      const sub_menu_el = CN_element.create(`
+        <div name="reports">
+          <div class="btn-group-vertical w-100">
+            <button type="button" class="btn btn-primary" disabled>Reports</button>
+          </div>
+        </div>
+      `);
+      if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
+      main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
+
+      const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
+      for (const title in this.data.menu.reports) {
+        btn_group_el.append(CN_element.create(`
+          <button type="button" class="btn btn-outline-primary">${title}</button>
+        `));
+      }
     }
 
     try {

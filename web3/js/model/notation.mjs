@@ -14,9 +14,9 @@ export class CN_notation_model extends CN_base_model {
         description: { title: "Documentation", align: "left" },
       },
       properties: {
-        subject: { title: "Subject", is_constant: () => true },  
-        type: { title: "Type", is_constant: () => true },  
-        description: { title: "Documentation", type: "text" },  
+        subject: { title: "Subject", is_constant: () => true },
+        type: { title: "Type", is_constant: () => true },
+        description: { title: "Documentation", type: "text" },
       },
     });
   }

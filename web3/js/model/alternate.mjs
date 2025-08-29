@@ -1,9 +1,9 @@
 import CN_api from "../api.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_person_view, CN_base_person_history, CN_base_person_notes } from "../base_person_model.mjs"
+import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
+  from "../base_person_model.mjs"
 
-export class CN_alternate_model extends CN_base_model {
+export class CN_alternate_model extends CN_base_person_model {
   constructor() {
     super({
       wording: {

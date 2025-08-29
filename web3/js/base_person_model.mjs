@@ -4,32 +4,43 @@ import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_base_view } from "./base_view.mjs"
+
+export class CN_base_person_model extends CN_base_model {
+  get_history_url() {
+    return [this.get_base_path("url"), "history", this.get_identifier()].join("/");
+  }
+  get_notes_url() {
+    return [this.get_base_path("url"), "notes", this.get_identifier()].join("/");
+  }
+}
 
 export class CN_base_person_view extends CN_base_view {
   /**
    * Add operation to the footer element
    */
   create_footer_element() {
-    const model = this.get_model();
     const footer_el = super.create_footer_element();
 
     // add the notes action
     const notes_btn_el = CN_element.create(
       '<button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>'
     );
-    notes_btn_el.addEventListener("click", async () => {
-      CN_session.navigate_to([model.get_base_path("url"), "notes", model.get_identifier()].join("/"));
-    });
+    notes_btn_el.addEventListener(
+      "click",
+      async () => CN_session.navigate_to(this.get_model().get_notes_url()),
+    );
     footer_el.append(notes_btn_el);
 
     // add the history action
     const history_btn_el = CN_element.create(
       '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'
     );
-    history_btn_el.addEventListener("click", async () => {
-      CN_session.navigate_to([model.get_base_path("url"), "history", model.get_identifier()].join("/"));
-    });
+    history_btn_el.addEventListener(
+      "click",
+      async () => CN_session.navigate_to(this.get_model().get_history_url()),
+    );
     footer_el.append(history_btn_el);
 
     // add the timezone action
@@ -38,7 +49,7 @@ export class CN_base_person_view extends CN_base_view {
     );
     timezone_btn_el.addEventListener("click", async () => {
       const timezone = {};
-      timezone[`${this.get_model().get_name()}_id`] = model.get_identifier();
+      timezone[`${this.get_model().get_name()}_id`] = this.get_model().get_identifier();
       await CN_session.set_timezone(timezone, CN_session.data.user.am_pm);
     });
     footer_el.append(timezone_btn_el);
@@ -403,7 +414,7 @@ export class CN_base_person_history extends CN_base_action {
    * Extend parent method
    */
   async on_navigate_to_parent() {
-    await CN_session.navigate_to(`${this.get_model().get_name()}/view/${this.get_model().get_identifier()}`);
+    await CN_session.navigate_to(this.get_model().get_view_url());
   }
 
   /**
@@ -549,9 +560,7 @@ export class CN_base_person_history extends CN_base_action {
     const notes_btn_el = el.querySelector("button[name=notes]");
     notes_btn_el.addEventListener(
       "click",
-      async () => await CN_session.navigate_to(
-        `${this.get_model().get_name()}/notes/${this.get_model().get_identifier()}`
-      ),
+      async () => await CN_session.navigate_to(this.get_model().get_notes_url()),
     );
   }
 
@@ -625,7 +634,7 @@ export class CN_base_person_notes extends CN_base_action {
    * Extend parent method
    */
   async on_navigate_to_parent() {
-    await CN_session.navigate_to(`${this.get_model().get_name()}/view/${this.get_model().get_identifier()}`);
+    await CN_session.navigate_to(this.get_model().get_view_url());
   }
 
   /**
@@ -843,9 +852,7 @@ export class CN_base_person_notes extends CN_base_action {
     const history_btn_el = el.querySelector("button[name=history]");
     history_btn_el.addEventListener(
       "click",
-      async () => await CN_session.navigate_to(
-        `${this.get_model().get_name()}/history/${this.get_model().get_identifier()}`
-      ),
+      async () => await CN_session.navigate_to(this.get_model().get_history_url()),
     );
   }
 

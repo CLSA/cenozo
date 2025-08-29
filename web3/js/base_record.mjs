@@ -44,6 +44,9 @@ export class CN_base_record extends CN_base_action {
         if (!this.#property_groups[group_name].hasOwnProperty("title")) {
           this.#property_groups[group_name].title = null;
         }
+        if (!this.#property_groups[group_name].hasOwnProperty("open")) {
+          this.#property_groups[group_name].open = false;
+        }
       } else {
         // put ungrouped properties in the base group
         const group_name = "$main";
@@ -372,11 +375,11 @@ export class CN_base_record extends CN_base_action {
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#${group_id}"
-            aria-expanded="false"
+            aria-expanded="${group.open ? "true" : "false"}"
             aria-controls="${group_id}"
           >${group.title}</button>
         </div>
-        <div id="${group_id}" class="accordion-collapse collapse">
+        <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
           <div class="accordion-body">
           </div>
         </div>

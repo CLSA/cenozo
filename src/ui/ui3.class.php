@@ -611,14 +611,6 @@ class ui3 extends \cenozo\base_object
         $menu['reports']['Custom Reports'] = 'custom_report';
     }
 
-    // sort all lists by their key or set them to NULL if they are empty
-    if( 0 == count( $menu['lists'] ) ) $menu['lists'] = NULL;
-    else ksort( $menu['lists'] );
-    if( 0 == count( $menu['utilities'] ) ) $menu['utilities'] = NULL;
-    else ksort( $menu['utilities'] );
-    if( 0 == count( $menu['reports'] ) ) $menu['reports'] = NULL;
-    else ksort( $menu['reports'] );
-
     return ['module_list' => $module_list, 'menu' => $menu];
   }
 
@@ -632,9 +624,15 @@ class ui3 extends \cenozo\base_object
   {
     $data = static::generate();
 
-    ksort( $data['menu']['lists'] );
-    ksort( $data['menu']['utilities'] );
-    ksort( $data['menu']['reports'] );
+    // sort all lists by their key or set them to NULL if they are empty
+    if( 0 == count( $data['menu']['lists'] ) ) $data['menu']['lists'] = NULL;
+    else ksort( $data['menu']['lists'] );
+    if( 0 == count( $data['menu']['utilities'] ) ) $data['menu']['utilities'] = NULL;
+    else ksort( $data['menu']['utilities'] );
+    if( 0 == count( $data['menu']['reports'] ) ) $data['menu']['reports'] = NULL;
+    else ksort( $data['menu']['reports'] );
+
+    // build the modules by transforming all modules into data arrays
     ksort( $data['module_list'] );
     $modules = [];
     foreach( $data['module_list'] as $module ) $modules[$module->get_subject()] = $module->as_array();

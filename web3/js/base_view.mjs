@@ -104,6 +104,8 @@ export class CN_base_view extends CN_base_record {
     this.for_each_property(prop => {
       // check for the formatted value for this property
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
+        // put the ID in the typeahead list
+        prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
         prop.state.clear();
         prop.state.set(record[`formatted_${prop.name}`]);
         prop.state.commit();

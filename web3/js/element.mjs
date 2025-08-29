@@ -247,7 +247,7 @@ export default {
 
             // generate the list if the get_list() function exists
             if (CN_common.is_function(typeahead.get_list)) {
-              typeahead.list = await typeahead.get_list(control_el.value);
+              typeahead.list = await typeahead.get_list(control_el.value, el);
             }
 
             // convert string values to objects with key and value pairs

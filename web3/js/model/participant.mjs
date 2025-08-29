@@ -4,10 +4,10 @@ import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_action } from "../base_action.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_person_view, CN_base_person_history, CN_base_person_notes } from "../base_person_model.mjs"
+import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
+  from "../base_person_model.mjs"
 
-export class CN_participant_model extends CN_base_model {
+export class CN_participant_model extends CN_base_person_model {
   constructor() {
     const columns = {
       uid: { title: "UID" },
@@ -198,6 +198,9 @@ export class CN_participant_model extends CN_base_model {
       super.get_base_path(type)
     );
   }
+  get_scripts_url() {
+    return [this.get_base_path("url"), "scripts", this.get_identifier()].join("/");
+  }
 }
 
 export class CN_participant_view extends CN_base_person_view {
@@ -215,7 +218,6 @@ export class CN_participant_view extends CN_base_person_view {
    * Add operation to the footer element
    */
   create_footer_element() {
-    const model = this.get_model();
     const footer_el = super.create_footer_element();
 
     // add the scripts action
@@ -225,7 +227,7 @@ export class CN_participant_view extends CN_base_person_view {
         '<button name="scripts" type="button" class="btn btn-light btn-outline-primary">Scripts</button>'
       );
       scripts_btn_el.addEventListener("click", async () => {
-        CN_session.navigate_to([model.get_base_path("url"), "scripts", model.get_identifier()].join("/"));
+        CN_session.navigate_to(this.get_model().get_scripts_url());
       });
       footer_el.append(scripts_btn_el);
     }

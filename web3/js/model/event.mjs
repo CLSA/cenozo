@@ -34,6 +34,7 @@ export class CN_event_model extends CN_base_model {
 
         site_user: {
           title: "Site/User",
+          open: true,
           properties: {
             site: {
               title: "Site",
