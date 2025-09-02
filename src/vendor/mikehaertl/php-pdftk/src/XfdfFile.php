@@ -218,14 +218,11 @@ FDF;
     }
 
     /**
-     * @param string|null $value the value to encode
-     * @return string|null the value correctly encoded for use in a XML document
+     * @param string $value the value to encode
+     * @return string the value correctly encoded for use in a XML document
      */
     protected function xmlEncode($value)
     {
-        if ($value === null) {
-            return null;
-        }
         return defined('ENT_XML1') ?
             htmlspecialchars($value, ENT_XML1, 'UTF-8') :
             htmlspecialchars($value);
