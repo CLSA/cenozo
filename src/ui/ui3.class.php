@@ -592,15 +592,15 @@ class ui3 extends \cenozo\base_object
 
     // build the report menu
     $select = lib::create( 'database\select' );
-    $select->add_column( 'name' );
+    $select->add_column( 'id' );
     $select->add_column( 'title' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'role_has_report_type', 'report_type.id', 'role_has_report_type.report_type_id' );
     $modifier->where( 'role_has_report_type.role_id', '=', $db_role->id );
     foreach( $db_application_type->get_report_type_list( $select, $modifier ) as $report_type )
-      $menu['reports'][$report_type['title']] = $report_type['name'];
+      $menu['reports'][$report_type['title']] = $report_type['id'];
 
-    if( 'administrator' == $db_role->name ) $menu['reports']['Custom Reports'] = 'custom_report';
+    if( 'administrator' == $db_role->name ) $menu['reports']['Custom Reports'] = NULL;
     else
     {
       // only show the custom reports if the role has access to any
@@ -608,7 +608,7 @@ class ui3 extends \cenozo\base_object
       $modifier->join( 'role_has_custom_report', 'custom_report.id', 'role_has_custom_report.custom_report_id' );
       $modifier->where( 'role_has_custom_report.role_id', '=', $db_role->id );
       if( 0 < $custom_report_class_name::count( $modifier ) )
-        $menu['reports']['Custom Reports'] = 'custom_report';
+        $menu['reports']['Custom Reports'] = NULL;
     }
 
     return ['module_list' => $module_list, 'menu' => $menu];

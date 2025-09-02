@@ -114,21 +114,23 @@ export default {
     for(const module_name in modules) {
       const params = modules[module_name];
 
-      // a module is "root" if it's found in the list or utility menus
-      params.root = false;
-      if (null != this.data.menu.lists) {
+      // a module is "root" if it's found in the list, utility menus, is a custom_report or report_type
+      params.root = ["custom_report", "report_type"].includes(module_name);
+
+      if (!params.root && null != this.data.menu.lists) {
         for (const m in this.data.menu.lists) {
           if (this.data.menu.lists[m] === module_name) {
             params.root = true;
             break;
           }
         }
-        if (!params.root && null != this.data.menu.utilities) {
-          for (const u in this.data.menu.utilities) {
-            if (this.data.menu.utilities[u].subject === module_name) {
-              params.root = true;
-              break;
-            }
+      }
+
+      if (!params.root && null != this.data.menu.utilities) {
+        for (const u in this.data.menu.utilities) {
+          if (this.data.menu.utilities[u].subject === module_name) {
+            params.root = true;
+            break;
           }
         }
       }
@@ -598,9 +600,19 @@ export default {
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
       for (const title in this.data.menu.reports) {
-        btn_group_el.append(CN_element.create(`
-          <button type="button" class="btn btn-outline-primary">${title}</button>
-        `));
+        const id = this.data.menu.reports[title];
+        const btn_el = CN_element.create(`
+          <button
+            name="${null == id ? "custom_report.list" : "report_type.view"}"
+            type="button"
+            class="btn btn-outline-primary"
+          >${title}</button>
+        `);
+        btn_el.addEventListener("click", async () => {
+          main_menu_offcanvas_bs.hide();
+          await this.navigate_to(null == id ? "custom_report/list" : `report_type/view/${id}`);
+        });
+        btn_group_el.append(btn_el);
       }
     }
 

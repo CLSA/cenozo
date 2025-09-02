@@ -119,6 +119,12 @@ class base_report_module extends \cenozo\service\site_restricted_module
     $db_user = $session->get_user();
     $subject = $this->get_subject();
 
+    $modifier->join( 'report_type', sprintf( '%s.report_type_id', $subject ), 'report_type.id' );
+    $modifier->join( 'user', sprintf( '%s.user_id', $subject ), 'user.id' );
+    $modifier->join( 'application', sprintf( '%s.application_id', $subject ), 'application.id' );
+    $modifier->join( 'site', sprintf( '%s.site_id', $subject ), 'site.id' );
+    $modifier->join( 'role', sprintf( '%s.role_id', $subject ), 'role.id' );
+
     // restrict by application
     $modifier->where( $subject.'.application_id', '=', $db_application->id );
 
@@ -128,8 +134,7 @@ class base_report_module extends \cenozo\service\site_restricted_module
       $modifier->where( $subject.'.site_id', '=', $db_restrict_site->id );
 
     // restrict by role
-    $modifier->join( 'role', $this->get_subject().'.role_id', 'role.id' );
-    if( 1 == $db_role->tier ) $modifier->where( $this->get_subject().'.user_id', '=', $db_user->id );
+    if( 1 == $db_role->tier ) $modifier->where( 'user.id', '=', $db_user->id );
     $modifier->where( 'role.tier', '<=', $db_role->tier );
   }
 
