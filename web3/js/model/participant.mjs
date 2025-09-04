@@ -71,27 +71,45 @@ export class CN_participant_model extends CN_base_person_model {
             hold: {
               title: "Hold",
               meta: true,
-              action: {
-                title: "Change",
-                onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
+              set_postfix: () => {
+                const btn_el = CN_element.create(
+                  '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
+                );
+                btn_el.addEventListener(
+                  "click",
+                  async () => { CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
+                );
+                return btn_el;
               },
               is_constant: () => true,
             },
             trace: {
               title: "Trace",
               meta: true,
-              action: {
-                title: "Change",
-                onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
+              set_postfix: () => {
+                const btn_el = CN_element.create(
+                  '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
+                );
+                btn_el.addEventListener(
+                  "click",
+                  async () => { CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
+                );
+                return btn_el;
               },
               is_constant: () => true,
             },
             proxy: {
               title: "Proxy",
               meta: true,
-              action: {
-                title: "Change",
-                onclick: async () => { CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
+              set_postfix: () => {
+                const btn_el = CN_element.create(
+                  '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
+                );
+                btn_el.addEventListener(
+                  "click",
+                  async () => { CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
+                );
+                return btn_el;
               },
               is_constant: () => true,
             },

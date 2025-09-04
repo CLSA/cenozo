@@ -77,7 +77,7 @@ export class CN_base_view extends CN_base_record {
     // add any meta columns to the record selection
     let columns = [];
 
-    this.for_each_property(prop => {
+    this.get_all_properties().forEach(prop => {
       if (CN_common.is_object(prop.meta)) {
         columns.push({ ...prop.meta, alias: prop.name });
       } else if (true === prop.meta) {
@@ -101,7 +101,7 @@ export class CN_base_view extends CN_base_record {
 
     // load the record
     const record = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
-    this.for_each_property(prop => {
+    this.get_all_properties().forEach(prop => {
       // check for the formatted value for this property
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
         // put the ID in the typeahead list
@@ -125,7 +125,7 @@ export class CN_base_view extends CN_base_record {
     try {
       // update the server
       let data = {};
-      data[prop_name] = this.get_formatted_property(prop_name);
+      data[prop_name] = await this.get_formatted_property(prop_name);
 
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
@@ -194,7 +194,17 @@ export class CN_base_view extends CN_base_record {
       });
     } else {
       let value = prop.state.get();
-      control_el.value = null === value ? "" : value;
+      if ("base64" == prop.type) {
+        // replace the download button's event listener
+        prop.element.querySelector("button[name=download]").onclick = async () => CN_common.download_file(
+          value.data,
+          await prop.get_filename(this),
+          value.mime_type
+        );
+        prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
+      } else {
+        control_el.value = null === value ? "" : value;
+      }
 
       // update textarea sizes
       if ("text" == prop.type) {

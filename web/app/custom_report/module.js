@@ -33,7 +33,7 @@ cenozoApp.defineModule({
       data: {
         title: "SQL Report",
         type: "base64",
-        mimeType: "text/sql",
+        mimeType: "application/sql",
         getFilename: function ($state, model) {
           return model.viewModel.record.name + ".sql";
         }

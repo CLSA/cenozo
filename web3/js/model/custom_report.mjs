@@ -13,19 +13,14 @@ export class CN_custom_report_model extends CN_base_model {
         description: { title: "Description", type: "text", align: "left" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },  
+        name: { title: "Name", format: "identifier" },
         data: {
           title: "SQL Report",
           type: "base64",
-          /*
-          TODO: need to implement base64-based columns
-          mimeType: "text/sql",
-          getFilename: function ($state, model) {
-            return model.viewModel.record.name + ".sql";
-          }
-          */
-        },  
-        description: { title: "Description", type: "text" },  
+          mime_type: "application/sql",
+          get_filename: async (action) => action.get_property("name").state.get() + ".sql",
+        },
+        description: { title: "Description", type: "text" },
       },
     });
   }

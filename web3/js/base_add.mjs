@@ -49,7 +49,7 @@ export class CN_base_add extends CN_base_record {
   async on_load() {
     await super.on_load();
 
-    this.for_each_property(prop => {
+    this.get_all_properties().forEach(prop => {
       // add an extra rank to make room for adding a new record
       if ("rank" == prop.type) {
         const extra_rank = prop.enum.values.length + 1;
@@ -71,9 +71,13 @@ export class CN_base_add extends CN_base_record {
    */
   async validate() {
     let valid = true;
-    this.for_each_property(prop => {
-      // validate all visible properties
-      if (!prop.is_hidden(this.get_model()) && !prop.element.validate()) valid = false;
+
+    // validate all visible properties
+    this.get_all_properties().some(prop => {
+      if (!prop.is_hidden(this.get_model()) && !prop.element.validate()) {
+        valid = false;
+        return true;
+      }
     });
 
     return valid;
@@ -86,13 +90,14 @@ export class CN_base_add extends CN_base_record {
     const valid = await this.validate();
     if (!valid) return;
 
+    // build the record
     let record = {};
-    this.for_each_property(prop => {
-      // set record value
-      if (!prop.is_hidden(this.get_model())) {
-        record[prop.name] = this.get_formatted_property(prop.name);
-      }
-    });
+    const set_property = async (prop) => record[prop.name] = await this.get_formatted_property(prop.name);
+    await Promise.all(
+      this.get_all_properties()
+        .filter(prop => !prop.is_hidden(this.get_model()))
+        .map(prop => set_property(prop))
+    );
 
     try {
       const model = this.get_model();
@@ -158,7 +163,7 @@ export class CN_base_add extends CN_base_record {
           option_el.removeAttribute("selected");
         }
       });
-    } else {
+    } else if ("base64" != prop.type) {
       let default_value = prop.get_default(this.get_model());
       if (undefined !== default_value) control_el.value = default_value;
       if ("typeahead" == prop.type) control_el.last_selected_value = control_el.value;

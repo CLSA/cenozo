@@ -72,7 +72,6 @@ export class CN_base_record extends CN_base_action {
 
     // setup properties in each group
     const module = this.get_model().get_module();
-    const parent_model = this.get_model().get_parent_model();
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
         const module_prop = module.get_property(prop_name);
@@ -100,12 +99,8 @@ export class CN_base_record extends CN_base_action {
             prop.typeahead.on_select = item => {
               prop.state.set(item.value);
               prop.state.commit();
-              if (CN_common.is_function(prop.element.params.onchange)) {
-                prop.element.params.onchange(
-                  document.getElementById(prop.id),
-                  true,
-                  prop.state.get()
-                );
+              if (CN_common.is_function(prop.element.params.on_change)) {
+                prop.element.params.on_change(document.getElementById(prop.id), true, this);
               }
             };
           }
@@ -161,12 +156,14 @@ export class CN_base_record extends CN_base_action {
    * Runs a callback function on all properties
    * @param function callback: A function that is passed the property as the first argument
    */
-  for_each_property(callback) {
+  get_all_properties() {
+    const properties = [];
     for (var group_name in this.#property_groups) {
       for (var prop_name in this.#property_groups[group_name].properties) {
-        callback(this.#property_groups[group_name].properties[prop_name]);
+        properties.push(this.#property_groups[group_name].properties[prop_name]);
       }
     }
+    return properties;
   }
 
   /**
@@ -249,10 +246,13 @@ export class CN_base_record extends CN_base_action {
    * @param string prop_name: The name of the property
    * @return (dynamic)
    */
-  get_formatted_property(prop_name) {
+  async get_formatted_property(prop_name) {
     const prop = this.get_property(prop_name);
     let value = prop.state.get();
-    if ("boolean" == prop.type) {
+    if ("base64" == prop.type) {
+      // convert from blob to base64 and remove metadata
+      value = (await CN_common.convert_blob_to_base64(value[0])).replace(/.*;base64,/, "");
+    } else if ("boolean" == prop.type) {
       value = "" == value ? null : Number(value);
     } else if ("date" == prop.type) {
       if ("" == value) value = null;
@@ -419,8 +419,8 @@ export class CN_base_record extends CN_base_action {
         params.max_length = module_prop.max_length;
       }
 
-      if (!CN_common.is_function(params.onchange)) {
-        params.onchange = async (control_el, success) => {
+      if (!CN_common.is_function(params.on_change)) {
+        params.on_change = async (control_el, success) => {
           if (success) {
             await this.on_set_property(prop.name);
           } else if ("view" == this.get_type()) {
@@ -429,8 +429,8 @@ export class CN_base_record extends CN_base_action {
         };
       }
 
+      params.action = this;
       prop.element = CN_element.create_form_element(prop.type, params);
-      prop.element.parent_model = this;
     }
 
     // wait for each control element to be added to the DOM then bind it to the state

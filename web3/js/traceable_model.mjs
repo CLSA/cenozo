@@ -108,7 +108,7 @@ export class CN_traceable_view extends CN_base_view {
 
     let trace_reason = await CN_element.check_for_trace(
       this.get_model().get_name(),
-      this.get_formatted_property(prop_name) ? "added" : "removed",
+      await this.get_formatted_property(prop_name) ? "added" : "removed",
       parent_model.get_identifier()
     );
 

@@ -1,5 +1,3 @@
-// TIMEZONES
-
 /**
  * An array of all timezones
  */

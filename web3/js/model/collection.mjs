@@ -32,13 +32,13 @@ export class CN_collection_model extends CN_base_model {
           type: "boolean",
           is_hidden: (model) => "add" == model.get_action_name(),
           help: "If locked then only users in the access list will be able to make changes to the collection.",
-          onchange: async (control_el, success, model) => {
+          on_change: async (control_el, success, action) => {
             if (success) {
-              await model.on_set_property("locked");
-              // re-run the model so the changed lock property is applied in the view and all child lists
-              model.run(true);
+              await action.on_set_property("locked");
+              // re-run the action so the changed lock property is applied in the view and all child lists
+              action.run(true);
             } else {
-              model.get_property("locked").state.undo();
+              action.get_property("locked").state.undo();
             }
           },
         },

@@ -726,7 +726,7 @@ export class CN_base_person_notes extends CN_base_action {
       const input_el = CN_element.create_form_element("text", {
         id: `note-${note.id}`,
         required: true,
-        onchange: async (control_el, success) => {
+        on_change: async (control_el, success) => {
           if (success) {
             await CN_api.patch(note_path, { note: control_el.value });
             control_el.backup_value = control_el.value;

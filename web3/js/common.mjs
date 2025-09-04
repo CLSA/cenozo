@@ -1,7 +1,5 @@
 import CN_session from "./session.mjs"
 
-// COMMON
-
 /**
  * A object containing a number of helpful functions
  */
@@ -16,7 +14,9 @@ export default {
     if ("class" == type) return this.is_type(x, "function") && x.toString().match(/^class/);
     if ("object" == type) return "object" === typeof x && null != x;
     if ("array" == type) return Array.isArray(x);
+    if ("blob" == type) return this.is_type(x, "object") && x instanceof Blob;
     if ("element" == type) return this.is_type(x, "object") && (x instanceof Element || x instanceof HTMLDocument);
+    if ("filelist" == type) return this.is_type(x, "object") && x instanceof FileList;
     if ("function" == type) return "function" === typeof x;
     if ("string" == type) return "string" === typeof x;
     if ("float" == type) return !isNaN(parseFloat(x)) && !isNaN(x-0);
@@ -46,11 +46,25 @@ export default {
   is_array: function (x) { return this.is_type(x, "array"); },
 
   /**
+   * Returns whether a variable is a blob
+   * @param (dynamic) x: the variable to test
+   * @return boolean
+   */
+  is_blob: function(x) { return this.is_type(x, "blob"); },
+
+  /**
    * Returns whether a variable is an element
    * @param (dynamic) x: the variable to test
    * @return boolean
    */
   is_element: function(x) { return this.is_type(x, "element"); },
+
+  /**
+   * Returns whether a variable is a FileList
+   * @param (dynamic) x: the variable to test
+   * @return boolean
+   */
+  is_filelist: function(x) { return this.is_type(x, "filelist"); },
 
   /**
    * Returns whether a variable is a function
@@ -208,6 +222,46 @@ export default {
   },
 
   /**
+   * Returns a string representation of a file-size
+   * @param boolean reverse: If true then convers a filesize string to an integer (in bytes)
+   * @return string
+   */
+  format_filesize: function(input, reverse=false) {
+    if (reverse && "empty" == input) return 0;
+    if (!reverse && !input) return "empty";
+
+    let output = input;
+    if (reverse) {
+      if (this.is_string(output)) {
+        var parts = output.split(" ");
+        if (2 == parts.length) {
+          output = parts[0];
+          var unit = parts[1];
+          if ("KB" == unit) output *= 1024;
+          if ("MB" == unit) output *= 1048576;
+          if ("GB" == unit) output *= 1073741824;
+          if ("TB" == unit) output *= 1099511627776;
+          if ("PB" == unit) output *= 1125899906842624;
+          if ("EB" == unit) output *= 1152921504606846976;
+        }
+      }
+    } else {
+      if (this.is_string(output)) output = parseInt(output);
+      if (this.is_float(output)) {
+        var unit_list = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"];
+        var unit_index = 0;
+        while (output >= 1024) {
+          output /= 1024;
+          unit_index++;
+        }
+        output = Math.round(output * 100) / 100 + " " + unit_list[unit_index];
+      }
+    }
+
+    return output;
+  },
+
+  /**
    * Converts the first character of a string to upper case
    * @param string str
    * @return string
@@ -233,7 +287,7 @@ export default {
    * @param integer number
    * @return string
    */
-  ordinal_suffix(number) {
+  ordinal_suffix: function(number) {
     let tens = number % 10, hundreds = number % 100;
 
     return number + (
@@ -244,4 +298,56 @@ export default {
     );
   },
 
+  /**
+   * ADD DOCS
+   */
+  convert_blob_to_base64: async function (blob) {
+    const convert = (blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+    return await convert(blob);
+  },
+
+  /**
+   * Convert base64 data to a blob
+   * Note that the input data may or may not include the content type.  For example,
+   * data:application/octet-stream;base64,<base64 data starts here>
+   */
+  convert_base64_to_blob: function (data, content_type = "", slice_size = 512) {
+    // see if the content_type is in the data
+    const match = data.match(/^data:[^;]+;[^,]+,(.+)/);
+    if (null != match) {
+      data = match[1];
+      if ("" == content_type) content_type = match[0];
+    }
+
+    const byte_characters = atob(data);
+    const byte_arrays = [];
+
+    for (let offset = 0; offset < byte_characters.length; offset += slice_size) {
+      const slice = byte_characters.slice(offset, offset + slice_size);
+      const byte_numbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) byte_numbers[i] = slice.charCodeAt(i);
+      const byte_array = new Uint8Array(byte_numbers);
+      byte_arrays.push(byte_array);
+    }
+
+    return new Blob(byte_arrays, {type: content_type});
+  },
+
+  download_file: function (file, filename, mime_type) {
+    let blob = null;
+    if (this.is_blob(file)) blob = file;
+    else if (this.is_string(file)) blob = this.convert_base64_to_blob(file);
+    else throw new Error("Tried to download file but first argument is neither a blob or string.");
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob, mime_type);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  },
 }

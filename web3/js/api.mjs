@@ -1,5 +1,3 @@
-// API
-
 import CN_common from "./common.mjs"
 
 /**
@@ -87,17 +85,8 @@ export default {
    * @return Response
    */
   get: async function(path, params, return_response = false) {
-    const response = await this.fetch(
-      path,
-      params,
-      { headers: { "X-No-Activity": true } },
-    );
-
-    return (
-      return_response ?
-      response :
-      await response.json()
-    );
+    const response = await this.fetch(path, params, { headers: { "X-No-Activity": true } });
+    return return_response ? response : await response.json();
   },
 
   /**
@@ -114,7 +103,7 @@ export default {
         method: "PATCH",
         body: JSON.stringify(data),
         headers: { "Content-type": "application/json" },
-      }
+      },
     );
   },
 
@@ -124,7 +113,7 @@ export default {
    * @param object data: The data to post
    * @return Response
    */
-  post: async function(path, data, ) {
+  post: async function(path, data) {
     const response = await this.fetch(
       path,
       null,
@@ -144,40 +133,24 @@ export default {
    * @return Response
    */
   delete: async function(path) {
-    return await this.fetch(
-      path,
-      null,
-      { method: "DELETE" }
-    );
+    return await this.fetch(path, null, { method: "DELETE" });
   },
 
   /**
    * Convenience method for getting files from the API
    * @param strign path: The relative API path
+   * @param string mime_type: The expected mime type
    * @param object params: Query URI parameters
-   * @param boolean open: Whether to open the file in a new browser tab
+   * @param boolean return_response: Whether to return the fetch response instead of the response's blob data
    * @return Response
    */
-  file: async function(path, mime_type, params = {}, open = false) {
+  file: async function(path, mime_type = null, params = {}, return_response = false) {
+    const headers = { "X-No-Activity": true };
+    if (mime_type) headers.Accept = mime_type;
     params.download = true;
-    const response = await this.fetch(
-      path,
-      params,
-      { headers: { "X-No-Activity": true, "Accept": mime_type } },
-    );
+    const response = await this.fetch(path, params, { headers: headers });
 
-    if (open) {
-      const blob = await response.blob();
-
-      // create a temporary link element and click it so the file is downloaded by the browser
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = response.headers.get('content-disposition').match(/filename=(.*);/)[1];
-      link.click();
-      URL.revokeObjectURL(link.href);
-    }
-
-    return response;
+    return return_response ? response : await response.blob();
   },
 
   /**

@@ -22,7 +22,7 @@ class patch extends \cenozo\service\patch
 
     $file = $this->get_argument( 'file', NULL );
     if(
-      false !== strpos( $util_class_name::get_header( 'Content-Type' ), 'text/sql' ) &&
+      false !== strpos( $util_class_name::get_header( 'Content-Type' ), 'application/sql' ) &&
       !is_null( $file )
     ) {
       if( 'data' != $file ) throw lib::create( 'exception\argument', 'file', $file, __METHOD__ );

@@ -1,5 +1,3 @@
-// SESSION
-
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"

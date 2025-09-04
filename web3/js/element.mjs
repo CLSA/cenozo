@@ -1,5 +1,3 @@
-// ELEMENT
-
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_session from "./session.mjs"
@@ -108,11 +106,35 @@ export default {
    * @return Element
    */
   create_form_element: function(type, params) {
-    const el = this.create('<div class="col-sm-9"></div>');
+    const el = this.create(`
+      <div class="col-sm-9 d-flex">
+        <div name="prefix" class="align-self-start d-flex"></div>
+        <div name="input" class="flex-fill">
+          <div name="control" class="d-flex"></div>
+          <small name="error" class="text-danger"></small>
+        </div>
+        <div name="postfix" class="align-self-start d-flex"></div>
+      </div>
+    `);
     el.params = params;
+    const prefix_div_el = el.querySelector("[name=prefix]");
+    const control_div_el = el.querySelector("[name=control]");
+    const error_div_el = el.querySelector("[name=error]");
+    const postfix_div_el = el.querySelector("[name=postfix]");
 
     let control_el = null;
-    if ("boolean" == type) {
+    if ("base64" == type) {
+      if (el.params.action && "view" == el.params.action.get_type()) {
+        // add a download and filesize elements to the prefix
+        prefix_div_el.classList.add("text-nowrap", "pe-3");
+        prefix_div_el.append(this.create(
+          '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
+        ));
+        prefix_div_el.append(this.create('<span name="filesize" class="col-form-label ps-2"></span>'));
+      }
+      control_el = this.create(`<input type="file" class="form-control"></input>`);
+      if (el.params.mime_type) control_el.accept = el.params.mime_type;
+    } else if ("boolean" == type) {
       control_el = this.create(`
         <select class="form-select">
           <option value="1">Yes</option>
@@ -219,8 +241,8 @@ export default {
             dropdown_bs.hide();
           } else {
             // return to the last committed value if there's a parent model
-            if (el.parent_model && el.params.name) {
-              el.parent_model.get_property(el.params.name).state.undo(true);
+            if (el.params.action && el.params.name) {
+              el.params.action.get_property(el.params.name).state.undo(true);
             }
           }
         });
@@ -288,12 +310,25 @@ export default {
       // determine if there was an error
       let error = null;
 
-      if ([null, ""].includes(control_el.value)) {
+      if ("base64" == type) {
+        let files = Array.from(control_el.files);
+        if (el.params.action) {
+          files = el.params.action.get_property(el.params.name).state.get();
+          files = CN_common.is_filelist(files) ? Array.from(files) : [];
+        }
+
+        if (el.params.required && 0 == files.length) {
+          error = "Can't be empty";
+        } else if (el.params.mime_type && files.some(file => file.type != el.params.mime_type)) {
+          error = `Only "${el.params.mime_type}" files are allowed.`;
+        }
+      } else if ([null, ""].includes(control_el.value)) {
         // the value is empty, so just make sure it isn't required
         if (el.params.required) error = "Can't be empty";
       } else {
         // the value isn't empty, so validate further
-        if (
+        if ("base64" == type) {
+        } else if (
           "email" == type &&
           !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
         ) {
@@ -344,13 +379,12 @@ export default {
       }
 
       // show any errors
-      if (null != error) el.show_error(error, 2000);
+      if (null != error) el.show_error(error, 4000);
 
       return null == error;
     };
 
     // add an onchange function to all properties except typeaheads (they use on_select instead)
-    // TODO: need to change this code block from using .onchange() to addEventListener("change",...)
     if ("typeahead" != type && !CN_common.is_function(control_el.onchange)) {
       control_el.onchange = async () => {
         if (["date", "time"].includes(type)) {
@@ -362,34 +396,17 @@ export default {
         // validate the input
         const valid = el.validate();
 
-        // call the onchange function if it exists
-        if (CN_common.is_function(el.params.onchange)) {
-          await el.params.onchange(control_el, valid, el.parent_model);
+        // call the on_change function if it exists
+        if (CN_common.is_function(el.params.on_change)) {
+          await el.params.on_change(control_el, valid, el.params.action);
         }
       };
     }
 
-    if (CN_common.is_object(el.params.action)) {
-      // add an action button in-line with the control element
-      const action_el = this.create(`
-        <div class="row">
-          <div name="control" class="col-9"></div>
-          <div name="action" class="col-3"></div>
-        </div>
-      `);
-      action_el.querySelector("[name=control]").append(control_el);
-      const action_btn_el = this.create(`
-        <button
-          type="button"
-          class="w-100 btn ${el.params.action.class ? el.params.action.class : 'btn-outline-primary'}"
-        >${el.params.action.title}</button>
-      `);
-      action_btn_el.addEventListener("click", el.params.action.onclick);
-      action_el.querySelector("[name=action]").append(action_btn_el);
-      el.append(action_el);
-    } else {
-      el.append(control_el);
-    }
+    // append the control and add prefix and postfix elements
+    control_div_el.append(control_el);
+    if (CN_common.is_function(el.params.set_prefix)) prefix_div_el.append(el.params.set_prefix());
+    if (CN_common.is_function(el.params.set_postfix)) postfix_div_el.append(el.params.set_postfix());
 
     if (undefined !== el.params.id) control_el.setAttribute("id", el.params.id);
     if (undefined !== el.params.name) control_el.setAttribute("name", el.params.name);
@@ -408,7 +425,6 @@ export default {
 
     el.show_error = async function(error, time = 300) {
       const control_el = document.getElementById(this.params.id);
-      const error_el = this.querySelector('[name="error"]');
 
       Object.assign(control_el.style, {
         "border-color": "red",
@@ -416,7 +432,7 @@ export default {
         margin: "-2px",
       });
 
-      if (error) error_el.innerHTML = error;
+      if (error) error_div_el.innerHTML = error;
 
       if (0 < time) {
         await CN_common.sleep(time);
@@ -426,15 +442,11 @@ export default {
 
     el.hide_error = function() {
       const control_el = document.getElementById(this.params.id);
-      const error_el = this.querySelector('[name="error"]');
-
       control_el.style.removeProperty("border-color");
       control_el.style.removeProperty("border-width");
       control_el.style.removeProperty("margin");
-      error_el.innerHTML = "";
+      error_div_el.innerHTML = "";
     };
-
-    el.append(this.create('<small name="error" class="text-danger"></small>'));
 
     return el;
   },
@@ -669,7 +681,7 @@ export default {
           timezone_control_el.value = timezone_control_el.last_selected_value;
         },
       },
-      onchange: (control_el, valid, model) => {
+      on_change: (control_el, valid) => {
         if (valid) {
           ok_btn_el.removeAttribute("disabled");
         } else {
@@ -744,7 +756,7 @@ export default {
 
     // used below
     const ok_btn_el = modal_el.querySelector("[name=ok]");
-    const onchange_fn = (control_el, valid, model) => {
+    const on_change_fn = (control_el, valid) => {
       if (valid) {
         ok_btn_el.removeAttribute("disabled");
       } else {
@@ -763,7 +775,7 @@ export default {
       let id = `cn_account_modal_${element.id}`;
       const el = this.create('<div class="row mb-3"></div>');
       el.append(this.create_form_label({ for: id, value: element.title }));
-      el.append(this.create_form_element(element.type, { id: id, required: true, onchange: onchange_fn }));
+      el.append(this.create_form_element(element.type, { id: id, required: true, on_change: on_change_fn }));
       form_el.append(el);
       document.getElementById(id).value = CN_session.data.user[element.id];
     });

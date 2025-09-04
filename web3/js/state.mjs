@@ -1,8 +1,16 @@
+import CN_common from "./common.mjs"
+
 import { CN_base_object } from "./base_object.mjs"
 
 export class CN_state extends CN_base_object {
   #stack = [];
   #element;
+  #is_file = false;
+
+  /**
+   * Returns whether the state is bound to a file element
+   */
+  is_file() { return this.#is_file; }
 
   /**
    * Binds an element to the state (two-way binding)
@@ -10,7 +18,11 @@ export class CN_state extends CN_base_object {
    */
   bind_element(el) {
     this.#element = el;
-    this.#element.addEventListener("input", () => this.set(this.#element.value));
+    if ("file" == this.#element.type) this.#is_file = true;
+    this.#element.addEventListener(
+      "input",
+      () => this.set(this.#is_file ? this.#element.files : this.#element.value),
+    );
   }
 
   /**
@@ -27,6 +39,9 @@ export class CN_state extends CN_base_object {
    * @param (dynamic) val: The value to set the state to
    */
   set(val) {
+    // do nothing if the new value is the same as the current one
+    if (this.get() === val) return;
+
     const len = this.#stack.length;
     const new_state = { value: val, committed: false };
 
@@ -39,7 +54,19 @@ export class CN_state extends CN_base_object {
     }
 
     // apply element binding
-    if (this.#element) this.#element.value = this.get();
+    if (this.#element) {
+      if (this.#is_file) {
+        // only set the element's value when the state's value is a FileList
+        const value = this.get();
+        if (CN_common.is_filelist(value)) {
+          this.#element.files = value;
+        } else {
+          this.#element.value = "";
+        }
+      } else {
+        this.#element.value = this.get();
+      }
+    }
   }
 
   /**
@@ -75,6 +102,18 @@ export class CN_state extends CN_base_object {
     }
 
     // apply element binding
-    if (this.#element) this.#element.value = this.get();
+    if (this.#element) {
+      if (this.#is_file) {
+        // only set the element's value when the state's value is a FileList
+        const value = this.get();
+        if (CN_common.is_filelist(value)) {
+          this.#element.files = value;
+        } else {
+          this.#element.value = "";
+        }
+      } else {
+        this.#element.value = this.get();
+      }
+    }
   }
 }
