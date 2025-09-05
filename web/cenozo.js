@@ -1725,12 +1725,9 @@
               title: "Account",
               help: "Edit your account details",
               execute: async function () {
-                if (
-                  await CnModalAccountFactory.instance({
-                    user: CnSession.user,
-                  }).show()
-                )
+                if (await CnModalAccountFactory.instance({ user: CnSession.user }).show()) {
                   CnSession.setUserDetails();
+                }
               },
             },
             {
@@ -2626,9 +2623,7 @@
               },
 
               clickHeading: async function () {
-                var siteId = await CnModalSiteFactory.instance({
-                  id: $scope.model.site.id,
-                }).show();
+                var siteId = await CnModalSiteFactory.instance({ id: $scope.model.site.id }).show();
                 if (siteId) {
                   await $state.go($state.current.name, {
                     identifier: CnSession.siteList
@@ -2970,15 +2965,16 @@
               },
 
               patch: async function (property) {
-                // Keep track of the patch operation in a scope variable so we can make sure to let it finish before
-                // transitioning away from the current state
+                // Keep track of the patch operation in a scope variable so we can make sure to let it finish
+                // before transitioning away from the current state
                 $scope.patchPromise = new Promise(async function (
                   resolve,
                   reject
                 ) {
                   if ($scope.model.getEditEnabled()) {
-                    // This function is sometimes called when it shouldn't with the record having all null or undefined values.
-                    // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
+                    // This function is sometimes called when it shouldn't with the record having all null or
+                    // undefined values.  When this happens we ignore the request since it doesn't seem to have
+                    // been called as a legitimate user request.
                     if (
                       angular.isUndefined(
                         $scope.model.viewModel.record[property]
@@ -3375,10 +3371,12 @@
               patch: async function (property) {
                 if (angular.isUndefined(property)) property = $scope.input.key;
 
-                // This function is sometimes called when the state is no longer viewing the page that called the patch function.
+                // This function is sometimes called when the state is no longer viewing the page that called
+                // the patch function.
                 // If we proceed the onPatch function will not use the correct path resulting in an error.
                 // For example: participant/uid=A123456/address/uid=A123456
-                // When this happens we ignore the request since it doesn't seem to have been called as a legitimate user request
+                // When this happens we ignore the request since it doesn't seem to have been called as a
+                // legitimate user request.
                 if (
                   angular.isUndefined($scope.model.viewModel) ||
                   angular.isUndefined($scope.model.viewModel.record) ||
@@ -4527,11 +4525,7 @@
               this.role[property.snakeToCamel()] = response.data.role[property];
 
             // initialize the http factory so that all future requests match the same credentials
-            CnHttpFactory.initialize(
-              this.site.name,
-              this.user.name,
-              this.role.name
-            );
+            CnHttpFactory.initialize(this.site.id, this.user.id, this.role.id);
 
             // sanitize the timezone
             if (!moment.tz.zone(this.user.timezone)) this.user.timezone = "UTC";
@@ -8655,7 +8649,7 @@
       }
 
       // used top track current login credentials
-      var login = { site: null, user: null, role: null };
+      var login = { site_id: null, user_id: null, role_id: null };
 
       // used to track whether the login mismatch dialog has been shown
       var hasLoginMismatch = false;
@@ -8769,40 +8763,30 @@
                   if (-1 == status) {
                     $rootScope.$broadcast("httpCancel", self.guid, data);
                   } else {
-                    var site = angular.fromJson(getHeader("Site"));
-                    var user = angular.fromJson(getHeader("User"));
-                    var role = angular.fromJson(getHeader("Role"));
+                    const site_id = angular.fromJson(getHeader("X-Site"));
+                    const user_id = angular.fromJson(getHeader("X-User"));
+                    const role_id = angular.fromJson(getHeader("X-Role"));
 
-                    if (null == user) {
+                    if (null == user_id) {
                       // our session has expired, reloading the page will bring us back to the login screen
                       document.getElementById("view").innerHTML = "";
                       $window.location.reload();
                     } else {
                       // assert login
                       if (
-                        (null != login.site && site != login.site) ||
-                        (null != login.user && user != login.user) ||
-                        (null != login.role && role != login.role)
+                        (null != login.site_id && site_id != login.site_id) ||
+                        (null != login.user_id && user_id != login.user_id) ||
+                        (null != login.role_id && role_id != login.role_id)
                       ) {
-                        var err = new Error();
-                        (err.name = "Login Mismatch"),
-                          (err.message =
-                            "The server reports that you are no longer logged in as:\n" +
-                            "\n" +
-                            "        site: " + login.site + "\n" +
-                            "        user: " + login.user + "\n" +
-                            "        role: " + login.role + "\n" +
-                            "\n" +
-                            "The application will now be reloaded after which you will be logged in as:\n" +
-                            "\n" +
-                            "        site: " + site + "\n" +
-                            "        user: " + user + "\n" +
-                            "        role: " + role + "\n" +
-                            "\n" +
-                            "This should only happen as a result of accessing the application from a different " +
-                            "browser window.  If this message persists then please contact support as someone " +
-                            "else may be logged into your account.");
-                        throw err;
+                        let error = new Error();
+                        error.name = "Login Mismatch";
+                        error.message =
+                          "You have been switched to another site or role in a different browser. " +
+                          "The application will now reload, switching you to the correct configuration.\n\n" +
+                          "This should only happen as a result of accessing the application from a different " +
+                          "browser window.  If this message persists then please contact support as someone " +
+                          "else may be logged into your account.";
+                        throw error;
                       }
 
                       $rootScope.$broadcast("httpResponse", self.guid, data);
@@ -8934,10 +8918,10 @@
       };
 
       return {
-        initialize: function (site, user, role) {
-          login.site = site;
-          login.user = user;
-          login.role = role;
+        initialize: function (site_id, user_id, role_id) {
+          login.site_id = site_id;
+          login.user_id = user_id;
+          login.role_id = role_id;
         },
 
         processTransition: function () {

@@ -1,4 +1,6 @@
 import CN_common from "./common.mjs"
+import CN_element from "./element.mjs"
+import CN_session from "./session.mjs"
 
 /**
  * The API class provides a way to communicate with the server's API
@@ -29,6 +31,49 @@ export default {
     }
 
     const response = await fetch(url, options);
+
+    // validate the user's session status
+    const site_id = response.headers.get('X-Site');
+    const user_id = response.headers.get('X-User');
+    const role_id = response.headers.get('X-Role');
+
+    if (null == user_id) {
+      // the session has expired, reload the page to bring the user back to the login screen
+      CN_session.reload();
+      const error = new Error("Session has expired.");
+      error.ignore = true; // we're reloading, so don't show the error
+      throw error;
+    }
+
+    if (
+      null != CN_session.data && (
+        site_id != CN_session.data.site.id ||
+        user_id != CN_session.data.user.id ||
+        role_id != CN_session.data.role.id
+      )
+    ){
+      await CN_element.message_modal({
+        title: "Login Mismatch",
+        size: "lg",
+        type: "danger",
+        message: `
+          <div class="pb-2">
+            You have been switched to another site or role in a different browser.
+            The application will now reload, switching you to the correct configuration.
+          </div>
+          <div>
+            This should only happen as a result of accessing the application from a different browser window.
+            If this message persists then please contact support as someone else may be logged into your account.
+          </div>
+        `,
+      }).block();
+
+      CN_session.reload(true);
+      const error = new Error("Session mismatch.");
+      error.ignore = true; // we're reloading, so don't show the error
+      throw error;
+    }
+
     if (300 <= response.status) {
       const body = await response.text();
 

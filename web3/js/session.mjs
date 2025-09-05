@@ -60,8 +60,9 @@ export default {
 
   /**
    * Reloads the page at a particular path
+   * @param boolean root: Wether to return to the application root
    */
-  reload: function(path = null) {
+  reload: function(root = false) {
     this.update_breadcrumbs(true);
     const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
     menu_btn_group.innerHTML = "";
@@ -72,10 +73,10 @@ export default {
     `));
     document.querySelector("div[name=app_bg]").classList.add("bg-loading");
     document.getElementById("main-content").innerHTML = "";
-    if (null == path) {
-      window.location.reload();
+    if (root) {
+      window.location.assign(ROOT_URL);
     } else {
-      window.location.assign(path);
+      window.location.reload();
     }
   },
 
@@ -85,7 +86,7 @@ export default {
   logout: async function() {
     await CN_element.wait_for(async () => {
       await CN_api.delete("self/0");
-      this.reload(ROOT_URL);
+      this.reload(true);
     });
   },
 

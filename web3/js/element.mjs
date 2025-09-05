@@ -610,7 +610,7 @@ export default {
         document.querySelector("div[name=app_bg]").classList.add("bg-loading");
         document.getElementById("main-content").innerHTML = "";
         await CN_api.patch("self/0", { site: { id: site_id }, role: { id: role_id } });
-        CN_session.reload(ROOT_URL);
+        CN_session.reload(true);
       }
     });
 
@@ -1062,7 +1062,8 @@ export default {
     modal_bs.block = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
-        modal_el.querySelector("[name=close]").addEventListener("click", () => resolve(true));
+        // resolve when closing
+        modal_el.addEventListener("hide.bs.modal", () => resolve(true));
       });
     };
 
@@ -1121,6 +1122,8 @@ export default {
         modal_bs.show();
         modal_el.querySelector("[name=no]").addEventListener("click", () => resolve(false));
         modal_el.querySelector("[name=yes]").addEventListener("click", () => resolve(true));
+        // fail to resolve if closing any other way
+        modal_el.addEventListener("hide.bs.modal", () => resolve(false));
       });
     };
 
@@ -1197,6 +1200,8 @@ export default {
             control_el.onchange();
           }
         });
+        // resolved undefined if closing any other way
+        modal_el.addEventListener("hide.bs.modal", () => resolve(undefined));
       });
     };
 

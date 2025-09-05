@@ -213,12 +213,12 @@ final class bootstrap
       $db = $this->session->get_database();
 
       // set up the identification headers
-      if( !is_null( $this->session->get_site() ) )
-        header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
-      if( !is_null( $this->session->get_user() ) )
-        header( sprintf( 'User: %s', $util_class_name::json_encode( $this->session->get_user()->name ) ) );
-      if( !is_null( $this->session->get_role() ) )
-        header( sprintf( 'Role: %s', $util_class_name::json_encode( $this->session->get_role()->name ) ) );
+      $db_site = $this->session->get_site();
+      if( !is_null( $db_site ) ) header( sprintf( 'X-Site: %d', $db_site->id ) );
+      $db_user = $this->session->get_user();
+      if( !is_null( $db_user ) ) header( sprintf( 'X-User: %d', $db_user->id ) );
+      $db_role = $this->session->get_role();
+      if( !is_null( $db_role ) ) header( sprintf( 'X-Role: %d', $db_role->id ) );
 
       // make sure the software and database versions match
       if( $this->settings['general']['version'] != $this->session->get_application()->version )

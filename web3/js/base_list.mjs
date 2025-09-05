@@ -188,8 +188,6 @@ export class CN_base_list extends CN_base_action {
    */
   async on_load() {
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
-    const limit = response.headers.get('X-Limit');
-    const offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
 
     // update the parent's child list record count
