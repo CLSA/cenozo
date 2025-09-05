@@ -202,6 +202,8 @@ export class CN_base_view extends CN_base_record {
           value.mime_type
         );
         prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
+      } else if ("size" == prop.type) {
+        control_el.value = CN_common.format_filesize(value);
       } else {
         control_el.value = null === value ? "" : value;
       }

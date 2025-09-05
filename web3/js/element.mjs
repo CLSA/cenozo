@@ -101,7 +101,8 @@ export default {
 
   /**
    * Creates a form element
-   * @param string type: One of "boolean", "date", "email", "enum", "integer", "string", "password", "rank", "text", "time", or "typeahead"
+   * @param string type: One of "boolean", "date", "email", "enum", "integer", "size", "string", "password",
+   *                     "rank", "text", "time", or "typeahead"
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
@@ -166,7 +167,7 @@ export default {
           ${null == el.params.max ? "" : "max="+el.params.max}
         ></input>
       `);
-    } else if ("string" == type) {
+    } else if (["size", "string"].includes(type)) {
       control_el = this.create(`<input class="form-control"></input>`);
     } else if ("password" == type) {
       control_el = this.create(`<input type="password" class="form-control"></input>`);

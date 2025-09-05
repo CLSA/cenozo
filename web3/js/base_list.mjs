@@ -337,6 +337,8 @@ export class CN_base_list extends CN_base_action {
           value = "(empty)";
         } else if ("boolean" == column.type) {
           value = value ? "Yes" : "No";
+        } else if ("size" == column.type) {
+          value = CN_common.format_filesize(value);
         } else if (CN_common.is_datetime_type(column.type, "date")) {
           value = CN_common.format_datetime(value, column.type);
         } else if ("rank" == column.type) {
