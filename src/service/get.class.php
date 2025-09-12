@@ -51,7 +51,7 @@ class get extends read
       {
         if( array_key_exists( $column, $data ) )
         {
-          $base64_len = strlen( $data[$column] );
+          $base64_len = is_null( $data[$column] ) ? 0 : strlen( $data[$column] );
           $data[$column] = array(
             'mime_type' => $mime_type,
             // Size of base64 encoded file is (n * (3/4)) - y
