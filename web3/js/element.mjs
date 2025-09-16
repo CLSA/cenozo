@@ -1064,7 +1064,7 @@ export default {
       return new Promise((resolve, reject) => {
         modal_bs.show();
         // resolve when closing
-        modal_el.addEventListener("hide.bs.modal", () => resolve(true));
+        modal_el.addEventListener("hidden.bs.modal", () => resolve(true));
       });
     };
 
@@ -1124,7 +1124,7 @@ export default {
         modal_el.querySelector("[name=no]").addEventListener("click", () => resolve(false));
         modal_el.querySelector("[name=yes]").addEventListener("click", () => resolve(true));
         // fail to resolve if closing any other way
-        modal_el.addEventListener("hide.bs.modal", () => resolve(false));
+        modal_el.addEventListener("hidden.bs.modal", () => resolve(false));
       });
     };
 
@@ -1202,7 +1202,7 @@ export default {
           }
         });
         // resolved undefined if closing any other way
-        modal_el.addEventListener("hide.bs.modal", () => resolve(undefined));
+        modal_el.addEventListener("hidden.bs.modal", () => resolve(undefined));
       });
     };
 
