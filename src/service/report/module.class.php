@@ -93,6 +93,31 @@ class module extends \cenozo\service\base_report_module
         'formatted_elapsed',
         false );
     }
+
+    $db_report = $this->get_resource();
+    if( !is_null( $db_report ) )
+    {
+      // add any requested report restriction
+      $db_report_type = $db_report->get_report_type();
+      $restriction_sel = lib::create( 'database\select' );
+      $restriction_sel->add_column( 'name' );
+      $restriction_sel->add_column( 'restriction_type' );
+      $restriction_mod = lib::create( 'database\modifier' );
+      $restriction_mod->order( 'rank' );
+      foreach( $db_report_type->get_report_restriction_list( $restriction_sel, $restriction_mod ) as $restriction )
+      {
+        $restrict_column_name = sprintf( 'restrict_%s', $restriction['name'] );
+        if( $select->has_column( $restrict_column_name ) )
+        {
+          $value = $db_report->get_restriction_value( $restriction['name'] );
+
+          $type = 'string';
+          if( 'boolean' == $restriction['restriction_type'] ) $type = 'boolean';
+          else if( in_array( $restriction['restriction_type'], ['date', 'datetime', 'time'] ) ) $type = 'datetime';
+          $select->add_constant( $value, $restrict_column_name, $type );
+        }
+      }
+    }
   }
 
   /**

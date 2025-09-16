@@ -25,117 +25,124 @@ export class CN_base_record extends CN_base_action {
     const properties = this.get_model().clone_properties();
     this.#property_groups = {};
     for (var key in properties) {
-      let entry = properties[key];
+      const entry = properties[key];
       if (entry.hasOwnProperty("properties")) {
+        // this is a group containing its own list of properties
         const group_name = key;
-
-        // make sure none of the properties in this group already exist
+        this.add_property_group(group_name, entry);
         for (var prop_name in entry.properties) {
-          if (existing_properties.hasOwnProperty(prop_name)) {
-            throw new Error(
-              `The "${this.get_model().get_name()}" model contains a duplicate propery name "${prop_name}" ` +
-              `that already exists in the "${existing_properties[prop_name]}" group.`
-            );
-          }
-          existing_properties[prop_name] = group_name;
-        }
-
-        this.#property_groups[group_name] = CN_common.clone(entry);
-        if (!this.#property_groups[group_name].hasOwnProperty("title")) {
-          this.#property_groups[group_name].title = null;
-        }
-        if (!this.#property_groups[group_name].hasOwnProperty("open")) {
-          this.#property_groups[group_name].open = false;
+          this.add_property(group_name, prop_name, CN_common.clone(entry.properties[prop_name]));
         }
       } else {
-        // put ungrouped properties in the base group
+        // this is a property belonging to the $main group
         const group_name = "$main";
         const prop_name = key;
 
         // setup the main group if it doesn't already exist
         if (!this.#property_groups.hasOwnProperty(group_name)) {
-          this.#property_groups[group_name] = { title: null, properties: {} };
+          this.add_property_group(group_name, { title: null });
         }
 
-        // make sure the property doesn't already exist
-        if (existing_properties.hasOwnProperty(prop_name)) {
-          throw new Error(
-            `Duplicate propery name "${prop_name}" already exists in the ` +
-            `"${existing_properties[prop_name]}" group`
-          );
-        }
-
-        existing_properties[prop_name] = "main";
-        this.#property_groups[group_name].properties[prop_name] = CN_common.clone(entry);
+        this.add_property(group_name, prop_name, CN_common.clone(entry));
       }
+      const prop = CN_common.clone(properties[key]);
+    }
+  }
+
+  /**
+   * Adds or replaces a property group to the model
+   * @param string group_name: The name of the group
+   * @param object group: The group's parameters including title and open (for non-main groups)
+   */
+  add_property_group(group_name, group) {
+    this.#property_groups[group_name] = {
+      title: group.hasOwnProperty("title") ? group.title : null,
+      properties: {},
+    };
+
+    if ("$main" != group_name) {
+      // non-main groups must have an open property
+      this.#property_groups[group_name].open = group.hasOwnProperty("open") ? Boolean(group.open) : false;
+    }
+  }
+
+  /**
+   * Adds a property to the model
+   * @param string group_name: The name of the group to add the property to (null for the main group)
+   * @param string prop_name: The name of the property
+   * @param object prop: The property's parameters (TODO: document a full description property parameters)
+   */
+  add_property(group_name, prop_name, prop) {
+    // make sure the property doesn't already exist
+    if (null != this.get_property(prop_name)) {
+      throw new Error(
+        `Tried to add duplicate property "${prop_name}" to the "${this.get_model().get_name()}" model.`
+      );
     }
 
-    // setup properties in each group
     const module = this.get_model().get_module();
-    for (var group_name in this.#property_groups) {
-      for (var prop_name in this.#property_groups[group_name].properties) {
-        const module_prop = module.get_property(prop_name);
-        const prop = this.#property_groups[group_name].properties[prop_name];
-        prop.id = [this.get_model().get_unique_id(), prop_name].join("-");
-        prop.name = prop_name;
-        prop.state = new CN_state();
-        if (!prop.type) prop.type = "string";
-        if (!prop.group) prop.group = null;
+    const module_prop = module.get_property(prop_name);
+    prop.id = [this.get_model().get_unique_id(), prop_name].join("-");
+    prop.name = prop_name;
+    prop.state = new CN_state();
+    if (!prop.type) prop.type = "string";
+    if (!prop.group) prop.group = null;
 
-        // make sure all non meta columns properties exist in the module
-        if (!prop.hasOwnProperty("meta")) {
-          if (!module.has_property(prop.name)) {
-            throw new Error(
-              `Model property "${prop.name}" does not exist in "${this.get_model().get_name()}" module.`
-            );
-          }
-        }
-
-        // typeaheads need special configuration
-        if ("typeahead" == prop.type) {
-          if (!prop.typeahead) prop.typeahead = {};
-          if (!prop.typeahead.list) prop.typeahead.list = [];
-          if (!prop.typeahead.on_select) {
-            prop.typeahead.on_select = item => {
-              prop.state.set(item.value);
-              prop.state.commit();
-              if (CN_common.is_function(prop.element.params.on_change)) {
-                prop.element.params.on_change(document.getElementById(prop.id), true, this);
-              }
-            };
-          }
-          if (!prop.typeahead.on_cancel) {
-            prop.typeahead.on_cancel = () => {
-              prop.state.undo(true);
-            }
-          }
-        } else if (["integer", "float"].includes(prop.type)) {
-          // numerical properties may have min/max values
-          prop.min = prop.hasOwnProperty("min") ? prop.min : (prop.type.match(/unsigned/) ? 0 : null);
-          prop.max = prop.hasOwnProperty("max") ? prop.max : null;
-        }
-
-        // make sure all properties have the is_constant, is_hidden and get_default functions
-        if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
-        if (!CN_common.is_function(prop.is_hidden)) {
-          prop.is_hidden = (model) => {
-            const parent_model = model.get_parent_model();
-            return parent_model && prop.name.match(`${parent_model.get_name()}_id`);
-          };
-        }
-        if (!CN_common.is_function(prop.get_default)) {
-          // if the column is a reference to the parent then use the parent's id
-          prop.get_default = (model) => {
-            const parent_model = model.get_parent_model();
-            return (
-              parent_model && prop.name.match(`${parent_model.get_name()}_id`) ?
-              parent_model.get_identifier() :
-              (module_prop ? module_prop.default : null)
-            );
-          };
-        }
+    // make sure all non meta columns properties exist in the module
+    if (!prop.hasOwnProperty("meta")) {
+      if (!module.has_property(prop.name)) {
+        throw new Error(
+          `Model property "${prop.name}" does not exist in "${this.get_model().get_name()}" module.`
+        );
       }
     }
+
+    // typeaheads need special configuration
+    if ("typeahead" == prop.type) {
+      if (!prop.typeahead) prop.typeahead = {};
+      if (!prop.typeahead.list) prop.typeahead.list = [];
+      if (!prop.typeahead.on_select) {
+        prop.typeahead.on_select = item => {
+          prop.state.set(item.value);
+          prop.state.commit();
+          if (CN_common.is_function(prop.element.params.on_change)) {
+            prop.element.params.on_change(document.getElementById(prop.id), true, this);
+          }
+        };
+      }
+      if (!prop.typeahead.on_cancel) {
+        prop.typeahead.on_cancel = () => {
+          prop.state.undo(true);
+        }
+      }
+    } else if (["integer", "float"].includes(prop.type)) {
+      // numerical properties may have min/max values
+      prop.min = prop.hasOwnProperty("min") ? prop.min : (prop.type.match(/unsigned/) ? 0 : null);
+      prop.max = prop.hasOwnProperty("max") ? prop.max : null;
+    }
+
+    // make sure all properties have the is_constant, is_hidden and get_default functions
+    if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
+    if (!CN_common.is_function(prop.is_hidden)) {
+      prop.is_hidden = (model) => {
+        const parent_model = model.get_parent_model();
+        return parent_model && prop.name.match(`${parent_model.get_name()}_id`);
+      };
+    }
+    if (!CN_common.is_function(prop.get_default)) {
+      // if the column is a reference to the parent then use the parent's id
+      prop.get_default = (model) => {
+        const parent_model = model.get_parent_model();
+        return (
+          parent_model && prop.name.match(`${parent_model.get_name()}_id`) ?
+          parent_model.get_identifier() :
+          (module_prop ? module_prop.default : null)
+        );
+      };
+    }
+
+    // finally, add the property to the appropriate group ($main being the default group)
+    this.#property_groups[!group_name ? "$main" : group_name].properties[prop_name] = prop;
   }
 
   /**
@@ -199,6 +206,7 @@ export class CN_base_record extends CN_base_action {
                 prop.enum.path
               );
 
+              // set the enum values
               prop.enum.values = (await CN_api.get(path, params)).reduce((list, record) => {
                 list.push({
                   ...record,
@@ -208,6 +216,12 @@ export class CN_base_record extends CN_base_action {
                 });
                 return list;
               }, []);
+            };
+            promise_list.push(get_enums());
+          } else if (CN_common.is_object(prop.enum) && CN_common.is_function(prop.enum.get_enums)) {
+            const get_enums = async () => {
+              // set the enum values
+              prop.enum.values = await prop.enum.get_enums(this.get_model());
             };
             promise_list.push(get_enums());
           } else {
@@ -402,20 +416,10 @@ export class CN_base_record extends CN_base_action {
     if (!prop.element) {
       // determine the property's UI element based on the type
       let params = CN_common.clone(prop);
-      params.required = module_prop ? module_prop.required : false;
-      params.placeholder = "(empty)";
+      if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
+      if (undefined === params.placeholder) params.placeholder = "(empty)";
 
-      if ("typeahead" == prop.type) {
-        params.typeahead = { ...prop.typeahead };
-      } else if (["integer", "float"].includes(prop.type)) {
-        params.min = prop.min;
-        params.max = prop.max;
-      } else {
-        if (prop.format) params.format = prop.format;
-        if (prop.regex) params.regex = prop.regex;
-      }
-
-      if (module_prop && module_prop.max_length) {
+      if (undefined === params.max_length && module_prop && module_prop.max_length) {
         params.max_length = module_prop.max_length;
       }
 

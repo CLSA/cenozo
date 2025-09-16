@@ -25,6 +25,46 @@ class report extends base_report
   }
 
   /**
+   * Returns the restriction value for this report
+   */
+  public function get_restriction_value( $restriction_name )
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $select = lib::create( 'database\select' );
+    $select->from( 'report_has_report_restriction' );
+    $select->add_column( 'value' );
+    $select->add_table_column( 'report_restriction', 'restriction_type' );
+    $select->add_table_column( 'report_restriction', 'subject' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join(
+      'report_restriction',
+      'report_has_report_restriction.report_restriction_id',
+      'report_restriction.id'
+    );
+    $modifier->where( 'report_id', '=', $this->id );
+    $modifier->where( 'report_restriction.name', '=', $restriction_name );
+
+    $row = static::db()->get_row( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    if( is_null( $row ) ) return NULL;
+
+    $value = $row['value'];
+    $type = $row['restriction_type'];
+    $subject = $row['subject'];
+
+    if( 'boolean' == $type )
+    {
+      $value = 1 == $value;
+    }
+    else if( in_array( $type, ['date', 'datetime', 'time'] ) )
+    {
+      $value = $util_class_name::get_datetime_object( $value );
+    }
+
+    return $value;
+  }
+
+  /**
    * Copies the parent report schedule's restrictions into this report.
    * This method is for reports linked to a report schedule only.
    * 

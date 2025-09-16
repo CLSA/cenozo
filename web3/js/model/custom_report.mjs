@@ -65,7 +65,7 @@ export class CN_custom_report_view extends CN_base_view {
 
     // add the download action
     const download_btn_el = CN_element.create(
-      '<button name="download" type="button" class="btn btn-light btn-outline-primary">Download Report</button>'
+      '<button name="download" type="button" class="btn btn-light btn-outline-primary">Run Report</button>'
     );
     download_btn_el.addEventListener(
       "click",

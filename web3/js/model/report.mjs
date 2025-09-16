@@ -1,4 +1,8 @@
+import CN_api from "../api.mjs"
+
+import { CN_base_add } from "../base_add.mjs"
 import { CN_base_model } from "../base_model.mjs"
+import { CN_base_view } from "../base_view.mjs"
 
 export class CN_report_model extends CN_base_model {
   constructor() {
@@ -57,7 +61,6 @@ export class CN_report_model extends CN_base_model {
         size: {
           title: "Size",
           type: "size",
-          format: "float",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
         },
@@ -69,18 +72,105 @@ export class CN_report_model extends CN_base_model {
         },
         formatted_elapsed: {
           title: "Elapsed",
-          format: "float",
+          meta: true,
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
         },
-        parameters: {
-          title: "Report Parameters",
-          open: true,
-          properties: {
-            // TODO: implement report parameters as properties
-          },
-        },
       },
     });
+  }
+}
+
+// A private function used by both report_add and report_view
+async function on_load(action) {
+  const report_type_id = action.get_model().get_parent_model().get_identifier();
+  if (report_type_id != action.current_report_type_id) {
+    action.current_report_type_id = report_type_id;
+
+    // re-define the report's restrictions
+    const response = await CN_api.get(
+      `report_type/${action.current_report_type_id}/report_restriction`,
+      {
+        select: { column: [
+          "name",
+          "title",
+          "mandatory",
+          "null_allowed",
+          "restriction_type",
+          "subject",
+          "operator",
+          "enum_list",
+          "description",
+        ] },
+        modifier: { order: "rank" },
+      },
+    );
+
+    action.add_property_group("restrictions", { title: "Report Parameters", open: true });
+    response.forEach(prop => {
+      // determine the parameters for each restriction type
+      const params = {
+        title: prop.title,
+        meta: true,
+        required: prop.mandatory,
+        is_constant: () => "view" == action.get_type(),
+      };
+      if (["enum", "table"].includes(prop.restriction_type)) {
+        params.type = "enum";
+        params.enum = {
+          get_enums: async () => {
+            const enum_list = (
+              "enum" == prop.restriction_type ?
+              JSON.parse(`[${prop.enum_list}]`).map(item => ({ key: item, value: item, disabled: false })) :
+              await CN_api.get(prop.subject, {
+                select: { column: [{ column: "id", alias: "key" }, { column: "name", alias: "value" }] },
+                modifier: { order: "name", limit: 1000000 },
+              })
+            );
+            if (prop.null_allowed) {
+              enum_list.unshift({
+                key: "_NULL_",
+                value: (
+                  "table" == prop.restriction_type && "identifier" == prop.subject ?
+                  "UID" :
+                  (prop.mandatory ? "(empty)" : "(all)")
+                ),
+              });
+            }
+            return enum_list;
+          }
+        };
+      } else if ("identifier_list" == prop.restriction_type) {
+        params.type = "string";
+      } else {
+        params.type = prop.restriction_type;
+      }
+
+      action.add_property("restrictions", `restrict_${prop.name}`, params);
+    });
+  }
+}
+
+export class CN_report_add extends CN_base_add {
+  current_report_type_id;
+
+  /**
+   * Extends parent class
+   */
+  async on_load() {
+    await on_load(this);
+    await super.on_load()
+  }
+}
+
+export class CN_report_view extends CN_base_view {
+  current_report_type_id;
+
+  /**
+   * Extends parent class
+   */
+  async on_load() {
+    await on_load(this);
+    await super.on_load()
   }
 }
