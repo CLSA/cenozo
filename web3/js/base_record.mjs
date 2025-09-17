@@ -438,7 +438,7 @@ export class CN_base_record extends CN_base_action {
     }
 
     // wait for each control element to be added to the DOM then bind it to the state
-    const observer = new MutationObserver((mutation, observer) => {
+    const observer = new MutationObserver(mutation => {
       mutation.filter(m => "childList" == m.type).forEach(m => {
         const control_el = document.getElementById(m.target.getAttribute("name"));
         if (control_el) {

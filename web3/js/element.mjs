@@ -111,7 +111,7 @@ export default {
       <div class="col-sm-9 d-flex">
         <div name="prefix" class="align-self-start d-flex"></div>
         <div name="input" class="flex-fill">
-          <div name="control" class="d-flex"></div>
+          <div name="control"></div>
           <small name="error" class="text-danger"></small>
         </div>
         <div name="postfix" class="align-self-start d-flex"></div>
@@ -207,13 +207,13 @@ export default {
         const dropdown_bs = new bootstrap.Dropdown(typeahead_el);
 
         // add the typeahead's element after the prop's element once it's been inserted into the DOM
-        const observer = new MutationObserver((mutation, observer) => {
+        const observer = new MutationObserver(mutation => {
           if (document.contains(control_el)) {
             control_el.after(typeahead_el);
             observer.disconnect();
           }
         });
-        observer.observe(el, { childList: true });
+        observer.observe(el, { attributes: false, childList: true, characterData: false, subtree:true });
 
         // track whether the dropdown is open or not
         typeahead_el.addEventListener("shown.bs.dropdown", () => { el.params.typeahead.open = true; });
@@ -285,7 +285,9 @@ export default {
               // the list isn't dynamic
               .filter(item => item.value.match(new RegExp(control_el.value, "i")))
               .map(item => {
-                const item_el = this.create(`<li><btn class="dropdown-item">${item.value}</btn></li>`)
+                const item_el = this.create(
+                  `<li><button type="button" class="dropdown-item">${item.value}</button></li>`
+                );
                 item_el.addEventListener("click", () => {
                   control_el.value = item.value;
                   if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
@@ -425,8 +427,6 @@ export default {
     }
 
     el.show_error = async function(error, time = 300) {
-      const control_el = document.getElementById(this.params.id);
-
       Object.assign(control_el.style, {
         "border-color": "red",
         "border-width": "3px",
@@ -442,7 +442,6 @@ export default {
     };
 
     el.hide_error = function() {
-      const control_el = document.getElementById(this.params.id);
       control_el.style.removeProperty("border-color");
       control_el.style.removeProperty("border-width");
       control_el.style.removeProperty("margin");
