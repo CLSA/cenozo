@@ -1484,10 +1484,15 @@
           return {
             templateUrl: module.getFileUrl("add.tpl.html"),
             restrict: "E",
-            scope: { model: "=?" },
+            scope: {
+              model: "=?",
+              disabled: "=",
+              footerAtTop: "@",
+              removeInputs: "@",
+              notationType: "@",
+            },
             controller: function ($scope) {
-              if (angular.isUndefined($scope.model))
-                $scope.model = modelFactory.root;
+              if (angular.isUndefined($scope.model)) $scope.model = modelFactory.root;
             },
           };
         },
@@ -1501,10 +1506,18 @@
           return {
             templateUrl: module.getFileUrl("list.tpl.html"),
             restrict: "E",
-            scope: { model: "=?" },
+            scope: {
+              model: "=?",
+              simple: "@",
+              removeColumns: "@",
+              initCollapsed: "=",
+              noRefresh: "@",
+              noReports: "@",
+              disableEmptyToEnd: "=",
+              notationType: "@",
+            },
             controller: function ($scope) {
-              if (angular.isUndefined($scope.model))
-                $scope.model = modelFactory.root;
+              if (angular.isUndefined($scope.model)) $scope.model = modelFactory.root;
             },
           };
         },
@@ -1518,10 +1531,18 @@
           return {
             templateUrl: module.getFileUrl("view.tpl.html"),
             restrict: "E",
-            scope: { model: "=?" },
+            scope: {
+              model: "=?",
+              disabled: "=",
+              simple: "@",
+              footerAtTop: "@",
+              removeInputs: "@",
+              initCollapsed: "=",
+              noRefresh: "@",
+              notationType: "@",
+            },
             controller: function ($scope) {
-              if (angular.isUndefined($scope.model))
-                $scope.model = modelFactory.root;
+              if (angular.isUndefined($scope.model)) $scope.model = modelFactory.root;
             },
           };
         },
