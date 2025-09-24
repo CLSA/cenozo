@@ -24,6 +24,7 @@ class module extends \cenozo\service\site_restricted_module
     $db_application = $session->get_application();
 
     // always join to the search table
+    $modifier->join( 'participant', 'search_result.participant_id', 'participant.id' );
     $modifier->join( 'search', 'search_result.search_id', 'search.id' );
 
     // get the search words from the query
