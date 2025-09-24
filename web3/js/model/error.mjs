@@ -3,13 +3,21 @@ import CN_element from "../element.mjs"
 import { CN_base_object } from "../base_object.mjs"
 
 export class CN_error_model extends CN_base_object {
+  #name;
+  #element;
 
   constructor(error) {
     super();
-    this.name = "error";
+    this.#name = "error";
     this.error = error;
     this.status = null;
   }
+
+  // access methods
+  get_element() { return this.#element; }
+  get_identifier() { return null; }
+  get_action_name() { return "view"; }
+  get_name() { return this.#name; }
 
   /**
    * Gets UI text values by type
@@ -44,21 +52,21 @@ export class CN_error_model extends CN_base_object {
     }
     console.error(message);
 
-    const card_el = CN_element.create_card();
-    const header_el = card_el.querySelector(".card-header");
+    this.#element = CN_element.create_card();
+    const header_el = this.#element.querySelector(".card-header");
     header_el.classList.add("bg-danger");
     (async () => {
       header_el.innerHTML = await this.get_text("name");
-      card_el.querySelector(".card-body").innerHTML = await this.get_text("message");
+      this.#element.querySelector(".card-body").innerHTML = await this.get_text("message");
     })();
-    card_el.querySelector(".card-footer").classList.add("bg-danger");
+    this.#element.querySelector(".card-footer").classList.add("bg-danger");
 
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
     (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail("Error")); })();
 
-    return card_el;
+    return this.#element;
   }
 
   /**

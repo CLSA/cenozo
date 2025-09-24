@@ -6,12 +6,19 @@ import CN_session from "../session.mjs"
 import { CN_base_object } from "../base_object.mjs"
 
 export class CN_home_model extends CN_base_object {
+  #name;
   #element;
 
   constructor() {
     super();
-    this.name = "home";
+    this.#name = "home";
   }
+
+  // access methods
+  get_element() { return this.#element; }
+  get_identifier() { return null; }
+  get_action_name() { return "view"; }
+  get_name() { return this.#name; }
 
   get_text(type) {
     const data = CN_session.data;
