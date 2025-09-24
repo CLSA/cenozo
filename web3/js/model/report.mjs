@@ -1,4 +1,5 @@
 import CN_api from "../api.mjs"
+import CN_session from "../session.mjs"
 
 import { CN_base_add } from "../base_add.mjs"
 import { CN_base_model } from "../base_model.mjs"
@@ -106,71 +107,104 @@ async function on_load(action) {
       },
     );
 
-    action.add_property_group("restrictions", { title: "Report Parameters", open: true });
-    response.forEach(prop => {
-      // determine the parameters for each restriction type
-      const params = {
-        title: prop.title,
-        meta: true,
-        required: prop.mandatory,
-        is_constant: () => "view" == action.get_type(),
-      };
-      if (["enum", "table"].includes(prop.restriction_type)) {
-        params.type = "enum";
-        params.enum = {
-          get_enums: async () => {
-            const enum_list = (
-              "enum" == prop.restriction_type ?
-              JSON.parse(`[${prop.enum_list}]`).map(item => ({ key: item, value: item, disabled: false })) :
-              await CN_api.get(prop.subject, {
-                select: { column: [{ column: "id", alias: "key" }, { column: "name", alias: "value" }] },
-                modifier: { order: "name", limit: 1000000 },
-              })
-            );
-            if (prop.null_allowed) {
-              enum_list.unshift({
-                key: "_NULL_",
-                value: (
-                  "table" == prop.restriction_type && "identifier" == prop.subject ?
-                  "UID" :
-                  (prop.mandatory ? "(empty)" : "(all)")
-                ),
-              });
-            }
-            return enum_list;
-          }
+    if (0 < response.length) {
+      action.add_property_group("restrictions", { title: "Report Parameters", open: true });
+      response.forEach(prop => {
+        // determine the parameters for each restriction type
+        const params = {
+          title: prop.title,
+          meta: true,
+          required: prop.mandatory,
+          is_constant: () => "view" == action.get_type(),
         };
-      } else if ("identifier_list" == prop.restriction_type) {
-        params.type = "string";
-      } else {
-        params.type = prop.restriction_type;
-      }
+        if (["enum", "table"].includes(prop.restriction_type)) {
+          params.type = "enum";
+          params.enum = {
+            get_enums: async () => {
+              const enum_list = (
+                "enum" == prop.restriction_type ?
+                JSON.parse(`[${prop.enum_list}]`).map(item => ({ key: item, value: item, disabled: false })) :
+                await CN_api.get(prop.subject, {
+                  select: { column: [{ column: "id", alias: "key" }, { column: "name", alias: "value" }] },
+                  modifier: { order: "name", limit: 1000000 },
+                })
+              );
+              if (prop.null_allowed) {
+                enum_list.unshift({
+                  key: "_NULL_",
+                  value: (
+                    "table" == prop.restriction_type && "identifier" == prop.subject ?
+                    "UID" :
+                    (prop.mandatory ? "(empty)" : "(all)")
+                  ),
+                });
+              }
+              return enum_list;
+            }
+          };
+        } else if ("identifier_list" == prop.restriction_type) {
+          params.type = "string";
+        } else {
+          params.type = prop.restriction_type;
+        }
 
-      action.add_property("restrictions", `restrict_${prop.name}`, params);
-    });
+        action.add_property("restrictions", `restrict_${prop.name}`, params);
+      });
+    }
   }
 }
 
 export class CN_report_add extends CN_base_add {
-  current_report_type_id;
+  current_report_type_id; // used in the custom on_load method
 
   /**
-   * Extends parent class
+   * Extends parent method
    */
   async on_load() {
     await on_load(this);
     await super.on_load()
   }
+
+  /**
+   * Extends parent method
+   */
+  async on_post_submit(response) {
+    await CN_session.navigate_to(this.get_model().get_view_url(response));
+  }
 }
 
 export class CN_report_view extends CN_base_view {
-  current_report_type_id;
+  current_report_type_id; // used in the custom on_load method
+  #refresh_interval; // used to track the refresh interval (when waiting for report to complete)
 
   /**
-   * Extends parent class
+   * remove the refresh_interval if the action is removed from the DOM
+   */
+  async on_dom_remove() {
+    clearInterval(this.#refresh_interval);
+  }
+
+  /**
+   * Extends parent method
    */
   async on_load() {
     await on_load(this);
     await super.on_load()
+
+    if (!["completed", "failed"].includes(this.get_property("stage").state.get())) {
+      // keep reloading the page until the report is either completed of failed
+      let loading = false;
+      this.#refresh_interval = setInterval(async () => {
+        if (!loading) {
+          if (["completed", "failed"].includes(this.get_property("stage").state.get())) {
+            clearInterval(this.#refresh_interval);
+          } else {
+            loading = true;
+            await super.on_load();
+            loading = false;
+          }
+        }
+      }, 3000);
+    }
   }
 }
