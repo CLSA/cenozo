@@ -101,8 +101,8 @@ export default {
 
   /**
    * Creates a form element
-   * @param string type: One of "boolean", "date", "email", "enum", "integer", "size", "string", "password",
-   *                     "rank", "text", "time", or "typeahead"
+   * @param string type: One of "boolean", "date", "email", "enum", "html", "integer", "size", "string",
+   *                     "password", "rank", "text", "time", or "typeahead"
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
@@ -173,7 +173,7 @@ export default {
       control_el = this.create(`<input type="password" class="form-control"></input>`);
     } else if ("rank" == type) {
       control_el = this.create(`<select class="form-select"></select>`);
-    } else if ("text" == type) {
+    } else if (["html", "text"].includes(type)) {
       control_el = this.create(`
         <textarea
           class="form-control"

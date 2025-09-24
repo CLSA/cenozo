@@ -337,6 +337,9 @@ export class CN_base_list extends CN_base_action {
           value = "(empty)";
         } else if ("boolean" == column.type) {
           value = value ? "Yes" : "No";
+        } else if ("html" == column.type) {
+          // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
+          value = (new Option(value)).innerHTML
         } else if ("size" == column.type) {
           value = CN_common.format_filesize(value);
         } else if (CN_common.is_datetime_type(column.type, "date")) {
