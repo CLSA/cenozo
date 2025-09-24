@@ -100,18 +100,9 @@ export class CN_base_add extends CN_base_record {
     );
 
     try {
-      const model = this.get_model();
-      const parent_model = model.get_parent_model();
-
-      // post the new record
-      const new_id = await CN_api.post(model.get_base_path("api"), record);
-
-      if (parent_model) {
-        // go back to the parent
-        await CN_session.navigate_to(parent_model.get_view_url());
-      } else {
-        await CN_session.navigate_to(model.allow_view() ? model.get_view_url(new_id) : model.get_list_url());
-      }
+      // run the pre-submit method, post the new record, then send the result to the post-submit method
+      await this.on_pre_submit(record);
+      await this.on_post_submit(await CN_api.post(this.get_model().get_base_path("api"), record));
     } catch (error) {
       if ("Conflict (409)" == error.name) {
         JSON.parse(error.body).forEach(prop_name => {
@@ -123,6 +114,27 @@ export class CN_base_add extends CN_base_record {
       } else {
         throw error;
       }
+    }
+  }
+
+  /**
+   * Runs before submitting the record
+   * @param object record: The record which will be submitted to the server
+   */
+  async on_pre_submit(record) {}
+
+  /**
+   * Runs after submitting the record
+   * @param mixed response: The response returned from posting the record to the server (usually the new ID)
+   */
+  async on_post_submit(response) {
+    const model = this.get_model();
+    const parent_model = model.get_parent_model();
+    if (parent_model) {
+      // go back to the parent
+      await CN_session.navigate_to(parent_model.get_view_url());
+    } else {
+      await CN_session.navigate_to(model.allow_view() ? model.get_view_url(response) : model.get_list_url());
     }
   }
 
