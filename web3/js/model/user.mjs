@@ -1,3 +1,6 @@
+import CN_api from "../api.mjs"
+import CN_element from "../element.mjs"
+import CN_session from "../session.mjs"
 import CN_timezones from "../timezones.mjs"
 
 import { CN_base_list } from "../base_list.mjs"
@@ -40,6 +43,30 @@ export class CN_user_model extends CN_base_model {
       },
     });
   }
+
+  /**
+   * Extend the parent method for the special user_overview action
+   */
+  clone_columns() {
+    const columns = super.clone_columns();
+
+    if ("overview" == this.get_action_name()) {
+      delete columns.active;
+      delete columns.email;
+      columns.site = { title: "Site", column: "site.name" };
+      columns.role = { title: "Role", column: "role.name" };
+      columns.last_datetime = { title: "Last Activity", column: "access.datetime", type: "datetimesecond" };
+    }
+
+    return columns;
+  }
+
+  /**
+   * Extend the parent method for the special user_overview action
+   */
+  allow_add() {
+    return super.allow_add() && "overview" != this.get_action_name();
+  }
 }
 
 export class CN_user_list extends CN_base_list {
@@ -55,5 +82,83 @@ export class CN_user_list extends CN_base_list {
     }
 
     return await super.get_text(type);
+  }
+
+  /**
+   * Extends the parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    // add the find action
+    const find_btn_el = CN_element.create(
+      '<button name="find" type="button" class="btn btn-light btn-outline-primary">Find User</button>'
+    );
+    find_btn_el.addEventListener("click", async () => {
+      const modal = CN_element.input_modal({
+        title: "Find User",
+        message: "Please provide the username of the user you wish to find.",
+        input: "string",
+        required: true,
+        do_not_close: true,
+      });
+      while (true) {
+        // ask for a username
+        let response = await modal.get();
+        if (undefined === response) {
+          //show = false;
+          modal.hide();
+          break;
+        } else {
+          let user_id = null;
+          try {
+            response = await CN_api.get(`user/name=${response}`, { select: { column: "id" } });
+            user_id = response.id;
+          } catch (error) {
+            // ignore 404s, it just means the username doesn't exist
+            if (404 != error.response.status) throw error;
+          }
+
+          if (null == user_id) {
+            modal.set_error( "Username not found." );
+          } else {
+            //show = false;
+            modal.hide();
+            CN_session.navigate_to(`user/view/${user_id}`);
+            break;
+          }
+        }
+      }
+    });
+
+    footer_el.append(find_btn_el);
+
+    return footer_el;
+  }
+}
+
+export class CN_user_overview extends CN_base_list {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("header" == type) return "Active User List";
+    return await super.get_text(type);
+  }
+
+  /**
+   * Extends the parent method
+   */
+  get_on_load_parameters() {
+    const params = super.get_on_load_parameters();
+
+    // restrict to active users only
+    if (undefined == params.modifier.where) params.modifier.where = [];
+    params.modifier.where.push({
+      column: "access.datetime",
+      operator: "!=",
+      value: null,
+    });
+    return params;
   }
 }
