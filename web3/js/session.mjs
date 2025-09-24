@@ -41,6 +41,14 @@ export default {
   },
 
   /**
+   * Returns the first model in the path
+   * @return model
+   */
+  get_root_model: function() {
+    return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
+  },
+
+  /**
    * Returns the name.action of the root module (or null if there is no root module)
    * @return string
    */
@@ -315,7 +323,11 @@ export default {
 
     // highlight menu item corresponding with the path's first model
     if (0 < PATH_MODEL_LIST.length) {
-      let menu_btn_el = menu_el.querySelector(`button[name="${this.get_root_action_name()}"]`);
+      let name = this.get_root_action_name();
+      // reports all have the same action name, so add the report-type identifier
+      if ("report_type.view" == this.get_root_action_name()) name += '.' + this.get_root_model().get_identifier();
+
+      let menu_btn_el = menu_el.querySelector(`button[name="${name}"]`);
       if (menu_btn_el) {
         menu_btn_el.classList.add("fw-bold");
       } else {
@@ -346,7 +358,27 @@ export default {
     await Promise.all(PATH_MODEL_LIST.slice(0, -1).map(model => model.get_action().on_load()));
 
     // now render and run the leaf module
-    main_content_el.append(leaf_model.render());
+    const leaf_model_element = leaf_model.render();
+
+    // Fire the model's action's DOM callbacks as the model's element is added to or removed from the DOM
+    const observer = new MutationObserver(async mutation => {
+      if (!CN_common.is_function(leaf_model.get_action)) {
+        observer.disconnect();
+        return;
+      }
+
+      const action = leaf_model.get_action();
+      if (document.contains(leaf_model_element)) {
+        await action.on_dom_add();
+      } else {
+        await action.on_dom_remove();
+        observer.disconnect();
+      }
+    });
+    observer.observe(main_content_el, { childList: true });
+
+    main_content_el.append(leaf_model_element);
+
     await leaf_model.run();
     await this.update_breadcrumbs();
   },
@@ -602,7 +634,7 @@ export default {
         const id = this.data.menu.reports[title];
         const btn_el = CN_element.create(`
           <button
-            name="${null == id ? "custom_report.list" : "report_type.view"}"
+            name="${null == id ? "custom_report.list" : "report_type.view."+id}"
             type="button"
             class="btn btn-outline-primary"
           >${title}</button>

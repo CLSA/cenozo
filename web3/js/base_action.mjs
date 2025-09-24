@@ -180,6 +180,16 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
+   * This method is run when the action is added to the DOM
+   */
+  async on_dom_add() {}
+
+  /**
+   * This method is run when the action is added to the DOM
+   */
+  async on_dom_remove() {}
+
+  /**
    * Updates the action's element
    */
   update_element() {
