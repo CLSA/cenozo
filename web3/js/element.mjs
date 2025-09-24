@@ -1142,8 +1142,11 @@ export default {
    * @return bootstrap.Modal
    */
   input_modal: function(config) {
-    if (!config.type) config.type = "primary";
-    if (!config.title) config.title = "Please Provide Input";
+    if (undefined === config.type) config.type = "primary";
+    if (undefined === config.title) config.title = "Please Provide Input";
+    if (undefined === config.input) config.input = "string";
+    if (undefined === config.do_not_close) config.do_not_close = false;
+
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -1195,7 +1198,7 @@ export default {
           // only proceed if the input isn't required or it has been filled out
           if (!config.required || ![null, ""].includes(control_el.value)) {
             resolve(control_el.value);
-            modal_bs.hide();
+            if (!config.do_not_close) modal_bs.hide();
           } else {
             control_el.onchange();
           }
@@ -1203,6 +1206,10 @@ export default {
         // resolved undefined if closing any other way
         modal_el.addEventListener("hidden.bs.modal", () => resolve(undefined));
       });
+    };
+
+    modal_bs.set_error = (error) => {
+      input_el.querySelector("[name=error]").innerHTML = error;
     };
 
     // update the size of text inputs after the modal is showing
