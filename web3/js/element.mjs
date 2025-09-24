@@ -458,17 +458,17 @@ export default {
    */
   create_breadcrumb_trail: async function(base_name, model_list = []) {
     // create a list of all crumbs (adding chevrons later)
-    let crumb_list = [];
+    const crumb_list = [];
 
-    if (null == base_name) {
+    if ([null, "Error"].includes(base_name)) {
       const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
-      crumb_list = [{
+      crumb_list.push({
         name: unread ? "Home" : 'Home <i class="bi-envelope-fill text-warning"></i>',
         path: ""
-      }];
-    } else {
-      crumb_list.push({ name: base_name, path: null });
+      });
     }
+
+    if (null != base_name) crumb_list.push({ name: base_name, path: null });
 
     await Promise.all(model_list.map(async model => {
       let crumb = { name: '...', path: "view" == model.get_action_name() ? model.get_view_url() : null };
