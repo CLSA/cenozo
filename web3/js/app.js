@@ -32,7 +32,7 @@
       if ('can\'t access property "includes", args.site.enabledFeatures is undefined' != params.message) {
         ignore = true;
       }
-      
+
       if (!ignore) {
         const modal = CN_element.message_modal(params);
         modal.show();
