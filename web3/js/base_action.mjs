@@ -211,14 +211,14 @@ export class CN_base_action extends CN_base_object {
     `);
     notation_btn_el.addEventListener("click", async (event) => {
       const module = this.get_model().get_module();
-      const result = await CN_element.input_modal({
+      const response = await CN_element.input_modal({
         title: "Page Documentation",
         message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
         input: "text",
         value: module.get_notation(this.#type),
       }).get();
 
-      if (undefined !== result) module.set_notation(this.#type, result);
+      if (undefined !== response) module.set_notation(this.#type, response);
     });
     el.append(notation_btn_el);
     new bootstrap.Tooltip(notation_btn_el, {

@@ -1268,11 +1268,11 @@ export default {
       },
     });
 
-    let result = true;
+    let response = true;
     if ("removed" == action) {
       // check to see if tracing will be required after removing/deactivating the contact type
       if (1 == data[changing_count_column] && null == data.trace_type) {
-        result = await this.input_modal({
+        response = await this.input_modal({
           title: "Tracing Required",
           message: `
             If you proceed the participant will no longer have an active ${type}.
@@ -1285,7 +1285,7 @@ export default {
     } else {
       // check to see if tracing will be resolved after adding/activating the contact type
       if (0 == data[changing_count_column] && 0 < data[other_count_column] && null != data.trace_type) {
-        result = await this.input_modal({
+        response = await this.input_modal({
           title: "Tracing Completed",
           message: `
             Before your change the participant did not have an active ${type}.
@@ -1298,7 +1298,7 @@ export default {
     }
 
     // if the input_modal was cancelled then the value will be undefined
-    return undefined === result ? false : result;
+    return undefined === response ? false : response;
   },
 
 }
