@@ -141,7 +141,7 @@ export class CN_base_person_history extends CN_base_action {
       },
     }];
 
-    if("participant" == this.get_model().get_name()) {
+    if ("participant" == this.get_model().get_name()) {
       // add participant-only categories
       this.#category_list = this.#category_list.concat([{
         subject: "alternate",
@@ -340,7 +340,7 @@ export class CN_base_person_history extends CN_base_action {
         });
       }
 
-      if(CN_session.get_module("equipment")) {
+      if (CN_session.get_module("equipment")) {
         this.#category_list.push({
           subject: "equipment",
           path: `${base_path}/equipment_loan`,

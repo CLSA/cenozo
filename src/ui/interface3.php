@@ -17,9 +17,9 @@
   <title><?php echo APP_TITLE; ?></title>
 </head>
 <body>
-  <div name="app_bg" class="bg-loading">
+  <div name="app_bg" class="loading">
     <div name="app_body" class="user-select-none">
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0 bg-loading">
         <div class="container-fluid">
           <button type="button" class="btn btn-outline-light my-1" disabled="">
             <strong><?php echo APP_TITLE; ?></strong>

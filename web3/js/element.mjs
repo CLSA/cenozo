@@ -607,7 +607,7 @@ export default {
       const role_id = document.getElementById("cn_role_role_modal_role").value;
       if (CN_session.data.site.id != site_id || CN_session.data.role.id != role_id) {
         // update the user's site and role
-        document.querySelector("div[name=app_bg]").classList.add("bg-loading");
+        CN_session.set_loading_state(true);
         document.getElementById("main-content").innerHTML = "";
         await CN_api.patch("self/0", { site: { id: site_id }, role: { id: role_id } });
         CN_session.reload(true);

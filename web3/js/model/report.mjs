@@ -1,11 +1,9 @@
 import CN_api from "../api.mjs"
-import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_add } from "../base_add.mjs"
 import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_base_report_view } from "../base_report_view.mjs"
 
 export class CN_report_model extends CN_base_model {
   constructor() {
@@ -163,7 +161,7 @@ export class CN_report_add extends CN_base_add {
    * Extends parent method
    */
   async on_load() {
-    await on_load(this);
+    await on_load(this); // use private function above to load restrictions
     await super.on_load()
   }
 
@@ -175,69 +173,14 @@ export class CN_report_add extends CN_base_add {
   }
 }
 
-export class CN_report_view extends CN_base_view {
+export class CN_report_view extends CN_base_report_view {
   current_report_type_id; // used in the custom on_load method
-  #refresh_interval; // used to track the refresh interval (when waiting for report to complete)
-
-  /**
-   * Extends parent method
-   */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
-
-    // add the download button
-    const download_btn_el = CN_element.create(
-      '<button name="download" type="button" class="btn btn-light btn-outline-primary">Download</button>'
-    );
-    download_btn_el.addEventListener("click", async () => {
-      // determine the file's mime type based on the format property
-      const format = this.get_property("format").state.get();
-      let mime_type = "text/csv";
-      if ("Excel" == format) {
-        mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
-      } else if ("" == format) {
-        mime_type = "application/vnd.oasis.opendocument.spreadsheet;charset=utf-8";
-      }
-
-      const response = await CN_api.file(`report/${this.get_model().get_identifier()}`, mime_type, {}, true);
-      CN_common.download_file(
-        await response.blob(),
-        response.headers.get('content-disposition').match(/filename=(.*);/)[1],
-      );
-    });
-    footer_el.append(download_btn_el);
-
-    return footer_el;
-  }
-
-  /**
-   * remove the refresh_interval if the action is removed from the DOM
-   */
-  async on_dom_remove() {
-    clearInterval(this.#refresh_interval);
-  }
 
   /**
    * Extends parent method
    */
   async on_load() {
-    await on_load(this);
-    await super.on_load()
-
-    if (!["completed", "failed"].includes(this.get_property("stage").state.get())) {
-      // keep reloading the page until the report is either completed of failed
-      let loading = false;
-      this.#refresh_interval = setInterval(async () => {
-        if (!loading) {
-          if (["completed", "failed"].includes(this.get_property("stage").state.get())) {
-            clearInterval(this.#refresh_interval);
-          } else {
-            loading = true;
-            await super.on_load();
-            loading = false;
-          }
-        }
-      }, 3000);
-    }
+    await on_load(this); // use private function above to load restrictions
+    await super.on_load();
   }
 }

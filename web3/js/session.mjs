@@ -66,6 +66,16 @@ export default {
     return model ? `${model.get_name()}.${model.get_action_name()}` : null;
   },
 
+  set_loading_state: function(loading) {
+    if (loading) {
+      document.querySelector("div[name=app_bg]").classList.add("loading");
+      document.querySelector("nav.navbar").classList.add("bg-loading");
+    } else {
+      document.querySelector("div[name=app_bg]").classList.remove("loading");
+      document.querySelector("nav.navbar").classList.remove("bg-loading");
+    }
+  },
+
   /**
    * Reloads the page at a particular path
    * @param boolean root: Wether to return to the application root
@@ -79,7 +89,7 @@ export default {
         <span class="visually-hidden">Loading...</span>
       </div>
     `));
-    document.querySelector("div[name=app_bg]").classList.add("bg-loading");
+    this.set_loading_state(true);
     document.getElementById("main-content").innerHTML = "";
     if (root) {
       window.location.assign(ROOT_URL);
@@ -204,7 +214,7 @@ export default {
           <span class="visually-hidden">Loading...</span>
         </div>
       `));
-      document.querySelector("div[name=app_bg]").classList.add("bg-loading");
+      this.set_loading_state(true);
       document.getElementById("main-content").innerHTML = "";
 
       // update the user then reload the UI so all datetimes are adjusted
@@ -659,7 +669,7 @@ export default {
     } catch (error) {
       this.render_error(error);
     } finally {
-      document.querySelector("div[name=app_bg]").classList.remove("bg-loading");
+      this.set_loading_state(false);
     }
   },
 }

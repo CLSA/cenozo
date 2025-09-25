@@ -21,15 +21,32 @@ div[name="app_bg"]:before {
   opacity: 0.333;
 }
 
-.bg-loading:before {
+div[name="app_body"] {
+  position: relative;
+}
+
+div[name=app_bg].loading:before {
   animation: pulse 1s linear infinite alternate;
 }
 
-div[name="app_body"] {
-  position: relative;
+.bg-loading {
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 1rem,
+      rgb(var(--bs-primary-hover-bg)) 1rem,
+      rgb(var(--bs-primary-hover-bg)) 2rem
+    );
+  background-size: 200% 200%;
+  animation: barberpole 20s linear infinite;
 }
 
 @keyframes pulse {
   0% { opacity: 0; }
   100% { opacity: 0.666; }
+}
+
+@keyframes barberpole {
+  100% { background-position: 100% 100%; }
 }
