@@ -29,7 +29,7 @@ export class CN_base_person_view extends CN_base_view {
     );
     notes_btn_el.addEventListener(
       "click",
-      async () => CN_session.navigate_to(this.get_model().get_notes_url()),
+      async () => await CN_session.navigate_to(this.get_model().get_notes_url()),
     );
     footer_el.append(notes_btn_el);
 
@@ -39,7 +39,7 @@ export class CN_base_person_view extends CN_base_view {
     );
     history_btn_el.addEventListener(
       "click",
-      async () => CN_session.navigate_to(this.get_model().get_history_url()),
+      async () => await CN_session.navigate_to(this.get_model().get_history_url()),
     );
     footer_el.append(history_btn_el);
 

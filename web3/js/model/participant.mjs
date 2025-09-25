@@ -77,7 +77,7 @@ export class CN_participant_model extends CN_base_person_model {
                 );
                 btn_el.addEventListener(
                   "click",
-                  async () => { CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
+                  async () => { await CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
                 );
                 return btn_el;
               },
@@ -92,7 +92,7 @@ export class CN_participant_model extends CN_base_person_model {
                 );
                 btn_el.addEventListener(
                   "click",
-                  async () => { CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
+                  async () => { await CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
                 );
                 return btn_el;
               },
@@ -107,7 +107,7 @@ export class CN_participant_model extends CN_base_person_model {
                 );
                 btn_el.addEventListener(
                   "click",
-                  async () => { CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
+                  async () => { await CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
                 );
                 return btn_el;
               },
@@ -245,7 +245,7 @@ export class CN_participant_view extends CN_base_person_view {
         '<button name="scripts" type="button" class="btn btn-light btn-outline-primary">Scripts</button>'
       );
       scripts_btn_el.addEventListener("click", async () => {
-        CN_session.navigate_to(this.get_model().get_scripts_url());
+        await CN_session.navigate_to(this.get_model().get_scripts_url());
       });
       footer_el.append(scripts_btn_el);
     }

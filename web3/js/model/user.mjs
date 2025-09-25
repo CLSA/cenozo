@@ -124,7 +124,7 @@ export class CN_user_list extends CN_base_list {
           } else {
             //show = false;
             modal.hide();
-            CN_session.navigate_to(`user/view/${user_id}`);
+            await CN_session.navigate_to(`user/view/${user_id}`);
             break;
           }
         }
