@@ -76,6 +76,20 @@ abstract class downloadable extends get
   /**
    * Override parent method
    */
+  public function prepare()
+  {
+    parent::prepare();
+
+    if( $this->get_argument( 'download', false ) )
+    {
+      // since the file is already encoded
+      $this->encode = false;
+    }
+  }
+
+  /**
+   * Override parent method
+   */
   public function validate()
   {
     parent::validate();
@@ -95,11 +109,9 @@ abstract class downloadable extends get
   {
     parent::execute();
 
-    // replace the data with the actual form, if requested
     if( $this->get_argument( 'download', false ) )
     {
-      // since the file is already encoded
-      $this->encode = false;
+      // replace the data with the actual form
       $this->set_data( $this->file_contents );
     }
   }
