@@ -346,14 +346,18 @@ CSS;
   --bs-link-color: PRIMARY(1.0);
   --bs-link-color-rgb: PRIMARY_DEC(1.0);
   --bs-primary-rgb: PRIMARY_DEC(1.0);
-  --bs-primary-hover-bg: PRIMARY_DEC(1.25);
-  --bs-primary-hover-border: PRIMARY_DEC(0.87);
+  --bs-primary-bg-subtle: PRIMARY_DEC(1.5);
+  --bs-primary-border-subtle: PRIMARY(1.25);
+  --bs-primary-hover-bg: PRIMARY_DEC(0.82);
+  --bs-primary-hover-border: PRIMARY_DEC(0.66);
   --bs-primary-active-bg: PRIMARY_DEC(0.75);
   --bs-primary-active-border: PRIMARY_DEC(0.4);
 
   --bs-secondary-rgb: SECONDARY_DEC(1.0);
-  --bs-secondary-hover-bg: SECONDARY_DEC(1.25);
-  --bs-secondary-hover-border: SECONDARY_DEC(0.87);
+  --bs-secondary-bg-subtle: PRIMARY_DEC(1.5);
+  --bs-secondary-border-subtle: PRIMARY(1.25);
+  --bs-secondary-hover-bg: SECONDARY_DEC(0.82);
+  --bs-secondary-hover-border: SECONDARY_DEC(0.66);
   --bs-secondary-active-bg: SECONDARY_DEC(0.75);
   --bs-secondary-active-border: SECONDARY_DEC(0.4);
 
@@ -366,7 +370,7 @@ CSS;
   }
 
   .bg-primary-subtle {
-    background-color: var(--bs-primary-rgb-subtle) !important;
+    background-color: var(--bs-primary-bg-subtle) !important;
   }
 
   .btn-primary {
@@ -435,7 +439,7 @@ CSS;
   }
 
   .bg-secondary-subtle {
-    background-color: var(--bs-secondary-rgb-subtle) !important;
+    background-color: var(--bs-secondary-bg-subtle) !important;
   }
 
   .accordion-button {
