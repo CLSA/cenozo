@@ -330,6 +330,8 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'export' == $module->get_subject() )
       {
+        $module->add_child( 'export_column' );
+        $module->add_child( 'export_restriction' );
         $module->add_child( 'export_file' );
       }
       else if( 'form' == $module->get_subject() )
