@@ -29,7 +29,7 @@
       }
 
       // annoyingly, Firefox tends to throw this exception a lot but we can ignore it
-      if ('can\'t access property "includes", args.site.enabledFeatures is undefined' != params.message) {
+      if ('can\'t access property "includes", args.site.enabledFeatures is undefined' == params.message) {
         ignore = true;
       }
 
