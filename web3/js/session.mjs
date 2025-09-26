@@ -364,7 +364,7 @@ export default {
     let leaf_model = this.get_leaf_model();
     if (null == leaf_model) leaf_model = new CN_home_model();
 
-    // first load all non-leaf models as their data may be needed by the leaf model
+    // first load all non-leaf models in parallel as their data may be needed by the leaf model
     await Promise.all(PATH_MODEL_LIST.slice(0, -1).map(model => model.get_action().on_load()));
 
     // now render and run the leaf module

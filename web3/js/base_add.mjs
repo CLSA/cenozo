@@ -90,13 +90,12 @@ export class CN_base_add extends CN_base_record {
     const valid = await this.validate();
     if (!valid) return;
 
-    // build the record
+    // build the record, running all get_formatted_property() async calls in parallel
     let record = {};
-    const set_property = async (prop) => record[prop.name] = await this.get_formatted_property(prop.name);
     await Promise.all(
       this.get_all_properties()
         .filter(prop => !prop.is_hidden(this.get_model()))
-        .map(prop => set_property(prop))
+        .map(prop => (async () => record[prop.name] = await this.get_formatted_property(prop.name))())
     );
 
     try {

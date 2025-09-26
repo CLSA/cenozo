@@ -423,7 +423,7 @@ export class CN_base_person_history extends CN_base_action {
   async on_load() {
     await super.on_load();
 
-    // load all category data
+    // load all category data, running all async get_data() functions in parallel
     this.#data_list = (await Promise.all( this.#category_list.map(category => category.get_data())))
       .reduce((list, a) => { list = list.concat(a); return list; }, [])
       .sort((a,b) => new Date(a.datetime) < new Date(b.datetime));

@@ -325,26 +325,18 @@ export class CN_participant_scripts extends CN_base_action {
     });
 
     // load the participant's status for all utility scripts in parallel
-    await Promise.all(
-      this.#script_list.map(script => {
-        const get_script_status = async () => {
-          script.token = null;
-          script.end_datetime = null;
-          try {
-            const data = await CN_api.get(
-              `script/${script.id}/pine_response/${this.get_model().get_identifier()}`
-            );
-            script.token = data.token;
-            script.end_datetime = data.end_datetime;
-          } catch (error) {
-            // ignore 404
-            if (404 != error.response.status) throw error;
-          }
-        };
-
-        return get_script_status();
-      })
-    );
+    await Promise.all(this.#script_list.map(script => (async () => {
+      script.token = null;
+      script.end_datetime = null;
+      try {
+        const data = await CN_api.get(`script/${script.id}/pine_response/${this.get_model().get_identifier()}`);
+        script.token = data.token;
+        script.end_datetime = data.end_datetime;
+      } catch (error) {
+        // ignore 404
+        if (404 != error.response.status) throw error;
+      }
+    })()));
   }
 
   /**

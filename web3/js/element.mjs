@@ -470,13 +470,14 @@ export default {
 
     if (null != base_name) crumb_list.push({ name: base_name, path: null });
 
-    await Promise.all(model_list.map(async model => {
+    // run all get_text() async calls in parallel
+    await Promise.all(model_list.map(model => (async () => {
       let crumb = { name: '...', path: "view" == model.get_action_name() ? model.get_view_url() : null };
       crumb_list.push(crumb);
 
       // get the name after we've added the crumb to the list, otherwise it may be out of order
       crumb.name = await model.get_action().get_text("crumb");
-    }));
+    })()));
 
     // add each crumb to the trail, interspersed by chevrons
     const root_el = this.create('<div></div>');
