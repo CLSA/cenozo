@@ -97,8 +97,6 @@ export class CN_base_view extends CN_base_record {
    * Extends parent method
    */
   async on_load() {
-    await super.on_load();
-
     // load the record
     const record = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
     this.get_all_properties().forEach(prop => {
@@ -115,6 +113,9 @@ export class CN_base_view extends CN_base_record {
         prop.state.commit();
       }
     });
+
+    // with the record loaded we can now run the parent's method
+    await super.on_load();
   }
 
   /**

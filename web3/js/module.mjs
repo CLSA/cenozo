@@ -91,6 +91,7 @@ export class CN_module extends CN_base_object {
   is_framework() { return this.#framework; }
   has_notation(type) { return this.#notations.hasOwnProperty(type); }
   get_notation(type) { return this.has_notation(type) ? this.#notations[type] : null; }
+  get_property_names() { return Object.keys(this.#properties); }
   has_property(name) { return this.#properties.hasOwnProperty(name); }
   get_property(name) { return this.#properties[name]; }
   has_child(module_name) { return this.#children.includes(module_name); }

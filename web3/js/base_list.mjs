@@ -187,15 +187,16 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   async on_load() {
+    const model = this.get_model();
+    const parent_model = model.get_parent_model();
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
     this.#total_records = response.headers.get('X-Total');
 
     // update the parent's child list record count
-    const parent_model = this.get_model().get_parent_model();
     if (parent_model && "view" == parent_model.get_action_name()) {
       const child_lists_el = parent_model.get_element().querySelector("div[name=child-lists]");
       if (child_lists_el) {
-        const btn_el = child_lists_el.querySelector(`button[name=${this.get_model().get_name()}]`);
+        const btn_el = child_lists_el.querySelector(`button[name=${model.get_name()}]`);
         if (btn_el) {
           btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\]/, ` [${this.#total_records}]`);
         }
@@ -205,10 +206,24 @@ export class CN_base_list extends CN_base_action {
     // replace the records at the current page with the returned records
     this.#records = await response.json();
 
+    // run all filters, creating a list of promises as we go
+    const promise_list = [];
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (CN_common.is_function(column.filter)) {
+        promise_list.push(...this.#records.map(record =>
+          (async () => record[col_name] = await column.filter(model, record[col_name]))()
+        ));
+      }
+    }
+
+    // run all filter promises in parallel
+    await Promise.all(promise_list);
+
     if (this.#is_choosing) {
       // make note of chosen records
       this.#choosing_list = {
-        current: this.#records.filter(r => r.chosen).map(r => r.id),
+        current: this.#records.filter(record => record.chosen).map(record => record.id),
         add: [],
         remove: [],
       };
