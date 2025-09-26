@@ -13,14 +13,14 @@ export class CN_export_restriction_model extends CN_base_model {
       columns: {
         export: { column: "export.title", title: "Export Type" },
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.export_columns,
+        ...CN_export_model.get_export_columns(),
         logic: { title: "Logic" },
         test: { title: "Test" },
         value: { title: "Value" },
       },
       properties: {
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.export_properties,
+        ...CN_export_model.get_export_properties(),
         logic: { title: "Logic", type: "enum" },
         test: { title: "Test", type: "enum" },
         value: { title: "Value" },

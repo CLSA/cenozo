@@ -16,12 +16,12 @@ export class CN_export_column_model extends CN_base_model {
       columns: {
         export: { column: "export.title", title: "Export Type" },
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.export_columns,
+        ...CN_export_model.get_export_columns(),
         include: { title: "Visible", type: "boolean" },
       },
       properties: {
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.export_properties,
+        ...CN_export_model.get_export_properties(),
         include: { title: "Visible", type: "boolean" },
       },
     });
