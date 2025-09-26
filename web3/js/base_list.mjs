@@ -212,7 +212,7 @@ export class CN_base_list extends CN_base_action {
       const column = this.#columns[col_name];
       if (CN_common.is_function(column.filter)) {
         promise_list.push(...this.#records.map(record =>
-          (async () => record[col_name] = await column.filter(model, record[col_name]))()
+          (async () => record[col_name] = await column.filter(model, record))()
         ));
       }
     }

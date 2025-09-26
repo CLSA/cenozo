@@ -1,4 +1,5 @@
 import CN_api from "../api.mjs"
+import CN_common from "../common.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
@@ -55,6 +56,140 @@ export class CN_export_model extends CN_base_model {
       },
     });
   }
+
+  /**
+   * Converts a table name to a user-friendly string
+   * @param string name
+   * @return string
+   */
+  static table_filter(name) {
+    return CN_common.is_string(name) ? CN_common.uc_words(name.replace(/_/g, " ")) : name;
+  }
+
+  /**
+   * Converts a column name to a user-friendly string
+   * @param string name
+   * @return string
+   */
+  static column_filter(name) {
+    return (
+      CN_common.is_string(name) ?
+      CN_common.uc_words(name.replace(/_/g, " ")).replace(/\b(Id|Uid)\b/, x => x.toUpperCase()) :
+      name
+    );
+  }
+
+  /**
+   * An object of table lookups used by the export_column and export_restriction models
+   */
+  static export_tables = {
+    address: "",
+    application: "application",
+    auxiliary: "collection",
+    consent: "consent_type",
+    event: "event_type",
+    hold: null,
+    participant: null,
+    participant_identifier: "identifier",
+    phone: null,
+    proxy: "proxy_type",
+    site: "",
+    stratum: "stratum",
+    study: "study",
+    trace: "trace_type",
+  };
+
+  /**
+   * An object of columns used by the export_column and export_restriction models
+   */
+  static export_columns = {
+    table_name: {
+      title: "Table",
+      filter: async (model, record) => this.table_filter(record.table_name),
+    },
+    subtype: {
+      title: "Sub-Type",
+      filter: async (model, record) => {
+        const table = this.export_tables[record.table_name];
+        return (
+          table && null != record.subtype ?
+          (await CN_api.get(`${table}/${record.subtype}`, { select: { column: "name" } })).name :
+          (null == record.subtype ? "N/A" : record.subtype)
+        );
+      },
+    },
+    column_name: {
+      title: "Column",
+      filter: async (model, record) => this.column_filter(record.column_name),
+    },
+  };
+
+  /**
+   * An object of properties used by the export_column and export_restriction models
+   */
+  static export_properties = {
+    table_name: {
+      title: "Table",
+      type: "enum",
+      enum: { get_enums: (model) => Object.keys(this.export_tables).map(name => ({
+        key: name,
+        value: this.table_filter(name),
+      })) },
+    },
+    subtype: {
+      title: "Sub-Type",
+      type: "enum",
+      enum: {
+        get_enums: async (model) => {
+          let enums = [];
+          const table_name = model.get_action().get_property("table_name").state.get();
+          if ("site" == table_name) {
+            enums = [
+              { key: "default", value: "Default" },
+              { key: "effective", value: "Effective" },
+              { key: "preferred", value: "Preferred" },
+            ];
+          } else if ("address" == table_name) {
+            enums = [
+              { key: "first", value: "First" },
+              { key: "primary", value: "Primary" },
+            ];
+          } else {
+            const table = this.export_tables[table_name];
+            if (null != table) {
+              const response = await CN_api.get(table, {
+                select: { column: ["id", "name"] },
+                modifier: { order: "name", limit: 1000000 },
+              });
+
+              enums = response.map(record => ({ key: record.id, value: record.name }));
+            }
+          }
+
+          return enums;
+        },
+      },
+      is_hidden: (model) => {
+        const table_name = model.get_action().get_property("table_name").state.get();
+        const table = this.export_tables[table_name];
+        return null == table;
+      }
+    },
+    column_name: {
+      title: "Column",
+      type: "enum",
+      enum: {
+        get_enums: async (model) => {
+          const table = model.get_action().get_property("table_name").state.get();
+          return CN_session.get_module(table).get_property_names().sort().map( name => ({
+            key: name,
+            // convert the column name to a user-friendly string
+            value: this.column_filter(name),
+          }));
+        },
+      },
+    },
+  };
 }
 
 export class CN_export_view extends CN_base_view {
