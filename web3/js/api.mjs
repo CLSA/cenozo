@@ -135,6 +135,25 @@ export default {
   },
 
   /**
+   * Convenience method for getting the total number of records available at a query-based path
+   * @param string path: The relative API path
+   * @param object params: Query URI parameters
+   * @return integer
+   */
+  count: async function(path, params) {
+    if (CN_common.is_object(params)) {
+      params.count = true;
+    } else if (CN_common.is_string(params) && 0 < params.length) {
+      params += "&count=true";
+    } else {
+      params = { params: true };
+    }
+
+    const response = await this.get(path, params, true);
+    return response.headers.get('X-Total');
+  },
+
+  /**
    * Convenience method for all PATCH API calls
    * @param strign path: The relative API path
    * @param object data: The data to patch

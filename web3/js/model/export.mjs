@@ -72,6 +72,26 @@ export class CN_export_model extends CN_base_model {
           },
           is_hidden: model => "add" == model.get_action_name(),
         },
+        participant_count: {
+          meta: false,
+          title: "Participant Count",
+          is_hidden: model => "add" == model.get_action_name(),
+          is_constant: () => true,
+          set_postfix: () => {
+            const btn_el = CN_element.create(
+              '<button type="button" class="btn btn-outline-primary ms-2">Calculate</button>'
+            );
+            btn_el.addEventListener(
+              "click",
+              async () => {
+                const state = this.get_action().get_property("participant_count").state;
+                state.set("(calculating...)");
+                state.set(await CN_api.count(`${this.get_view_url(null, "api")}/participant`));
+              },
+            );
+            return btn_el;
+          },
+        },
         description: { title: "Description", type: "text" },
       },
     });
@@ -215,6 +235,16 @@ export class CN_export_model extends CN_base_model {
 }
 
 export class CN_export_view extends CN_base_view {
+  /**
+   * Manually determine the participant count after loading the record
+   */
+  async on_load() {
+    await super.on_load();
+
+    // reset the partcipant count to unknown
+    this.get_property("participant_count").state.set("(not calculated)");
+  }
+
   /**
    * Add operations to the footer element
    */
