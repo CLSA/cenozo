@@ -13,15 +13,27 @@ export class CN_export_restriction_model extends CN_base_model {
       columns: {
         export: { column: "export.title", title: "Export Type" },
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.get_export_columns(),
         logic: { title: "Logic" },
+        ...CN_export_model.get_export_columns(),
         test: { title: "Test" },
         value: { title: "Value" },
       },
       properties: {
-        rank: { title: "Rank", type: "rank" },
+        rank: {
+          title: "Rank",
+          type: "rank",
+          on_change: async (control_el, success, action) => { await action.run(); },
+        },
+        logic: {
+          title: "Logic",
+          type: "enum",
+          // don't show logic if this is the first restriction
+          is_hidden: (model) => {
+            const rank = model.get_action().get_property("rank").state.get();
+            return !rank || 1 == rank;
+          },
+        },
         ...CN_export_model.get_export_properties(),
-        logic: { title: "Logic", type: "enum" },
         test: { title: "Test", type: "enum" },
         value: { title: "Value" },
       },

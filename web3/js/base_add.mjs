@@ -145,15 +145,25 @@ export class CN_base_add extends CN_base_record {
     const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
-    // set all default values once only
-    if (this.#default_values_applied.includes(prop_name)) return;
+    if (["enum", "rank"].includes(prop.type)) {
+      // see if the enum values have changed
+      let old_value = undefined;
+      const old_enum_values = Array.from(control_el.querySelectorAll("option")).reduce((list, option_el) => {
+        if ("" !== option_el.value) {
+          list.push({
+            key: option_el.value,
+            value: option_el.innerHTML,
+            disabled: option_el.getAttribute("disabled"),
+          });
+          if (option_el.selected) old_value = option_el.value;
+        }
+        return list;
+      }, []);
 
-    if (["boolean", "enum", "rank"].includes(prop.type)) {
-      if ("boolean" == prop.type) {
-        // set the boolean placeholder
-        const empty_option_el = control_el.querySelector('option[value=""]');
-        if (empty_option_el) empty_option_el.innerHTML = `(Select a ${prop.title}...)`;
-      } else {
+      if (
+        !this.#default_values_applied.includes(prop_name) ||
+        old_enum_values.length != prop.enum.values.length
+      ) {
         // rebuild the enum select options
         control_el.innerHTML = (
           `<option value="">(Select a ${prop.title}...)</option>`
@@ -161,26 +171,51 @@ export class CN_base_add extends CN_base_record {
         prop.enum.values.forEach(option => {
           const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
           if (option.disabled) option_el.setAttribute("disabled", true);
+          if (undefined !== old_value && old_value == option.key) option_el.selected = true;
           control_el.append(option_el);
         });
       }
 
-      control_el.querySelectorAll("option").forEach(option_el => {
+      // only apply the default value once
+      if (!this.#default_values_applied.includes(prop_name)) {
+        let default_value = prop.get_default(this.get_model());
+        control_el.querySelectorAll("option").forEach(option_el => {
+          default_value = null == default_value ? "" : default_value.toString();
+          if (option_el.value === default_value) {
+            option_el.selected = true;
+          } else {
+            option_el.removeAttribute("selected");
+          }
+        });
+        this.#default_values_applied.push(prop_name);
+      }
+    } else if ("boolean" == prop.type) {
+      // only apply the default value once
+      if (!this.#default_values_applied.includes(prop_name)) {
+        // set the boolean placeholder
+        const empty_option_el = control_el.querySelector('option[value=""]');
+        if (empty_option_el) empty_option_el.innerHTML = `(Select a ${prop.title}...)`;
+
         let default_value = prop.get_default(this.get_model());
         default_value = null == default_value ? "" : default_value.toString();
-        if (option_el.value === default_value) {
-          option_el.selected = true;
-        } else {
-          option_el.removeAttribute("selected");
-        }
-      });
+        control_el.querySelectorAll("option").forEach(option_el => {
+          if (option_el.value === default_value) {
+            option_el.selected = true;
+          } else {
+            option_el.removeAttribute("selected");
+          }
+        });
+        this.#default_values_applied.push(prop_name);
+      }
     } else if ("base64" != prop.type) {
-      let default_value = prop.get_default(this.get_model());
-      if (undefined !== default_value) control_el.value = default_value;
-      if ("typeahead" == prop.type) control_el.last_selected_value = control_el.value;
+      // only apply the default value once
+      if (!this.#default_values_applied.includes(prop_name)) {
+        let default_value = prop.get_default(this.get_model());
+        if (undefined !== default_value) control_el.value = default_value;
+        if ("typeahead" == prop.type) control_el.last_selected_value = control_el.value;
+        this.#default_values_applied.push(prop_name);
+      }
     }
-
-    this.#default_values_applied.push(prop_name);
   }
 
   /**

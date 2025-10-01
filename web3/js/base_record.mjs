@@ -241,7 +241,7 @@ export class CN_base_record extends CN_base_action {
           };
 
           const get_max_rank = async () => {
-            const max_rank = (await CN_api.get(this.get_model().get_base_path("api"), params))[0].max_rank;
+            let max_rank = (await CN_api.get(this.get_model().get_base_path("api"), params))[0].max_rank;
             if (null == max_rank) max_rank = 0;
             prop.enum = { values: [] };
             for(let r = 1; r <= max_rank; r++) {

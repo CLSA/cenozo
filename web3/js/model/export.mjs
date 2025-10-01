@@ -176,6 +176,7 @@ export class CN_export_model extends CN_base_model {
           key: name,
           value: this.table_filter(name),
         })) },
+        on_change: async (control_el, success, action) => { await action.run(); },
       },
       subtype: {
         title: "Sub-Type",
@@ -214,19 +215,23 @@ export class CN_export_model extends CN_base_model {
           const table_name = model.get_action().get_property("table_name").state.get();
           const table = this.get_export_table(table_name);
           return null == table;
-        }
+        },
       },
       column_name: {
         title: "Column",
         type: "enum",
         enum: {
-          get_enums: async (model) => {
+          get_enums: (model) => {
             const table = model.get_action().get_property("table_name").state.get();
-            return CN_session.get_module(table).get_property_names().sort().map( name => ({
-              key: name,
-              // convert the column name to a user-friendly string
-              value: this.column_filter(name),
-            }));
+            return (
+              table ?
+              CN_session.get_module(table).get_property_names().sort().map( name => ({
+                key: name,
+                // convert the column name to a user-friendly string
+                value: this.column_filter(name),
+              })) :
+              []
+            );
           },
         },
       },

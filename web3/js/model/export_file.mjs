@@ -49,6 +49,11 @@ export class CN_export_file_model extends CN_base_model {
       },
     });
   }
+
+  /**
+   * Only use the export model's "Generate" button to run reports
+   */
+  allow_add() { return false; }
 }
 
 export class CN_export_file_view extends CN_base_report_view {}
