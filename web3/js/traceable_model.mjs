@@ -128,7 +128,7 @@ export class CN_traceable_view extends CN_base_view {
   async on_delete() {
     // only test participants for tracing
     const parent_model = this.get_model().get_parent_model();
-    if ("participant" != parent_model.get_name()) return await super.on_delete(record);
+    if ("participant" != parent_model.get_name()) return await super.on_delete();
 
     // first confirm
     const modal = CN_element.confirm_modal({

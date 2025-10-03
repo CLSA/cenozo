@@ -120,6 +120,7 @@ export class CN_address_model extends CN_traceable_model {
 
         months: {
           title: "Available Months",
+          is_hidden: model => !model.get_action().get_property("active").state.get(),
           properties: {
             january: { title: "January", type: "boolean" },
             february: { title: "February", type: "boolean" },

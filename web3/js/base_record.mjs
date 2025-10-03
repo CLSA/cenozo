@@ -61,8 +61,13 @@ export class CN_base_record extends CN_base_action {
     };
 
     if ("$main" != group_name) {
-      // non-main groups must have an open property
+      // non-main groups must have an open property and is_hidden function
       this.#property_groups[group_name].open = group.hasOwnProperty("open") ? Boolean(group.open) : false;
+      this.#property_groups[group_name].is_hidden = (
+        group.hasOwnProperty("is_hidden") ?
+        group.is_hidden :
+        () => true
+      );
     }
   }
 
@@ -292,8 +297,17 @@ export class CN_base_record extends CN_base_action {
     );
 
     for (var group_name in this.#property_groups) {
-      for (var prop_name in this.#property_groups[group_name].properties) {
-        const prop = this.#property_groups[group_name].properties[prop_name];
+      const group = this.#property_groups[group_name];
+      if ("$main" != group_name) {
+        const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
+        if (group.is_hidden(this.get_model())) {
+          group_el.style.display = "none";
+        } else {
+          group_el.style.removeProperty("display");
+        }
+      }
+      for (var prop_name in group.properties) {
+        const prop = group.properties[prop_name];
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
         const control_el = document.getElementById(prop.id);
         if (null == control_el) return;
@@ -338,7 +352,7 @@ export class CN_base_record extends CN_base_action {
     for (var group_name in this.#property_groups) {
       if ("$main" != group_name) {
         if (null == accordion_el) {
-          accordion_el = CN_element.create('<div class="accordion accordion-flush"></div>');
+          accordion_el = CN_element.create(`<div class="accordion accordion-flush"></div>`);
         }
 
         const group_el = this.create_property_group_element(group_name);
@@ -382,7 +396,7 @@ export class CN_base_record extends CN_base_action {
     const group = this.#property_groups[group_name];
     const group_id = [this.get_model().get_unique_id(), group_name].join("-");
     return CN_element.create(`
-      <div class="accordion-item px-0">
+      <div name="${group_name}" class="accordion-item px-0">
         <div class="accordion-header">
           <button
             class="accordion-button ${group.open ? "" : "collapsed"} fw-bold py-2"
