@@ -98,28 +98,6 @@ export class CN_export_model extends CN_base_model {
   }
 
   /**
-   * Converts a table name to a user-friendly string
-   * @param string name
-   * @return string
-   */
-  static table_filter(name) {
-    return CN_common.is_string(name) ? CN_common.uc_words(name.replace(/_/g, " ")) : name;
-  }
-
-  /**
-   * Converts a column name to a user-friendly string
-   * @param string name
-   * @return string
-   */
-  static column_filter(name) {
-    return (
-      CN_common.is_string(name) ?
-      CN_common.uc_words(name.replace(/_/g, " ")).replace(/\b(Id|Uid)\b/, x => x.toUpperCase()) :
-      name
-    );
-  }
-
-  /**
    * Returns export table names
    * @return [string]
    */
@@ -143,7 +121,7 @@ export class CN_export_model extends CN_base_model {
     return {
       table_name: {
         title: "Table",
-        filter: async (model, record) => this.table_filter(record.table_name),
+        filter: async (model, record) => CN_common.pretty_print("table", record.table_name),
       },
       subtype: {
         title: "Sub-Type",
@@ -159,7 +137,7 @@ export class CN_export_model extends CN_base_model {
       },
       column_name: {
         title: "Column",
-        filter: async (model, record) => this.column_filter(record.column_name),
+        filter: async (model, record) => CN_common.pretty_print("column", record.column_name),
       },
     };
   }
@@ -174,7 +152,7 @@ export class CN_export_model extends CN_base_model {
         type: "enum",
         enum: { get_enums: (model) => this.get_export_table_names().map(name => ({
           key: name,
-          value: this.table_filter(name),
+          value: CN_common.pretty_print("table", name),
         })) },
         on_change: async (control_el, success, action) => { await action.run(); },
       },
@@ -228,7 +206,7 @@ export class CN_export_model extends CN_base_model {
               CN_session.get_module(table).get_property_names().sort().map( name => ({
                 key: name,
                 // convert the column name to a user-friendly string
-                value: this.column_filter(name),
+                value: CN_common.pretty_print("column", name),
               })) :
               []
             );

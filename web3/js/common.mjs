@@ -338,6 +338,9 @@ export default {
     return new Blob(byte_arrays, {type: content_type});
   },
 
+  /**
+   * ADD DOCS
+   */
   download_file: function (file, filename, mime_type) {
     let blob = null;
     if (this.is_blob(file)) blob = file;
@@ -349,5 +352,26 @@ export default {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(link.href);
+  },
+
+  /**
+   * Converts a column or table name to a user-friendly string
+   * @param string type
+   * @param string name
+   * @return string
+   */
+  pretty_print: function (type, name) {
+    if ("column" == type) {
+      return (
+        this.is_string(name) ?
+        this.uc_words(name.replace(/_/g, " ")).replace(/\b(Id|Uid)\b/, x => x.toUpperCase()) :
+        name
+      )
+    } else if ("table" == type) {
+      return this.is_string(name) ? this.uc_words(name.replace(/_/g, " ")) : name;
+    }
+
+    console.warn(`Tried to pretty-print type "${type}" which isn't implemented.`);
+    return name;
   },
 }
