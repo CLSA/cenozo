@@ -7,6 +7,115 @@ import { CN_base_action } from "../base_action.mjs"
 import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
   from "../base_person_model.mjs"
 
+export function create_participant_selection(unique_id=null) {
+  let identifier_list = [];
+
+  let list_id = "cps_list";
+  if (null != unique_id) list_id = `${unique_id}-${list_id}`;
+
+  let identifier_id = "cps_identifier_id";
+  if (null != unique_id) identifier_id = `${unique_id}-${identifier_id}`;
+
+
+  const el = CN_element.create_card({
+    header: "Participant Selection",
+    body: CN_element.create_form_element("text", {
+      id: list_id,
+      /*
+      on_change: (control_el) => {
+        console.log(control_el.value);
+//        el.querySelector("button[name=confirm]").removeAttribute("disabled);
+      },
+      */
+    }),
+    footer: CN_element.create('<div class="row"></div>'),
+  });
+
+  const row_el = el.querySelector("div.row");
+  const label_el = CN_element.create_form_label({ for: identifier_id, value: "Identifier" });
+  label_el.classList.add("col-sm-3");
+  row_el.append(label_el);
+  const element_el = CN_element.create_form_element("enum", {
+    id: identifier_id,
+    required: true,
+    // add the confirm button as a postfix to the identifier selector
+    set_postfix: () => CN_element.create(
+      '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
+    ),
+  });
+  element_el.classList.add("col-sm-9");
+  row_el.append(element_el);
+
+  const select_el = el.querySelector("select");
+  const confirm_btn_el = el.querySelector("button[name=confirm]");
+  const list_control_el = el.querySelector("textarea");
+
+  // populate the identifier selection list
+  select_el.setAttribute("disabled", "disabled");
+  CN_api.get("identifier", {
+    select: { column: ["id", "name", "regex"] },
+    modifier: { order: "name" },
+  }).then(response => {
+    identifier_list = response;
+    select_el.append(CN_element.create('<option value="null" selected>UID</option>'));
+    identifier_list.forEach(identifier => {
+      select_el.append(CN_element.create(`<option value="${identifier.id}">${identifier.name}</option>`));
+    });
+    select_el.removeAttribute("disabled");
+  });
+
+  // set the confirm button's disabled state to whether the list has any text in it
+  list_control_el.addEventListener("input", () => {
+    if (0 < list_control_el.value.length) {
+      confirm_btn_el.removeAttribute("disabled");
+    } else {
+      confirm_btn_el.setAttribute("disabled", "disabled");
+    }
+  });
+
+  // implement the confirm button
+  confirm_btn_el.addEventListener(
+    "click",
+    async () => {
+      const data = {};
+
+      // get the identifier's regex
+      const id = Number(document.getElementById(identifier_id).value);
+      let re = null;
+      if (id) {
+        data.identifier_id = id;
+        const regex = identifier_list.find(identifier => id === identifier.id).regex;
+        if (regex) re = new RegExp(regex);
+      }
+
+      // clean up the identifier list
+      data.identifier_list = document.getElementById(list_id).value
+        .toUpperCase()
+        // replace whitespace and separation chars with a space
+        .replace(/[\s,;|\/]/g, " ")
+        // remove extra space
+        .replace(/ +/g, " ")
+        // remove anything that isn't a letter, number, underscore or space
+        .replace(/[^a-zA-Z0-9_ ]/g, "")
+        // delimite string by spaces and create array from result
+        .split(" ")
+        // match the identifier's regex
+        .filter(identifier => null == re || null != identifier.match(re))
+        // make array unique
+        .filter((identifier, index, array) => index <= array.indexOf(identifier))
+        .sort();
+
+      // confirm with the server which identifiers are valid
+      const value = (await CN_api.post("participant", data)).join(" ");
+      document.getElementById(list_id).value = value;
+
+      if (0 == value.length) confirm_btn_el.setAttribute("disabled", "disabled");
+    },
+  );
+
+  return el;
+}
+
 export class CN_participant_model extends CN_base_person_model {
   constructor() {
     const columns = {
@@ -258,6 +367,206 @@ export class CN_participant_history extends CN_base_person_history {}
 
 export class CN_participant_notes extends CN_base_person_notes {}
 
+export class CN_participant_multiedit extends CN_base_action {
+  #module_list = {
+    participant: {
+      availability_type_id: null,
+      email: null,
+      email2: null,
+      gender_identity: null,
+      global_note: null,
+      honorific: null,
+      mass_email: null,
+      out_of_area: null,
+      language_id: null,
+      preferred_site_id: null,
+      sex: null,
+      pronouns: null,
+    },
+    consent: {
+      consent_type_id: null,
+      accept: null,
+      written: null,
+      datetime: null,
+      note: null,
+    },
+    event: {
+      event_type_id: null,
+      datetime: null,
+    },
+    hold: {
+      hold_type_id: null,
+      datetime: null,
+    },
+    proxy: {
+      proxy_type_id: null,
+      datetime: null,
+    },
+  };
+
+  /**
+   * Constructor
+   * @param base_model model: The model that the action belongs to
+   */
+  constructor(model) {
+    super("multiedit", model);
+
+    // store all module properties in this object
+    for (var module_name in this.#module_list) {
+      for (var prop_name in this.#module_list[module_name]) {
+        this.#module_list[module_name][prop_name] = CN_session.get_module(module_name).get_property(prop_name);
+      }
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return "Participant Multi-Edit";
+    }
+
+    if ("header" == type) {
+      return "Participant Multi-Edit";
+    }
+
+    return super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_navigate_to_parent() {
+    await CN_session.navigate_to("participant/list");
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_load() {
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_placeholder_element() {
+    return CN_element.create(`
+      <div>
+        <div class="text-info pb-2">
+          In order to edit multiple participants at once you must first select which participants to edit.
+          This can be done typing the unique identifiers (eg: A123456) of all participants you wish to have
+          included in the operation, then confirm that list to ensure each of the identifiers can be linked
+          to a participant.
+        </div>
+        <div class="text-info pb-2">
+          Once you have confirmed the list of participant identifiers you may apply changes to all participants
+          in the dialog box below.  Each tab allows you to make different types of changes to all selected
+          participants.
+        </div>
+      </div>
+        <div name="participant-list"></div>
+      </div>
+    `);
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_body_element() {
+    const body_el = CN_element.create(`
+      <div>
+        <div class="text-info pb-2">
+          In order to edit multiple participants at once you must first select which participants to edit.
+          This can be done typing the unique identifiers (eg: A123456) of all participants you wish to have
+          included in the operation, then confirm that list to ensure each of the identifiers can be linked
+          to a participant.
+        </div>
+        <div class="text-info pb-2">
+          Once you have confirmed the list of participant identifiers you may apply changes to all participants
+          in the dialog box below.  Each tab allows you to make different types of changes to all selected
+          participants.
+        </div>
+        <div name="participant-list" class="py-1"></div>
+        <div name="participant-edit" class="py-1">
+          <ul class="nav nav-tabs" role="tablist"></ul>
+          <div class="tab-content"></div>
+        </div>
+      </div>
+    `);
+
+    const participant_selection_el = create_participant_selection();
+    body_el.querySelector("[name=participant-list]").append(participant_selection_el);
+
+    const nav_el = body_el.querySelector("ul.nav-tabs");
+    const tab_content_el = body_el.querySelector("div.tab-content");
+    
+    for (var module_name in this.#module_list) {
+      nav_el.append(CN_element.create(`
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link ${"participant" == module_name ? "active" : ""}"
+            id="${module_name}-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#${module_name}-tab-pane"
+            type="button"
+            role="tab"
+            aria-controls="${module_name}-tab-pane"
+            aria-selected="${"participant" == module_name ? "true" : "false"}"
+          >${CN_common.pretty_print("table", module_name)}</button>
+        </li>
+      `));
+
+      const tab_pane_el = CN_element.create(`
+        <div
+          class="tab-pane fade border border-top-0 ${"participant" == module_name ? "show active" : ""}"
+          id="${module_name}-tab-pane"
+          role="tabpanel"
+          aria-labelledby="${module_name}-tab"
+          tabindex="0"
+        >
+          <div class="container-fluid p-3"></div>
+        </div>
+      `);
+
+      const columns_el = tab_pane_el.querySelector("div.container-fluid");
+      for (var prop_name in this.#module_list[module_name]) {
+        columns_el.append(CN_element.create(`
+          <div>${CN_common.pretty_print("column", prop_name)}</div>
+        `));
+      }
+
+      tab_content_el.append(tab_pane_el);
+    }
+
+    return body_el;
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_footer_element() {
+    const footer_el = CN_element.create(`
+      <div class="btn-group" role="group">
+        <button name="back" type="button" class="btn btn-primary">View Participant List</button>
+      </div>
+    `);
+
+    footer_el.querySelector("button[name=back]").addEventListener(
+      "click",
+      async () => await this.on_navigate_to_parent()
+    );
+
+    return footer_el;
+  }
+}
+
 export class CN_participant_scripts extends CN_base_action {
   #script_list = [];
   #reverse_messages = {
@@ -274,7 +583,7 @@ export class CN_participant_scripts extends CN_base_action {
    * @param base_model model: The model that the action belongs to
    */
   constructor(model) {
-    super("notes", model);
+    super("scripts", model);
   }
 
   /**
@@ -343,7 +652,7 @@ export class CN_participant_scripts extends CN_base_action {
    * Extend parent method
    */
   update_element() {
-    const script_list_el = this.get_body_element().querySelector("[name=script_list]");
+    const script_list_el = this.get_body_element().querySelector("[name=script-list]");
 
     script_list_el.innerHTML = "";
     this.#script_list.forEach(script => {
@@ -390,7 +699,7 @@ export class CN_participant_scripts extends CN_base_action {
               const response = await CN_api.post(`script/${script.id}/pine_response`, {
                 identifier: this.get_model().get_identifier(),
               })
-              script.token = (await response.json()).token;
+              script.token = response.token;
             });
           }
 
@@ -438,7 +747,7 @@ export class CN_participant_scripts extends CN_base_action {
         <div class="text-info pb-2">
           Select which utility script you wish to launch on behalf of the participant.
         </div>
-        <div name="script_list">
+        <div name="script-list">
           <button type="button" class="btn btn-outline-primary placeholder-glow w-100" disabled>
             <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*3)+1}"></span>
           </button>
@@ -462,7 +771,7 @@ export class CN_participant_scripts extends CN_base_action {
         <div class="text-info pb-2">
           Select which utility script you wish to launch on behalf of the participant.
         </div>
-        <div name="script_list"></div>
+        <div name="script-list"></div>
       </div>
     `);
 
