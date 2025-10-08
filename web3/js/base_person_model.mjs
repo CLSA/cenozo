@@ -746,7 +746,6 @@ export class CN_base_person_notes extends CN_base_action {
           }
         },
       });
-      input_el.classList.remove("col-sm-9");
       note_el.querySelector("[name=note]").append(input_el);
 
       // set the note and resize the textarea
@@ -809,7 +808,6 @@ export class CN_base_person_notes extends CN_base_action {
     const card_body_el = body_el.querySelector(".card-body");
 
     const new_note_el = CN_element.create_form_element("text", { id: "new_note" });
-    new_note_el.classList.remove("col-sm-9");
     card_body_el.append(new_note_el);
 
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
@@ -824,11 +822,12 @@ export class CN_base_person_notes extends CN_base_action {
     });
 
     // add the search field
-    body_el.querySelector("div.row").append(
-      CN_element.create_form_label({ for: "note_search", value: "Search" })
-    );
+    const label_el = CN_element.create_form_label({ for: "note_search", value: "Search" });
+    label_el.classList.add("col-sm-3");
+    body_el.querySelector("div.row").append(label_el);
 
     const search_el = CN_element.create_form_element("string", { id: "note_search" })
+    search_el.classList.add("col-sm-9");
     const input_el = search_el.querySelector("input");
     input_el.value = this.get_query_parameter("search");
     input_el.addEventListener("input", () => {

@@ -47,10 +47,10 @@ export class CN_search_result_list extends CN_base_list {
       '<div class="container-fluid bg-secondary p-2"><div class="row"></div></div>'
     );
     const label_el = CN_element.create_form_label({ for: id, value: "Search" });
-    label_el.classList.replace("col-sm-3", "col-sm-1");
+    label_el.classList.add("col-sm-1");
     query_el.querySelector("div.row").append(label_el);
     const element_el = CN_element.create_form_element("string", { id: id });
-    element_el.classList.replace("col-sm-9", "col-sm-11");
+    element_el.classList.add("col-sm-11");
     const input_el = element_el.querySelector("input");
     input_el.value = this.get_query_parameter("q");
     input_el.addEventListener("change", async () => {

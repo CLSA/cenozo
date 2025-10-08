@@ -188,7 +188,7 @@ export default {
       }
     );
 
-    return await response.text();
+    return await response.json();
   },
 
   /**

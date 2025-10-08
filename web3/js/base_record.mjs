@@ -66,7 +66,7 @@ export class CN_base_record extends CN_base_action {
       this.#property_groups[group_name].is_hidden = (
         group.hasOwnProperty("is_hidden") ?
         group.is_hidden :
-        () => true
+        () => false
       );
     }
   }
@@ -425,7 +425,9 @@ export class CN_base_record extends CN_base_action {
     const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    prop_el.append(CN_element.create_form_label({ for: prop.id, value: prop.title, help: prop.help }));
+    const label_el = CN_element.create_form_label({ for: prop.id, value: prop.title, help: prop.help });
+    label_el.classList.add("col-sm-3");
+    prop_el.append(label_el);
 
     if (!prop.element) {
       // determine the property's UI element based on the type
@@ -449,6 +451,7 @@ export class CN_base_record extends CN_base_action {
 
       params.action = this;
       prop.element = CN_element.create_form_element(prop.type, params);
+      prop.element.classList.add("col-sm-9");
     }
 
     // wait for each control element to be added to the DOM then bind it to the state

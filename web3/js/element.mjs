@@ -87,7 +87,7 @@ export default {
    * @return Element
    */
   create_form_label: function(params) {
-    const el = this.create(`<label class="col-sm-3 col-form-label text-end fw-bold">${params.value}</label>`);
+    const el = this.create(`<label class="col-form-label text-end fw-bold">${params.value}</label>`);
     if (undefined !== params.for) el.setAttribute("for", params.for);
     if (undefined !== params.name) el.setAttribute("name", params.name);
     if (params.help) {
@@ -108,13 +108,13 @@ export default {
    */
   create_form_element: function(type, params) {
     const el = this.create(`
-      <div class="col-sm-9 d-flex">
-        <div name="prefix" class="align-self-start d-flex"></div>
+      <div class="d-flex align-items-center">
+        <div name="prefix"></div>
         <div name="input" class="flex-fill">
           <div name="control"></div>
           <small name="error" class="text-danger"></small>
         </div>
-        <div name="postfix" class="align-self-start d-flex"></div>
+        <div name="postfix"></div>
       </div>
     `);
     el.params = params;
@@ -549,14 +549,22 @@ export default {
 
     // add a site enum property
     const site_el = this.create('<div class="row mb-3"></div>');
-    site_el.append(this.create_form_label({ for: "cn_site_role_modal_site", value: "Site" }));
-    site_el.append(this.create_form_element("enum", { id: "cn_site_role_modal_site", required: true }));
+    const site_label_el = this.create_form_label({ for: "cn_site_role_modal_site", value: "Site" });
+    site_label_el.classList.add("col-sm-3");
+    site_el.append(site_label_el);
+    const site_element_el = this.create_form_element("enum", { id: "cn_site_role_modal_site", required: true });
+    site_element_el.classList.add("col-sm-9");
+    site_el.append(site_element_el);
     form_el.append(site_el);
 
     // add a role enum property
     const role_el = this.create('<div class="row mb-3"></div>');
-    role_el.append(this.create_form_label({ for: "cn_role_role_modal_role", value: "Role" }));
-    role_el.append(this.create_form_element("enum", { id: "cn_role_role_modal_role", required: true }));
+    const role_label_el = this.create_form_label({ for: "cn_role_role_modal_role", value: "Role" });
+    role_label_el.classList.add("col-sm-3");
+    role_el.append(role_label_el);
+    const role_element_el = this.create_form_element("enum", { id: "cn_role_role_modal_role", required: true });
+    role_element_el.classList.add("col-sm-9");
+    role_el.append(role_element_el);
     form_el.append(role_el);
 
     // populate the site and role inputs when opening the modal
@@ -663,11 +671,10 @@ export default {
     // add a timezone typeahead property
     const timezone_el = this.create('<div class="row mb-3"></div>');
     form_el.append(timezone_el);
-    timezone_el.append(this.create_form_label({
-      for: "csm_timezone",
-      value: "Timezone"
-    }));
-    timezone_el.append(this.create_form_element("typeahead", {
+    const timezone_label_el = this.create_form_label({ for: "csm_timezone", value: "Timezone" });
+    timezone_label_el.classList.add("col-sm-3");
+    timezone_el.append(timezone_label_el);
+    const timezone_element_el = this.create_form_element("typeahead", {
       id: "cn_clock_settings_modal_timezone",
       required: true,
       typeahead: {
@@ -689,7 +696,9 @@ export default {
           ok_btn_el.setAttribute("disabled", "disabled");
         }
       },
-    }));
+    });
+    timezone_element_el.classList.add("col-sm-9");
+    timezone_el.append(timezone_element_el);
     const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
     timezone_control_el.value = CN_session.data.user.timezone;
     timezone_control_el.last_selected_value = CN_session.data.user.timezone;
@@ -701,8 +710,18 @@ export default {
 
     // add a use 12-hour clock boolean property
     const am_pm_el = this.create('<div class="row mb-3"></div>');
-    am_pm_el.append(this.create_form_label({ for: "cn_clock_settings_modal_am_pm", value: "Use 12-Hour Clock" }));
-    am_pm_el.append(this.create_form_element("boolean", { id: "cn_clock_settings_modal_am_pm", required: true }));
+    const am_pm_label_el = this.create_form_label({
+      for: "cn_clock_settings_modal_am_pm",
+      value: "Use 12-Hour Clock"
+    });
+    am_pm_label_el.classList.add("col-sm-3");
+    am_pm_el.append(am_pm_label_el);
+    const am_pm_element_el = this.create_form_element("boolean", {
+      id: "cn_clock_settings_modal_am_pm",
+      required: true
+    });
+    am_pm_element_el.classList.add("col-sm-9");
+    am_pm_el.append(am_pm_element_el);
     form_el.append(am_pm_el);
     document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
 
@@ -775,8 +794,16 @@ export default {
     element_list.forEach(element => {
       let id = `cn_account_modal_${element.id}`;
       const el = this.create('<div class="row mb-3"></div>');
-      el.append(this.create_form_label({ for: id, value: element.title }));
-      el.append(this.create_form_element(element.type, { id: id, required: true, on_change: on_change_fn }));
+      const label_el = this.create_form_label({ for: id, value: element.title });
+      label_el.classList.add("col-sm-3");
+      el.append(label_el);
+      const element_el = this.create_form_element(element.type, {
+        id: id,
+        required: true,
+        on_change: on_change_fn
+      });
+      element_el.classList.add("col-sm-9");
+      el.append(element_el);
       form_el.append(el);
       document.getElementById(id).value = CN_session.data.user[element.id];
     });
@@ -864,13 +891,13 @@ export default {
     element_list.forEach(element => {
       let id = `cn_password_modal_${element.id}`;
       const el = this.create('<div class="row mb-3"></div>');
-      el.append(this.create_form_label({ for: id, value: element.title }));
-      el.append(this.create_form_element("password", { id: id, required: true }));
+      const label_el = this.create_form_label({ for: id, value: element.title });
+      label_el.classList.add("col-sm-4");
+      el.append(label_el);
+      const element_el = this.create_form_element("password", { id: id, required: true });
+      element_el.classList.add("col-sm-8");
+      el.append(element_el);
       form_el.append(el);
-
-      // widen all labels
-      el.children[0].classList.replace("col-sm-3", "col-sm-4");
-      el.children[1].classList.replace("col-sm-9", "col-sm-8");
     });
 
     // track when the ok button should be enabled
@@ -1179,7 +1206,6 @@ export default {
     `);
 
     const input_el = this.create_form_element(config.input, { id: "cn_input_modal", required: config.required });
-    input_el.classList.remove("col-sm-9");
     modal_el.querySelector(".modal-body").append(input_el);
 
     document.getElementById("main-content").append(modal_el);
