@@ -14,7 +14,7 @@ const MODULE_MAP = new Map();
 /**
  * A private array of models based on the current path
  */
-var PATH_MODEL_LIST = [];
+let PATH_MODEL_LIST = [];
 
 /**
  * The session class which handles the application

@@ -113,7 +113,7 @@ export default {
     }
 
     let new_obj = {};
-    for(var prop_name in x) {
+    for (let prop_name in x) {
       new_obj[prop_name] = this.clone(x[prop_name]);
     }
 
@@ -127,7 +127,7 @@ export default {
    * @return boolean
    */
   is_datetime_type: function (type, subtype) {
-    var type_list = [];
+    let type_list = [];
     if ("date" == subtype) {
       type_list = ["datetimesecond", "datetime", "date", "yearmonth", "dob", "dod"];
     } else if ("time" == subtype) {
@@ -233,10 +233,10 @@ export default {
     let output = input;
     if (reverse) {
       if (this.is_string(output)) {
-        var parts = output.split(" ");
+        let parts = output.split(" ");
         if (2 == parts.length) {
           output = parts[0];
-          var unit = parts[1];
+          let unit = parts[1];
           if ("KB" == unit) output *= 1024;
           if ("MB" == unit) output *= 1048576;
           if ("GB" == unit) output *= 1073741824;
@@ -248,8 +248,8 @@ export default {
     } else {
       if (this.is_string(output)) output = parseInt(output);
       if (this.is_float(output)) {
-        var unit_list = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"];
-        var unit_index = 0;
+        let unit_list = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"];
+        let unit_index = 0;
         while (output >= 1024) {
           output /= 1024;
           unit_index++;

@@ -32,7 +32,7 @@ export class CN_base_list extends CN_base_action {
 
     // setup each column
     this.#columns = model.clone_columns();
-    for (var col_name in this.#columns) {
+    for (let col_name in this.#columns) {
       const column = this.#columns[col_name];
       if (!column.type) column.type = "string";
 

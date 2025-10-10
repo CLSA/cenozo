@@ -11,11 +11,11 @@
       browser = null;
     } else if (-1 != navigator.userAgent.indexOf("Chrome/")) {
       browser = "Chrome";
-      var version = navigator.userAgent.match(/Chrome\/([^.]+)/)[1];
+      let version = navigator.userAgent.match(/Chrome\/([^.]+)/)[1];
       if (CHROME_MIN_VER > version) bad_version = version;
     } else if (-1 != navigator.userAgent.indexOf("Firefox/")) {
       browser = "Firefox";
-      var version = navigator.userAgent.match(/Firefox\/([^.]+)/)[1];
+      let version = navigator.userAgent.match(/Firefox\/([^.]+)/)[1];
       if (FIREFOX_MIN_VER > version) bad_version = version;
     }
 

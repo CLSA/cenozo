@@ -82,6 +82,19 @@ export default {
   },
 
   /**
+   * Creates a large loading box
+   * @return Element
+   */
+  create_loading_box: function(text=null) {
+    if (null == text) text = "Loading...";
+    return this.create(`
+      <div class="container-fluid loading text-primary text-center fs-5 fw-bold" style="height: 9em;">
+       ${text}
+      </div>
+    `);
+  },
+
+  /**
    * Creates a form label
    * @param object params: An object that has value, for and name properties
    * @return Element
@@ -371,9 +384,9 @@ export default {
       }
 
       if (null == error && el.params.regex) {
-        var regex_list = CN_common.is_array(el.params.regex) ? el.params.regex : [el.params.regex];
-        for (var i = 0; i < regex_list.length; i++) {
-          var re = new RegExp(regex_list[i]);
+        let regex_list = CN_common.is_array(el.params.regex) ? el.params.regex : [el.params.regex];
+        for (let i = 0; i < regex_list.length; i++) {
+          let re = new RegExp(regex_list[i]);
           if (!re.test(control_el.value)) {
             error = "Invalid format";
             break;

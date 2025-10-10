@@ -259,7 +259,7 @@ export default {
       return select.map( item => this.shorten_select(item) );
     } else if (CN_common.is_object(select)) {
       let new_select = {};
-      for (var key in select) {
+      for (let key in select) {
         if (Object.prototype.hasOwnProperty.call(select, key)) {
           const value = this.shorten_select(select[key]);
           if ('alias' == key) key = 'a';
@@ -333,7 +333,7 @@ export default {
       return modifier.map( item => this.shorten_modifier(item) );
     } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};
-      for (var key in modifier) {
+      for (let key in modifier) {
         if (Object.prototype.hasOwnProperty.call(modifier, key)) {
           const value = this.shorten_modifier(modifier[key]);
           if ('alias' == key) key = 'a';
