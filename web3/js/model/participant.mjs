@@ -493,6 +493,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
           const element_el = CN_element.create_form_element(params.type, params);
           element_el.classList.add("col-sm-9");
+          element_el.setAttribute("name", "element");
           row_el.append(element_el);
 
           fields_el.append(row_el);
@@ -558,6 +559,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
           const element_el = CN_element.create_form_element(params.type, params);
           element_el.classList.add("col-sm-9");
+          element_el.setAttribute("name", "element");
           row_el.append(element_el);
 
           fields_el.append(row_el);
@@ -679,7 +681,13 @@ export class CN_participant_multiedit extends CN_base_action {
       proceed_btn_el.addEventListener("click", async () => {
         const data = CN_common.clone(this.#participant_selection);
 
-        // get the input list
+        // validate the form before proceeding
+        let valid = true;
+        Array.from(tab_el.querySelectorAll("div[name=element]")).forEach(el => {
+          if (!el.validate()) valid = false;
+        });
+        if (!valid) return;
+
         data["participant" == module_name ? "input_list" : module_name] = Array.from(
           tab_el.querySelectorAll(".form-control, .form-select")
         ).reduce((obj, el) => {
@@ -688,6 +696,16 @@ export class CN_participant_multiedit extends CN_base_action {
           }
           return obj;
         }, {});
+
+        if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
+          CN_element.message_modal({
+            static: true,
+            title: "No Columns Selected",
+            message: "Please select at least one column to edit.",
+            type: "danger",
+          }).show();
+          return;
+        }
 
         const response = await CN_api.post("participant", data);
         CN_element.message_modal({
