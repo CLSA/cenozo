@@ -12,7 +12,7 @@ export default {
    */
   is_type: function(x, type) {
     if ("class" == type) return this.is_type(x, "function") && x.toString().match(/^class/);
-    if ("object" == type) return "object" === typeof x && null != x;
+    if ("object" == type) return !this.is_type(x, "array") && "object" === typeof x && null != x;
     if ("array" == type) return Array.isArray(x);
     if ("blob" == type) return this.is_type(x, "object") && x instanceof Blob;
     if ("element" == type) return this.is_type(x, "object") && (x instanceof Element || x instanceof HTMLDocument);
