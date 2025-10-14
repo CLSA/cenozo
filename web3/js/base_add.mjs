@@ -73,11 +73,8 @@ export class CN_base_add extends CN_base_record {
     let valid = true;
 
     // validate all visible properties
-    this.get_all_properties().some(prop => {
-      if (!prop.is_hidden(this.get_model()) && !prop.element.validate()) {
-        valid = false;
-        return true;
-      }
+    this.get_all_properties().forEach(prop => {
+      if (!prop.is_hidden(this.get_model()) && !prop.element.validate()) valid = false;
     });
 
     return valid;
