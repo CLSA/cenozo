@@ -265,7 +265,7 @@ export class CN_base_action extends CN_base_object {
    * @return Element
    */
   create_placeholder_element() {
-    return "";
+    return CN_element.create_loading_box();
   }
 
   /**
