@@ -156,6 +156,10 @@ class post extends \cenozo\service\service
         else if( property_exists( $file, 'hold' ) )
         { // add the given hold record
           $db_hold = lib::create( 'database\hold' );
+          $db_hold->user_id = $db_user->id;
+          $db_hold->site_id = $db_site->id;
+          $db_hold->role_id = $db_role->id;
+          $db_hold->application_id = $db_application->id;
           foreach( $file->hold as $column => $value ) $db_hold->$column = $value;
           $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
           $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
