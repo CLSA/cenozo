@@ -311,6 +311,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
   };
 
+  #participant_selection_el = CN_create_participant_selection();
   #participant_selection = null;
   #selected_participant_properties = [];
 
@@ -350,7 +351,7 @@ export class CN_participant_multiedit extends CN_base_action {
   async on_load() {
     // reset the list and edit components
     this.#selected_participant_properties = [];
-    this.get_body_element().querySelector("[name=participant-list] textarea").value = "";
+    this.#participant_selection_el.reset();
     this.get_body_element().querySelector("[name=participant-edit]").style.display = "none";
 
     // make sure the module's classes have been loaded, then create a new model
@@ -581,13 +582,6 @@ export class CN_participant_multiedit extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_placeholder_element() {
-    return CN_element.create_loading_box();
-  }
-
-  /**
-   * Extend parent method
-   */
   create_body_element() {
     const body_el = CN_element.create(`
       <div class="container-fluid">
@@ -610,17 +604,16 @@ export class CN_participant_multiedit extends CN_base_action {
       </div>
     `);
 
-    const participant_selection_el = create_participant_selection();
-    participant_selection_el.addEventListener("selected", event => {
+    this.#participant_selection_el.addEventListener("selected", event => {
       this.#participant_selection = CN_common.clone(event.detail);
-      if (0 < this.#participant_selection.identifier_list.length) {
+      if (null != event.detail.response && 0 < event.detail.response.length) {
         body_el.querySelector("[name=participant-edit]").style.removeProperty("display");
       } else {
         body_el.querySelector("[name=participant-edit]").style.display = "none";
       }
     });
 
-    body_el.querySelector("[name=participant-list]").append(participant_selection_el);
+    body_el.querySelector("[name=participant-list]").append(this.#participant_selection_el);
 
     const nav_el = body_el.querySelector("ul.nav-tabs");
     const tab_content_el = body_el.querySelector("div.tab-content");
@@ -986,15 +979,15 @@ export class CN_participant_scripts extends CN_base_action {
 /**
  * ADD DOCS
  */
-export function create_participant_selection(unique_id=null) {
+export function CN_create_participant_selection(params = {}) {
   let identifiers = [];
   let selections = [];
 
   let list_html_id = "cps_list";
-  if (unique_id) list_html_id = `${unique_id}-${list_html_id}`;
+  if (params.hasOwnProperty("unique_id")) list_html_id = `${params.unique_id}-${list_html_id}`;
 
   let identifier_html_id = "cps_identifier_html_id";
-  if (unique_id) identifier_html_id = `${unique_id}-${identifier_html_id}`;
+  if (params.hasOwnProperty("unique_id")) identifier_html_id = `${params.unique_id}-${identifier_html_id}`;
 
   const el = CN_element.create_card({
     header: CN_element.create(`
@@ -1006,6 +999,7 @@ export function create_participant_selection(unique_id=null) {
     body: CN_element.create_form_element("text", { id: list_html_id }),
     footer: CN_element.create('<div class="row"></div>'),
   });
+  el.querySelector("div.card-body").classList.add("p-0");
   selections = [];
 
   const row_el = el.querySelector("div.row");
@@ -1060,7 +1054,7 @@ export function create_participant_selection(unique_id=null) {
       el.dispatchEvent(new CustomEvent("selected", {
         detail: {
           identifier_id: id,
-          identifier_list: selections,
+          response: null,
         }
       }));
     }
@@ -1070,7 +1064,8 @@ export function create_participant_selection(unique_id=null) {
   confirm_btn_el.addEventListener(
     "click",
     async () => {
-      const data = {};
+      const selections_el = document.getElementById(list_html_id);
+      const data = params.hasOwnProperty("data") ? CN_common.clone(params.data) : {};
 
       // get the identifier's regex
       let id = Number(document.getElementById(identifier_html_id).value);
@@ -1084,7 +1079,7 @@ export function create_participant_selection(unique_id=null) {
       }
 
       // clean up the identifier list
-      data.identifier_list = document.getElementById(list_html_id).value
+      data.identifier_list = selections_el.value
         .toUpperCase()
         // replace whitespace and separation chars with a space
         .replace(/[\s,;|\/]/g, " ")
@@ -1101,8 +1096,12 @@ export function create_participant_selection(unique_id=null) {
         .sort();
 
       // confirm with the server which identifiers are valid
-      selections = await CN_api.post("participant", data);
-      document.getElementById(list_html_id).value = selections.join(" ");
+      const response = await CN_api.post("participant", data);
+      selections = CN_common.is_object(response) ? response.identifier_list : response;
+      selections_el.value = selections.join(" ");
+      selections_el.style.height = "";
+      selections_el.style.height = selections_el.scrollHeight + "px";
+
       el.querySelector("div[name=count]").innerHTML = `(${selections.length} selected)`;
       if (0 == selections.length) confirm_btn_el.setAttribute("disabled", "disabled");
 
@@ -1110,11 +1109,27 @@ export function create_participant_selection(unique_id=null) {
       el.dispatchEvent(new CustomEvent("selected", {
         detail: {
           identifier_id: id,
-          identifier_list: selections,
+          response: response,
         }
       }));
     },
   );
+
+  el.reset = () => {
+    el.querySelector("div.card-header [name=count]").innerHTML = "(unconfirmed)";
+    const selections_el = document.getElementById(list_html_id);
+    const identifier_el = document.getElementById(identifier_html_id);
+
+    if (selections_el) {
+      selections_el.value = "";
+      selections_el.style.height = "";
+      selections_el.style.height = selections_el.scrollHeight + "px";
+    }
+
+    if (identifier_el) {
+      document.getElementById(identifier_html_id).value = null;
+    }
+  };
 
   return el;
 }
