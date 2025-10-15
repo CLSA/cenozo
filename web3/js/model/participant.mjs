@@ -311,8 +311,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
   };
 
-  #participant_selection_el = CN_create_participant_selection();
-  #participant_selection = null;
+  #participant_selection = new CN_participant_selection();
   #selected_participant_properties = [];
 
   /**
@@ -351,7 +350,7 @@ export class CN_participant_multiedit extends CN_base_action {
   async on_load() {
     // reset the list and edit components
     this.#selected_participant_properties = [];
-    this.#participant_selection_el.reset();
+    await this.#participant_selection.reset();
     this.get_body_element().querySelector("[name=participant-edit]").style.display = "none";
 
     // make sure the module's classes have been loaded, then create a new model
@@ -604,16 +603,15 @@ export class CN_participant_multiedit extends CN_base_action {
       </div>
     `);
 
-    this.#participant_selection_el.addEventListener("selected", event => {
-      this.#participant_selection = CN_common.clone(event.detail);
-      if (null != event.detail.response && 0 < event.detail.response.length) {
+    this.#participant_selection.on_selection_changed(() => {
+      if (this.#participant_selection.get_identifier_list().length) {
         body_el.querySelector("[name=participant-edit]").style.removeProperty("display");
       } else {
         body_el.querySelector("[name=participant-edit]").style.display = "none";
       }
     });
 
-    body_el.querySelector("[name=participant-list]").append(this.#participant_selection_el);
+    body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
 
     const nav_el = body_el.querySelector("ul.nav-tabs");
     const tab_content_el = body_el.querySelector("div.tab-content");
@@ -672,35 +670,42 @@ export class CN_participant_multiedit extends CN_base_action {
       `);
 
       proceed_btn_el.addEventListener("click", async () => {
-        const data = CN_common.clone(this.#participant_selection);
-
-        // validate the form before proceeding
-        let valid = true;
-        Array.from(tab_el.querySelectorAll("div[name=element]")).forEach(el => {
-          if (!el.validate()) valid = false;
-        });
-        if (!valid) return;
-
-        data["participant" == module_name ? "input_list" : module_name] = Array.from(
-          tab_el.querySelectorAll(".form-control, .form-select")
-        ).reduce((obj, el) => {
-          if (el.id) {
-            obj[el.id.replace(new RegExp(`^${module_name}_`), "")] = 0 == el.value.length ? null : el.value;
+        let response = null;
+        await CN_element.wait_for(async () => {
+          const data = {
+            identifier_id: this.#participant_selection.get_idtype(),
+            identifier_list: this.#participant_selection.get_identifier_list(),
           }
-          return obj;
-        }, {});
 
-        if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
-          CN_element.message_modal({
-            static: true,
-            title: "No Columns Selected",
-            message: "Please select at least one column to edit.",
-            type: "danger",
-          }).show();
-          return;
-        }
+          // validate the form before proceeding
+          let valid = true;
+          Array.from(tab_el.querySelectorAll("div[name=element]")).forEach(el => {
+            if (!el.validate()) valid = false;
+          });
+          if (!valid) return;
 
-        const response = await CN_api.post("participant", data);
+          data["participant" == module_name ? "input_list" : module_name] = Array.from(
+            tab_el.querySelectorAll(".form-control, .form-select")
+          ).reduce((obj, el) => {
+            if (el.id) {
+              obj[el.id.replace(new RegExp(`^${module_name}_`), "")] = 0 == el.value.length ? null : el.value;
+            }
+            return obj;
+          }, {});
+
+          if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
+            CN_element.message_modal({
+              static: true,
+              title: "No Columns Selected",
+              message: "Please select at least one column to edit.",
+              type: "danger",
+            }).show();
+            return;
+          }
+
+          response = await CN_api.post("participant", data);
+        });
+
         CN_element.message_modal({
           static: true,
           title: (
@@ -979,157 +984,226 @@ export class CN_participant_scripts extends CN_base_action {
 /**
  * ADD DOCS
  */
-export function CN_create_participant_selection(params = {}) {
-  let identifiers = [];
-  let selections = [];
+export class CN_participant_selection {
+  #params;
+  #element = null;
+  #count_el = null;
+  #identifier_list_el = null;
+  #idtype_list_el = null;
+  #confirm_btn_el = null;
+  #idtype_list = [];
+  #site_list = [];
+  #selection_changed_callbacks = [];
+  #validated = false;
 
-  let list_html_id = "cps_list";
-  if (params.hasOwnProperty("unique_id")) list_html_id = `${params.unique_id}-${list_html_id}`;
+  /**
+   * Contructor
+   * @param object params: can have unique_id (for element ids) and data (sent when confirming the list)
+   */
+  constructor(params={}) {
+    this.#params = {
+      unique_id: params.hasOwnProperty("unique_id") ? params.unique_id : null,
+      data: params.hasOwnProperty("data") ? params.data : {},
+    };
 
-  let identifier_html_id = "cps_identifier_html_id";
-  if (params.hasOwnProperty("unique_id")) identifier_html_id = `${params.unique_id}-${identifier_html_id}`;
+    const identifier_list_id = (
+      null != this.#params.unique_id ?
+      `${this.#params.unique_id}-identifier_list` :
+      "identifier_list"
+    );
 
-  const el = CN_element.create_card({
-    header: CN_element.create(`
-      <div class="d-flex">
-        <div class="flex-grow-1">Participant Selection</div>
-        <div name="count" class="fw-normal">(unconfirmed)</div>
-      </div>
-    `),
-    body: CN_element.create_form_element("text", { id: list_html_id }),
-    footer: CN_element.create('<div class="row"></div>'),
-  });
-  el.querySelector("div.card-body").classList.add("p-0");
-  selections = [];
+    const idtype_list_id = (
+      null != this.#params.unique_id ?
+      `${this.#params.unique_id}-idtype_list` :
+      "idtype_list"
+    );
 
-  const row_el = el.querySelector("div.row");
-  const label_el = CN_element.create_form_label({ for: identifier_html_id, value: "Identifier" });
-  label_el.classList.add("col-sm-3");
-  row_el.append(label_el);
-  const element_el = CN_element.create_form_element("enum", {
-    id: identifier_html_id,
-    required: true,
-    // add the confirm button as a postfix to the identifier selector
-    set_postfix: () => CN_element.create(
-      '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
-    ),
-  });
-  element_el.classList.add("col-sm-9");
-  row_el.append(element_el);
-
-  const select_el = el.querySelector("select");
-  const confirm_btn_el = el.querySelector("button[name=confirm]");
-  const list_control_el = el.querySelector("textarea");
-
-  // populate the identifier selection list
-  select_el.setAttribute("disabled", "disabled");
-  CN_api.get("identifier", {
-    select: { column: ["id", "name", "regex"] },
-    modifier: { order: "name" },
-  }).then(response => {
-    identifiers = response;
-    select_el.append(CN_element.create('<option value="null" selected>UID</option>'));
-    identifiers.forEach(identifier => {
-      select_el.append(CN_element.create(`<option value="${identifier.id}">${identifier.name}</option>`));
+    this.#element = CN_element.create_card({
+      header: CN_element.create(`
+        <div class="d-flex">
+          <div class="flex-grow-1">Participant Selection</div>
+          <div name="count" class="fw-normal">(unconfirmed)</div>
+        </div>
+      `),
+      body: CN_element.create_form_element("text", { id: identifier_list_id }),
+      footer: CN_element.create('<div class="row"></div>'),
     });
-    select_el.removeAttribute("disabled");
-  });
+    this.#element.querySelector("div.card-body").classList.add("p-0");
 
-  // set the confirm button's disabled state to whether the list has any text in it
-  list_control_el.addEventListener("input", () => {
-    const id = Number(document.getElementById(identifier_html_id).value);
+    // add the identifier-type list and confirm button
+    const row_el = this.#element.querySelector("div.row");
+    const label_el = CN_element.create_form_label({ for: idtype_list_id, value: "Identifier" });
+    label_el.classList.add("col-sm-3");
+    row_el.append(label_el);
+    const element_el = CN_element.create_form_element("enum", {
+      id: idtype_list_id,
+      required: true,
+      // add the confirm button as a postfix to the identifier-type selector
+      set_postfix: () => CN_element.create(
+        '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
+      ),
+    });
+    element_el.classList.add("col-sm-9");
+    row_el.append(element_el);
 
-    el.querySelector("div[name=count]").innerHTML = `(unconfirmed)`;
-    if (0 < list_control_el.value.length) {
-      confirm_btn_el.removeAttribute("disabled");
-    } else {
-      confirm_btn_el.setAttribute("disabled", "disabled");
-    }
+    this.#count_el = this.#element.querySelector("div[name=count]");
+    this.#identifier_list_el = this.#element.querySelector("#" + identifier_list_id);
+    this.#idtype_list_el = this.#element.querySelector("#" + idtype_list_id);
+    this.#confirm_btn_el = this.#element.querySelector("button[name=confirm]");
 
-    if (0 < selections.length) {
-      // reset the selections
-      selections = [];
+    // set the confirm button's disabled state to whether the list has any text in it
+    this.#identifier_list_el.addEventListener("input", () => {
+      this.#count_el.innerHTML = `(unconfirmed)`;
+      this.enable();
 
-      // dispatch an event notifying that the selected list has changed
-      el.dispatchEvent(new CustomEvent("selected", {
-        detail: {
-          identifier_id: id,
-          response: null,
-        }
-      }));
-    }
-  });
-
-  // implement the confirm button
-  confirm_btn_el.addEventListener(
-    "click",
-    async () => {
-      const selections_el = document.getElementById(list_html_id);
-      const data = params.hasOwnProperty("data") ? CN_common.clone(params.data) : {};
-
-      // get the identifier's regex
-      let id = Number(document.getElementById(identifier_html_id).value);
-      if (!id) id = null;
-
-      let re = null;
-      if (id) {
-        data.identifier_id = id;
-        const regex = identifiers.find(identifier => id === identifier.id).regex;
-        if (regex) re = new RegExp(regex);
+      if (this.#validated) {
+        // call all attached callbacks since the selection has changed
+        this.#validated = false;
+        this.#selection_changed_callbacks.forEach(callback => callback());
       }
+    });
 
-      // clean up the identifier list
-      data.identifier_list = selections_el.value
-        .toUpperCase()
-        // replace whitespace and separation chars with a space
-        .replace(/[\s,;|\/]/g, " ")
-        // remove extra space
-        .replace(/ +/g, " ")
-        // remove anything that isn't a letter, number, underscore or space
-        .replace(/[^a-zA-Z0-9_ ]/g, "")
-        // delimite string by spaces and create array from result
-        .split(" ")
-        // match the identifier's regex
-        .filter(identifier => null == re || null != identifier.match(re))
-        // make array unique
-        .filter((identifier, index, array) => index <= array.indexOf(identifier))
-        .sort();
+    this.#idtype_list_el.addEventListener("change", () => {
+      // call all attached callbacks since the selection has changed
+      this.#count_el.innerHTML = "(unconfirmed)";
+      this.#validated = false;
+      this.#selection_changed_callbacks.forEach(callback => callback());
+    });
 
-      // confirm with the server which identifiers are valid
-      const response = await CN_api.post("participant", data);
-      selections = CN_common.is_object(response) ? response.identifier_list : response;
-      selections_el.value = selections.join(" ");
-      selections_el.style.height = "";
-      selections_el.style.height = selections_el.scrollHeight + "px";
+    // confirm the identifier list with the server
+    this.#confirm_btn_el.addEventListener(
+      "click",
+      async () => {
+        const idtype_id = this.get_idtype();
 
-      el.querySelector("div[name=count]").innerHTML = `(${selections.length} selected)`;
-      if (0 == selections.length) confirm_btn_el.setAttribute("disabled", "disabled");
-
-      // dispatch an event notifying that the selected list has changed
-      el.dispatchEvent(new CustomEvent("selected", {
-        detail: {
-          identifier_id: id,
-          response: response,
+        // create the selected identifier-type's regex (if one exists)
+        let re = null;
+        if (idtype_id) {
+          const regex = this.#idtype_list.find(idtype => idtype_id === idtype.id).regex;
+          if (regex) re = new RegExp(regex);
         }
-      }));
-    },
-  );
 
-  el.reset = () => {
-    el.querySelector("div.card-header [name=count]").innerHTML = "(unconfirmed)";
-    const selections_el = document.getElementById(list_html_id);
-    const identifier_el = document.getElementById(identifier_html_id);
+        const data = {
+          ...this.#params.data,
+          identifier_id: idtype_id,
+          identifier_list: this.#identifier_list_el.value
+            .toUpperCase()
+            // replace whitespace and separation chars with a space
+            .replace(/[\s,;|\/]/g, " ")
+            // remove extra space
+            .replace(/ +/g, " ")
+            // remove anything that isn't a letter, number, underscore or space
+            .replace(/[^a-zA-Z0-9_ ]/g, "")
+            // delimite string by spaces and create array from result
+            .split(" ")
+            // match the identifier-type's regex
+            .filter(identifier => null == re || null != identifier.match(re))
+            // make array unique
+            .filter((identifier, index, array) => index <= array.indexOf(identifier))
+            .sort(),
+        };
 
-    if (selections_el) {
-      selections_el.value = "";
-      selections_el.style.height = "";
-      selections_el.style.height = selections_el.scrollHeight + "px";
+        // disable until the operation is complete
+        this.disable();
+
+        // call all attached callbacks since the selection has changed
+        this.#validated = false;
+        this.#selection_changed_callbacks.forEach(callback => callback());
+
+        // confirm with the server which identifiers are valid
+        const response = await CN_api.post("participant", data);
+
+        // note that the response may be an array or an object containing idtype_list and site_list props
+        let identifier_list = [];
+        this.#site_list = [];
+        if (CN_common.is_object(response)) {
+          identifier_list = response.identifier_list;
+          this.#site_list = response.site_list;
+        } else {
+          identifier_list = response;
+        }
+
+        this.#identifier_list_el.value = identifier_list.join(" ");
+        this.#identifier_list_el.style.height = "";
+        this.#identifier_list_el.style.height =
+          (0 == this.#identifier_list_el.length ? 60 : this.#identifier_list_el.scrollHeight) + "px";
+        this.#count_el.innerHTML = `(${identifier_list.length} selected)`;
+
+        // call all attached callbacks since the selection has changed
+        this.#validated = true;
+        this.#selection_changed_callbacks.forEach(callback => callback());
+
+        this.enable();
+      },
+    );
+
+    this.reset();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async reset() {
+    this.disable();
+
+    this.#validated = false;
+    this.#selection_changed_callbacks.forEach(callback => callback());
+
+    this.#idtype_list = await CN_api.get("identifier", {
+      select: { column: ["id", "name", "regex"] },
+      modifier: { order: "name" },
+    });
+
+    if (this.#element) {
+      this.#count_el.innerHTML = "(unconfirmed)";
+      this.#identifier_list_el.value = "";
+      this.#identifier_list_el.style.height = "";
+      this.#identifier_list_el.style.height = "60px";
+      this.#idtype_list_el.innerHTML = "";
+      this.#idtype_list_el.append(CN_element.create('<option value="null" selected>UID</option>'));
+      this.#idtype_list.forEach(idtype => {
+        this.#idtype_list_el.append(
+          CN_element.create(`<option value="${idtype.id}">${idtype.name}</option>`)
+        );
+      });
     }
 
-    if (identifier_el) {
-      document.getElementById(identifier_html_id).value = null;
-    }
-  };
+    this.enable();
+  }
 
-  return el;
+  /**
+   * ADD DOCS
+   */
+  enable() {
+    this.#identifier_list_el.removeAttribute("disabled");
+    this.#idtype_list_el.removeAttribute("disabled");
+
+    // the confirm button is only enabled when the identifier list is not empty
+    if (0 < this.#identifier_list_el.value.length) {
+      this.#confirm_btn_el.removeAttribute("disabled");
+    } else {
+      this.#confirm_btn_el.setAttribute("disabled", "disabled");
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  disable() {
+    this.#identifier_list_el.setAttribute("disabled", "disabled");
+    this.#idtype_list_el.setAttribute("disabled", "disabled");
+    this.#confirm_btn_el.setAttribute("disabled", "disabled");
+  }
+
+  /**
+   * Access methods
+   */
+  get_element() { return this.#element; }
+  on_selection_changed(callback) { this.#selection_changed_callbacks.push(callback); }
+  get_identifier_list() {
+    const str = this.#identifier_list_el.value;
+    return this.#validated && 0 < str.length ? str.split(" ") : [];
+  }
+  get_site_list() { return this.#site_list; }
+  get_idtype() { return "null" == this.#idtype_list_el.value ? null : Number(this.#idtype_list_el.value); }
 }
