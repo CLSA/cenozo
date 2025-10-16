@@ -188,7 +188,13 @@ export default {
       }
     );
 
-    return await response.json();
+    // return the response decoded as JSON if possible
+    const body = await response.text();
+    try {
+      return JSON.parse(body);
+    } catch (error) {
+      return body;
+    }
   },
 
   /**

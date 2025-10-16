@@ -706,7 +706,7 @@ export default {
         if (valid) {
           ok_btn_el.removeAttribute("disabled");
         } else {
-          ok_btn_el.setAttribute("disabled", "disabled");
+          ok_btn_el.setAttribute("disabled", true);
         }
       },
     });
@@ -793,7 +793,7 @@ export default {
       if (valid) {
         ok_btn_el.removeAttribute("disabled");
       } else {
-        ok_btn_el.setAttribute("disabled", "disabled");
+        ok_btn_el.setAttribute("disabled", true);
       }
     };
 
@@ -926,7 +926,7 @@ export default {
       ) {
         ok_btn_el.removeAttribute("disabled");
       } else {
-        ok_btn_el.setAttribute("disabled", "disabled");
+        ok_btn_el.setAttribute("disabled", true);
       }
     };
 
