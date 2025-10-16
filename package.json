@@ -14,14 +14,6 @@
   },
   "dependencies": {
     "bootstrap": "*",
-    "bootstrap-icons": "*",
-    "chart.js": "*",
-    "diff": "*",
-    "file-saver": "*",
-    "fullcalendar": "*",
-    "jsonpath": "*",
-    "moment": "*",
-    "moment-timezone": "*",
-    "signature_pad": "*"
+    "bootstrap-icons": "*"
   }
 }

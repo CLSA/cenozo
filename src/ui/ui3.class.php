@@ -686,13 +686,7 @@ class ui3 extends \cenozo\base_object
   protected function add_interface_libs()
   {
     // determine which optional libs are installed
-    $file_list = [
-      'chart.js/dist/chart.umd.js',
-      'file-saver/dist/FileSaver.min.js',
-      'diff/dist/diff.js',
-      'jsonpath/jsonpath.min.js',
-      'signature_pad/dist/signature_pad.umd.min.js',
-    ];
+    $file_list = [];
     foreach( $file_list as $file )
     {
       $filename = sprintf( '%s/lib/%s', WEB_PATH, $file );
