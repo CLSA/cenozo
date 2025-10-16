@@ -278,6 +278,17 @@ export class CN_participant_multiedit extends CN_base_action {
         pronouns: null,
       },
     },
+    collection: {
+      module: null,
+      enum: {
+        path: `application/${CN_session.data.application.id}/collection`,
+        select: { column: ["name", { column: "locked", alias: "disabled" }] },
+        modifier: {
+          where: { column: "collection.active", operator: "=", value: true },
+          order: "collection.name",
+        },
+      },
+    },
     consent: {
       module: null,
       properties: {
@@ -302,12 +313,20 @@ export class CN_participant_multiedit extends CN_base_action {
         datetime: null,
       },
     },
+    note: {
+      module: null,
+      // special so properties are not required
+    },
     proxy: {
       module: null,
       properties: {
         proxy_type_id: null,
         datetime: null,
       },
+    },
+    study: {
+      module: null,
+      enum: { path: "study" },
     },
   };
 
@@ -356,74 +375,63 @@ export class CN_participant_multiedit extends CN_base_action {
     // make sure the module's classes have been loaded, then create a new model
     const promise_list = [];
     for (let module_name in this.#module_list) {
-      // only do this once
-      if (this.#module_list[module_name].module) continue;
+      const mod = this.#module_list[module_name];
 
-      this.#module_list[module_name].module = CN_session.get_module(module_name);
-      await this.#module_list[module_name].module.load_classes();
-      const model = this.#module_list[module_name].module.create_model();
-      const properties = model.clone_properties();
+      // don't load the module if it has already been loaded or for the note module
+      if (mod.moudle || "note" == module_name) continue;
 
-      // find each property (some may be in sub-groups) and populate any enum values
-      for (let prop_name in this.#module_list[module_name].properties) {
-        const module_prop = this.#module_list[module_name].module.get_property(prop_name);
-        let prop = null;
+      mod.module = CN_session.get_module(module_name);
+      await mod.module.load_classes();
+      const model = mod.module.create_model();
 
-        if (Object.keys(properties).includes(prop_name)) {
-          prop = properties[prop_name];
-        } else {
-          // look in the sub-groups
-          for (let p in properties) {
-            if (properties[p].hasOwnProperty("properties")) {
-              if (Object.keys(properties[p].properties).includes(prop_name)) {
-                prop = properties[p].properties[prop_name];
-                break;
+      if ("note" == module_name) {
+      } else if (mod.enum) {
+        // load dynamic enums
+        promise_list.push((async () => {
+          mod.enum.values = await model.get_enum_values(module_name, {
+            type: "enum",
+            enum: mod.enum
+          });
+        })());
+      } else if (mod.hasOwnProperty("properties")) {
+        const properties = model.clone_properties();
+
+        // find each property (some may be in sub-groups) and populate any enum values
+        for (let prop_name in mod.properties) {
+          const module_prop = mod.module.get_property(prop_name);
+          let prop = null;
+
+          if (Object.keys(properties).includes(prop_name)) {
+            prop = properties[prop_name];
+          } else {
+            // look in the sub-groups
+            for (let p in properties) {
+              if (properties[p].hasOwnProperty("properties")) {
+                if (Object.keys(properties[p].properties).includes(prop_name)) {
+                  prop = properties[p].properties[prop_name];
+                  break;
+                }
               }
             }
           }
-        }
 
-        // if we didn't find the prop then ignore it
-        if (null == prop) {
-          delete this.#module_list[module_name].properties[prop_name];
-          continue;
-        }
-
-        // load dynamic enums
-        if ("enum" == prop.type) {
-          if (CN_common.is_object(prop.enum) && prop.enum.path) {
-            // populate the enum
-            const params = {
-              select: prop.enum.select ? prop.enum.select : { column: "name" },
-              modifier: prop.enum.modifier ? prop.enum.modifier : { order: "name" },
-            };
-
-            // always add a limit to make sure that list isn't truncated
-            if (!params.modifier.limit) params.modifier.limit = 1000;
-
-            // create an async function and add it to the promise list so they can be run in parallel
-            const get_enums = async () => {
-              // set the enum values
-              prop.enum.values = (await CN_api.get(prop.enum.path, params)).reduce((list, record) => {
-                list.push({
-                  ...record,
-                  key: record.id,
-                  value: record.name,
-                  disabled: [true, "true", 1, "1"].includes(record.disabled),
-                });
-                return list;
-              }, []);
-            };
-            promise_list.push(get_enums());
-          } else {
-            // enum properties without an enum path use the column definition
-            let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-            if (null == matches) throw new Error(`Property ${prop.name} has no valid enum values.`);
-            prop.enum = { values: matches[1].split("','").map(v => ({ key: v, value: v })) };
+          // if we didn't find the prop then ignore it
+          if (null == prop) {
+            delete mod.properties[prop_name];
+            continue;
           }
-        }
 
-        this.#module_list[module_name].properties[prop_name] = prop;
+          // load dynamic enums
+          promise_list.push((async () => {
+            const values = await model.get_enum_values(prop_name, prop);
+            if (null != values) {
+              if (!CN_common.is_object(prop.enum)) prop.enum = {};
+              prop.enum.values = values;
+            }
+          })());
+
+          mod.properties[prop_name] = prop;
+        }
       }
     }
 
@@ -436,9 +444,8 @@ export class CN_participant_multiedit extends CN_base_action {
   update_element() {
     // implement the content in each tab
     for (let module_name in this.#module_list) {
+      const mod = this.#module_list[module_name];
       const fields_el = this.get_body_element().querySelector(`#${module_name}-tab-pane div[name=fields]`);
-      const properties = this.#module_list[module_name].properties;
-
       if ("participant" == module_name) {
         // get all input values
         const prev_params = Array.from(
@@ -453,7 +460,7 @@ export class CN_participant_multiedit extends CN_base_action {
         // create a list of all selected participant properties
         this.#selected_participant_properties.forEach(prop_name => {
           const module_prop = this.#module_list.participant.module.get_property(prop_name);
-          const prop = properties[prop_name];
+          const prop = mod.properties[prop_name];
           const prop_id = `participant_${prop_name}`;
           const row_el = CN_element.create('<div class="row mb-3"></div>');
 
@@ -521,9 +528,9 @@ export class CN_participant_multiedit extends CN_base_action {
           '<select class="form-select mb-3" name="participant_column_select"></select>'
         );
         select_el.append(CN_element.create('<option>Select which column to edit</option>'));
-        for (let prop_name in properties) {
+        for (let prop_name in mod.properties) {
           if (!this.#selected_participant_properties.includes(prop_name)) {
-            const prop = properties[prop_name];
+            const prop = mod.properties[prop_name];
             select_el.append(CN_element.create(`<option value="${prop_name}">${prop.title}</option>`));
           }
         }
@@ -535,43 +542,137 @@ export class CN_participant_multiedit extends CN_base_action {
         });
 
         fields_el.append(select_el);
-      } else if (0 == fields_el.children.length) { // only add non-participant properties to the UI once
-        for (let prop_name in properties) {
-          const module_prop = this.#module_list[module_name].module.get_property(prop_name);
-          const prop = properties[prop_name];
-          const prop_id = `${module_name}_${prop_name}`;
-          const row_el = CN_element.create('<div class="row mb-3"></div>');
+      } else {
+        // only add non-participant properties to the UI once
+        if (0 != fields_el.children.length) continue;
 
-          const label_el = CN_element.create_form_label({ for: prop_id, value: prop.title });
-          label_el.classList.add("col-sm-3");
-          row_el.append(label_el);
+        if ("note" == module_name) {
+          // add the sticky boolean
+          let sticky_prop_id = `${module_name}_sticky`;
+          const sticky_row_el = CN_element.create('<div class="row mb-3"></div>');
 
-          // determine the property's UI element based on the type
-          let params = CN_common.clone(prop);
-          params.id = prop_id;
-          if (!params.type) params.type = "string";
-          if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
-          if (undefined === params.placeholder) params.placeholder = "(empty)";
+          const sticky_label_el = CN_element.create_form_label({ for: sticky_prop_id, value: "Sticky" });
+          sticky_label_el.classList.add("col-sm-3");
+          sticky_row_el.append(sticky_label_el);
 
-          if (undefined === params.max_length && module_prop && module_prop.max_length) {
-            params.max_length = module_prop.max_length;
-          }
+          const sticky_element_el = CN_element.create_form_element(
+            "boolean",
+            { id: sticky_prop_id, required: true }
+          );
+          sticky_element_el.classList.add("col-sm-9");
+          sticky_element_el.setAttribute("name", "element");
+          sticky_row_el.append(sticky_element_el);
 
-          const element_el = CN_element.create_form_element(params.type, params);
-          element_el.classList.add("col-sm-9");
-          element_el.setAttribute("name", "element");
-          row_el.append(element_el);
+          fields_el.append(sticky_row_el);
 
-          fields_el.append(row_el);
+          // add the note text box
+          let note_prop_id = `${module_name}_note`;
+          const note_row_el = CN_element.create('<div class="row mb-3"></div>');
 
-          // build the enum select inputs
-          if ("enum" == params.type) {
-            const control_el = element_el.querySelector("select");
-            prop.enum.values.forEach(option => {
-              const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
-              if (option.disabled) option_el.setAttribute("disabled", true);
-              control_el.append(option_el);
-            });
+          const note_label_el = CN_element.create_form_label({ for: note_prop_id, value: "Note" });
+          note_label_el.classList.add("col-sm-3");
+          note_row_el.append(note_label_el);
+
+          const note_element_el = CN_element.create_form_element(
+            "text",
+            { id: note_prop_id, required: true }
+          );
+          note_element_el.classList.add("col-sm-9");
+          note_element_el.setAttribute("name", "element");
+          note_row_el.append(note_element_el);
+
+          fields_el.append(note_row_el);
+        } else if (mod.enum) {
+          const pretty_module_name = CN_common.pretty_print("table", module_name);
+
+          // add the opertion enum (add/remove)
+          let op_prop_id = `${module_name}_operation`;
+          const op_row_el = CN_element.create('<div class="row mb-3"></div>');
+
+          const op_label_el = CN_element.create_form_label({ for: op_prop_id, value: "Operation" });
+          op_label_el.classList.add("col-sm-3");
+          op_row_el.append(op_label_el);
+
+          const op_element_el = CN_element.create_form_element(
+            "enum",
+            { id: op_prop_id, required: true }
+          );
+          op_element_el.classList.add("col-sm-9");
+          op_element_el.setAttribute("name", "element");
+          op_row_el.append(op_element_el);
+
+          const op_control_el = op_element_el.querySelector("select");
+          op_control_el.append(
+            CN_element.create(`<option value="add">Add to ${pretty_module_name}</option>`)
+          );
+          op_control_el.append(
+            CN_element.create(`<option value="remove">Remove from ${pretty_module_name}</option>`)
+          );
+
+          fields_el.append(op_row_el);
+
+          // add the item enum
+          let item_prop_id = `${module_name}_id`;
+          const item_row_el = CN_element.create('<div class="row mb-3"></div>');
+
+          const item_label_el = CN_element.create_form_label({ for: item_prop_id, value: pretty_module_name });
+          item_label_el.classList.add("col-sm-3");
+          item_row_el.append(item_label_el);
+
+          const item_element_el = CN_element.create_form_element(
+            "enum",
+            { id: item_prop_id, required: true }
+          );
+          item_element_el.classList.add("col-sm-9");
+          item_element_el.setAttribute("name", "element");
+          item_row_el.append(item_element_el);
+
+          const item_control_el = item_element_el.querySelector("select");
+          mod.enum.values.forEach(option => {
+            const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+            if (option.disabled) option_el.setAttribute("disabled", true);
+            item_control_el.append(option_el);
+          });
+
+          fields_el.append(item_row_el);
+        } else if (mod.hasOwnProperty("properties")) {
+          for (let prop_name in mod.properties) {
+            const module_prop = mod.module.get_property(prop_name);
+            const prop = mod.properties[prop_name];
+            const prop_id = `${module_name}_${prop_name}`;
+            const row_el = CN_element.create('<div class="row mb-3"></div>');
+
+            const label_el = CN_element.create_form_label({ for: prop_id, value: prop.title });
+            label_el.classList.add("col-sm-3");
+            row_el.append(label_el);
+
+            // determine the property's UI element based on the type
+            let params = CN_common.clone(prop);
+            params.id = prop_id;
+            if (!params.type) params.type = "string";
+            if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
+            if (undefined === params.placeholder) params.placeholder = "(empty)";
+
+            if (undefined === params.max_length && module_prop && module_prop.max_length) {
+              params.max_length = module_prop.max_length;
+            }
+
+            const element_el = CN_element.create_form_element(params.type, params);
+            element_el.classList.add("col-sm-9");
+            element_el.setAttribute("name", "element");
+            row_el.append(element_el);
+
+            // build the enum select options
+            if ("enum" == params.type) {
+              const control_el = element_el.querySelector("select");
+              prop.enum.values.forEach(option => {
+                const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+                if (option.disabled) option_el.setAttribute("disabled", true);
+                control_el.append(option_el);
+              });
+            }
+
+            fields_el.append(row_el);
           }
         }
       }
@@ -617,6 +718,7 @@ export class CN_participant_multiedit extends CN_base_action {
     const tab_content_el = body_el.querySelector("div.tab-content");
 
     for (let module_name in this.#module_list) {
+      const mod = this.#module_list[module_name];
       const pretty_module_name = CN_common.pretty_print("table", module_name);
 
       nav_el.append(CN_element.create(`
@@ -645,8 +747,8 @@ export class CN_participant_multiedit extends CN_base_action {
           <div class="container-fluid text-info">${
             "participant" == module_name ?
             "Select which details to edit for all selected participants:" :
-            ["collection", "study"].includes(module_name) ?
-            `Select whether to add/remove all selected participants to/from the ${pretty_module_name}:` :
+            mod.enum ?
+            `Select whether to add/remove all selected participants to/from the selected ${pretty_module_name}:` :
             `Select the ${pretty_module_name} details to be added to all selected participants:`
           }</div>
           <hr />
@@ -663,8 +765,8 @@ export class CN_participant_multiedit extends CN_base_action {
         <button class="btn btn-primary" name="proceed">${
           "participant" == module_name ?
           "Change Details" :
-          ["collection", "study"].includes(module_name) ?
-          `Add to ${pretty_module_name}` :
+          mod.enum ?
+          `Change ${pretty_module_name}` :
           `Add ${pretty_module_name}`
         }</button>
       `);
@@ -684,6 +786,7 @@ export class CN_participant_multiedit extends CN_base_action {
           });
           if (!valid) return;
 
+          // build the data object posted to the server
           data["participant" == module_name ? "input_list" : module_name] = Array.from(
             tab_el.querySelectorAll(".form-control, .form-select")
           ).reduce((obj, el) => {
@@ -706,22 +809,28 @@ export class CN_participant_multiedit extends CN_base_action {
           response = await CN_api.post("participant", data);
         });
 
+        let message = `The ${pretty_module_name} record has been added to ${response} participant(s).`;
+        if ("participant" == module_name) {
+          message = `The listed details have been successfully updated in ${response} participant record(s).`;
+        } else if (mod.enum) {
+          const operation = tab_el.querySelector(`#${module_name}_operation`).value;
+          const id = Number(tab_el.querySelector(`#${module_name}_id`).value);
+          const name = mod.enum.values.find(option => id === option.id).name;
+          message = `All selected participants have been ${
+            "add" == operation ? "added to" : "removed from"
+          } the "${name}" ${pretty_module_name}.`;
+        }
+
         CN_element.message_modal({
           static: true,
           title: (
             "participant" == module_name ?
             "Participant Details Updated" :
-            ["collection", "study"].includes(module_name) ?
+            mod.enum ?
             `${pretty_module_name} Updated` :
             `${pretty_module_name} Records Added`
           ),
-          message: (
-            "participant" == module_name ?
-            `The listed details have been successfully updated in ${response} participant record(s).` :
-            ["collection", "study"].includes(module_name) ?
-            `The selected ${pretty_module_name} has been TODO(added to/removed from) ${response} participant(s).` :
-            `The hold record has been added to ${response} participant(s).`
-          ),
+          message: message,
         }).show();
       });
 
@@ -1182,7 +1291,7 @@ export class CN_participant_selection {
     if (0 < this.#identifier_list_el.value.length) {
       this.#confirm_btn_el.removeAttribute("disabled");
     } else {
-      this.#confirm_btn_el.setAttribute("disabled", "disabled");
+      this.#confirm_btn_el.setAttribute("disabled", true);
     }
   }
 
@@ -1190,9 +1299,9 @@ export class CN_participant_selection {
    * ADD DOCS
    */
   disable() {
-    this.#identifier_list_el.setAttribute("disabled", "disabled");
-    this.#idtype_list_el.setAttribute("disabled", "disabled");
-    this.#confirm_btn_el.setAttribute("disabled", "disabled");
+    this.#identifier_list_el.setAttribute("disabled", true);
+    this.#idtype_list_el.setAttribute("disabled", true);
+    this.#confirm_btn_el.setAttribute("disabled", true);
   }
 
   /**

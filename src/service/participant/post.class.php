@@ -137,6 +137,7 @@ class post extends \cenozo\service\service
                 $db_collection = lib::create( 'database\collection', $file->collection->id );
                 if( 'add' == $file->collection->operation ) $db_collection->add_participant( $id_list );
                 else $db_collection->remove_participant( $id_list );
+                $this->set_data( count( $id_list ) );
               }
             }
           }
@@ -218,6 +219,7 @@ class post extends \cenozo\service\service
                 $db_study = lib::create( 'database\study', $file->study->id );
                 if( 'add' == $file->study->operation ) $db_study->add_participant( $id_list );
                 else $db_study->remove_participant( $id_list );
+                $this->set_data( count( $id_list ) );
               }
             }
           }
