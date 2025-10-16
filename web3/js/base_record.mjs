@@ -188,73 +188,14 @@ export class CN_base_record extends CN_base_action {
     const promise_list = [];
     for (let group_name in this.#property_groups) {
       for (let prop_name in this.#property_groups[group_name].properties) {
-        const module_prop = this.get_model().get_module().get_property(prop_name);
         const prop = this.#property_groups[group_name].properties[prop_name];
-
-        if ("enum" == prop.type) {
-          if (CN_common.is_object(prop.enum) && prop.enum.path) {
-            // populate the enum
-            const params = {
-              select: prop.enum.select ? prop.enum.select : { column: "name" },
-              modifier: prop.enum.modifier ? prop.enum.modifier : { order: "name" },
-            };
-
-            // always add a limit to make sure that list isn't truncated
-            if (!params.modifier.limit) params.modifier.limit = 1000;
-
-            // create an async function and add it to the promise list so they can be run in parallel
-            const get_enums = async () => {
-              // the path may be dynamic
-              let path = (
-                CN_common.is_function(prop.enum.path) ?
-                await prop.enum.path(this.get_model()) :
-                prop.enum.path
-              );
-
-              // set the enum values
-              prop.enum.values = (await CN_api.get(path, params)).reduce((list, record) => {
-                list.push({
-                  ...record,
-                  key: record.id,
-                  value: record.name,
-                  disabled: [true, "true", 1, "1"].includes(record.disabled),
-                });
-                return list;
-              }, []);
-            };
-            promise_list.push(get_enums());
-          } else if (CN_common.is_object(prop.enum) && CN_common.is_function(prop.enum.get_enums)) {
-            const get_enums = async () => {
-              // set the enum values
-              prop.enum.values = await prop.enum.get_enums(this.get_model());
-            };
-            promise_list.push(get_enums());
-          } else {
-            // enum properties without an enum path use the column definition
-            let matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-            if (null == matches) throw new Error(`Property ${prop.name} has no valid enum values.`);
-            prop.enum = { values: matches[1].split("','").map(v => ({ key: v, value: v })) };
+        promise_list.push((async () => {
+          const values = await this.get_model().get_enum_values(prop_name, prop);
+          if (null != values) {
+            if (!CN_common.is_object(prop.enum)) prop.enum = {};
+            prop.enum.values = values;
           }
-        } else if ("rank" == prop.type) {
-          // populate the rank enum based on the max rank
-          const params = {
-            select: { column: {
-              column: `max(${this.get_model().get_name()}.rank)`,
-              alias: "max_rank",
-              table_prefix: false
-            } },
-          };
-
-          const get_max_rank = async () => {
-            let max_rank = (await CN_api.get(this.get_model().get_base_path("api"), params))[0].max_rank;
-            if (null == max_rank) max_rank = 0;
-            prop.enum = { values: [] };
-            for(let r = 1; r <= max_rank; r++) {
-              prop.enum.values.push({ key: r, value: CN_common.ordinal_suffix(r) });
-            }
-          };
-          promise_list.push(get_max_rank());
-        }
+        })());
       }
     }
     await Promise.all(promise_list);
