@@ -299,12 +299,23 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Convert a blob to data
+   * @param type string: One of "base64", "buffer" or "text"
+   * @param Blob blob: The blob to convert into data
+   * @return string
    */
-  convert_blob_to_base64: async function (blob) {
+  convert_from_blob: async function (type, blob) {
     const convert = (blob) => new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.readAsDataURL(blob);
+      if ("base64" == type) {
+        reader.readAsDataURL(blob);
+      } else if ("buffer" == type) {
+        reader.readAsArrayBuffer(blob);
+      } else if ("text" == type) {
+        reader.readAsText(blob);
+      } else {
+        throw new Error(`Cannot convert blob to unknown type "${type}".`);
+      }
       reader.onload = () => resolve(reader.result);
       reader.onerror = reject;
     });
@@ -312,11 +323,16 @@ export default {
   },
 
   /**
-   * Convert base64 data to a blob
-   * Note that the input data may or may not include the content type.  For example,
-   * data:application/octet-stream;base64,<base64 data starts here>
+   * Convert data to a blob
+   * @param type string: One of "base64" (no other types implemented yet)
+   * @param data string: The data to convert to a Blob (currently only base64 strings are accepted)
+   * @param string content_type: The blob's mime type (optional)
+   * @param integer slice_size: The number of bytes to push into the byte array at a time
+   * @return Blob
    */
-  convert_base64_to_blob: function (data, content_type = "", slice_size = 512) {
+  convert_to_blob: function (type, data, content_type = "", slice_size = 512) {
+    if ("base64" != type) throw new Error(`Cannot convert unknown type "${type}" to blob.`);
+
     // see if the content_type is in the data
     const match = data.match(/^data:[^;]+;[^,]+,(.+)/);
     if (null != match) {
@@ -344,7 +360,7 @@ export default {
   download_file: function (file, filename, mime_type) {
     let blob = null;
     if (this.is_blob(file)) blob = file;
-    else if (this.is_string(file)) blob = this.convert_base64_to_blob(file);
+    else if (this.is_string(file)) blob = this.convert_to_blob("base64", file);
     else throw new Error("Tried to download file but first argument is neither a blob or string.");
 
     const link = document.createElement("a");

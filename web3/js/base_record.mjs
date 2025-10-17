@@ -209,9 +209,13 @@ export class CN_base_record extends CN_base_action {
   async get_formatted_property(prop_name) {
     const prop = this.get_property(prop_name);
     let value = prop.state.get();
-    if ("base64" == prop.type) {
-      // convert from blob to base64 and remove metadata
-      value = (await CN_common.convert_blob_to_base64(value[0])).replace(/.*;base64,/, "");
+    if ("file" == prop.type) {
+      // convert from blob
+      value = await CN_common.convert_from_blob(prop.file.encoding, value[0]);
+      if ("base64" == prop.file.encoding) {
+        // remove the base64 metadata
+        value = value.replace(/.*;base64,/, "");
+      }
     } else if ("boolean" == prop.type) {
       value = "" == value ? null : Number(value);
     } else if ("date" == prop.type) {

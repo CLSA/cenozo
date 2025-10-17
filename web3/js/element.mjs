@@ -114,8 +114,9 @@ export default {
 
   /**
    * Creates a form element
-   * @param string type: One of "boolean", "date", "email", "enum", "html", "integer", "size", "string",
-   *                     "password", "rank", "text", "time", or "typeahead"
+   * @param string type: One of the following:
+   *   "boolean", "date", "datetime", "datetimesecond", "dob", "dod", "email", "enum", "file", "float",
+   *   "html", "integer", "password", "rank", "size", "string", "text", "time", or "typeahead"
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
@@ -137,7 +138,7 @@ export default {
     const postfix_div_el = el.querySelector("[name=postfix]");
 
     let control_el = null;
-    if ("base64" == type) {
+    if ("file" == type) {
       if (el.params.action && "view" == el.params.action.get_type()) {
         // add a download and filesize elements to the prefix
         prefix_div_el.classList.add("text-nowrap", "pe-3");
@@ -147,7 +148,7 @@ export default {
         prefix_div_el.append(this.create('<span name="filesize" class="col-form-label ps-2"></span>'));
       }
       control_el = this.create(`<input type="file" class="form-control"></input>`);
-      if (el.params.mime_type) control_el.accept = el.params.mime_type;
+      if (el.params.file.mime_type) control_el.accept = el.params.file.mime_type;
     } else if ("boolean" == type) {
       control_el = this.create(`
         <select class="form-select">
@@ -326,7 +327,7 @@ export default {
       // determine if there was an error
       let error = null;
 
-      if ("base64" == type) {
+      if ("file" == type) {
         let files = Array.from(control_el.files);
         if (el.params.action) {
           files = el.params.action.get_property(el.params.name).state.get();
@@ -335,16 +336,15 @@ export default {
 
         if (el.params.required && 0 == files.length) {
           error = "Can't be empty";
-        } else if (el.params.mime_type && files.some(file => file.type != el.params.mime_type)) {
-          error = `Only "${el.params.mime_type}" files are allowed.`;
+        } else if (el.params.file.mime_type && files.some(file => file.type != el.params.file.mime_type)) {
+          error = `Only "${el.params.file.mime_type}" files are allowed.`;
         }
       } else if ([null, ""].includes(control_el.value)) {
         // the value is empty, so just make sure it isn't required
         if (el.params.required) error = "Can't be empty";
       } else {
         // the value isn't empty, so validate further
-        if ("base64" == type) {
-        } else if (
+        if (
           "email" == type &&
           !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
         ) {

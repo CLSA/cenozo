@@ -204,7 +204,7 @@ export class CN_base_add extends CN_base_record {
         });
         this.#default_values_applied.push(prop_name);
       }
-    } else if ("base64" != prop.type) {
+    } else if ("file" != prop.type) {
       // only apply the default value once
       if (!this.#default_values_applied.includes(prop_name)) {
         let default_value = prop.get_default(this.get_model());

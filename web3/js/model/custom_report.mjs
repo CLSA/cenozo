@@ -23,9 +23,12 @@ export class CN_custom_report_model extends CN_base_model {
         name: { title: "Name", format: "identifier" },
         data: {
           title: "SQL Report",
-          type: "base64",
-          mime_type: "application/sql",
-          get_filename: async (action) => action.get_property("name").state.get() + ".sql",
+          type: "file",
+          file: {
+            encoding: "base64",
+            mime_type: "application/sql",
+            get_filename: async (action) => action.get_property("name").state.get() + ".sql",
+          },
         },
         description: { title: "Description", type: "text" },
       },

@@ -195,11 +195,11 @@ export class CN_base_view extends CN_base_record {
       });
     } else {
       let value = prop.state.get();
-      if ("base64" == prop.type) {
+      if ("file" == prop.type) {
         // replace the download button's event listener
         prop.element.querySelector("button[name=download]").onclick = async () => CN_common.download_file(
           value.data,
-          await prop.get_filename(this),
+          await prop.file.get_filename(this),
           value.mime_type
         );
         prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
