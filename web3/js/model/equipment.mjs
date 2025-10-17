@@ -47,7 +47,7 @@ export class CN_equipment_model extends CN_base_model {
           help: 'Will show "new" if never loaned out, "loaned" if currently on loan, "returned" if ready to re-distribute, and "lost" if never returned.',
         },
         participant_id: {
-          column: "participant.id",
+          meta: { table: "participant", column: "id" },
           title: "On Loan To",
           type: "typeahead",
           typeahead: CN_participant_model.get_typeahead(),
