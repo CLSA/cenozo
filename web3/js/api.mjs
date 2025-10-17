@@ -167,16 +167,17 @@ export default {
    * Convenience method for all PATCH API calls
    * @param strign path: The relative API path
    * @param object data: The data to patch
+   * @param boolean raw: Whether to upload the data without stringifying it (for non object data)
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  patch: async function(path, data, return_response = false) {
+  patch: async function(path, data, raw=false, return_response = false) {
     const response = await this.fetch(
       path,
       null,
       {
         method: "PATCH",
-        body: JSON.stringify(data),
+        body: raw ? data : JSON.stringify(data),
         headers: { "Content-type": "application/json" },
       },
     );
@@ -197,16 +198,17 @@ export default {
    * Convenience method for all POST API calls
    * @param strign path: The relative API path
    * @param object data: The data to post
+   * @param boolean raw: Whether to upload the data without stringifying it (for non object data)
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  post: async function(path, data, return_response = false) {
+  post: async function(path, data, raw=false, return_response = false) {
     const response = await this.fetch(
       path,
       null,
       {
         method: "POST",
-        body: JSON.stringify(data),
+        body: raw ? data : JSON.stringify(data),
         headers: { "Content-type": "application/json" },
       }
     );
