@@ -217,8 +217,46 @@ export class CN_participant_model extends CN_base_person_model {
       super.get_base_path(type)
     );
   }
+
+  /**
+   * ADD DOCS
+   */
   get_scripts_url() {
     return [this.get_base_path("url"), "scripts", this.get_identifier()].join("/");
+  }
+
+  /**
+   * Returns a typeahead object for models that have a typeahead property referencing this model
+   * @return object
+   * @static
+   */
+  static get_typeahead() {
+    return {
+      get_list: async (value) => {
+        return await CN_api.get("participant", {
+          select: {
+            column: [{
+              table: "participant",
+              column: "id",
+              alias: "key",
+            }, {
+              table: "participant",
+              column: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
+              alias: "value",
+              table_prefix: false,
+            }],
+          },
+          modifier: {
+            where: [
+              { column: "uid", operator: "like", value: `%${value}%` },
+              { column: "first_name", operator: "like", value: `%${value}%`, or: true },
+              { column: "last_name", operator: "like", value: `%${value}%`, or: true },
+            ],
+            order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
+          },
+        });
+      },
+    };
   }
 }
 

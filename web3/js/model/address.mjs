@@ -3,6 +3,7 @@ import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
+import { CN_country_model } from "./country.mjs"
 
 export class CN_address_model extends CN_traceable_model {
   constructor() {
@@ -77,22 +78,7 @@ export class CN_address_model extends CN_traceable_model {
         international_country_id: {
           title: "Country",
           type: "typeahead",
-          typeahead: {
-            get_list: async (value) => {
-              return await CN_api.get("country", {
-                select: {
-                  column: [
-                    { column: "id", alias: "key" },
-                    { column: "name", alias: "value" },
-                  ],
-                },
-                modifier: {
-                  where: { column: "name", operator: "like", value: `%${value}%` },
-                  order: 'name',
-                },
-              });
-            },
-          },
+          typeahead: CN_country_model.get_typeahead(),
           is_hidden: (model) => !(
             "add" == model.get_action_name() ?
             1 == model.get_action().get_property("international").element.querySelector("select").value :

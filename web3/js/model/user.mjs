@@ -23,23 +23,13 @@ export class CN_user_model extends CN_base_model {
       },
       properties: {
         active: { title: "Active", type: "boolean", },
-        name: {
-          title: "Name",
-          is_constant: (model) => "view" == model.get_action_name(),
-        },
+        name: { title: "Name", is_constant: (model) => "view" == model.get_action_name() },
         first_name: { title: "First Name", },
         last_name: { title: "Last Name", },
         email: { title: "Email", },
-        timezone: {
-          title: "Timezone",
-          type: "typeahead",
-          typeahead: { list: CN_timezones }
-        },
+        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
         use_12hour_clock: { title: "Use 12-hour Clock", type: "boolean" },
-        login_failures: {
-          title: "Login Failures",
-          is_hidden: (model) => "add" == model.get_action_name(),
-        },
+        login_failures: { title: "Login Failures", is_hidden: (model) => "add" == model.get_action_name() },
       },
     });
   }
@@ -66,6 +56,40 @@ export class CN_user_model extends CN_base_model {
    */
   allow_add() {
     return super.allow_add() && "overview" != this.get_action_name();
+  }
+
+  /**
+   * Returns a typeahead object for models that have a typeahead property referencing this model
+   * @return object
+   * @static
+   */
+  static get_typeahead() {
+    return {
+      get_list: async (value) => {
+        return await CN_api.get("user", {
+          select: {
+            column: [{
+              table: "user",
+              column: "id",
+              alias: "key",
+            }, {
+              table: "user",
+              column: 'CONCAT(user.first_name," ",user.last_name," (",user.name,")")',
+              alias: "value",
+              table_prefix: false,
+            }],
+          },
+          modifier: {
+            where: [
+              { column: "user.first_name", operator: "like", value: `%${value}%`, },
+              { column: "user.last_name", operator: "like", value: `%${value}%`, or: true },
+              { column: "user.name", operator: "like", value: `%${value}%`, or: true },
+            ],
+            order: 'CONCAT(user.first_name," ",user.last_name," (",user.name,")")',
+          },
+        });
+      },
+    };
   }
 }
 

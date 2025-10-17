@@ -15,11 +15,7 @@ export class CN_site_model extends CN_base_model {
       },
       properties: {
         name: { title: "Name", },
-        timezone: {
-          title: "Timezone",
-          type: "typeahead",
-          typeahead: { list: CN_timezones }
-        },
+        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
         phone_number: { title: "Phone Number", },
         address1: { title: "Address", },
         address2: { title: "Address (extra)", },

@@ -4,6 +4,7 @@ import CN_timezones from "../timezones.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
 import { CN_base_view } from "../base_view.mjs"
+import { CN_country_model } from "./country.mjs"
 
 export class CN_application_model extends CN_base_model {
   constructor() {
@@ -104,26 +105,7 @@ export class CN_application_model extends CN_base_model {
           type: "text",
           help: "A footer which is added to all emails sent out by the application.  This text may contain HTML markup.",
         },
-        country_id: {
-          title: "Country",
-          type: "typeahead",
-          typeahead: {
-            get_list: async (value) => {
-              return await CN_api.get("country", {
-                select: {
-                  column: [
-                    { column: "id", alias: "key" },
-                    { column: "name", alias: "value" },
-                  ],
-                },
-                modifier: {
-                  where: { column: "name", operator: "like", value: `%${value}%` },
-                  order: 'name',
-                },
-              });
-            },
-          },
-        },
+        country_id: { title: "Country", type: "typeahead", typeahead: CN_country_model.get_typeahead() },
         timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
         participant_count: { title: "Participants", meta: true, is_constant: () => true },
         site_count: { title: "Sites", meta: true, is_constant: () => true },

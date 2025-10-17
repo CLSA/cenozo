@@ -254,7 +254,7 @@ export default {
             }
             dropdown_bs.hide();
           } else {
-            // return to the last committed value if there's a parent model
+            // return to the last committed value
             if (el.params.action && el.params.name) {
               el.params.action.get_property(el.params.name).state.undo(true);
             }

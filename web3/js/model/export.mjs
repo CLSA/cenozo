@@ -5,6 +5,7 @@ import CN_session from "../session.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
 import { CN_base_view } from "../base_view.mjs"
+import { CN_user_model } from "../user.mjs"
 
 /**
  * An object of table lookups used by the export_column and export_restriction models
@@ -44,32 +45,7 @@ export class CN_export_model extends CN_base_model {
         user_id: {
           title: "Owner",
           type: "typeahead",
-          typeahead: {
-            get_list: async (value) => {
-              return await CN_api.get("user", {
-                select: {
-                  column: [{
-                    table: "user",
-                    column: "id",
-                    alias: "key",
-                  }, {
-                    table: "user",
-                    column: 'CONCAT(user.first_name," ",user.last_name," (",user.name,")")',
-                    alias: "value",
-                    table_prefix: false,
-                  }],
-                },
-                modifier: {
-                  where: [
-                    { column: "user.first_name", operator: "like", value: `%${value}%`, },
-                    { column: "user.last_name", operator: "like", value: `%${value}%`, or: true },
-                    { column: "user.name", operator: "like", value: `%${value}%`, or: true },
-                  ],
-                  order: 'CONCAT(user.first_name," ",user.last_name," (",user.name,")")',
-                },
-              });
-            },
-          },
+          typeahead: CN_user_model.get_typeahead(),
           is_hidden: model => "add" == model.get_action_name(),
         },
         participant_count: {

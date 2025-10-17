@@ -2,6 +2,7 @@ import CN_api from "../api.mjs"
 
 import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
   from "../base_person_model.mjs"
+import { CN_participant_model } from "./participant.mjs"
 
 export class CN_alternate_model extends CN_base_person_model {
   constructor() {
@@ -24,32 +25,7 @@ export class CN_alternate_model extends CN_base_person_model {
         participant_id: {
           title: "Participant",
           type: "typeahead",
-          typeahead: {
-            get_list: async (value) => {
-              return await CN_api.get("participant", {
-                select: {
-                  column: [{
-                    table: "participant",
-                    column: "id",
-                    alias: "key",
-                  }, {
-                    table: "participant",
-                    column: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
-                    alias: "value",
-                    table_prefix: false,
-                  }],
-                },
-                modifier: {
-                  where: [
-                    { column: "uid", operator: "like", value: `%${value}%` },
-                    { column: "first_name", operator: "like", value: `%${value}%`, or: true },
-                    { column: "last_name", operator: "like", value: `%${value}%`, or: true },
-                  ],
-                  order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
-                },
-              });
-            },
-          },
+          typeahead: CN_participant_model.get_typeahead(),
         },
         active: { title: "Active", type: "boolean" },
         first_name: { title: "First Name" },
