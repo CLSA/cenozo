@@ -723,13 +723,13 @@ export class CN_participant_multiedit extends CN_base_action {
   create_body_element() {
     const body_el = CN_element.create(`
       <div class="container-fluid">
-        <div class="container-fluid text-info">
+        <div class="container-fluid text-info-emphasis">
           In order to edit multiple participants at once you must first select which participants to edit.
           This can be done typing the unique identifiers (eg: A123456) of all participants you wish to have
           included in the operation, then confirm that list to ensure each of the identifiers can be linked
           to a participant.
         </div>
-        <div class="container-fluid text-info">
+        <div class="container-fluid text-info-emphasis">
           Once you have confirmed the list of participant identifiers you may apply changes to all participants
           in the dialog box below.  Each tab allows you to make different types of changes to all selected
           participants.
@@ -782,7 +782,7 @@ export class CN_participant_multiedit extends CN_base_action {
           aria-labelledby="${module_name}-tab"
           tabindex="0"
         >
-          <div class="container-fluid text-info">${
+          <div class="container-fluid text-info-emphasis">${
             "participant" == module_name ?
             "Select which details to edit for all selected participants:" :
             mod.enum ?
@@ -1075,7 +1075,7 @@ export class CN_participant_scripts extends CN_base_action {
   create_placeholder_element() {
     return CN_element.create(`
       <div>
-        <div class="text-info pb-2">
+        <div class="text-info-emphasis pb-2">
           Select which utility script you wish to launch on behalf of the participant.
         </div>
         <div name="script-list">
@@ -1099,7 +1099,7 @@ export class CN_participant_scripts extends CN_base_action {
   create_body_element() {
     const body_el = CN_element.create(`
       <div>
-        <div class="text-info pb-2">
+        <div class="text-info-emphasis pb-2">
           Select which utility script you wish to launch on behalf of the participant.
         </div>
         <div name="script-list"></div>

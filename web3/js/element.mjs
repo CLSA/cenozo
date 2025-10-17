@@ -532,7 +532,7 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Select Site and Role</h2>
             </div>
             <div class="modal-body">
-              <span class="text-secondary">
+              <span class="text-info-emphasis">
                 Select which site and role you would like to switch to:
               </span>
               <hr />
@@ -652,7 +652,7 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Clock Settings</h2>
             </div>
             <div class="modal-body">
-              <span class="text-secondary">
+              <span class="text-info-emphasis">
                 Select which timezone you would like times to be displayed in.<br />
                 Note that most timezones have multiple names, you may choose any.
               </span>
@@ -762,7 +762,7 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Account Details</h2>
             </div>
             <div class="modal-body">
-              <span class="text-secondary">
+              <span class="text-info-emphasis">
                 Update your account details here:
               </span>
               <hr />
@@ -865,10 +865,10 @@ export default {
               <h2 class="modal-title fw-bold fs-5">Account Details</h2>
             </div>
             <div class="modal-body">
-              <div class="text-secondary">
+              <div class="text-info-emphasis">
                 Fill out this form to change your password.
               </div>
-              <div class="text-warning">
+              <div class="text-warning-emphasis">
                 Note that passwords must be at least 8 characters long.
               </div>
               <hr />
@@ -1196,7 +1196,7 @@ export default {
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
             </div>
             <div class="modal-body">
-              <label class="form-label text-info" for="cn_input_modal">
+              <label class="form-label text-info-emphasis" for="cn_input_modal">
                 ${config.message}
               </label>
             </div>
