@@ -127,11 +127,21 @@ export default {
    * @param strign path: The relative API path
    * @param object params: Query URI parameters
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
-   * @return Response
+   * @return Response or object or string
    */
   get: async function(path, params, return_response = false) {
     const response = await this.fetch(path, params, { headers: { "X-No-Activity": true } });
-    return return_response ? response : await response.json();
+
+    // return the fetch response if requested
+    if (return_response) return response;
+
+    // return the response decoded as JSON if possible
+    const body = await response.text();
+    try {
+      return JSON.parse(body);
+    } catch (error) {
+      return body;
+    }
   },
 
   /**
@@ -157,10 +167,11 @@ export default {
    * Convenience method for all PATCH API calls
    * @param strign path: The relative API path
    * @param object data: The data to patch
-   * @return Response
+   * @param boolean return_response: Whether to return the fetch response instead of the response's json data
+   * @return Response or object or string
    */
-  patch: async function(path, data) {
-    return await this.fetch(
+  patch: async function(path, data, return_response = false) {
+    const response = await this.fetch(
       path,
       null,
       {
@@ -169,15 +180,27 @@ export default {
         headers: { "Content-type": "application/json" },
       },
     );
+
+    // return the fetch response if requested
+    if (return_response) return response;
+
+    // return the response decoded as JSON if possible
+    const body = await response.text();
+    try {
+      return JSON.parse(body);
+    } catch (error) {
+      return body;
+    }
   },
 
   /**
    * Convenience method for all POST API calls
    * @param strign path: The relative API path
    * @param object data: The data to post
-   * @return Response
+   * @param boolean return_response: Whether to return the fetch response instead of the response's json data
+   * @return Response or object or string
    */
-  post: async function(path, data) {
+  post: async function(path, data, return_response = false) {
     const response = await this.fetch(
       path,
       null,
@@ -187,6 +210,9 @@ export default {
         headers: { "Content-type": "application/json" },
       }
     );
+
+    // return the fetch response if requested
+    if (return_response) return response;
 
     // return the response decoded as JSON if possible
     const body = await response.text();
@@ -212,7 +238,7 @@ export default {
    * @param string mime_type: The expected mime type
    * @param object params: Query URI parameters
    * @param boolean return_response: Whether to return the fetch response instead of the response's blob data
-   * @return Response
+   * @return Response or object or string
    */
   file: async function(path, mime_type = null, params = {}, return_response = false) {
     const headers = { "X-No-Activity": true };
