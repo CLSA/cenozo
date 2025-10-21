@@ -139,7 +139,7 @@ cenozoApp.defineModule({
 
                   // check the data file
                   var response = await CnHttpFactory.instance({
-                    path: this.parentModel.getServiceResourcePath() + "?action=check",
+                    path: this.parentModel.getServiceResourcePath() + "?import=check",
                     data: this.file,
                   }).patch();
 
@@ -154,7 +154,7 @@ cenozoApp.defineModule({
                 // apply the data file
                 this.working = true;
                 await CnHttpFactory.instance({
-                  path: this.parentModel.getServiceResourcePath() + "?action=apply",
+                  path: this.parentModel.getServiceResourcePath() + "?import=apply",
                   data: this.file,
                 }).patch();
                 await $state.go("equipment_type.view", {

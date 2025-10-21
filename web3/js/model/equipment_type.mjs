@@ -112,7 +112,10 @@ export class CN_equipment_type_upload extends CN_base_action {
           The file must have a single header row containing the column names listed in quotes below,
           and it must conform to one of the following options:
         </div>
-        <div class="container-fluid text-info-emphasis p-3">
+        <div class="container-fluid text-info-warning">
+          NOTE: You will not be able to upload data if there are any errors in the CSV data.
+        </div>
+        <div class="container-fluid text-info-emphasis px-3">
           <div class="fs-5">Option #1: Three rows (used to uploaod new equipment)</div>
           <ul>
             <li>Serial Number "serial_number" (must not belong to any other equipment type)</li>
@@ -136,7 +139,7 @@ export class CN_equipment_type_upload extends CN_base_action {
 
 
     // add the file input
-    const row_el = CN_element.create('<div class="row mb-3"></div>');
+    const row_el = CN_element.create('<div class="row my-3"></div>');
 
     const label_el = CN_element.create_form_label({ for: "file", value: "CSV Data File" });
     label_el.classList.add("col-sm-3");
@@ -165,7 +168,7 @@ export class CN_equipment_type_upload extends CN_base_action {
     );
     upload_btn_el.addEventListener("click", async () => {
       await CN_api.patch(
-        `equipment_type/${this.get_model().get_identifier()}?action=apply`,
+        `equipment_type/${this.get_model().get_identifier()}?import=apply`,
         await CN_common.convert_from_blob("text", file_el.files[0]),
         true // do not encode data
       );
@@ -177,7 +180,7 @@ export class CN_equipment_type_upload extends CN_base_action {
     const file_el = element_el.querySelector("#file");
     file_el.addEventListener("change", async () => {
       const response = await CN_api.patch(
-        `equipment_type/${this.get_model().get_identifier()}?action=check`,
+        `equipment_type/${this.get_model().get_identifier()}?import=check`,
         await CN_common.convert_from_blob("text", file_el.files[0]),
         true // do not encode data
       );

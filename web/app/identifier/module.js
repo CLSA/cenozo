@@ -154,7 +154,7 @@ cenozoApp.defineModule({
                     data: self.file,
                   }).patch();
 
-                  self.fileCheckResults = angular.fromJson(response.data);
+                  self.fileCheckResults = response.data;
                 } finally {
                   self.working = false;
                 }

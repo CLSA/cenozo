@@ -350,7 +350,7 @@ class ui3 extends \cenozo\base_object
       else if( 'identifier' == $module->get_subject() )
       {
         $module->add_child( 'participant_identifier' );
-        $module->add_action( 'import', '/{identifier}' );
+        $module->add_action( 'upload', '/{identifier}' );
       }
       else if( 'interview' == $module->get_subject() )
       {
