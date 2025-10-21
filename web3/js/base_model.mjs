@@ -205,7 +205,7 @@ export class CN_base_model extends CN_base_object {
           if (!get_params.modifier.limit) get_params.modifier.limit = 1000;
 
           // the path may be dynamic
-          let path = CN_common.is_function(prop.enum.path) ? await prop.enum.path(model) : prop.enum.path;
+          let path = CN_common.is_function(prop.enum.path) ? await prop.enum.path(this) : prop.enum.path;
 
           // set the enum values
           const response = await CN_api.get(path, get_params);
