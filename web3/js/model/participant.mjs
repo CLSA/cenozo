@@ -1150,6 +1150,7 @@ export class CN_participant_selection {
   constructor(params={}) {
     this.#params = {
       unique_id: params.hasOwnProperty("unique_id") ? params.unique_id : null,
+      path: params.hasOwnProperty("path") ? params.path : "participant",
       data: params.hasOwnProperty("data") ? params.data : {},
     };
 
@@ -1258,7 +1259,7 @@ export class CN_participant_selection {
         this.#selection_changed_callbacks.forEach(callback => callback());
 
         // confirm with the server which identifiers are valid
-        const response = await CN_api.post("participant", data);
+        const response = await CN_api.post(this.#params.path, data);
 
         // note that the response may be an array or an object containing idtype_list and site_list props
         let identifier_list = [];
@@ -1286,6 +1287,12 @@ export class CN_participant_selection {
 
     this.reset();
   }
+
+  // Getters and setters
+  get_path() { return this.#params.path; }
+  set_path(path) { this.#params.path = path; }
+  get_data() { return this.#params.data; }
+  set_data(data) { this.#params.data = data; }
 
   /**
    * ADD DOCS
