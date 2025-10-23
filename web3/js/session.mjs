@@ -181,6 +181,7 @@ export default {
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
     (async () => {
+      if (!loading) await this.update_system_messages();
       breadcrumbs_el.append(
         await CN_element.create_breadcrumb_trail(
           loading ? "Loading..." : null,
@@ -661,9 +662,8 @@ export default {
       await this.load();
       await this.render();
 
-      // check for system messages every 5 minutes
+      // update the breadcrumbs every 5 minutes (this will check for system messages)
       setInterval(async () => {
-        await this.update_system_messages();
         await this.update_breadcrumbs();
       }, 300000);
     } catch (error) {
