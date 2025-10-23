@@ -355,16 +355,18 @@ export default {
   },
 
   /**
-   * ADD DOCS
+   * Provides a way for the end-user to download a file
+   * @param Blob|string file: The file either as a blob or base64-encoded string
+   * @param string filename: The name of the file the end-user will download
    */
-  download_file: function (file, filename, mime_type) {
+  download_file: function (file, filename) {
     let blob = null;
     if (this.is_blob(file)) blob = file;
     else if (this.is_string(file)) blob = this.convert_to_blob("base64", file);
     else throw new Error("Tried to download file but first argument is neither a blob or string.");
 
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob, mime_type);
+    link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
     URL.revokeObjectURL(link.href);

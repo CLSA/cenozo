@@ -199,8 +199,7 @@ export class CN_base_view extends CN_base_record {
         // replace the download button's event listener
         prop.element.querySelector("button[name=download]").onclick = async () => CN_common.download_file(
           value.data,
-          await prop.file.get_filename(this),
-          value.mime_type
+          await prop.file.get_filename(this)
         );
         prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
       } else if ("size" == prop.type) {

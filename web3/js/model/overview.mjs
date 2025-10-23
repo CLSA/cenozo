@@ -37,7 +37,7 @@ export class CN_overview_view extends CN_base_view {
   }
 
   /**
-   * ADD DOCS*
+   * Extend parent method
    */
   async on_load() {
     // we don't need states since all data will be static

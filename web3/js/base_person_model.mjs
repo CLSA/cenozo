@@ -550,7 +550,8 @@ export class CN_base_person_history extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Convenience method used by the create_footer_element() and create_topfooter_element() methods
+   * @param element el
    */
   create_all_footer_elements(el) {
     // wire up the buttons
@@ -595,7 +596,8 @@ export class CN_base_person_notes extends CN_base_action {
   #note_list = [];
 
   /**
-   * ADD DOCS
+   * Constructor
+   * @param base_model model: The model the action belongs to
    */
   constructor(model) {
     super("notes", model);
@@ -841,7 +843,8 @@ export class CN_base_person_notes extends CN_base_action {
   }
 
   /**
-   * ADD DOCS
+   * Convenience method used by the create_footer_element() and create_topfooter_element() methods
+   * @param element el
    */
   create_all_footer_elements(el) {
     // wire up the buttons

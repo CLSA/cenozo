@@ -219,13 +219,6 @@ export class CN_participant_model extends CN_base_person_model {
   }
 
   /**
-   * ADD DOCS
-   */
-  get_scripts_url() {
-    return [this.get_base_path("url"), "scripts", this.get_identifier()].join("/");
-  }
-
-  /**
    * Returns a typeahead object for models that have a typeahead property referencing this model
    * @return object
    * @static
@@ -284,7 +277,9 @@ export class CN_participant_view extends CN_base_person_view {
         '<button name="scripts" type="button" class="btn btn-light btn-outline-primary">Scripts</button>'
       );
       scripts_btn_el.addEventListener("click", async () => {
-        await CN_session.navigate_to(this.get_model().get_scripts_url());
+        await CN_session.navigate_to(
+          this.get_model().get_view_url().replace(/participant\/view/, "participant/scripts")
+        )
       });
       footer_el.append(scripts_btn_el);
     }
@@ -1129,7 +1124,7 @@ export class CN_participant_scripts extends CN_base_action {
 }
 
 /**
- * ADD DOCS
+ * A class used to create a participant selection element
  */
 export class CN_participant_selection {
   #params;
@@ -1295,7 +1290,7 @@ export class CN_participant_selection {
   set_data(data) { this.#params.data = data; }
 
   /**
-   * ADD DOCS
+   * Resets the selection to its initial state
    */
   async reset() {
     this.disable();
@@ -1326,7 +1321,7 @@ export class CN_participant_selection {
   }
 
   /**
-   * ADD DOCS
+   * Enables all UI elements of the participant selection
    */
   enable() {
     this.#identifier_list_el.removeAttribute("disabled");
@@ -1341,7 +1336,7 @@ export class CN_participant_selection {
   }
 
   /**
-   * ADD DOCS
+   * Disables all UI elements of the participant selection
    */
   disable() {
     this.#identifier_list_el.setAttribute("disabled", true);

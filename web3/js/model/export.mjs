@@ -5,7 +5,7 @@ import CN_session from "../session.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
 import { CN_base_view } from "../base_view.mjs"
-import { CN_user_model } from "../user.mjs"
+import { CN_user_model } from "./user.mjs"
 
 /**
  * An object of table lookups used by the export_column and export_restriction models
