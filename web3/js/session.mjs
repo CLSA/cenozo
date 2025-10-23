@@ -293,8 +293,8 @@ export default {
           // make sure that only root modules can be the root action
           let error = new URIError();
           error.error_code = null;
-          error.name = "Not Found";
-          error.message = "The needed resource could not be found."
+          error.name = "Invalid URL";
+          error.message = `Tried to load non-root module "${module.get_name()}" as root.`;
           throw error;
         }
 
