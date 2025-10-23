@@ -1,4 +1,12 @@
+import CN_api from "../api.mjs"
+import CN_common from "../common.mjs"
+import CN_element from "../element.mjs"
+import CN_session from "../session.mjs"
+import { CN_participant_selection } from "./participant.mjs"
+
+import { CN_base_action } from "../base_action.mjs"
 import { CN_base_model } from "../base_model.mjs"
+import { CN_base_view } from "../base_view.mjs"
 
 export class CN_stratum_model extends CN_base_model {
   constructor() {
@@ -85,4 +93,225 @@ export class CN_stratum_model extends CN_base_model {
   }
 }
 
-// TODO: implement "Manage Participants" extra view operation
+export class CN_stratum_view extends CN_base_view {
+  /**
+   * Add extra operations to the footer
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    if (this.get_model().get_module().action_allowed("mass_participant")) {
+      const mass_participant_btn_el = CN_element.create(`
+        <button name="mass_participant" type="button" class="btn btn-light btn-outline-primary">
+          Manage Stratum Participants
+        </button>
+      `);
+      mass_participant_btn_el.addEventListener("click", async () => {
+        await CN_session.navigate_to(
+          this.get_model().get_view_url().replace(/stratum\/view/, "stratum/mass_participant")
+        );
+      });
+      footer_el.append(mass_participant_btn_el);
+    }
+
+    return footer_el;
+  }
+}
+
+export class CN_stratum_mass_participant extends CN_base_action {
+  #stratum = null;
+  #operation = "add";
+  #participant_selection = new CN_participant_selection({
+    path: `stratum/${this.get_model().get_identifier()}/participant`,
+  });
+
+  /**
+   * Constructor
+   * @param base_model model: The model that the action belongs to
+   */
+  constructor(model) {
+    super("mass_participant", model);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return `${this.#stratum.name} Participants`;
+    }
+
+    if ("header" == type) {
+      return `Manage ${this.#stratum.name} Participants`;
+    }
+
+    return super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_navigate_to_parent() {
+    await CN_session.navigate_to(this.get_model().get_view_url());
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_load() {
+    const model = this.get_model();
+
+    // load the stratum details
+    this.#stratum = await CN_api.get(this.get_model().get_view_url(null, "api"));
+    this.#operation = "add";
+
+    // reset the participant selection
+    this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
+    this.#participant_selection.reset();
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    const body_el = this.get_body_element();
+
+    // borrow the operation's error to display a warning about how add/remove works
+    const element_el = body_el.querySelector("[name=operation] [name=error]");
+    element_el.innerHTML = `
+      <span class="fw-bold">NOTE:</span>
+      When ${"add" == this.#operation ? "adding to" : "removing from"} the stratum only participants which
+      ${"add" == this.#operation ? "do not already belong to this or another" : "belong to this"} stratum
+      will be included in the final selection list after the "Confirm List" button is clicked.
+    `;
+
+    // setup the confirm selection
+    const summary_el = body_el.querySelector("[name=participant-confirm] div.card-body");
+    summary_el.innerHTML = `
+      You have selected a total of ${this.#participant_selection.get_identifier_list().length} new
+      participant(s) to ${"add" == this.#operation ? "add to" : "remove from"} the stratum.
+      If you wish to proceed click the "${CN_common.uc_words(this.#operation)} Participants" button below.
+    `;
+
+    const confirm_btn_el = body_el.querySelector("[name=participant-confirm] button[name=confirm]");
+    confirm_btn_el.innerHTML = `${CN_common.uc_words(this.#operation)} Participants`;
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_body_element() {
+    const body_el = CN_element.create(`
+      <div class="container-fluid text-info-emphasis">
+        <div class="pb-2">
+          This utility allows you to add or remove lists of participants to or from the
+          <span class="fw-bold">${this.#stratum.name}</span> stratum.
+        </div>
+        <div class="pb-2">
+          In order to proceed you must first select which participants to add or remove.
+          This can be done by typing the unique identifiers (ie: A123456) of all participants you wish to have
+          included in the operation, then confirm that list to ensure each of the identifiers can be linked to
+          a participant.
+        </div>
+        <div name="operation" class="row py-1"></div>
+        <div name="participant-list" class="py-1"></div>
+        <div name="participant-confirm" class="py-1" style="display: none;"></div>
+      </div>
+    `);
+
+    // add the operation type select
+    const footer_el = body_el.querySelector("[name=operation]");
+    const label_el = CN_element.create_form_label({ for: "operation", value: "Operation" });
+    label_el.classList.add("col-sm-3");
+    footer_el.append(label_el);
+
+    const element_el = CN_element.create_form_element("enum", {
+      id: "operation",
+      required: true,
+      on_change: (control_el) => {
+        this.#operation = control_el.value;
+        this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
+        this.#participant_selection.reset();
+        this.update_element();
+      },
+    });
+    element_el.classList.add("col-sm-9");
+
+    const operation_el = element_el.querySelector("#operation");
+    operation_el.append(CN_element.create(
+      '<option value="add" selected>Add to Stratum</option>'
+    ));
+    operation_el.append(CN_element.create(
+      '<option value="remove">Remove from Stratum</option>'
+    ));
+    footer_el.append(element_el);
+
+    // add the participant selection
+    body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
+    this.#participant_selection.get_element().classList.add("py-2");
+    this.#participant_selection.on_selection_changed(() => {
+      const confirm_el = body_el.querySelector("[name=participant-confirm]");
+      if (this.#participant_selection.get_identifier_list().length) {
+        confirm_el.style.removeProperty("display");
+      } else {
+        confirm_el.style.display = "none";
+      }
+      this.update_element();
+    });
+
+    const summary_el = CN_element.create('<div class="container-fluid"></div>');
+    body_el.append(summary_el);
+
+    // create the confirm button
+    const confirm_btn_el = CN_element.create(
+      '<button name="confirm" type="button" class="btn btn-primary"></button>'
+    );
+    confirm_btn_el.addEventListener("click", async () => {
+      const response = await CN_api.post(`stratum/${this.get_model().get_identifier()}/participant`, {
+        mode: "update",
+        operation: this.#operation,
+        identifier_id: this.#participant_selection.get_idtype(),
+        identifier_list: this.#participant_selection.get_identifier_list(),
+      });
+
+      await CN_element.message_modal({
+        static: true,
+        title: `Participants ${"add" == this.#operation ? "Added" : "Removed"}`,
+        message: `
+          You have successfully ${"add" == this.#operation ? "added" : "removed"} ${response} participant(s)
+          ${"add" == this.#operation ? "to" : "from"} the ${this.#stratum.name} stratum.
+        `,
+      }).block();
+
+      await this.on_load();
+    });
+
+    // add the confirm card
+    const confirm_selection_el = CN_element.create_card({
+      header: "Confirm Selection",
+      body: "",
+      footer: confirm_btn_el,
+    });
+    body_el.querySelector("[name=participant-confirm]").append(confirm_selection_el);
+
+    return body_el;
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_footer_element() {
+    const footer_el = CN_element.create(`
+      <div class="btn-group" role="group">
+        <button name="back" type="button" class="btn btn-primary">View Stratum</button>
+      </div>
+    `);
+
+    footer_el.querySelector("button[name=back]").addEventListener(
+      "click",
+      async () => await this.on_navigate_to_parent()
+    );
+
+    return footer_el;
+  }
+}

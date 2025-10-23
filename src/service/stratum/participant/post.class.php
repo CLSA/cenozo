@@ -31,11 +31,15 @@ class post extends \cenozo\service\write
     if( $this->may_continue() )
     {
       $file = $this->get_file_as_object();
-      if( !property_exists( $file, 'mode' ) ||
-          !in_array( $file->mode, ['confirm', 'update'] ) ||
-          !property_exists( $file, 'operation' ) ||
-          !in_array( $file->operation, ['add', 'remove'] ) ||
-          !property_exists( $file, 'identifier_list' ) ) $this->status->set_code( 400 );
+      if(
+        !property_exists( $file, 'mode' ) ||
+        !in_array( $file->mode, ['confirm', 'update'] ) ||
+        !property_exists( $file, 'operation' ) ||
+        !in_array( $file->operation, ['add', 'remove'] ) ||
+        !property_exists( $file, 'identifier_list' )
+      ) {
+        $this->status->set_code( 400 );
+      }
     }
   }
 
@@ -69,7 +73,11 @@ class post extends \cenozo\service\write
 
     $identifier_id = property_exists( $file, 'identifier_id' ) ? $file->identifier_id : NULL;
     $db_identifier = is_null( $identifier_id ) ? NULL : lib::create( 'database\identifier', $identifier_id );
-    $identifier_list = $participant_class_name::get_valid_identifier_list( $db_identifier, $file->identifier_list, $modifier );
+    $identifier_list = $participant_class_name::get_valid_identifier_list(
+      $db_identifier,
+      $file->identifier_list,
+      $modifier
+    );
 
     if( 'confirm' == $file->mode )
     { // return a list of all valid identifiers
@@ -78,7 +86,13 @@ class post extends \cenozo\service\write
     else if( 0 < count( $identifier_list ) )
     {
       // add or remove the list of participants
-      $db_stratum->set_participants( $db_identifier, $identifier_list, 'add' == $file->operation );
+      $this->set_data(
+        $db_stratum->set_participants(
+          $db_identifier,
+          $identifier_list,
+          'add' == $file->operation
+        )
+      );
     }
   }
 
