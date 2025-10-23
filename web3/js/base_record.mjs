@@ -11,7 +11,6 @@ export class CN_base_record extends CN_base_action {
 
   /**
    * Constructor
-   * TODO: document a full description of the properties parameter
    * @param string type: The type of action (either "add" or "view")
    * @param base_model model: The model that the action belongs to
    */
@@ -73,9 +72,60 @@ export class CN_base_record extends CN_base_action {
 
   /**
    * Adds a property to the model
+   *
+   * The prop object may contain any of the following sub-properties:
+   *   title: a string that defines the property's label (should be written in "Title Case")
+   *   type: one of the types described in CN_element.create_form_element()
+   *   help: text that will appear when hovering over the property's label
+   *   format: restricts the property's value to a predefined format ("alphanum", "alpha_num" or "identifier")
+   *   regex: restricts the property's value to a regular expression as a string (or array of strings)
+   *   on_change: an async function which is called whenever the property's value is changed, with arguments:
+   *     control_el: the property's form element (input, select, textarea, etc)
+   *     valid: whether or not the new value is valid
+   *     action: the action object that the property belongs to
+   *   is_constant: a function that makes the property read-only when it returns true, with arguments:
+   *     model: the model of the action that the property belongs to
+   *   is_hidden: a function that hides the property when it returns true, with arguments:
+   *     model: the model of the action that the property belongs to
+   *   meta: used when creating a property that doesn't correspond to one of the parent module's columns;
+   *     can either be an object containing column properties (like in select params)
+   *     or true when the property's name is defined as a meta column by the module's service
+   *   properties: this is used when defining a sub-group of properties INSTEAD of a property
+   *
+   * The following properties are only used for certain property types:
+   *   For the numeric types (integer, float):
+   *   min: restricts the property's minimum value
+   *   max: restricts the property's maximum value
+   *
+   *   For the "enum" type
+   *   enum: an object with one of two sets of properties:
+   *     enum value retrieved from the server:
+   *       path: the API path to get enum values
+   *       select: a select property to be used when calling the API for enum values
+   *       modifier: a modifier property to be used when calling the API for enum values
+   *     enum values returned by a user-defined function:
+   *       get_enums: an async function that returns enum values, with arguments:
+   *         model: the model of the action that the property belongs to
+   *
+   *   For the "typeahead" type
+   *   typeahead: an object with one of the two sets of properties:
+   *     pre-defined typeahead values:
+   *       list: an array of all possible typeahead values
+   *     typeahead values returned by a user-defined function:
+   *       get_list: an async function that returns the typeahead values, with arguments:
+   *         value: the search value provided by the user
+   *       Note that this function is often provided by a get_typeahead() function in the related model
+   *
+   *   For the "file" type
+   *   file: an object with the following properties:
+   *     encoding: how the file is encoded ("base64", "text", etc)
+   *     mime_type: the file's mime-type ("application/pdf", "text/csv", etc)
+   *     get_filename: an async function that returns the file's name, with arguments:
+   *       action: the action object that the property belongs to
+   *
    * @param string group_name: The name of the group to add the property to (null for the main group)
    * @param string prop_name: The name of the property
-   * @param object prop: The property's parameters (TODO: document a full description property parameters)
+   * @param object prop: The property's parameters
    */
   add_property(group_name, prop_name, prop) {
     // make sure the property doesn't already exist

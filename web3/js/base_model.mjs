@@ -22,6 +22,8 @@ export class CN_base_model extends CN_base_object {
    * Constructor
    *
    * @param object params: An object with the properties defining the model (wording, columns and properties)
+   * For documentation on the columns property look in the base_list.mjs file.
+   * For documentation on the properties property look in the base_record.mjs file.
    */
   constructor(params) {
     super();

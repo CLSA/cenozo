@@ -172,16 +172,7 @@ export default {
       control_el = this.create(`<input type="email" class="form-control"></input>`);
     } else if ("enum" == type) {
       control_el = this.create(`<select class="form-select"></select>`);
-    } else if (["integer", "float"].includes(type)) {
-      control_el = this.create(`
-        <input
-          type="number"
-          class="form-control"
-          ${null == el.params.min ? "" : "min="+el.params.min}
-          ${null == el.params.max ? "" : "max="+el.params.max}
-        ></input>
-      `);
-    } else if (["size", "string"].includes(type)) {
+    } else if (["integer", "float", "size", "string"].includes(type)) {
       control_el = this.create(`<input class="form-control"></input>`);
     } else if ("password" == type) {
       control_el = this.create(`<input type="password" class="form-control"></input>`);
@@ -263,7 +254,7 @@ export default {
         });
 
         // listen for when the input's value has changed
-        control_el.addEventListener('input', async () => {
+        control_el.addEventListener("input", async () => {
           const typeahead = el.params.typeahead;
 
           // only proceed if the typeahead isn't loading and we've reached the min length threshold
@@ -324,6 +315,7 @@ export default {
 
     // create the element's validate function
     el.validate = () => {
+      console.log("validate", control_el.value);
       // determine if there was an error
       let error = null;
 
@@ -342,54 +334,54 @@ export default {
       } else if ([null, ""].includes(control_el.value)) {
         // the value is empty, so just make sure it isn't required
         if (el.params.required) error = "Can't be empty";
-      } else {
-        // the value isn't empty, so validate further
+      } else { // the value isn't empty, so validate further
+        // test the format
+        let re = null;
         if (
           "email" == type &&
           !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
         ) {
           error = `${control_el.value} is not a valid email address`;
-        } else if (
-          ["integer", "float"].includes(type) &&
-          null != el.params.min && control_el.value < el.params.min
-        ) {
-          error = `The smallest number allowed is ${el.params.min}`;
-        } else if (
-          ["integer", "float"].includes(type) &&
-          null != el.params.max && control_el.value > el.params.max
-        ) {
-          error = `The biggest number allowed is ${el.params.max}`;
-        } else if (
-          "time" == type &&
-          0 < control_el.value.length &&
-          !control_el.value.match(/^(2[0-3]|[01]?[0-9]):([0-5]?[0-9])$/)
-        ) {
-          error = `${control_el.value} is not a valid time`;
+        } else if ("float" == type) {
+          re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
+        } else if ("integer" == type) {
+          re = /^-?[0-9]+$/;
+        } else if (el.params.format) {
+          // determine the regex
+          let re = null;
+          if ("alphanum" == el.params.format) re = /^[a-zA-Z0-9]+$/;
+          else if ("alpha_num" == el.params.format) re = /^[a-zA-Z0-9_]+$/;
+          else if ("identifier" == el.params.format) re = /^[^;=\/]+$/;
         }
-      }
 
-      if (null == error && el.params.format) {
-        // determine the regex
-        let re = null;
-        if ("integer" == el.params.format) re = /^-?[0-9]+$/;
-        else if ("float" == el.params.format) re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
-        else if ("alphanum" == el.params.format) re = /^[a-zA-Z0-9]+$/;
-        else if ("alpha_num" == el.params.format) re = /^[a-zA-Z0-9_]+$/;
-        else if ("identifier" == el.params.format) re = /^[^;=\/]+$/;
+        console.log("re", re);
+        // test the implicit regex
+        if (re && !re.test(control_el.value)) error = "Invalid format";
 
-        // test the regex, min and max values
-        if (re && !re.test(control_el.value)) {
-          error = "Invalid format";
+        // test the explicit regex
+        if (null == error && el.params.regex) {
+          let regex_list = CN_common.is_array(el.params.regex) ? el.params.regex : [el.params.regex];
+          for (let i = 0; i < regex_list.length; i++) {
+            let re = new RegExp(regex_list[i]);
+            if (!re.test(control_el.value)) {
+              error = "Invalid format";
+              break;
+            }
+          }
         }
-      }
 
-      if (null == error && el.params.regex) {
-        let regex_list = CN_common.is_array(el.params.regex) ? el.params.regex : [el.params.regex];
-        for (let i = 0; i < regex_list.length; i++) {
-          let re = new RegExp(regex_list[i]);
-          if (!re.test(control_el.value)) {
-            error = "Invalid format";
-            break;
+        // test numeric ranges
+        if (null == error) {
+          if (
+            ["integer", "float"].includes(type) &&
+            null != el.params.min && control_el.value < el.params.min
+          ) {
+            error = `The smallest number allowed is ${el.params.min}`;
+          } else if (
+            ["integer", "float"].includes(type) &&
+            null != el.params.max && control_el.value > el.params.max
+          ) {
+            error = `The biggest number allowed is ${el.params.max}`;
           }
         }
       }
@@ -400,14 +392,10 @@ export default {
       return null == error;
     };
 
-    // add an onchange function to all properties except typeaheads (they use on_select instead)
-    if ("typeahead" != type && !CN_common.is_function(control_el.onchange)) {
-      control_el.onchange = async () => {
-        if (["date", "time"].includes(type)) {
-          control_el.onkeyup();
-        } else if (["integer", "float"].includes(type)) {
-          control_el.value = "integer" == type ? parseInt(control_el.value) : parseFloat(control_el.value);
-        }
+    // add an input event listener to all properties except typeaheads (they use on_select instead)
+    if ("typeahead" != type) {
+      control_el.addEventListener("change", async () => {
+        if (["date", "time"].includes(type)) control_el.onkeyup();
 
         // validate the input
         const valid = el.validate();
@@ -416,7 +404,7 @@ export default {
         if (CN_common.is_function(el.params.on_change)) {
           await el.params.on_change(control_el, valid, el.params.action);
         }
-      };
+      });
     }
 
     // append the control and add prefix and postfix elements
@@ -429,7 +417,7 @@ export default {
     if (undefined !== el.params.title) control_el.setAttribute("aria-label", el.params.title);
     if (undefined !== el.params.placeholder) control_el.setAttribute("placeholder", el.params.placeholder);
     if (undefined !== el.params.max_length) control_el.setAttribute("max_length", el.params.max_length);
-    if (['boolean', 'enum'].includes(type)) {
+    if (["boolean", "enum"].includes(type)) {
       if (!el.params.required) {
         let empty = undefined === el.params.placeholder ? "(empty)" : el.params.placeholder;
         control_el.prepend(this.create(`<option value="">${empty}</option>`));
@@ -485,7 +473,7 @@ export default {
 
     // run all get_text() async calls in parallel
     await Promise.all(model_list.map(model => (async () => {
-      let crumb = { name: '...', path: "view" == model.get_action_name() ? model.get_view_url() : null };
+      let crumb = { name: "...", path: "view" == model.get_action_name() ? model.get_view_url() : null };
       crumb_list.push(crumb);
 
       // get the name after we've added the crumb to the list, otherwise it may be out of order
@@ -493,7 +481,7 @@ export default {
     })()));
 
     // add each crumb to the trail, interspersed by chevrons
-    const root_el = this.create('<div></div>');
+    const root_el = this.create("<div></div>");
     let last_crumb_el = null;
     crumb_list.forEach(crumb => {
       root_el.append(this.create('<i class="bi-chevron-compact-right text-light"></i>'));
@@ -1076,7 +1064,7 @@ export default {
     if (!config.type) config.type = "primary";
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
-        <div class="modal-dialog ${config.size ? 'modal-'+config.size : ''}">
+        <div class="modal-dialog ${config.size ? "modal-"+config.size : ""}">
           <div class="modal-content">
             <div class="modal-header text-bg-${config.type}">
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
@@ -1235,12 +1223,9 @@ export default {
         modal_bs.show();
         modal_el.querySelector("[name=cancel]").addEventListener("click", () => resolve(undefined));
         modal_el.querySelector("[name=confirm]").addEventListener("click", () => {
-          // only proceed if the input isn't required or it has been filled out
-          if (!config.required || ![null, ""].includes(control_el.value)) {
+          if (input_el.validate()) {
             resolve(control_el.value);
             if (!config.do_not_close) modal_bs.hide();
-          } else {
-            control_el.onchange();
           }
         });
         // resolved undefined if closing any other way
@@ -1255,8 +1240,8 @@ export default {
     // update the size of text inputs after the modal is showing
     modal_el.addEventListener("shown.bs.modal", () => {
       if (config.value && "text" == config.input) {
-        control_el.style.height = '';
-        control_el.style.height = control_el.scrollHeight + 'px';
+        control_el.style.height = "";
+        control_el.style.height = control_el.scrollHeight + "px";
       }
     });
 

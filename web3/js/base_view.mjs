@@ -197,6 +197,7 @@ export class CN_base_view extends CN_base_record {
       let value = prop.state.get();
       if ("file" == prop.type) {
         // replace the download button's event listener
+        // TODO: move this to create_property_element and use addEventListener("click") instead
         prop.element.querySelector("button[name=download]").onclick = async () => CN_common.download_file(
           value.data,
           await prop.file.get_filename(this)

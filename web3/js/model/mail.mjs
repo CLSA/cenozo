@@ -30,7 +30,7 @@ export class CN_mail_model extends CN_base_model {
         },
         from_address: {
           title: "From Address",
-          format: "email",
+          type: "email",
           help: 'Must be in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&

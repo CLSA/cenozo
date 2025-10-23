@@ -155,7 +155,7 @@ export class CN_user_list extends CN_base_list {
       }
     });
 
-    footer_el.append(find_btn_el);
+    footer_el.querySelector("div.btn-group").append(find_btn_el);
 
     return footer_el;
   }
