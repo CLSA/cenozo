@@ -49,5 +49,3 @@ export class CN_participant_identifier_model extends CN_base_model {
     });
   }
 }
-
-// TODO: implement "Import Participant Identifiers" extra view operation

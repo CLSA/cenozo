@@ -114,18 +114,18 @@ export class CN_equipment_type_upload extends CN_base_upload {
     const body_el = super.create_body_element();
 
     body_el.prepend(CN_element.create(`
-      <div class="container-fluid">
-        <div class="container-fluid text-info-emphasis">
+      <div class="container-fluid text-info-emphasis">
+        <div class="pb-2">
           This utility allows you to upload equipment data from a CSV file.
         </div>
-        <div class="container-fluid text-info-emphasis">
+        <div class="pb-2">
           The file must have a single header row containing the column names listed in quotes below,
           and it must conform to one of the following options:
         </div>
-        <div class="container-fluid text-info-warning">
+        <div class="text-warning-emphasis pb-2">
           NOTE: You will not be able to upload data if there are any errors in the CSV data.
         </div>
-        <div class="container-fluid text-info-emphasis px-3">
+        <div class="pb-2 px-3">
           <div class="fs-5">Option #1: Three rows (used to uploaod new equipment)</div>
           <ul>
             <li>Serial Number "serial_number" (must not belong to any other equipment type)</li>

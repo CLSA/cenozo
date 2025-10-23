@@ -106,10 +106,10 @@ export class CN_base_upload extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create('<div class="container-fluid"></div>');
+    const body_el = CN_element.create('<div></div>');
 
     // add the file input
-    const row_el = CN_element.create('<div class="row my-3"></div>');
+    const row_el = CN_element.create('<div class="row mx-1 pb-2"></div>');
 
     const label_el = CN_element.create_form_label({ for: "file", value: "CSV Data File" });
     label_el.classList.add("col-sm-3");

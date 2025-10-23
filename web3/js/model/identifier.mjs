@@ -128,15 +128,15 @@ export class CN_identifier_upload extends CN_base_upload {
     const body_el = super.create_body_element();
 
     body_el.prepend(CN_element.create(`
-      <div class="container-fluid">
-        <div class="container-fluid text-info-emphasis">
+      <div class="container-fluid text-info-emphasis">
+        <div class="pb-2">
           This utility allows you to upload participant identifier data from a CSV file.
         </div>
-        <div class="container-fluid text-info-emphasis">
+        <div class="pb-2">
           The file must only contain two values per row: the participant UID and the value of that participant's
           identifier (do not include a header row).
         </div>
-        <div class="container-fluid text-info-warning">
+        <div class="text-warning-emphasis pb-2">
           NOTE: You will not be able to upload data if there are any errors in the CSV data.
         </div>
       </div>
