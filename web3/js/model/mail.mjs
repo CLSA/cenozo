@@ -1,6 +1,9 @@
+import CN_api from "../api.mjs"
+import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "../base_model.mjs"
+import { CN_base_view } from "../base_view.mjs"
 
 export class CN_mail_model extends CN_base_model {
   constructor() {
@@ -138,4 +141,40 @@ export class CN_mail_model extends CN_base_model {
   }
 }
 
-// TODO: implement "Preview" extra view operation
+export class CN_mail_view extends CN_base_view {
+  /**
+   * Add extra operations to the footer
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    const preview_btn_el = CN_element.create(
+      '<button name="preview" type="button" class="btn btn-light btn-outline-primary">Preview</button>'
+    );
+    preview_btn_el.addEventListener("click", async () => {
+      // add the application's header and footer to the body of the email
+      const response = await CN_api.get("application/0", {
+        select: { column: ["mail_header", "mail_footer"] },
+      });
+      
+      let message = this.get_property("body").state.get();
+      if (response.mail_header) {
+        // if the header has html bu tthe body doesn't then convert line breaks to elements
+        if (response.mail_header.match(/<html>/) && !message.match(/<[^>]+>/)) {
+          message = message.replace(/\r?\n/g, "<br/>$&");
+        }
+        message = response.mail_header + "\n" + message;
+      }
+      if (response.mail_footer) message += "\n" + response.mail_footer;
+
+      CN_element.message_modal({
+        title: "Mail Preview",
+        message: message,
+        size: "xl",
+      }).show();
+    });
+    footer_el.append(preview_btn_el);
+
+    return footer_el;
+  }
+}
