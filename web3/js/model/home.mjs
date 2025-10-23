@@ -85,7 +85,7 @@ export class CN_home_model extends CN_base_object {
     if (0 == CN_session.system_message_list.length) {
       sm_el.append(CN_element.create('<div class="col-form-label">There are no system messages.</div>'));
     } else {
-      CN_session.system_message_list.forEach(message => {
+      CN_session.system_message_list.forEach((message, message_index) => {
         const message_el = CN_element.create(`
           <div class="card mt-3 px-0 ${message.unread ? "" : "text-muted"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
@@ -103,7 +103,7 @@ export class CN_home_model extends CN_base_object {
         const btn_el = message_el.querySelector("button");
         btn_el.addEventListener("click", async () => {
           btn_el.disabled = true;
-          await this.mark_message(message);
+          await this.mark_message(CN_session.system_message_list[message_index]);
           btn_el.disabled = false;
         });
         sm_el.append(message_el);
