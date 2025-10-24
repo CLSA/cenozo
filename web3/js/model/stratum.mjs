@@ -53,35 +53,35 @@ export class CN_stratum_model extends CN_base_model {
       properties: {
         name: { title: "Name", format: "identifier" },
         participant_count: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Total Participants",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
           help: "The number of participants who belong to the stratum.",
         },
         eligible_count: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Eligible Participants",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who are eligible for the study.",
         },
         refused_count: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Refused Participants",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who refused the extra consent type.",
         },
         consented_count: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Consented Participants",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who accepted the extra consent type.",
         },
         completed_count: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Completed Participants",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
@@ -229,6 +229,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
       id: "operation",
       required: true,
       on_change: (control_el) => {
+        // since this isn't connected to an action we must define the default behaviour
         this.#operation = control_el.value;
         this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
         this.#participant_selection.reset();

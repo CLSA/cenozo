@@ -22,7 +22,13 @@ export class CN_export_restriction_model extends CN_base_model {
         rank: {
           title: "Rank",
           type: "rank",
-          on_change: async (control_el, success, action) => { await action.run(); },
+          on_change: async (control_el, valid, action) => {
+            // run the default behaviour
+            await action.on_change("rank", valid);
+
+            // re-run the action so the changed property is applied in the view and all child lists
+            if (valid) action.run(true);
+          },
         },
         logic: {
           title: "Logic",

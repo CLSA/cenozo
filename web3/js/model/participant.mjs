@@ -37,11 +37,7 @@ export class CN_participant_model extends CN_base_person_model {
           meta: { table: "cohort", column: "name" },
           is_constant: () => true,
         },
-        status: {
-          title: "Status",
-          meta: true,
-          is_constant: () => true
-        },
+        status: { title: "Status", meta: {}, is_constant: () => true },
         global_note: { title: "Special Note", type: "text" },
 
         naming: {
@@ -64,13 +60,13 @@ export class CN_participant_model extends CN_base_person_model {
           properties: {
             exclusion: {
               title: "Enrolled",
-              meta: true,
+              meta: {}, // predefined by the service
               is_constant: () => true,
               help: "Whether the participant has been enrolled into the study, and if not then the reason they have been excluded.",
             },
             hold: {
               title: "Hold",
-              meta: true,
+              meta: {}, // predefined by the service
               set_postfix: () => {
                 const btn_el = CN_element.create(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
@@ -85,7 +81,7 @@ export class CN_participant_model extends CN_base_person_model {
             },
             trace: {
               title: "Trace",
-              meta: true,
+              meta: {}, // predefined by the service
               set_postfix: () => {
                 const btn_el = CN_element.create(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
@@ -100,7 +96,7 @@ export class CN_participant_model extends CN_base_person_model {
             },
             proxy: {
               title: "Proxy",
-              meta: true,
+              meta: {}, // predefined by the service
               set_postfix: () => {
                 const btn_el = CN_element.create(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'

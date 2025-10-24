@@ -51,7 +51,7 @@ export class CN_alternate_model extends CN_base_person_model {
         email: { title: "Email", type: "email" },
         email2: { title: "Alternate Email", type: "email" },
         alternate_type_id: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Specific Role",
           type: "enum",
           enum: { path: "alternate_type" },

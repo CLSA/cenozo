@@ -42,7 +42,7 @@ export class CN_export_file_model extends CN_base_model {
         },
         formatted_elapsed: {
           title: "Elapsed",
-          meta: true,
+          meta: {}, // predefined by the service
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
         },

@@ -25,7 +25,7 @@ export class CN_report_model extends CN_base_model {
       },
       properties: {
         report_schedule: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Automatically Generated",
           type: "boolean",
           is_hidden: (model) => "add" == model.get_action_name(),
@@ -73,7 +73,7 @@ export class CN_report_model extends CN_base_model {
         },
         formatted_elapsed: {
           title: "Elapsed",
-          meta: true,
+          meta: {}, // predefined by the service
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
         },
@@ -113,7 +113,7 @@ async function on_load(action) {
         // determine the parameters for each restriction type
         const params = {
           title: prop.title,
-          meta: true,
+          meta: {}, // predefined by the service
           required: prop.mandatory,
           is_constant: () => "view" == action.get_type(),
         };

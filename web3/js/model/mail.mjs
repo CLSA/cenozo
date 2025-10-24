@@ -156,7 +156,7 @@ export class CN_mail_view extends CN_base_view {
       const response = await CN_api.get("application/0", {
         select: { column: ["mail_header", "mail_footer"] },
       });
-      
+
       let message = this.get_property("body").state.get();
       if (response.mail_header) {
         // if the header has html bu tthe body doesn't then convert line breaks to elements

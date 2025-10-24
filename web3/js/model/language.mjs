@@ -24,7 +24,7 @@ export class CN_language_model extends CN_base_model {
           help: "Setting this to yes will make this language appear in language lists.",
         },
         participant_count: {
-          meta: true,
+          meta: {}, // predefined by the service
           title: "Participants",
           is_constant: () => true,
           help: "Participants can only be added to this language by going directly to participant details.",

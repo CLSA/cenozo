@@ -74,13 +74,27 @@ export class CN_application_model extends CN_base_model {
         },
         primary_color: {
           title: "Primary Colour",
-          // type: "color", TODO: implement color type
+          type: "color",
           help: "The primary colour to use for the application's user interface.",
+          on_change: async (control_el, valid, action) => {
+            // run the default behaviour
+            await action.on_change("primary_color", valid);
+
+            // then reload the page so the new theme is generated
+            if (valid) await CN_session.reload();
+          },
         },
         secondary_color: {
           title: "Secondary Colour",
-          // type: "color", TODO: implement color type
+          type: "color",
           help: "The secondary colour to use for the application's user interface.",
+          on_change: async (control_el, valid, action) => {
+            // run the default behaviour
+            await action.on_change("secondary_color", valid);
+
+            // then reload the page so the new theme is generated
+            if (valid) await CN_session.reload();
+          },
         },
         login_footer: {
           title: "Login Footer",
@@ -107,8 +121,8 @@ export class CN_application_model extends CN_base_model {
         },
         country_id: { title: "Country", type: "typeahead", typeahead: CN_country_model.get_typeahead() },
         timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
-        participant_count: { title: "Participants", meta: true, is_constant: () => true },
-        site_count: { title: "Sites", meta: true, is_constant: () => true },
+        participant_count: { title: "Participants", meta: {}, is_constant: () => true },
+        site_count: { title: "Sites", meta: {}, is_constant: () => true },
       },
     });
   }

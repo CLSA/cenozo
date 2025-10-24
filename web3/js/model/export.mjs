@@ -49,7 +49,7 @@ export class CN_export_model extends CN_base_model {
           is_hidden: model => "add" == model.get_action_name(),
         },
         participant_count: {
-          meta: false,
+          meta: null, // not associated with any column, set by the button in the postfix
           title: "Participant Count",
           is_hidden: model => "add" == model.get_action_name(),
           is_constant: () => true,
@@ -62,7 +62,9 @@ export class CN_export_model extends CN_base_model {
               async () => {
                 const state = this.get_action().get_property("participant_count").state;
                 state.set("(calculating...)");
+                btn_el.setAttribute("disabled", true);
                 state.set(await CN_api.count(`${this.get_view_url(null, "api")}/participant`));
+                btn_el.removeAttribute("disabled");
               },
             );
             return btn_el;
@@ -130,7 +132,13 @@ export class CN_export_model extends CN_base_model {
           key: name,
           value: CN_common.pretty_print("table", name),
         })) },
-        on_change: async (control_el, success, action) => { await action.run(); },
+        on_change: async (control_el, valid, action) => {
+          // run the default behaviour
+          await action.on_change("table_name", valid);
+
+          // re-run the action so the changed property is applied in the view and all child lists
+          if (valid) action.run(true);
+        }
       },
       subtype: {
         title: "Sub-Type",

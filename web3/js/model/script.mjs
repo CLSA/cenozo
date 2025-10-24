@@ -38,7 +38,7 @@ export class CN_script_model extends CN_base_model {
         create_event_types: {
           title: "Create Start/Finish Event Types",
           type: "boolean",
-          meta: true,
+          meta: {}, // predefined by the service
           is_hidden: (model) => "view" == model.get_action_name(),
           help: "Only used when creating a non-repeating script.",
         },

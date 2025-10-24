@@ -74,23 +74,22 @@ export class CN_base_view extends CN_base_record {
    * @return object
    */
   get_on_load_parameters() {
-    // add any meta columns to the record selection
-    let columns = [];
+    // if there are any meta props then add them to the select property
+    const meta_props = this.get_all_properties().filter(p => CN_common.is_object(p.meta));
 
-    this.get_all_properties().forEach(prop => {
-      if (CN_common.is_object(prop.meta)) {
-        columns.push({ ...prop.meta, alias: prop.name });
-      } else if (true === prop.meta) {
-        columns.push({ column: prop.name });
+    return (
+      0 == meta_props.length ?
+      null :
+      {
+        select: {
+          column: meta_props.reduce((list, p) => {
+            // set the column name to the prop's name if the object is empty, otherwise just set it as the alias
+            list.push(0 == Object.keys(p.meta) ? { column: p.name } : { ...p.meta, alias: p.name });
+            return list;
+          }, ["*"]) // also include all columns
+        }
       }
-    });
-
-    let params = null;
-    if (0 < columns.length) {
-      columns.unshift("*");
-      params = { select: { column: columns } };
-    }
-    return params;
+    );
   }
 
   /**

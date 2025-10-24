@@ -75,29 +75,42 @@ export class CN_base_record extends CN_base_action {
    *
    * The prop object may contain any of the following sub-properties:
    *   title: a string that defines the property's label (should be written in "Title Case")
+   *     (the default value is undefined)
    *   type: one of the types described in CN_element.create_form_element()
+   *     (the default value is "string")
    *   help: text that will appear when hovering over the property's label
+   *     (the default is undefined - no help text)
    *   format: restricts the property's value to a predefined format ("alphanum", "alpha_num" or "identifier")
+   *     (the default is undefined - no format)
    *   regex: restricts the property's value to a regular expression as a string (or array of strings)
-   *   on_change: an async function which is called whenever the property's value is changed, with arguments:
+   *     (the default is undefined - no regex)
+   *   on_change: an async function which is calledwhen a property's value is changed, with arguments:
    *     control_el: the property's form element (input, select, textarea, etc)
    *     valid: whether or not the new value is valid
    *     action: the action object that the property belongs to
+   *     (the default function is to call this class' on_change() method)
    *   is_constant: a function that makes the property read-only when it returns true, with arguments:
    *     model: the model of the action that the property belongs to
+   *     (the default function always returns false)
    *   is_hidden: a function that hides the property when it returns true, with arguments:
    *     model: the model of the action that the property belongs to
-   *   meta: used when creating a property that doesn't correspond to one of the parent module's columns;
-   *     can either be an object containing column properties (like in select params)
-   *     or true when the property's name is defined as a meta column by the module's service
+   *     (the default function always returns false)
+   *   meta: an object used to define the property's data definition when it doesn't exist in the parent module.
+   *     The object can include column select properties as defined in CN_api.select().  If left as an empty
+   *     object then the select's column property will be set to the prop's name.  Note that the alias property
+   *     will be ignored as it is automatically set to the property's name.  Finally, if the object is set to
+   *     a non-object value then the property will be left blank (not associated with any service column).
    *   properties: this is used when defining a sub-group of properties INSTEAD of a property
+   *     (the default is undefined - this is not a sub-group)
    *
    * The following properties are only used for certain property types:
-   *   For the numeric types (integer, float):
+   *   Optional properties for the numeric types (integer, float):
    *   min: restricts the property's minimum value
+   *     (the default is undefined - there is no minimum value)
    *   max: restricts the property's maximum value
+   *     (the default is undefined - there is no maximum value)
    *
-   *   For the "enum" type
+   *   Mandatory property for the "enum" type:
    *   enum: an object with one of two sets of properties:
    *     enum value retrieved from the server:
    *       path: the API path to get enum values
@@ -107,7 +120,7 @@ export class CN_base_record extends CN_base_action {
    *       get_enums: an async function that returns enum values, with arguments:
    *         model: the model of the action that the property belongs to
    *
-   *   For the "typeahead" type
+   *   Mandatory property for the "typeahead" type:
    *   typeahead: an object with one of the two sets of properties:
    *     pre-defined typeahead values:
    *       list: an array of all possible typeahead values
@@ -116,7 +129,7 @@ export class CN_base_record extends CN_base_action {
    *         value: the search value provided by the user
    *       Note that this function is often provided by a get_typeahead() function in the related model
    *
-   *   For the "file" type
+   *   Mandatory property for the "file" type:
    *   file: an object with the following properties:
    *     encoding: how the file is encoded ("base64", "text", etc)
    *     mime_type: the file's mime-type ("application/pdf", "text/csv", etc)
@@ -434,14 +447,9 @@ export class CN_base_record extends CN_base_action {
         params.max_length = module_prop.max_length;
       }
 
+      // if the prop doesn't have a custom on_change() function then implement the default behaviour
       if (!CN_common.is_function(params.on_change)) {
-        params.on_change = async (control_el, success) => {
-          if (success) {
-            await this.on_set_property(prop.name);
-          } else if ("view" == this.get_type()) {
-            prop.state.undo();
-          }
-        };
+        params.on_change = async (control_el, valid) => await this.on_change(prop.name, valid);
       }
 
       params.action = this;
@@ -476,5 +484,16 @@ export class CN_base_record extends CN_base_action {
     const el = super.render();
     el.querySelector(":scope > div > div.card > .card-body").classList.add("pb-0", "px-0");
     return el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_change(prop_name, valid) {
+    if (valid) {
+      await this.on_set_property(prop_name);
+    } else if ("view" == this.get_type()) {
+      this.get_property(prop_name).state.undo();
+    }
   }
 }

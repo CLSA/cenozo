@@ -32,14 +32,12 @@ export class CN_address_model extends CN_traceable_model {
           title: "International",
           type: "boolean",
           help: "Cannot be changed once the address has been created.",
-          on_change: async (control_el, success, action) => {
-            if (success) {
-              // update the element to propagate the change to the international property
-              await action.on_set_property("international");
-              action.update_element();
-            } else {
-              action.get_property("international").state.undo();
-            }
+          on_change: async (control_el, valid, action) => {
+            // run the default behaviour
+            await action.on_change("international", valid);
+
+            // then update the element to propagate the changed property
+            if (valid) action.update_element();
           },
           is_constant: (model) => "view" == model.get_action_name(),
         },
