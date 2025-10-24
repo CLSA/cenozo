@@ -316,8 +316,8 @@ export default {
       } else {
         throw new Error(`Cannot convert blob to unknown type "${type}".`);
       }
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
+      reader.addEventListener("load", () => resolve(reader.result));
+      reader.addEventListener("error", reject);
     });
     return await convert(blob);
   },

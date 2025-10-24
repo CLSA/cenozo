@@ -164,12 +164,33 @@ export class CN_base_view extends CN_base_record {
   /**
    * Extends parent method
    */
+  create_property_element(prop_name) {
+    const prop_el = super.create_property_element(prop_name);
+
+    const prop = this.get_property(prop_name);
+    if ("file" == prop.type) {
+      // implement file property's download button
+      prop.element.querySelector("button[name=download]").addEventListener("click", async () => {
+        CN_common.download_file(
+          prop.state.get().data,
+          await prop.file.get_filename(this)
+        );
+      });
+    }
+
+    return prop_el;
+  }
+
+  /**
+   * Extends parent method
+   */
   update_property_element(prop_name) {
     const module_prop = this.get_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
     // rebuild enum select options
+    const value = prop.state.get();
     if (["boolean", "enum", "rank"].includes(prop.type)) {
       if ("boolean" != prop.type) {
         control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
@@ -181,7 +202,6 @@ export class CN_base_view extends CN_base_record {
       }
 
       control_el.querySelectorAll("option").forEach(option_el => {
-        const value = prop.state.get();
         if (
           ("" == option_el.value && null === value) ||
           (1 == option_el.value && true === value) ||
@@ -193,21 +213,12 @@ export class CN_base_view extends CN_base_record {
           option_el.removeAttribute("selected");
         }
       });
+    } else if ("file" == prop.type) {
+      prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
+    } else if ("size" == prop.type) {
+      control_el.value = CN_common.format_filesize(value);
     } else {
-      let value = prop.state.get();
-      if ("file" == prop.type) {
-        // replace the download button's event listener
-        // TODO: move this to create_property_element and use addEventListener("click") instead
-        prop.element.querySelector("button[name=download]").onclick = async () => CN_common.download_file(
-          value.data,
-          await prop.file.get_filename(this)
-        );
-        prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
-      } else if ("size" == prop.type) {
-        control_el.value = CN_common.format_filesize(value);
-      } else {
-        control_el.value = null === value ? "" : value;
-      }
+      control_el.value = null === value ? "" : value;
 
       // update textarea sizes
       if ("text" == prop.type) {

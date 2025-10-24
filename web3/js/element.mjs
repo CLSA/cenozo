@@ -315,7 +315,6 @@ export default {
 
     // create the element's validate function
     el.validate = () => {
-      console.log("validate", control_el.value);
       // determine if there was an error
       let error = null;
 
@@ -354,7 +353,6 @@ export default {
           else if ("identifier" == el.params.format) re = /^[^;=\/]+$/;
         }
 
-        console.log("re", re);
         // test the implicit regex
         if (re && !re.test(control_el.value)) error = "Invalid format";
 
