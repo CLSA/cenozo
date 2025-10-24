@@ -603,21 +603,6 @@ class participant extends record
   }
 
   /**
-   * Returns the full name of the participant, including other/nicknames in parenthesis
-   * between the first and last name.
-   * @return string
-   * @access public
-   */
-  public function get_full_name()
-  {
-    return (
-      !is_null( $this->other_name ) && 0 < strlen( $this->other_name ) ?
-      sprintf( '%s %s (%s) %s', $this->honorific, $this->first_name, $this->other_name, $this->last_name ) :
-      sprintf( '%s %s %s', $this->honorific, $this->first_name, $this->last_name )
-    );
-  }
-
-  /**
    * Determines whether this participant is in an open assignment
    * 
    * @return boolean

@@ -74,16 +74,6 @@ class site extends record
   }
 
   /**
-   * Gives a complete name for the site.
-   * 
-   * @access public
-   */
-  public function get_full_name()
-  {
-    return $this->name;
-  }
-
-  /**
    * Adds a list of users to the site with the given role.
    * 
    * @param int $user_id_list The users to add.
