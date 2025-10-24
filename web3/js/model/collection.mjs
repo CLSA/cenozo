@@ -1,3 +1,4 @@
+import { CN_base_list } from "../base_list.mjs"
 import { CN_base_model } from "../base_model.mjs"
 import { CN_base_view } from "../base_view.mjs"
 
@@ -63,6 +64,16 @@ export class CN_collection_model extends CN_base_model {
       "view" != this.get_action_name() ||
       this.get_action().get_property("access").state.get()
     );
+  }
+}
+
+export class CN_collection_list extends CN_base_list {
+  /**
+   * Extend parent method to change the user's child title
+   */
+  is_choose_disabled(record) {
+    // don't allow participants to be added/removed from a locked collection
+    return "participant" == this.get_model().get_parent_model().get_name() && record.locked;
   }
 }
 
