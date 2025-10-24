@@ -115,8 +115,8 @@ export default {
   /**
    * Creates a form element
    * @param string type: One of the following:
-   *   "boolean", "date", "datetime", "datetimesecond", "dob", "dod", "email", "enum", "file", "float",
-   *   "html", "integer", "password", "rank", "size", "string", "text", "time", or "typeahead"
+   *   "boolean", "color", "date", "datetime", "datetimesecond", "dob", "dod", "email", "enum", "file",
+   *   "float", "html", "integer", "password", "rank", "size", "string", "text", "time", or "typeahead"
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
@@ -168,14 +168,11 @@ export default {
           .replace(/^([0-9]{4}-[0-9]{2})([0-9]*)/, "$1-$2")
           .replace(/^([0-9]{4}-[0-9]{2}-[0-9]{2}).*/, "$1");
       });
-    } else if ("email" == type) {
-      control_el = this.create(`<input type="email" class="form-control"></input>`);
     } else if ("enum" == type) {
       control_el = this.create(`<select class="form-select"></select>`);
-    } else if (["integer", "float", "size", "string"].includes(type)) {
+    } else if (["color", "email", "integer", "float", "password", "size", "string"].includes(type)) {
       control_el = this.create(`<input class="form-control"></input>`);
-    } else if ("password" == type) {
-      control_el = this.create(`<input type="password" class="form-control"></input>`);
+      if (["color", "email", "password"].includes(type)) control_el.setAttribute("type", type);
     } else if ("rank" == type) {
       control_el = this.create(`<select class="form-select"></select>`);
     } else if (["html", "text"].includes(type)) {
