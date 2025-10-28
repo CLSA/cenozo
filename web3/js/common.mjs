@@ -10,7 +10,7 @@ export default {
    * @param string type: the type to test for
    * @return boolean
    */
-  is_type: function(x, type) {
+  is_type: function (x, type) {
     if ("class" == type) return this.is_type(x, "function") && x.toString().match(/^class/);
     if ("object" == type) return !this.is_type(x, "array") && "object" === typeof x && null != x;
     if ("array" == type) return Array.isArray(x);
@@ -29,14 +29,14 @@ export default {
    * @param (dynamic) x: the variable to test
    * @return boolean
    */
-  is_class: function(x) { return this.is_type(x, "class"); },
+  is_class: function (x) { return this.is_type(x, "class"); },
 
   /**
    * Returns whether a variable is an object
    * @param (dynamic) x: the variable to test
    * @return boolean
    */
-  is_object: function(x) { return this.is_type(x, "object"); },
+  is_object: function (x) { return this.is_type(x, "object"); },
 
   /**
    * Returns whether a variable is an array
@@ -50,21 +50,21 @@ export default {
    * @param (dynamic) x: the variable to test
    * @return boolean
    */
-  is_blob: function(x) { return this.is_type(x, "blob"); },
+  is_blob: function (x) { return this.is_type(x, "blob"); },
 
   /**
    * Returns whether a variable is an element
    * @param (dynamic) x: the variable to test
    * @return boolean
    */
-  is_element: function(x) { return this.is_type(x, "element"); },
+  is_element: function (x) { return this.is_type(x, "element"); },
 
   /**
    * Returns whether a variable is a FileList
    * @param (dynamic) x: the variable to test
    * @return boolean
    */
-  is_filelist: function(x) { return this.is_type(x, "filelist"); },
+  is_filelist: function (x) { return this.is_type(x, "filelist"); },
 
   /**
    * Returns whether a variable is a function
@@ -163,7 +163,7 @@ export default {
    * @param boolean show_timezone: Whether to include the timezone
    * @return string
    */
-  format_time: function(
+  format_time: function (
     value,
     timezone = CN_session.data.user.timezone,
     am_pm = CN_session.data.user.am_pm,
@@ -185,7 +185,7 @@ export default {
    * @param boolean long_form: Whether to format in long or short form
    * @return string
    */
-  format_datetime: function(
+  format_datetime: function (
     value,
     format,
     timezone = CN_session.data.user.timezone,
@@ -226,7 +226,7 @@ export default {
    * @param boolean reverse: If true then convers a filesize string to an integer (in bytes)
    * @return string
    */
-  format_filesize: function(input, reverse=false) {
+  format_filesize: function (input, reverse = false) {
     if (reverse && "empty" == input) return 0;
     if (!reverse && !input) return "empty";
 
@@ -266,7 +266,7 @@ export default {
    * @param string str
    * @return string
    */
-  uc_first: function(str) {
+  uc_first: function (str) {
     return String(str).charAt(0).toUpperCase() + String(str).slice(1);
   },
 
@@ -275,7 +275,7 @@ export default {
    * @param string str
    * @return string
    */
-  uc_words: function(str) {
+  uc_words: function (str) {
     return String(str).replace(
       /(^[a-z]| [a-z])/g,
       match => match.toUpperCase()
@@ -287,7 +287,7 @@ export default {
    * @param integer number
    * @return string
    */
-  ordinal_suffix: function(number) {
+  ordinal_suffix: function (number) {
     let tens = number % 10, hundreds = number % 100;
 
     return number + (

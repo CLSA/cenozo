@@ -206,7 +206,7 @@ export class CN_base_view extends CN_base_record {
           (1 == option_el.value && true === value) ||
           (0 == option_el.value && false === value) ||
           (null != value && option_el.value === value.toString())
-        ){
+        ) {
           option_el.selected = true;
         } else {
           option_el.removeAttribute("selected");

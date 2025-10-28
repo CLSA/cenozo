@@ -17,7 +17,7 @@ export default {
    * @param object options: Fetch options passed directly to the native fetch() function
    * @return Response
    */
-  fetch: async function(path, params, options) {
+  fetch: async function (path, params, options) {
     let url = `${ROOT_URL}/api/${path}`;
 
     if (CN_common.is_object(params)) {
@@ -51,7 +51,7 @@ export default {
         user_id != CN_session.data.user.id ||
         role_id != CN_session.data.role.id
       )
-    ){
+    ) {
       await CN_element.message_modal({
         title: "Login Mismatch",
         size: "lg",
@@ -129,7 +129,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  get: async function(path, params, return_response = false) {
+  get: async function (path, params, return_response = false) {
     const response = await this.fetch(path, params, { headers: { "X-No-Activity": true } });
 
     // return the fetch response if requested
@@ -150,7 +150,7 @@ export default {
    * @param object params: Query URI parameters
    * @return integer
    */
-  count: async function(path, params) {
+  count: async function (path, params) {
     if (CN_common.is_object(params)) {
       params.count = true;
     } else if (CN_common.is_string(params) && 0 < params.length) {
@@ -171,7 +171,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  patch: async function(path, data, raw=false, return_response = false) {
+  patch: async function (path, data, raw = false, return_response = false) {
     const response = await this.fetch(
       path,
       null,
@@ -202,7 +202,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  post: async function(path, data, raw=false, return_response = false) {
+  post: async function (path, data, raw = false, return_response = false) {
     const response = await this.fetch(
       path,
       null,
@@ -230,7 +230,7 @@ export default {
    * @param strign path: The relative API path
    * @return Response
    */
-  delete: async function(path) {
+  delete: async function (path) {
     return await this.fetch(path, null, { method: "DELETE" });
   },
 
@@ -242,7 +242,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's blob data
    * @return Response or object or string
    */
-  file: async function(path, mime_type = null, params = {}, return_response = false) {
+  file: async function (path, mime_type = null, params = {}, return_response = false) {
     const headers = { "X-No-Activity": true };
     if (mime_type) headers.Accept = mime_type;
     params.download = true;
@@ -279,7 +279,7 @@ export default {
    * @param object select
    * @return string
    */
-  select: function(select) {
+  select: function (select) {
     return JSON.stringify(this.shorten_select(select));
   },
 
@@ -288,7 +288,7 @@ export default {
    * @param object select
    * @return object
    */
-  shorten_select: function(select) {
+  shorten_select: function (select) {
     if (Array.isArray(select)) {
       return select.map( item => this.shorten_select(item) );
     } else if (CN_common.is_object(select)) {
@@ -353,7 +353,7 @@ export default {
    * @param object modifier
    * @return string
    */
-  modifier: function(modifier) {
+  modifier: function (modifier) {
     return JSON.stringify(this.shorten_modifier(modifier));
   },
 
@@ -362,7 +362,7 @@ export default {
    * @param object modifier
    * @return object
    */
-  shorten_modifier: function(modifier) {
+  shorten_modifier: function (modifier) {
     if (Array.isArray(modifier)) {
       return modifier.map( item => this.shorten_modifier(item) );
     } else if (CN_common.is_object(modifier)) {
