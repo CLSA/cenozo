@@ -61,21 +61,26 @@ class module extends \cenozo\service\module
       $select->add_table_column( 'address', $month, 'available' );
     }
 
-    // add the "summary" and "region" columns if needed
-    if( $select->has_column( 'summary' ) || $select->has_column( 'region' ) )
+    if( $select->has_column( 'summary' ) )
     {
-      if( $select->has_column( 'summary' ) )
-        $select->add_column(
-          'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )', 'summary', false );
-      if( $select->has_column( 'region' ) )
-        $select->add_column(
-          'IF( '.
-            'international, '.
-            'IFNULL( CONCAT_WS( ", ", international_region, international_country.name ), "(international)" ), '.
-            'region.name '.
-          ')',
-          'region',
-          false );
+      $select->add_column(
+        'CONCAT( rank, ") ", CONCAT_WS( ", ", address1, address2, city, region.name ) )',
+        'summary',
+        false
+      );
+    }
+
+    if( $select->has_column( 'region' ) )
+    {
+      $select->add_column(
+        'IF( '.
+          'international, '.
+          'IFNULL( CONCAT_WS( ", ", international_region, international_country.name ), "(international)" ), '.
+          'region.name '.
+        ')',
+        'region',
+        false
+      );
     }
 
     // include supplemental data

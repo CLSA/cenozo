@@ -1,1 +1,0 @@
-export class CN_base_object {}

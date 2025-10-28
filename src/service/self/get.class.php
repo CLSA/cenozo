@@ -59,6 +59,7 @@ class get extends \cenozo\service\service
     $application_sel->add_column( 'title' );
     $application_sel->add_column( 'version' );
     $application_sel->add_column( 'url' );
+    $application_sel->add_column( 'site_based' );
     $application_sel->add_table_column( 'country', 'name', 'country' );
     $application_sel->add_table_column( 'study', 'name', 'study_name' );
     $application_sel->add_table_column( 'study', 'consent_type_id' );
@@ -79,13 +80,13 @@ class get extends \cenozo\service\service
     $user_sel->add_column( 'timezone' );
     $user_sel->add_column( 'use_12hour_clock' );
 
-    $pseudo_record = array(
+    $pseudo_record = [
       'application' => $db_application->get_column_values( $application_sel, $application_mod ),
       'user' => $db_user->get_column_values( $user_sel )
-    );
+    ];
     $pseudo_record['application']['identifier'] = is_null( $db_identifier ) ? NULL : $db_identifier->name;
     $pseudo_record['application']['build'] = sprintf( '%s-%s', CENOZO_BUILD, APP_BUILD );
-    $pseudo_record['application']['cenozo_url'] = CENOZO3_URL;
+    $pseudo_record['application']['cenozo_url'] = $session->version3 ? CENOZO3_URL : CENOZO_URL;
 
     // the following details are only provided if the user has access to the application
     if( !is_null( $db_user ) && !is_null( $db_role ) )
@@ -107,30 +108,6 @@ class get extends \cenozo\service\service
       if( !$db_role->all_sites ) $site_mod->where( 'site.id', '=', $db_site->id );
       $site_mod->order( 'site.name' );
 
-      // include the user's access
-      $access_sel = lib::create( 'database\select' );
-      $access_sel->from( 'access' );
-      $access_sel->add_column( 'site_id' );
-      $access_sel->add_table_column( 'site', 'name', 'site_name' );
-      $access_sel->add_table_column( 'site', 'timezone' );
-      $access_sel->add_column( 'role_id' );
-      $access_sel->add_table_column( 'role', 'name', 'role_name' );
-
-      // restrict to the current user's access to the current application
-      $access_mod = lib::create( 'database\modifier' );
-      $access_mod->join( 'site', 'access.site_id', 'site.id' );
-      $access_mod->join( 'role', 'access.role_id', 'role.id' );
-      $access_mod->where( 'access.user_id', '=', $db_user->id );
-      $access_mod->order( 'site.name' );
-      $access_mod->order( 'role.name' );
-
-      // get a list of all activated modules
-      $module_list = array();
-      if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
-      if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
-      if( $setting_manager->get_setting( 'module', 'relation' ) ) $module_list[] = 'relation';
-      if( $setting_manager->get_setting( 'module', 'script' ) ) $module_list[] = 'script';
-
       // get a list of all final holds
       $hold_type_sel = lib::create( 'database\select' );
       $hold_type_sel->from( 'hold_type' );
@@ -138,29 +115,64 @@ class get extends \cenozo\service\service
       $hold_type_sel->add_column( 'name' );
       $hold_type_mod = lib::create( 'database\modifier' );
       $hold_type_mod->where( 'type', '=', 'final' );
-      $final_hold_type_list = $hold_type_class_name::select( $hold_type_sel, $hold_type_mod );
 
       $pseudo_record = array_merge(
         $pseudo_record,
-        array(
+        [
           'role' => $db_role->get_column_values( $role_sel ),
           'site' => $db_site->get_column_values( $site_sel ),
-          'access' => $db_user->get_access_list( $access_sel, $access_mod ),
-          'module_list' => $module_list,
-          'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
-          'final_hold_type_list' => $final_hold_type_list,
-          'no_password' => array_key_exists( 'no_password', $_SESSION ) ? $_SESSION['no_password'] : false
-        )
+        ]
       );
 
       if( $session->version3 )
       {
         $ui_data = lib::create( 'ui\ui3' )::get_ui_data();
-        $pseudo_record['modules'] = $ui_data['modules'];
-        $pseudo_record['menu'] = $ui_data['menu'];
+        $pseudo_record = array_merge(
+          $pseudo_record,
+          [
+            'modules' => $ui_data['modules'],
+            'menu' => $ui_data['menu'],
+          ]
+        );
+      }
+      else
+      {
+        // get a list of all activated modules
+        $module_list = [];
+        if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
+        if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
+        if( $setting_manager->get_setting( 'module', 'relation' ) ) $module_list[] = 'relation';
+        if( $setting_manager->get_setting( 'module', 'script' ) ) $module_list[] = 'script';
+
+        // include the user's access
+        $access_sel = lib::create( 'database\select' );
+        $access_sel->from( 'access' );
+        $access_sel->add_column( 'site_id' );
+        $access_sel->add_table_column( 'site', 'name', 'site_name' );
+        $access_sel->add_table_column( 'site', 'timezone' );
+        $access_sel->add_column( 'role_id' );
+        $access_sel->add_table_column( 'role', 'name', 'role_name' );
+
+        // restrict to the current user's access to the current application
+        $access_mod = lib::create( 'database\modifier' );
+        $access_mod->join( 'site', 'access.site_id', 'site.id' );
+        $access_mod->join( 'role', 'access.role_id', 'role.id' );
+        $access_mod->where( 'access.user_id', '=', $db_user->id );
+        $access_mod->order( 'site.name' );
+        $access_mod->order( 'role.name' );
+
+        $pseudo_record = array_merge(
+          $pseudo_record,
+          [
+            'access' => $db_user->get_access_list( $access_sel, $access_mod ),
+            'final_hold_type_list' => $hold_type_class_name::select( $hold_type_sel, $hold_type_mod ),
+            'module_list' => $module_list,
+            'site_list' => $db_application->get_site_list( $site_sel, $site_mod ),
+          ]
+        );
       }
 
-      if( $setting_manager->get_setting( 'module', 'script' ) )
+      if( !$session->version3 && $setting_manager->get_setting( 'module', 'script' ) )
       {
         $db_pine_application = $session->get_pine_application();
 
@@ -219,10 +231,10 @@ class get extends \cenozo\service\service
         if( !is_null( $db_assignment ) )
         {
           $db_interview = $db_assignment->get_interview();
-          $pseudo_record['user']['assignment'] = array(
+          $pseudo_record['user']['assignment'] = [
             'id' => $db_assignment->id,
             'participant_id' => is_null( $db_interview ) ? NULL : $db_interview->participant_id
-          );
+          ];
         }
       }
 

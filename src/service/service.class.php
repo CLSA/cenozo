@@ -719,10 +719,10 @@ abstract class service extends \cenozo\base_object
     return array(
       'application/json',
       'application/pdf',
+      'application/sql',
       'application/vnd.oasis.opendocument.spreadsheet',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'text/csv',
-      'text/sql',
       'text/plain'
     );
   }

@@ -25,8 +25,11 @@ class activity extends record
   public static function update_activity()
   {
     $util_class_name = lib::get_class_name( 'util' );
-
     $setting_manager = lib::create( 'business\setting_manager' );
+
+    // do nothing if the application has been setup to not track activity
+    if( !$setting_manager->get_setting( 'general', 'track_activity' ) ) return;
+
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_user = $session->get_user();
@@ -89,6 +92,10 @@ class activity extends record
   public static function close_lapsed( $db_user = NULL )
   {
     $setting_manager = lib::create( 'business\setting_manager' );
+
+    // do nothing if the application has been setup to not track activity
+    if( !$setting_manager->get_setting( 'general', 'track_activity' ) ) return 0;
+
     $db_application = lib::create( 'business\session' )->get_application();
 
     $affected_rows = 0;

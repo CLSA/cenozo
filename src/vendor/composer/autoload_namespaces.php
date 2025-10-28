@@ -7,6 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'HTMLPurifier' => array($vendorDir . '/ezyang/htmlpurifier/library'),
-    'Flow\\JSONPath\\Test' => array($vendorDir . '/flow/jsonpath/tests'),
-    'Flow\\JSONPath' => array($vendorDir . '/flow/jsonpath/src'),
 );

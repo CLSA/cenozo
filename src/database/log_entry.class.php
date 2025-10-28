@@ -18,6 +18,9 @@ class log_entry extends record
    */
   public static function update()
   {
+    ini_set( 'memory_limit', '-1' );
+    set_time_limit( 900 ); // 15 minutes max
+
     $util_class_name = lib::get_class_name( 'util' );
     $application_id = lib::create( 'business\session' )->get_application()->id;
 

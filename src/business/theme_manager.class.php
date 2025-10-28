@@ -346,16 +346,20 @@ CSS;
   --bs-link-color: PRIMARY(1.0);
   --bs-link-color-rgb: PRIMARY_DEC(1.0);
   --bs-primary-rgb: PRIMARY_DEC(1.0);
-  --bs-primary-hover-bg: PRIMARY_DEC(1.25);
-  --bs-primary-hover-border: PRIMARY_DEC(0.87);
+  --bs-primary-bg-subtle: PRIMARY_DEC(1.5);
+  --bs-primary-border-subtle: PRIMARY(1.25);
+  --bs-primary-hover-bg: PRIMARY_DEC(0.82);
+  --bs-primary-hover-border: PRIMARY_DEC(0.66);
   --bs-primary-active-bg: PRIMARY_DEC(0.75);
   --bs-primary-active-border: PRIMARY_DEC(0.4);
 
-  --bs-info-rgb: SECONDARY_DEC(1.0);
-  --bs-info-hover-bg: SECONDARY_DEC(1.25);
-  --bs-info-hover-border: SECONDARY_DEC(0.87);
-  --bs-info-active-bg: SECONDARY_DEC(0.75);
-  --bs-info-active-border: SECONDARY_DEC(0.4);
+  --bs-secondary-rgb: SECONDARY_DEC(1.0);
+  --bs-secondary-bg-subtle: PRIMARY_DEC(1.5);
+  --bs-secondary-border-subtle: PRIMARY(1.25);
+  --bs-secondary-hover-bg: SECONDARY_DEC(0.82);
+  --bs-secondary-hover-border: SECONDARY_DEC(0.66);
+  --bs-secondary-active-bg: SECONDARY_DEC(0.75);
+  --bs-secondary-active-border: SECONDARY_DEC(0.4);
 
   .text-bg-primary {
     background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity, 1)) !important;
@@ -366,7 +370,7 @@ CSS;
   }
 
   .bg-primary-subtle {
-    background-color: var(--bs-primary-rgb-subtle) !important;
+    background-color: var(--bs-primary-bg-subtle) !important;
   }
 
   .btn-primary {
@@ -426,17 +430,34 @@ CSS;
     --bs-list-group-active-border-color: rgb(var(--bs-primary-rgb));
   }
 
-  .text-bg-info {
-    color: #000 !important;
-    background-color: rgba(var(--bs-info-rgb), var(--bs-bg-opacity, 1)) !important;
+  .text-bg-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity, 1)) !important;
   }
 
-  .bg-info {
-    background-color: rgba(var(--bs-info-rgb), var(--bs-bg-opacity)) !important;
+  .bg-secondary {
+    background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity)) !important;
   }
 
-  .bg-info-subtle {
-    background-color: var(--bs-info-rgb-subtle) !important;
+  .bg-secondary-subtle {
+    background-color: var(--bs-secondary-bg-subtle) !important;
+  }
+
+  .accordion-button {
+    background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity, 1)) !important;
+    border-radius: 0px;
+    color: #fff !important;
+  }
+
+  .accordion-button:not(.collapsed) {
+    color: #fff !important;
+  }
+
+  .accordion-button:focus{
+    box-shadow: inherit;
+  }
+
+  .accordion-button:hover{
+    background-color: rgba(var(--bs-secondary-hover-bg), var(--bs-bg-opacity, 1)) !important;
   }
 
   .pagination {
@@ -449,26 +470,26 @@ CSS;
     --bs-progress-bar-bg: rgb(var(--bs-primary-rgb));
   }
 
-  .btn-info {
-    --bs-btn-bg: rgb(var(--bs-info-rgb));
-    --bs-btn-border-color: rgb(var(--bs-info-rgb));
-    --bs-btn-hover-bg: rgb(var(--bs-info-hover-bg));
-    --bs-btn-hover-border-color: rgb(var(--bs-info-hover-border));
-    --bs-btn-active-bg: rgb(var(--bs-info-active-bg));
-    --bs-btn-active-border-color: rgb(var(--bs-info-active-border));
-    --bs-btn-disabled-bg: rgb(var(--bs-info-rgb));
-    --bs-btn-disabled-border-color: rgb(var(--bs-info-rgb));
+  .btn-secondary {
+    --bs-btn-bg: rgb(var(--bs-secondary-rgb));
+    --bs-btn-border-color: rgb(var(--bs-secondary-rgb));
+    --bs-btn-hover-bg: rgb(var(--bs-secondary-hover-bg));
+    --bs-btn-hover-border-color: rgb(var(--bs-secondary-hover-border));
+    --bs-btn-active-bg: rgb(var(--bs-secondary-active-bg));
+    --bs-btn-active-border-color: rgb(var(--bs-secondary-active-border));
+    --bs-btn-disabled-bg: rgb(var(--bs-secondary-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-secondary-rgb));
   }
 
-  .btn-outline-info {
-    --bs-btn-color: rgb(var(--bs-info-rgb));
-    --bs-btn-border-color: rgb(var(--bs-info-rgb));
-    --bs-btn-hover-bg: rgb(var(--bs-info-rgb));
-    --bs-btn-hover-border-color: rgb(var(--bs-info-rgb));
-    --bs-btn-active-bg: rgb(var(--bs-info-rgb));
-    --bs-btn-active-border-color: rgb(var(--bs-info-rgb));
-    --bs-btn-disabled-color: rgb(var(--bs-info-rgb));
-    --bs-btn-disabled-border-color: rgb(var(--bs-info-rgb));
+  .btn-outline-secondary {
+    --bs-btn-color: rgb(var(--bs-secondary-rgb));
+    --bs-btn-border-color: rgb(var(--bs-secondary-rgb));
+    --bs-btn-hover-bg: rgb(var(--bs-secondary-rgb));
+    --bs-btn-hover-border-color: rgb(var(--bs-secondary-rgb));
+    --bs-btn-active-bg: rgb(var(--bs-secondary-rgb));
+    --bs-btn-active-border-color: rgb(var(--bs-secondary-rgb));
+    --bs-btn-disabled-color: rgb(var(--bs-secondary-rgb));
+    --bs-btn-disabled-border-color: rgb(var(--bs-secondary-rgb));
   }
 }
 CSS;

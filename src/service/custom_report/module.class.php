@@ -16,7 +16,7 @@ class module extends \cenozo\service\module
   /**
    * Extend parent property
    */
-  protected static $base64_column_list = ['data' => 'text/sql'];
+  protected static $base64_column_list = ['data' => 'application/sql'];
 
   /**
    * Extend parent method

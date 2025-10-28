@@ -27,6 +27,9 @@ class module extends \cenozo\base_object
       foreach( $this->column_list as $name => $column )
         $this->column_list[$name]['required'] = 1 == $column['required'];
     }
+
+    // check if the module belongs to the framework
+    $this->framework = is_file( sprintf( '%s/src/service/%s/module.class.php', CENOZO_PATH, $this->subject ) );
   }
 
   /**
@@ -280,6 +283,7 @@ class module extends \cenozo\base_object
   {
     return array(
       'subject' => $this->subject,
+      'framework' => $this->framework,
       'properties' => $this->column_list,
       'actions' => $this->action_list,
       'children' => $this->child_list,
@@ -292,34 +296,40 @@ class module extends \cenozo\base_object
    * The module's subject
    * @var string
    */
-  private $subject;
+  protected $subject;
+
+  /**
+   * Whether the module belongs to the framework
+   * @var boolean
+   */
+  protected $framework;
 
   /**
    * The module's column list
    * @var array
    */
-  private $column_list = [];
+  protected $column_list = [];
 
   /**
    * The module's action list
    * @var array
    */
-  private $action_list = array();
+  protected $action_list = array();
 
   /**
    * The module's child list
    * @var array
    */
-  private $child_list = array();
+  protected $child_list = array();
 
   /**
    * The module's choose list
    * @var array
    */
-  private $choose_list = array();
+  protected $choose_list = array();
 
   /**
    * The module's list menu
    */
-  private $list_menu = false;
+  protected $list_menu = false;
 }

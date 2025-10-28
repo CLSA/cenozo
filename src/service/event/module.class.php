@@ -70,6 +70,8 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    $modifier->join( 'event_type', 'event.event_type_id', 'event_type.id' );
+
     // restrict to participants in this application
     if( $db_application->release_based )
     {

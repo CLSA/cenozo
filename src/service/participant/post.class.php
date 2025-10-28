@@ -137,6 +137,7 @@ class post extends \cenozo\service\service
                 $db_collection = lib::create( 'database\collection', $file->collection->id );
                 if( 'add' == $file->collection->operation ) $db_collection->add_participant( $id_list );
                 else $db_collection->remove_participant( $id_list );
+                $this->set_data( count( $id_list ) );
               }
             }
           }
@@ -156,6 +157,10 @@ class post extends \cenozo\service\service
         else if( property_exists( $file, 'hold' ) )
         { // add the given hold record
           $db_hold = lib::create( 'database\hold' );
+          $db_hold->user_id = $db_user->id;
+          $db_hold->site_id = $db_site->id;
+          $db_hold->role_id = $db_role->id;
+          $db_hold->application_id = $db_application->id;
           foreach( $file->hold as $column => $value ) $db_hold->$column = $value;
           $modifier->join( 'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
           $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
@@ -214,6 +219,7 @@ class post extends \cenozo\service\service
                 $db_study = lib::create( 'database\study', $file->study->id );
                 if( 'add' == $file->study->operation ) $db_study->add_participant( $id_list );
                 else $db_study->remove_participant( $id_list );
+                $this->set_data( count( $id_list ) );
               }
             }
           }

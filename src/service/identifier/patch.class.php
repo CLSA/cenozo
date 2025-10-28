@@ -25,17 +25,15 @@ class patch extends \cenozo\service\patch
   {
     $util_class_name = lib::get_class_name( 'util' );
 
-    $patch = $this->get_argument( 'import', NULL );
-    if( !is_null( $patch ) )
+    if( $import = $this->get_argument( 'import', NULL ) )
     {
       $db_identifier = $this->get_leaf_record();
       $csv_data = $this->get_file_as_raw();
-      $this->set_data(
-        $util_class_name::json_encode(
-          $db_identifier->import( $csv_data, 'apply' == $patch )
-        )
-      );
+      $this->set_data( $db_identifier->import( $csv_data, 'apply' == $import ) );
     }
-    else parent::execute();
+    else
+    {
+      parent::execute();
+    }
   }
 }

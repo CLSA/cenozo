@@ -199,9 +199,7 @@ class session extends \cenozo\singleton
    */
   public function login( $username = NULL, $db_site = NULL, $db_role = NULL )
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $access_class_name = lib::get_class_name( 'database\access' );
-    $activity_class_name = lib::get_class_name( 'database\activity' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $site_class_name = lib::get_class_name( 'database\site' );
     $role_class_name = lib::get_class_name( 'database\role' );
@@ -227,12 +225,15 @@ class session extends \cenozo\singleton
         try { $db_access = lib::create( 'database\access', $_SESSION['access.id'] ); }
         catch( \cenozo\exception\runtime $e ) { $db_access = NULL; }
 
-        // don't use the access if it has lapsed
-        if( !is_null( $db_access ) && $db_access->has_expired() )
+        if( $setting_manager->get_setting( 'general', 'track_activity' ) )
         {
-          // we'll need the user to close the activity, so set it before making db_access NULL
-          $this->db_user = $db_access->get_user();
-          $db_access = NULL;
+          // don't use the access if it has lapsed
+          if( !is_null( $db_access ) && $db_access->has_expired() )
+          {
+            // we'll need the user to close the activity, so set it before making db_access NULL
+            $this->db_user = $db_access->get_user();
+            $db_access = NULL;
+          }
         }
       }
 

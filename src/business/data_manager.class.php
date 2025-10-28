@@ -458,6 +458,7 @@ class data_manager extends \cenozo\singleton
       $datasource = $parts[1];
       $table = $parts[2];
       $variable = $parts[3];
+      $full_variable = sprintf( '%s.%s.%s', $datasource, $table, $variable );
 
       $opal_manager = lib::create( 'business\opal_manager' );
 
@@ -488,19 +489,23 @@ class data_manager extends \cenozo\singleton
               $variable_cache_sel->add_column( 'value' );
               $variable_cache_sel->from( 'variable_cache' );
               $variable_cache_mod = lib::create( 'database\modifier' );
-              $variable_cache_mod->where( 'variable', '=', $variable );
+              $variable_cache_mod->where( 'variable', '=', $full_variable );
               $rows = $db_participant->get_variable_cache_list( $variable_cache_sel, $variable_cache_mod );
               if( 0 == count( $rows ) )
               {
-                $values = $opal_manager->get_values( $datasource, $table, $db_participant );
+                // build the values array for the cache
+                $values = [];
+                foreach( $opal_manager->get_values( $datasource, $table, $db_participant ) as $key => $value )
+                  $values[sprintf('%s.%s.%s', $datasource, $table, $key)] = $value;
+
                 $variable_cache_class_name::overwrite_values( $db_participant, $values );
-                if( array_key_exists( $variable, $values ) ) $value = $values[$variable];
+                if( array_key_exists( $full_variable, $values ) ) $value = $values[$full_variable];
                 else
                 {
                   $warning = sprintf(
                     'Opal cache for participant %s exists but requested variable "%s" does not exist.',
                     $db_participant->uid,
-                    $variable
+                    $full_variable
                   );
                   log::warning( $warning );
                 }

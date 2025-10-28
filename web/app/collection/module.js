@@ -23,9 +23,8 @@ cenozoApp.defineModule({
           title: "Participants",
           type: "number",
         },
-        user_count: {
+        user_list: {
           title: "Users",
-          type: "number",
         },
       },
       defaultOrder: {

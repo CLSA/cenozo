@@ -58,6 +58,9 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $modifier->join( 'export', 'export_file.export_id', 'export.id' );
+    $modifier->join( 'user', 'export_file.user_id', 'user.id' );
+
     // pretty-print the elapsed time
     if( $select->has_column( 'formatted_elapsed' ) )
     {

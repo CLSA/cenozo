@@ -78,7 +78,7 @@ class ui3 extends \cenozo\base_object
       $this->script_list[] = [
         'id' => NULL,
         'path' => CENOZO3_URL,
-        'file' => DEVELOPMENT ? 'js/model/login.js' : 'js/model/login.min.js',
+        'file' => 'js/login.js',
         'build' => APP_BUILD,
       ];
 
@@ -259,15 +259,13 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'alternate' == $module->get_subject() )
       {
-        /*
-        $module->add_choose( 'alternate_type' );
         $module->add_child( 'address' );
+        $module->add_choose( 'alternate_type' );
         $module->add_child( 'phone' );
         $module->add_child( 'alternate_consent' );
         $module->add_child( 'form' );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
-        */
       }
       else if( 'alternate_consent' == $module->get_subject() )
       {
@@ -275,7 +273,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'alternate_consent_type' == $module->get_subject() )
       {
-        $module->add_child( 'role' );
+        $module->add_choose( 'role' );
         $module->add_child( 'alternate' );
       }
       else if( 'alternate_type' == $module->get_subject() )
@@ -303,7 +301,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'consent_type' == $module->get_subject() )
       {
-        $module->add_child( 'role' );
+        $module->add_choose( 'role' );
         $module->add_child( 'participant' );
       }
       else if( 'custom_report' == $module->get_subject() )
@@ -327,11 +325,13 @@ class ui3 extends \cenozo\base_object
       else if( 'event_type' == $module->get_subject() )
       {
         $module->add_child( 'participant' );
-        $module->add_child( 'role' );
+        $module->add_choose( 'role' );
         $module->add_child( 'event_type_mail' );
       }
       else if( 'export' == $module->get_subject() )
       {
+        $module->add_child( 'export_column' );
+        $module->add_child( 'export_restriction' );
         $module->add_child( 'export_file' );
       }
       else if( 'form' == $module->get_subject() )
@@ -344,13 +344,13 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'hold_type' == $module->get_subject() )
       {
-        $module->add_child( 'role' );
+        $module->add_choose( 'role' );
         $module->add_child( 'participant' );
       }
       else if( 'identifier' == $module->get_subject() )
       {
         $module->add_child( 'participant_identifier' );
-        $module->add_action( 'import', '/{identifier}' );
+        $module->add_action( 'upload', '/{identifier}' );
       }
       else if( 'interview' == $module->get_subject() )
       {
@@ -358,36 +358,41 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'participant' == $module->get_subject() )
       {
-        if( $use_interview_module ) $module->add_child( 'interview' );
-        if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
-          $module->add_child( 'relation' );
         $module->add_child( 'address' );
-        $module->add_child( 'phone' );
-        $module->add_choose( 'study' );
-        $module->add_child( 'participant_identifier' );
-        $module->add_child( 'mail' );
-        $module->add_child( 'hold' );
-        $module->add_child( 'trace' );
-        $module->add_child( 'proxy' );
-        $module->add_child( 'consent' );
-        $module->add_child( 'hin' );
         $module->add_child( 'alternate' );
+        $module->add_choose( 'collection' );
+        $module->add_child( 'consent' );
         if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
         $module->add_child( 'event' );
         $module->add_child( 'form' );
-        $module->add_choose( 'collection' );
-        $module->add_action( 'history',
-          '/{identifier}?{address}&{alternate}'.
-          ( $use_interview_module ? '&{assignment}' : '' ).
-          '&{consent}&{event}&{form}&{hold}&{note}&{phone}&{proxy}&{trace}' );
+        $module->add_child( 'hin' );
+        $module->add_child( 'hold' );
+        if( $use_interview_module ) $module->add_child( 'interview' );
+        $module->add_child( 'mail' );
+        $module->add_child( 'participant_identifier' );
+        $module->add_child( 'phone' );
+        $module->add_child( 'proxy' );
+        if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
+          $module->add_child( 'relation' );
+        $module->add_choose( 'study' );
+        $module->add_child( 'trace' );
+
+        $param_list = [
+          '{address}', '{alternate}', '{consent}', '{event}', '{form}',
+          '{hold}', '{mail}', '{note}', '{phone}', '{proxy}', '{trace}',
+        ];
+        if( $use_interview_module ) $param_list[] = '{assignment}';
+        if( $use_equipment_module ) $param_list[] = '{equipment}';
+        $module->add_action( 'history', sprintf( '/{identifier}?%s', implode( "&", $param_list ) ) );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'scripts', '/{identifier}' );
+
         // remove the add action it is used for utility purposes only
         $module->remove_action( 'add' );
       }
       else if( 'proxy_type' == $module->get_subject() )
       {
-        $module->add_child( 'role' );
+        $module->add_choose( 'role' );
         $module->add_child( 'participant' );
       }
       else if( 'recording' == $module->get_subject() )
@@ -589,15 +594,15 @@ class ui3 extends \cenozo\base_object
 
     // build the report menu
     $select = lib::create( 'database\select' );
-    $select->add_column( 'name' );
+    $select->add_column( 'id' );
     $select->add_column( 'title' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'role_has_report_type', 'report_type.id', 'role_has_report_type.report_type_id' );
     $modifier->where( 'role_has_report_type.role_id', '=', $db_role->id );
     foreach( $db_application_type->get_report_type_list( $select, $modifier ) as $report_type )
-      $menu['reports'][$report_type['title']] = $report_type['name'];
+      $menu['reports'][$report_type['title']] = $report_type['id'];
 
-    if( 'administrator' == $db_role->name ) $menu['reports']['Custom Reports'] = 'custom_report';
+    if( 'administrator' == $db_role->name ) $menu['reports']['Custom Reports'] = NULL;
     else
     {
       // only show the custom reports if the role has access to any
@@ -605,16 +610,8 @@ class ui3 extends \cenozo\base_object
       $modifier->join( 'role_has_custom_report', 'custom_report.id', 'role_has_custom_report.custom_report_id' );
       $modifier->where( 'role_has_custom_report.role_id', '=', $db_role->id );
       if( 0 < $custom_report_class_name::count( $modifier ) )
-        $menu['reports']['Custom Reports'] = 'custom_report';
+        $menu['reports']['Custom Reports'] = NULL;
     }
-
-    // sort all lists by their key or set them to NULL if they are empty
-    if( 0 == count( $menu['lists'] ) ) $menu['lists'] = NULL;
-    else ksort( $menu['lists'] );
-    if( 0 == count( $menu['utilities'] ) ) $menu['utilities'] = NULL;
-    else ksort( $menu['utilities'] );
-    if( 0 == count( $menu['reports'] ) ) $menu['reports'] = NULL;
-    else ksort( $menu['reports'] );
 
     return ['module_list' => $module_list, 'menu' => $menu];
   }
@@ -627,8 +624,17 @@ class ui3 extends \cenozo\base_object
    */
   public static function get_ui_data()
   {
-    $data = self::generate();
+    $data = static::generate();
 
+    // sort all lists by their key or set them to NULL if they are empty
+    if( 0 == count( $data['menu']['lists'] ) ) $data['menu']['lists'] = NULL;
+    else ksort( $data['menu']['lists'] );
+    if( 0 == count( $data['menu']['utilities'] ) ) $data['menu']['utilities'] = NULL;
+    else ksort( $data['menu']['utilities'] );
+    if( 0 == count( $data['menu']['reports'] ) ) $data['menu']['reports'] = NULL;
+    else ksort( $data['menu']['reports'] );
+
+    // build the modules by transforming all modules into data arrays
     ksort( $data['module_list'] );
     $modules = [];
     foreach( $data['module_list'] as $module ) $modules[$module->get_subject()] = $module->as_array();
@@ -679,29 +685,8 @@ class ui3 extends \cenozo\base_object
    */
   protected function add_interface_libs()
   {
-    $this->script_list = array_merge( $this->script_list, [
-      [
-        'id' => NULL,
-        'path' => LIB3_URL,
-        'file' => 'moment/min/moment-with-locales.min.js',
-        'build' => CENOZO_BUILD,
-      ],
-      [
-        'id' => NULL,
-        'path' => LIB3_URL,
-        'file' => 'moment-timezone/builds/moment-timezone-with-data-1970-2030.min.js',
-        'build' => CENOZO_BUILD,
-      ],
-    ] );
-
     // determine which optional libs are installed
-    $file_list = [
-      'chart.js/dist/chart.umd.js',
-      'file-saver/dist/FileSaver.min.js',
-      'diff/dist/diff.js',
-      'jsonpath/jsonpath.min.js',
-      'signature_pad/dist/signature_pad.umd.min.js',
-    ];
+    $file_list = [];
     foreach( $file_list as $file )
     {
       $filename = sprintf( '%s/lib/%s', WEB_PATH, $file );
@@ -720,7 +705,7 @@ class ui3 extends \cenozo\base_object
     $this->script_list[] = [
       'id' => 'app',
       'path' => CENOZO3_URL,
-      'file' => DEVELOPMENT ? 'js/app.js' : 'app.min.js',
+      'file' => 'js/app.js',
       'build' => CENOZO_BUILD,
     ];
   }

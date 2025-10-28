@@ -19,10 +19,6 @@ class module extends \cenozo\service\module
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
-
-    if( $select->has_table_columns( 'export' ) )
-      $modifier->join( 'export', 'export_column.export_id', 'export.id' );
-    if( $select->has_table_columns( 'export_column' ) )
-      $modifier->join( 'export_column', 'export_restriction.export_column_id', 'export_column.id' );
+    if( $select->has_table_columns( 'export' ) ) $modifier->join( 'export', 'export_id', 'export.id' );
   }
 }

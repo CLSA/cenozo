@@ -71,6 +71,11 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $db_application = lib::create( 'business\session' )->get_application();
     $modifier->join( 'alternate', 'alternate_consent.alternate_id', 'alternate.id' );
+    $modifier->join(
+      'alternate_consent_type',
+      'alternate_consent.alternate_consent_type_id',
+      'alternate_consent_type.id'
+    );
 
     // restrict to participants in this application
     if( $db_application->release_based )

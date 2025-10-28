@@ -14,7 +14,7 @@ $settings = array();
 
 // framework software version (is never overridded by the application's ini file)
 $settings['general']['cenozo_version'] = '2.10';
-$settings['general']['cenozo_build'] = '5f44f89c';
+$settings['general']['cenozo_build'] = 'c56219d4';
 
 // when set to true all operations are disabled
 $settings['general']['maintenance_mode'] = false;
@@ -37,6 +37,12 @@ $settings['general']['login_failure_limit'] = 7;
 
 // how long before a search result is considered out of date (in minutes)
 $settings['general']['search_timeout'] = 10;
+
+// whether to track user activity (may slow down the application as activity table grows in size)
+$settings['general']['track_activity'] = true;
+
+// the number of days after which tables with an archive table will have records archived
+$settings['general']['table_archive_offset'] = 30;
 
 // how much inactivity before activity logs are considered closed (in minutes)
 $settings['general']['activity_timeout'] = 60;

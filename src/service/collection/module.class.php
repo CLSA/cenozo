@@ -77,9 +77,9 @@ class module extends \cenozo\service\site_restricted_module
 
       if( !is_null( $db_collection ) && $service_class_name::is_write_method( $method ) )
       {
+        // restrict writing by user access
         if( $db_collection->locked )
         {
-          // see if user has collection, if not then 403
           $user_mod = lib::create( 'database\modifier' );
           $user_mod->where( 'user.id', '=', $db_user->id );
           if( 0 == $db_collection->get_user_count( $user_mod ) ) $this->get_status()->set_code( 403 );
@@ -95,7 +95,26 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
-    $db_application = lib::create( 'business\session' )->get_application();
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_collection = $this->get_resource();
+
+    if( !is_null( $db_collection ) )
+    {
+
+      if( $select->has_column( 'access' ) )
+      {
+        // determine if the current user has access to this collection
+        $access = true;
+        if( $db_collection->locked )
+        {
+          $user_mod = lib::create( 'database\modifier' );
+          $user_mod->where( 'user.id', '=', $session->get_user()->id );
+          $access = 0 < $db_collection->get_user_count( $user_mod );
+        }
+        $select->add_constant( $access, 'access', 'boolean' );
+      }
+    }
 
     if( false === $this->get_argument( 'choosing', false ) )
     {
@@ -152,24 +171,25 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add the total number of users
-    if( $select->has_column( 'user_count' ) )
+    if( $select->has_column( 'user_list' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'user_has_collection' );
       $join_sel->add_column( 'collection_id' );
-      $join_sel->add_column( 'COUNT( DISTINCT user_has_collection.user_id )', 'user_count', false );
+      $join_sel->add_column( 'GROUP_CONCAT( DISTINCT user.name ORDER BY user.name SEPARATOR ", " )', 'user_list', false );
 
       $join_mod = lib::create( 'database\modifier' );
+      $join_mod->join( 'user', 'user_has_collection.user_id', 'user.id' );
       $join_mod->group( 'collection_id' );
 
       // restrict to users who have access to this application
-      $join_mod->join( 'access', 'user_has_collection.user_id', 'access.user_id' );
+      $join_mod->join( 'access', 'user.id', 'access.user_id' );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS collection_join_user', $join_sel->get_sql(), $join_mod->get_sql() ),
         'collection.id',
         'collection_join_user.collection_id' );
-      $select->add_column( 'IFNULL( user_count, 0 )', 'user_count', false );
+      $select->add_column( 'IFNULL( user_list, "any" )', 'user_list', false );
     }
   }
 }

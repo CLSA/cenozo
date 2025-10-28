@@ -15,7 +15,7 @@ class patch extends \cenozo\service\patch
    */
   protected function setup()
   {
-    if( !$this->get_argument( 'action', false ) ) parent::setup();
+    if( !$this->get_argument( 'import', false ) ) parent::setup();
   }
 
   /**
@@ -23,14 +23,12 @@ class patch extends \cenozo\service\patch
    */
   protected function execute()
   {
-    if( $action = $this->get_argument( 'action', false ) )
+    if( $import = $this->get_argument( 'import', false ) )
     {
       $db_equipment_type = $this->get_leaf_record();
-
       $csv_data = str_getcsv( $this->get_file_as_raw(), "\n" );
       foreach( $csv_data as &$row ) $row = str_getcsv( $row );
-
-      $this->set_data( $db_equipment_type->import_from_array( $csv_data, 'apply' == $action ) );
+      $this->set_data( $db_equipment_type->import_from_array( $csv_data, 'apply' == $import ) );
     }
     else
     {

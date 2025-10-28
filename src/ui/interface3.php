@@ -16,5 +16,28 @@
   <meta http-equiv="Expires" content="-1">
   <title><?php echo APP_TITLE; ?></title>
 </head>
-<body class="background user-select-none"></body>
+<body>
+  <div name="app_bg" class="loading">
+    <div name="app_body" class="user-select-none">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0 bg-loading">
+        <div class="container-fluid">
+          <button type="button" class="btn btn-outline-light my-1" disabled="">
+            <strong><?php echo APP_TITLE; ?></strong>
+          </button>
+          <div class="collapse navbar-collapse ms-2">
+            <div>
+              <i class="bi-chevron-compact-right text-light"></i>
+              <button class="home btn btn-primary px-1" disabled="true">Loading...</button>
+            </div>
+          </div>
+          <div name="menu-btn-group" class="d-flex">
+            <div class="spinner-border text-light" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+</body>
 </html>
