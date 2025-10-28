@@ -2,15 +2,18 @@ import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
-
 import { CN_base_action } from "./base_action.mjs"
+import CN_filter_modal, { load_filter } from "./filter.mjs"
 
 export class CN_base_list extends CN_base_action {
   #list_mode;
   #columns;
   #records = [];
   #total_records = null;
+  #limit = null;
+  #offset = null;
   #current_page = 1;
+  #filter_modal;
   #is_choosing = false;
   #choosing_list;
 
@@ -26,13 +29,21 @@ export class CN_base_list extends CN_base_action {
     const parent_model = this.get_model().get_parent_model();
     this.#list_mode = (
       null != parent_model && parent_model.get_module().has_choose(model.get_name()) ?
-      "choose" :
-      "add"
+        "choose" :
+        "add"
     );
 
     // setup each column
+    const page_param = this.get_query_parameter("page");
+    if (page_param) {
+      this.#current_page = page_param;
+    }
+
+    const order_param = this.get_query_parameter("order");
+    const reverse_param = this.get_query_parameter("reverse");
+
     this.#columns = model.clone_columns();
-    for (let col_name in this.#columns) {
+    for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
       if (!column.type) column.type = "string";
 
@@ -52,7 +63,35 @@ export class CN_base_list extends CN_base_action {
           return null != parent_model && column.column.match(`${parent_model.get_name()}\.`);
         };
       }
+
+      column.col_name = col_name;
+      if ((order_param != null && reverse_param != null) && order_param === col_name) {
+        column.order = true;
+        column.reverse = reverse_param == "true";
+      }
     }
+
+    const restrict = this.get_query_parameter("restrict");
+    // Load each columns filter and order state from URL query parameters
+    if (restrict) {
+      const filters = JSON.parse(restrict);
+      for (const filter_data of filters) {
+        const col = this.#columns[filter_data.n];
+        const filter = load_filter(filter_data);
+        col.filter = filter;
+      }
+    }
+
+    this.#filter_modal = new CN_filter_modal(document.getElementById('main-content'),
+      {
+        title: "Filter",
+        tableName: this.get_model().get_singular(),
+        message: "",
+        okText: "Ok",
+        cancelText: "Cancel"
+      }
+    );
+    this.#filter_modal.add_listener(this);
   }
 
   // access methods
@@ -135,6 +174,26 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
+   * Makes an API call to get table data
+   */
+  async get_records() {
+    this.on_pre_loading();
+
+    const params = this.get_api_parameters();
+
+    const response = await CN_api.get(this.get_model().get_base_path("api"), params, true);
+    this.#limit = response.headers.get('X-Limit');
+    this.#offset = response.headers.get('X-Offset');
+    this.#total_records = response.headers.get('X-Total');
+
+    // replace the records at the current page with the returned records
+    //const records = await response.json();
+    this.#records = await response.json();
+    this.on_post_loading();
+    this.update_element();
+  }
+
+  /**
    * Override the parent method
    */
   get_on_load_path() {
@@ -144,21 +203,22 @@ export class CN_base_list extends CN_base_action {
   /**
    * Extend the parent method
    */
-  get_on_load_parameters() {
-    // set the query's limit and offset based on the current page
+  get_api_parameters() {
     let params = {
       modifier: {
         limit: CN_session.data.application.list_row_size,
-        offset: (this.#current_page-1) * 20,
+        offset: (this.#current_page - 1) * 20,
+        order: [],
+        where: []
       },
       select: { column: [] },
-    };
+    }
 
+    // set the query's limit and offset based on the current page
     if (this.#is_choosing) params.choosing = 1;
 
-    // run through the columns and build the query's select parameter
-    let columns = [];
     for (const col_name in this.#columns) {
+      const col = this.#columns[col_name];
       if (this.#columns[col_name].table_prefix) {
         let column = this.#columns[col_name].column;
         if (!column) column = `${this.get_model().get_name()}.${col_name}`;
@@ -178,18 +238,30 @@ export class CN_base_list extends CN_base_action {
         // no table prefix means just add the column name
         params.select.column.push(col_name);
       }
+      if (col.order) {
+        params.modifier.order.push({ [col_name]: col.reverse });
+      }
+
+      if (col.filter) {
+        const column_modifier = col.filter.get_modifiers(col_name);
+        params.modifier.where.push(...column_modifier);
+      }
     }
 
     return params;
   }
-
   /**
    * Extends parent method
    */
   async on_load() {
     const model = this.get_model();
     const parent_model = model.get_parent_model();
-    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
+
+    const params = this.get_api_parameters();
+    const response = await CN_api.get(this.get_on_load_path(), params, true);
+
+    this.#limit = response.headers.get('X-Limit');
+    this.#offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
 
     // update the parent's child list record count
@@ -233,12 +305,106 @@ export class CN_base_list extends CN_base_action {
   }
 
   /**
+   * Extends parent method
+   */
+  show_placeholder() {
+    super.show_placeholder();
+
+    const body_el = this.get_element().querySelector("table [name=body]");
+    body_el.innerHTML = "";
+    for (let row = 0; row < 20; row++) {
+      let tr_el = document.createElement("tr");
+      for (const col_name in this.#columns) {
+        let col = Math.ceil(Math.random() * 5) + 5;
+        tr_el.innerHTML += `
+          <td class="placeholder-glow">
+            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${col}"></span>
+          </td>
+        `;
+      }
+      body_el.append(tr_el);
+    }
+  }
+
+  /**
    * Determines whether a record cannot be selected when in choose mode
    * @param object record: One of the records from the #records array
    * @return boolean
    */
   is_choose_disabled(record) {
     return false;
+  }
+
+  /**
+   * Updates the sort that is applied to a column and updates the table.
+   * Iterates through No sort -> ascending -> descending
+   * and updates the query parameters and column state.
+   * @param {*} event
+   * @param {*} col
+   */
+  async on_table_header_click(event, col) {
+    this.remove_table_header_sorts(col);
+    const previous_sort = col.el.hasAttribute("sort") ? col.el.getAttribute("sort") : "";
+    let next_sort;
+    switch (previous_sort) {
+      case "":
+        next_sort = "ascending";
+        break;
+      case "ascending":
+        next_sort = "descending";
+        break;
+      case "descending":
+        next_sort = "";
+        break;
+      default:
+        throw new Error("Unknown sort");
+    }
+
+    if (next_sort === "") {
+      delete col.order;
+      delete col.reverse;
+
+      col.el.setAttribute("sort", "");
+      col.el.querySelector('div > i').classList.remove('bi-sort-up');
+    }
+    else if (next_sort === "ascending") {
+      col.order = true;
+      col.reverse = false;
+
+      col.el.querySelector('div > i').classList.add('bi-sort-down');
+    }
+    else if (next_sort === "descending") {
+      col.order = true;
+      col.reverse = true;
+
+      col.el.querySelector('div > i').classList.remove('bi-sort-down');
+      col.el.querySelector('div > i').classList.add('bi-sort-up');
+    }
+
+    col.el.setAttribute("sort", next_sort);
+
+    this.update_query_parameters()
+    this.get_records();
+  }
+
+  /**
+   * Removes all sorts applied to the column, excluding exclude_col.
+   * @param {*} exclude_col
+   */
+  remove_table_header_sorts(exclude_col) {
+    for (const col_name in this.#columns) {
+      let column = this.#columns[col_name];
+      if (column == exclude_col) continue;
+
+      delete column.order;
+      delete column.reverse;
+
+      if (column.el?.hasAttribute("sort")) {
+        column.el.removeAttribute('sort');
+        column.el.querySelector('div > i').classList.remove('bi-sort-up');
+        column.el.querySelector('div > i').classList.remove('bi-sort-down');
+      }
+    }
   }
 
   /**
@@ -256,8 +422,8 @@ export class CN_base_list extends CN_base_action {
       let list_type = this.#choosing_list.current.includes(record.id) ? "remove" : "add";
       let add = (
         this.#choosing_list.current.includes(record.id) ?
-        !record.chosen :
-        record.chosen
+          !record.chosen :
+          record.chosen
       );
 
       if (add) {
@@ -280,6 +446,23 @@ export class CN_base_list extends CN_base_action {
    */
   update_element() {
     super.update_element();
+    this.update_query_parameters();
+
+    for (const col_name in this.#columns) {
+      const col = this.#columns[col_name];
+      if ("order" in col && "reverse" in col) {
+        const sort = col.reverse ? "descending" : "ascending";
+
+        col.el.querySelector('.col-title > i').classList.add(sort === "ascending" ? "bi-sort-down" : "bi-sort-up");
+        col.el.setAttribute('sort', sort);
+      }
+
+      if (col.filter) {
+        const filter_el = col.el.querySelector('.filter-icon');
+        filter_el.classList.remove('bi-filter')
+        filter_el.classList.add('bi-filter-circle-fill')
+      }
+    }
 
     const btn_group_el = this.get_footer_element().querySelector("div.btn-group");
     let btn_el = this.get_footer_element().querySelector(`[name=${this.#list_mode}]`);
@@ -333,7 +516,7 @@ export class CN_base_list extends CN_base_action {
     const table_el = this.get_body_element().querySelector("table [name=body]");
     table_el.innerHTML = "";
 
-    const start_index = (this.#current_page-1)*20;
+    const start_index = (this.#current_page - 1) * 20;
     this.#records.map(record => {
       let tr_el = document.createElement("tr");
       if (this.#is_choosing) {
@@ -369,18 +552,18 @@ export class CN_base_list extends CN_base_action {
           }
         }
 
-        tr_el.innerHTML += `<td class="text-${column.align}">${value}</td>`;
+        //tr_el.innerHTML += `<td class="text-${column.align}">${value}</td>`;
+        tr_el.innerHTML += `<td>${value}</td>`;
       }
 
       if ("choose" != this.#list_mode) {
         // add the delete button row, only including a button if deleting is allowed
         tr_el.innerHTML += `
-          <td class="col-auto p-0">
-            ${
-              this.get_model().allow_delete() ?
-              '<button name="delete" class="btn btn-danger"><i class="bi-x-circle-fill"></i></button>' :
-              ''
-            }
+          <td class="col-auto d-flex justify-content-end">
+            ${this.get_model().allow_delete() ?
+            '<button name="delete" class="btn btn-sm btn-danger"><i class="bi-x-circle-fill"></i></button>' :
+            ''
+          }
           </td>
         `;
 
@@ -425,21 +608,21 @@ export class CN_base_list extends CN_base_action {
       let last_page = 5 < pages ? 5 : pages;
 
       if (pages > 5) {
-        if (pages-2 < this.#current_page) {
+        if (pages - 2 < this.#current_page) {
           // we're at the end of the list, so show the last 5 pages
-          first_page = pages-4;
+          first_page = pages - 4;
           last_page = pages;
         } else if (3 < this.#current_page) {
           // we're in the middle of the list, so put the current page in the middle of the page span
           // the first page is now two less than the current page
-          first_page = this.#current_page-2;
+          first_page = this.#current_page - 2;
 
           // and the last page is at most to more than the current page
-          last_page = this.#current_page+2 > pages ? pages : this.#current_page+2;
+          last_page = this.#current_page + 2 > pages ? pages : this.#current_page + 2;
         }
       }
 
-      for(let page = first_page; page <= last_page; page++) {
+      for (let page = first_page; page <= last_page; page++) {
         let page_el = CN_element.create(`
           <li class="page-item"><button class="page-link">${page}</button></li>
         `);
@@ -468,37 +651,129 @@ export class CN_base_list extends CN_base_action {
     }
   }
 
+
   /**
    * Extends parent method
    */
   create_body_element() {
     const table_el = CN_element.create(`
-      <table class="table table-striped table-hover">
-        <thead name="header"></thead>
-        <tbody name="body"></tbody>
-        <tfoot name="footer"></tfooter>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-responsive table-striped table-hover">
+          <thead name="header"></thead>
+          <tbody name="body"></tbody>
+          <tfoot name="footer"></tfooter>
+        </table>
+      </div>
     `);
 
     // build the header row
     let header_tr_el = document.createElement("tr");
     for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
+      let col = this.#columns[col_name];
 
       // don't show hidden columns
-      if (column.is_hidden(this.get_model())) continue;
+      if (col.is_hidden(this.get_model())) continue;
 
-      header_tr_el.innerHTML += `<th name="${col_name}" scope="col" class="text-center">${column.title}</th>`;
+      const table_header_el = this.create_table_header_element(col);
+      header_tr_el.appendChild(table_header_el);
+      this.#columns[col_name]["el"] = table_header_el;
     }
 
-    if ("choose" != this.#list_mode) {
-      // add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-      header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
-    }
+    //if ("choose" != this.#list_mode) {
+    //  // add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
+    //  header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
+    //}
 
     table_el.querySelector("thead[name=header]").append(header_tr_el);
 
     return table_el;
+  }
+
+  /**
+   * Updates the "restrict" query parameter whenever a column filter is saved.
+   * @param {*} col
+   */
+  async on_filter_save(col) {
+    this.update_query_parameters();
+    await this.run();
+  }
+
+  /**
+   *
+   * @param {*} col
+   */
+  async on_filter_clear(col) {
+    const filter_el = col.el.querySelector('.filter-icon');
+    filter_el.classList.remove('bi-filter-circle-fill')
+    filter_el.classList.add('bi-filter');
+
+    this.update_query_parameters();
+    await this.get_records();
+  }
+
+  /**
+   * Updates the query parameters with the most recent state
+   * @returns
+   */
+  update_query_parameters() {
+    let restrict = [];
+    let order = null;
+    let reverse = null;
+
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (column.filter) {
+        const filter_data = column.filter.save_to_json(col_name);
+        restrict.push(filter_data);
+      }
+      if (column.order != null) order = col_name;
+      if (column.reverse != null) reverse = column.reverse;
+    }
+
+    this.set_query_parameter("restrict", restrict.length ? JSON.stringify(restrict) : null);
+    this.set_query_parameter("page", this.#current_page);
+    this.set_query_parameter("order", order);
+    this.set_query_parameter("reverse", reverse);
+  }
+
+  /**
+   * Creates the table header element and adds listeners to the filter buttons that belong to each header
+   * @param {*} col
+   * @returns
+   */
+  create_table_header_element(col) {
+    const header_el = CN_element.create_fragment(
+      `<th name="${col.title}" class="table-header text-center"  scope="col">
+        <div class="d-flex justify-content-between">
+          <div class="col-title">
+            ${col.title}
+            <i class="sort-icon bi px-1" style="display:inline-block;width:16px;height:16px"></i>
+          </div>
+          <div class="col-filter">
+            <i class="filter-icon bi bi-filter px-1" style="cursor: pointer;"></i>
+          </div>
+        </div>
+       </th>`,
+    );
+
+    header_el.addEventListener('click', (event) => this.on_table_header_click(event, col));
+
+    const filter_el = header_el.querySelector(".col-filter");
+    const filter_icon = header_el.querySelector(".filter-icon");
+    filter_el.addEventListener('mouseover', () => {
+      filter_icon.style = "cursor: pointer; background-color: #eeeeee;";
+    });
+
+    filter_el.addEventListener('mouseout', () => {
+      filter_icon.style = "cursor: pointer; background-color: inherit";
+    });
+
+    filter_el.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.#filter_modal.open(col);
+    });
+
+    return header_el;
   }
 
   /**
@@ -507,10 +782,10 @@ export class CN_base_list extends CN_base_action {
   create_placeholder_element() {
     const table_el = CN_element.create(`<table class="table table-striped"><tbody name="body"></tbody></table>`);
 
-    for (let row=0; row<20; row++) {
+    for (let row = 0; row < 20; row++) {
       let tr_el = document.createElement("tr");
-      for (let col=0; col<4; col++) {
-        let width = Math.ceil(Math.random()*6)+6;
+      for (let col = 0; col < 4; col++) {
+        let width = Math.ceil(Math.random() * 6) + 6;
         tr_el.innerHTML += `
           <td class="text-center placeholder-glow">
             <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${width}"></span>

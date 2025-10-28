@@ -17,7 +17,7 @@ export default {
    * @param string html: HTML expressed as a string
    * @return Element
    */
-  create: function(html) {
+  create: function (html) {
     if (undefined === html) throw new Error("element.create: must provide 1 argument, 0 provided");
     if (0 == html.length) throw new Error("element.create: argument cannot be empty");
 
@@ -31,10 +31,24 @@ export default {
   },
 
   /**
+   * Converts an HTML string into a DocumentFragment object
+   * @param string html: HTML expressed as a string
+   * @return DocumentFragment
+   */
+  create_fragment: function (html) {
+    if (html == null) throw new Error("element.create_fragment: must provide 1 argument, 0 provided");
+    if (0 == html.length) throw new Error("element.create: argument cannot be empty");
+
+    const template = document.createElement('template');
+    template.innerHTML = html.trim(); // Use trim() to handle leading/trailing whitespace
+    return template.content.firstElementChild;
+  },
+
+  /**
    * Creates a card element containing header, body and footer sub-elements
    * @return Element
    */
-  create_card: function(child_elements = {}) {
+  create_card: function (child_elements = {}) {
     const el = this.create(`
       <div class="container-fluid mb-2 p-0">
         <div class="card">
@@ -85,7 +99,7 @@ export default {
    * Creates a large loading box
    * @return Element
    */
-  create_loading_box: function(text=null) {
+  create_loading_box: function (text = null) {
     if (null == text) text = "Loading...";
     return this.create(`
       <div class="container-fluid loading text-primary text-center fs-5 fw-bold" style="height: 9em;">
@@ -99,7 +113,7 @@ export default {
    * @param object params: An object that has value, for and name properties
    * @return Element
    */
-  create_form_label: function(params) {
+  create_form_label: function (params) {
     const el = this.create(`<label class="col-form-label text-end fw-bold">${params.value}</label>`);
     if (undefined !== params.for) el.setAttribute("for", params.for);
     if (undefined !== params.name) el.setAttribute("name", params.name);
@@ -120,7 +134,7 @@ export default {
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
-  create_form_element: function(type, params) {
+  create_form_element: function (type, params) {
     const el = this.create(`
       <div class="d-flex align-items-center">
         <div name="prefix"></div>
@@ -215,7 +229,7 @@ export default {
             observer.disconnect();
           }
         });
-        observer.observe(el, { attributes: false, childList: true, characterData: false, subtree:true });
+        observer.observe(el, { attributes: false, childList: true, characterData: false, subtree: true });
 
         // track whether the dropdown is open or not
         typeahead_el.addEventListener("shown.bs.dropdown", () => { el.params.typeahead.open = true; });
@@ -422,7 +436,7 @@ export default {
       if (el.params.required) control_el.setAttribute("required", "required");
     }
 
-    el.show_error = async function(error, time = 300) {
+    el.show_error = async function (error, time = 300) {
       Object.assign(control_el.style, {
         "border-color": "red",
         "border-width": "3px",
@@ -437,7 +451,7 @@ export default {
       }
     };
 
-    el.hide_error = function() {
+    el.hide_error = function () {
       control_el.style.removeProperty("border-color");
       control_el.style.removeProperty("border-width");
       control_el.style.removeProperty("margin");
@@ -452,7 +466,7 @@ export default {
    * @param [model] model_list: A list of models in their trail order
    * @return Element
    */
-  create_breadcrumb_trail: async function(base_name, model_list = []) {
+  create_breadcrumb_trail: async function (base_name, model_list = []) {
     // create a list of all crumbs (adding chevrons later)
     const crumb_list = [];
 
@@ -506,7 +520,7 @@ export default {
    * Creates a clock settings modal (for changing the user's time-based preferences)
    * @return bootstrap.Modal
    */
-  create_site_role_modal: function() {
+  create_site_role_modal: function () {
     const modal_el = this.create(`
       <div id="cn_site_role_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -626,7 +640,7 @@ export default {
    * Creates a clock settings modal (for changing the user's time-based preferences)
    * @return bootstrap.Modal
    */
-  create_clock_settings_modal: function() {
+  create_clock_settings_modal: function () {
     const modal_el = this.create(`
       <div id="cn_clock_settings_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -736,7 +750,7 @@ export default {
    * Creates an account modal (for changing the user's account details)
    * @return bootstrap.Modal
    */
-  create_account_modal: function() {
+  create_account_modal: function () {
     const modal_el = this.create(`
       <div id="cn_account_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -839,7 +853,7 @@ export default {
    * Creates a password modal (for changing the user's password)
    * @return bootstrap.Modal
    */
-  create_password_modal: function() {
+  create_password_modal: function () {
     const modal_el = this.create(`
       <div id="cn_password_modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -967,7 +981,7 @@ export default {
    *   title: The toast's title
    *   message: The toast's message
    */
-  toast: function(config) {
+  toast: function (config) {
     if (!config.type) config.type = "light";
     const toast_el = this.create(`
       <div role="alert" aria-live="assertive" aria-atomic="true" class="toast bg-light mb-2">
@@ -1003,7 +1017,7 @@ export default {
    * Creates a "please wait" blocking modal
    * @return bootstrap.Modal
    */
-  wait_for: async function(fn, delay = 500) {
+  wait_for: async function (fn, delay = 500) {
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
         <div class="modal-dialog">
@@ -1055,11 +1069,11 @@ export default {
    * @param object config: An object that has type, title, message and static properties
    * @return bootstrap.Modal
    */
-  message_modal: function(config) {
+  message_modal: function (config) {
     if (!config.type) config.type = "primary";
     const modal_el = this.create(`
       <div class="modal fade" tabindex="-1">
-        <div class="modal-dialog ${config.size ? "modal-"+config.size : ""}">
+        <div class="modal-dialog ${config.size ? "modal-" + config.size : ""}">
           <div class="modal-content">
             <div class="modal-header text-bg-${config.type}">
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
@@ -1105,7 +1119,7 @@ export default {
    * @param object config: An object that has type, title, message and static properties
    * @return bootstrap.Modal
    */
-  confirm_modal: function(config) {
+  confirm_modal: function (config) {
     if (!config.type) config.type = "primary";
     if (!config.title) config.title = "Please Confirm";
     const modal_el = this.create(`
@@ -1165,7 +1179,7 @@ export default {
    * @param object config: An object that has type, title, message, type, required, and static properties
    * @return bootstrap.Modal
    */
-  input_modal: function(config) {
+  input_modal: function (config) {
     if (undefined === config.type) config.type = "primary";
     if (undefined === config.title) config.title = "Please Provide Input";
     if (undefined === config.input) config.input = "string";
