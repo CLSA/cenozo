@@ -226,14 +226,14 @@ export class CN_base_add extends CN_base_record {
     );
     btn_group_el.append(submit_btn_el);
     (async () => { submit_btn_el.innerHTML = await this.get_text("submit"); })();
-    submit_btn_el.addEventListener("click", async () => await this.on_submit());
+    submit_btn_el.addEventListener("click", this.on_submit.bind(this));
 
     const cancel_btn_el = CN_element.create(
       '<button name="cancel" type="button" class="btn btn-light">Cancel</button>'
     );
     btn_group_el.append(cancel_btn_el);
     (async () => { cancel_btn_el.innerHTML = await this.get_text("cancel"); })();
-    cancel_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+    cancel_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     return btn_group_el;
   }

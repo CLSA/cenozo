@@ -170,10 +170,7 @@ export class CN_base_view extends CN_base_record {
     if ("file" == prop.type) {
       // implement file property's download button
       prop.element.querySelector("button[name=download]").addEventListener("click", async () => {
-        CN_common.download_file(
-          prop.state.get().data,
-          await prop.file.get_filename(this)
-        );
+        CN_common.download_file(prop.state.get().data, await prop.file.get_filename(this));
       });
     }
 
@@ -255,7 +252,7 @@ export class CN_base_view extends CN_base_record {
         </button>
       `);
       this.get_footer_element().append(delete_btn_el);
-      delete_btn_el.addEventListener("click", async () => await this.on_delete());
+      delete_btn_el.addEventListener("click", this.on_delete.bind(this));
     } else if (null != delete_btn_el && !this.get_model().allow_delete()) {
       this.get_footer_element().removeChild(delete_btn_el);
     }
@@ -363,7 +360,7 @@ export class CN_base_view extends CN_base_record {
     // wire up the back button
     const back_btn_el = footer_el.querySelector("button[name=back]");
     (async () => { back_btn_el.innerHTML = await this.get_text("view_parent"); })();
-    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+    back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     return footer_el;
   }
