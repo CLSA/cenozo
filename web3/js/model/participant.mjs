@@ -879,12 +879,7 @@ export class CN_participant_multiedit extends CN_base_action {
         <button name="back" type="button" class="btn btn-primary">View Participant List</button>
       </div>
     `);
-
-    footer_el.querySelector("button[name=back]").addEventListener(
-      "click",
-      async () => await this.on_navigate_to_parent()
-    );
-
+    footer_el.querySelector("button[name=back]").addEventListener("click", this.on_navigate_to_parent.bind(this));
     return footer_el;
   }
 }
@@ -1088,7 +1083,7 @@ export class CN_participant_scripts extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create(`
+    return CN_element.create(`
       <div>
         <div class="text-info-emphasis pb-2">
           Select which utility script you wish to launch on behalf of the participant.
@@ -1096,8 +1091,6 @@ export class CN_participant_scripts extends CN_base_action {
         <div name="script-list"></div>
       </div>
     `);
-
-    return body_el;
   }
 
   /**
@@ -1109,12 +1102,7 @@ export class CN_participant_scripts extends CN_base_action {
         <button name="back" type="button" class="btn btn-primary">View Participant</button>
       </div>
     `);
-
-    footer_el.querySelector("button[name=back]").addEventListener(
-      "click",
-      async () => await this.on_navigate_to_parent()
-    );
-
+    footer_el.querySelector("button[name=back]").addEventListener("click", this.on_navigate_to_parent.bind(this));
     return footer_el;
   }
 }

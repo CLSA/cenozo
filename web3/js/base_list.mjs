@@ -301,7 +301,7 @@ export class CN_base_list extends CN_base_action {
         if (null == btn_el) {
           btn_el = CN_element.create('<button name="choose" type="button" class="btn btn-primary"></button>');
           btn_group_el.append(btn_el);
-          btn_el.addEventListener("click", async () => await this.on_choose());
+          btn_el.addEventListener("click", this.on_choose.bind(this));
         }
 
         let cancel_btn_el = this.get_footer_element().querySelector("[name=cancel_choose]");
