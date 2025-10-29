@@ -125,18 +125,14 @@ export default class CN_filter_modal {
    * Event that fires whenever the user presses 'save'
    */
   on_save() {
-    for (let listener of this.#listeners) {
-      listener.on_filter_save(this.#column);
-    }
+    this.#listeners.forEach((listener) => listener.on_filter_save(this.#column));
   }
 
   /**
    * Event that fires whenever the user presses 'remove'
    */
   on_clear() {
-    for (let listener of this.#listeners) {
-      listener.on_filter_clear(this.#column);
-    }
+    this.#listeners.forEach((listener) => listener.on_filter_clear(this.#column));
   }
 
   /**
@@ -224,7 +220,7 @@ export default class CN_filter_modal {
 }
 
 class Filter {
-  #view = null;
+  #parent = null;
   #el = null;
   #conditions = [];
   #value_type = null; // number, string, date
@@ -245,8 +241,8 @@ class Filter {
    * Getters/setters
    */
 
-  get_view() { return this.#view; }
-  set_view(view) { this.#view = view; }
+  get_view() { return this.#parent; }
+  set_view(view) { this.#parent = view; }
   get_conditions() { return this.#conditions; }
   set_conditions(conditions) { this.#conditions = conditions; }
   get_value_type() { return this.#value_type; }
@@ -287,8 +283,8 @@ class Filter {
    */
   on_condition_removal(condition) {
     this.remove(condition);
-    if (this.#view) {
-      this.#view.render();
+    if (this.#parent) {
+      this.#parent.render();
     }
   }
 
@@ -332,9 +328,9 @@ class Filter {
     });
 
     for (let i = 0; i < this.#conditions.length; i++) {
-      let condition = this.#conditions[i];
+      const condition = this.#conditions[i];
 
-      let modifier = {
+      const modifier = {
         "column": column_name,
         "operator": OPERATOR_MAP[condition.get_comparison()],
         "value": condition.get_value(),
@@ -345,7 +341,7 @@ class Filter {
           modifier["value"] = "<=>";
         }
         else if (!condition.get_value().includes("%")) {
-          modifier["value"] = "%" + modifier["value"] + "%";
+          modifier["value"] = `%${modifier["value"]}%"`;
         }
       }
 
@@ -354,7 +350,7 @@ class Filter {
       }
 
       if (condition.get_operator() === "OR") {
-        modifier['or'] = true;
+        modifier["or"] = true;
       }
 
       modifiers.push(modifier);
@@ -405,7 +401,7 @@ class Filter {
         Add Filter <i class="bi bi-plus"></i>
       </button>
     `);
-    add_condition_btn.addEventListener('click', () => this.#view.add_condition());
+    add_condition_btn.addEventListener('click', () => this.#parent.add_condition());
     this.#el.appendChild(add_condition_btn);
     return this.#el;
   }
@@ -498,7 +494,6 @@ class Condition {
         </select>
       `);
 
-      //this.#operator_select_el.style = "flex-grow: unset; flex-basis: 90px";
       this.#operator_select_el.value = this.#operator;
       this.#operator_select_el.addEventListener('change', this.on_operator_select.bind(this));
     }
@@ -546,18 +541,15 @@ class Condition {
 
   #render_comparison_select() {
     let operators = null;
-    switch (this.#data_type) {
-      case "number":
-        operators = NUMBER_OPERATORS;
-        break;
-      case "boolean":
-        operators = BOOLEAN_OPERATORS;
-        break;
-      case "date":
-        operators = DATE_OPERATORS;
-        break;
-      default:
-        operators = STRING_OPERATORS;
+
+    if (this.#data_type === "number") {
+      operators = NUMBER_OPERATORS;
+    } else if (this.#data_type === "boolean") {
+      operators = BOOLEAN_OPERATORS;
+    } else if (this.#data_type === "date") {
+      operators = DATE_OPERATORS;
+    } else {
+      operators = STRING_OPERATORS;
     }
 
     this.#comparison_select_el = CN_element.create(`

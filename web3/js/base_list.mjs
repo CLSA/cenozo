@@ -179,9 +179,7 @@ export class CN_base_list extends CN_base_action {
   async get_records() {
     this.on_pre_loading();
 
-    const params = this.get_api_parameters();
-
-    const response = await CN_api.get(this.get_model().get_base_path("api"), params, true);
+    const response = await CN_api.get(this.get_model().get_base_path("api"), this.get_api_parameters(), true);
     this.#limit = response.headers.get('X-Limit');
     this.#offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
@@ -340,48 +338,47 @@ export class CN_base_list extends CN_base_action {
    * Iterates through No sort -> ascending -> descending
    * and updates the query parameters and column state.
    * @param {*} event
-   * @param {*} col
+   * @param {*} column
    */
-  async on_table_header_click(event, col) {
-    this.remove_table_header_sorts(col);
-    const previous_sort = col.el.hasAttribute("sort") ? col.el.getAttribute("sort") : "";
+  async on_table_header_click(event, column) {
+    this.remove_table_header_sorts(column);
+    const previous_sort = column.el.hasAttribute("sort") ? column.el.getAttribute("sort") : "";
+
     let next_sort;
-    switch (previous_sort) {
-      case "":
-        next_sort = "ascending";
-        break;
-      case "ascending":
-        next_sort = "descending";
-        break;
-      case "descending":
-        next_sort = "";
-        break;
-      default:
-        throw new Error("Unknown sort");
+    if (previous_sort === "") {
+      next_sort = "ascending";
+    } else if (previous_sort === "ascending") {
+      next_sort = "descending";
+    } else if (previous_sort === "descending") {
+      next_sort = "";
+    } else {
+      throw new Error("Unknown sort");
     }
+
+    const sort_icon = column.el.querySelector(".sort-icon");
 
     if (next_sort === "") {
-      delete col.order;
-      delete col.reverse;
+      delete column.order;
+      delete column.reverse;
 
-      col.el.setAttribute("sort", "");
-      col.el.querySelector('div > i').classList.remove('bi-sort-up');
+      column.el.setAttribute("sort", "");
+      sort_icon.classList.remove('bi-sort-up');
     }
     else if (next_sort === "ascending") {
-      col.order = true;
-      col.reverse = false;
+      column.order = true;
+      column.reverse = false;
 
-      col.el.querySelector('div > i').classList.add('bi-sort-down');
+      sort_icon.classList.add('bi-sort-down');
     }
     else if (next_sort === "descending") {
-      col.order = true;
-      col.reverse = true;
+      column.order = true;
+      column.reverse = true;
 
-      col.el.querySelector('div > i').classList.remove('bi-sort-down');
-      col.el.querySelector('div > i').classList.add('bi-sort-up');
+      sort_icon.classList.remove('bi-sort-down');
+      sort_icon.classList.add('bi-sort-up');
     }
 
-    col.el.setAttribute("sort", next_sort);
+    column.el.setAttribute("sort", next_sort);
 
     this.update_query_parameters()
     this.get_records();
@@ -401,8 +398,8 @@ export class CN_base_list extends CN_base_action {
 
       if (column.el?.hasAttribute("sort")) {
         column.el.removeAttribute('sort');
-        column.el.querySelector('div > i').classList.remove('bi-sort-up');
-        column.el.querySelector('div > i').classList.remove('bi-sort-down');
+        column.el.querySelector('.sort-icon').classList.remove('bi-sort-up');
+        column.el.querySelector('.sort-icon').classList.remove('bi-sort-down');
       }
     }
   }
@@ -422,8 +419,8 @@ export class CN_base_list extends CN_base_action {
       let list_type = this.#choosing_list.current.includes(record.id) ? "remove" : "add";
       let add = (
         this.#choosing_list.current.includes(record.id) ?
-          !record.chosen :
-          record.chosen
+        !record.chosen :
+        record.chosen
       );
 
       if (add) {
@@ -453,7 +450,7 @@ export class CN_base_list extends CN_base_action {
       if ("order" in col && "reverse" in col) {
         const sort = col.reverse ? "descending" : "ascending";
 
-        col.el.querySelector('.col-title > i').classList.add(sort === "ascending" ? "bi-sort-down" : "bi-sort-up");
+        col.el.querySelector('.sort-icon').classList.add(sort === "ascending" ? "bi-sort-down" : "bi-sort-up");
         col.el.setAttribute('sort', sort);
       }
 
@@ -552,18 +549,19 @@ export class CN_base_list extends CN_base_action {
           }
         }
 
-        //tr_el.innerHTML += `<td class="text-${column.align}">${value}</td>`;
-        tr_el.innerHTML += `<td>${value}</td>`;
+        tr_el.innerHTML += `<td class="text-${column.align} text-truncate">${value}</td>`;
+        //tr_el.innerHTML += `<td>${value}</td>`;
       }
 
       if ("choose" != this.#list_mode) {
         // add the delete button row, only including a button if deleting is allowed
         tr_el.innerHTML += `
           <td class="col-auto d-flex justify-content-end">
-            ${this.get_model().allow_delete() ?
-            '<button name="delete" class="btn btn-sm btn-danger"><i class="bi-x-circle-fill"></i></button>' :
-            ''
-          }
+            ${
+              this.get_model().allow_delete() ?
+              '<button name="delete" class="btn btn-sm btn-danger"><i class="bi-x-circle-fill"></i></button>' :
+              ''
+             }
           </td>
         `;
 
@@ -656,9 +654,13 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
+    const width = 100 / Object.entries(this.#columns).length;
     const table_el = CN_element.create(`
       <div class="table-responsive">
-        <table class="table table-responsive table-striped table-hover">
+        <table class="table table-striped table-hover">
+          <colgroup>
+            ${Object.entries(this.#columns).map(() => `<col style="width: ${width}%;">`).join("")}
+          </colgroup>
           <thead name="header"></thead>
           <tbody name="body"></tbody>
           <tfoot name="footer"></tfooter>
@@ -668,21 +670,22 @@ export class CN_base_list extends CN_base_action {
 
     // build the header row
     let header_tr_el = document.createElement("tr");
+
     for (const col_name in this.#columns) {
-      let col = this.#columns[col_name];
+      const column = this.#columns[col_name];
 
       // don't show hidden columns
-      if (col.is_hidden(this.get_model())) continue;
+      if (column.is_hidden(this.get_model())) continue;
 
-      const table_header_el = this.create_table_header_element(col);
+      const table_header_el = this.create_table_header_element(column);
       header_tr_el.appendChild(table_header_el);
       this.#columns[col_name]["el"] = table_header_el;
     }
 
-    //if ("choose" != this.#list_mode) {
-    //  // add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-    //  header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
-    //}
+    // if ("choose" != this.#list_mode) {
+      //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
+      // header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
+    // }
 
     table_el.querySelector("thead[name=header]").append(header_tr_el);
 
@@ -738,39 +741,30 @@ export class CN_base_list extends CN_base_action {
 
   /**
    * Creates the table header element and adds listeners to the filter buttons that belong to each header
-   * @param {*} col
+   * @param {*} column
    * @returns
    */
-  create_table_header_element(col) {
+  create_table_header_element(column) {
     const header_el = CN_element.create_fragment(
-      `<th name="${col.title}" class="table-header text-center"  scope="col">
+      `<th name="${column.title}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
-          <div class="col-title">
-            ${col.title}
-            <i class="sort-icon bi px-1" style="display:inline-block;width:16px;height:16px"></i>
-          </div>
-          <div class="col-filter">
+          <button type="button" class="sort-btn btn btn-light flex-grow-1 text-start text-nowrap rounded-0">
+            ${column.title}
+            <i class="sort-icon bi px-1 d-inline-block" style="width:16px;height:16px"></i>
+          </button>
+          <button type="button" class="filter-btn btn btn-light rounded-0">
             <i class="filter-icon bi bi-filter px-1" style="cursor: pointer;"></i>
-          </div>
+          </button>
         </div>
        </th>`,
     );
 
-    header_el.addEventListener('click', (event) => this.on_table_header_click(event, col));
+    header_el.addEventListener("click", (event) => this.on_table_header_click(event, column));
 
-    const filter_el = header_el.querySelector(".col-filter");
-    const filter_icon = header_el.querySelector(".filter-icon");
-    filter_el.addEventListener('mouseover', () => {
-      filter_icon.style = "cursor: pointer; background-color: #eeeeee;";
-    });
-
-    filter_el.addEventListener('mouseout', () => {
-      filter_icon.style = "cursor: pointer; background-color: inherit";
-    });
-
-    filter_el.addEventListener('click', (event) => {
+    const filter_btn = header_el.querySelector(".filter-btn")
+    filter_btn.addEventListener("click", (event) => {
       event.stopPropagation();
-      this.#filter_modal.open(col);
+      this.#filter_modal.open(column);
     });
 
     return header_el;
