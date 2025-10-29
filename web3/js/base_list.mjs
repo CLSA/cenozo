@@ -179,7 +179,7 @@ export class CN_base_list extends CN_base_action {
   async get_records() {
     this.on_pre_loading();
 
-    const response = await CN_api.get(this.get_model().get_base_path("api"), this.get_api_parameters(), true);
+    const response = await CN_api.get(this.get_model().get_base_path("api"), this.get_on_load_parameters(), true);
     this.#limit = response.headers.get('X-Limit');
     this.#offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
@@ -201,7 +201,7 @@ export class CN_base_list extends CN_base_action {
   /**
    * Extend the parent method
    */
-  get_api_parameters() {
+  get_on_load_parameters() {
     let params = {
       modifier: {
         limit: CN_session.data.application.list_row_size,
@@ -210,7 +210,7 @@ export class CN_base_list extends CN_base_action {
         where: []
       },
       select: { column: [] },
-    }
+    };
 
     // set the query's limit and offset based on the current page
     if (this.#is_choosing) params.choosing = 1;
@@ -248,15 +248,14 @@ export class CN_base_list extends CN_base_action {
 
     return params;
   }
+
   /**
    * Extends parent method
    */
   async on_load() {
     const model = this.get_model();
     const parent_model = model.get_parent_model();
-
-    const params = this.get_api_parameters();
-    const response = await CN_api.get(this.get_on_load_path(), params, true);
+    const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
 
     this.#limit = response.headers.get('X-Limit');
     this.#offset = response.headers.get('X-Offset');
