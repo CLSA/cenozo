@@ -97,7 +97,7 @@ export class CN_base_model extends CN_base_object {
         // note the index if we find the current model's name in the parent's base path parts
         let last_part = null;
         let matching_index = null;
-        for(let index = 0; index < parent_path_parts.length; index++) {
+        for (let index = 0; index < parent_path_parts.length; index++) {
           let part = parent_path_parts[index];
           if (this.get_name() == last_part && "view" == part) {
             matching_index = index;
@@ -240,7 +240,7 @@ export class CN_base_model extends CN_base_object {
 
       const max_rank = null == response[0].max_rank ? 0 : response[0].max_rank;
       const values = [];
-      for(let r = 1; r <= max_rank; r++) values.push({ key: r, value: CN_common.ordinal_suffix(r) });
+      for (let r = 1; r <= max_rank; r++) values.push({ key: r, value: CN_common.ordinal_suffix(r) });
       return values;
     }
 

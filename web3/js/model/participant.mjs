@@ -403,7 +403,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
     // make sure the module's classes have been loaded, then create a new model
     const promise_list = [];
-    for (let module_name in this.#module_list) {
+    for (const module_name in this.#module_list) {
       const mod = this.#module_list[module_name];
 
       // don't load the module if it has already been loaded or for the note module
@@ -426,7 +426,7 @@ export class CN_participant_multiedit extends CN_base_action {
         const properties = model.clone_properties();
 
         // find each property (some may be in sub-groups) and populate any enum values
-        for (let prop_name in mod.properties) {
+        for (const prop_name in mod.properties) {
           const module_prop = mod.module.get_property(prop_name);
           let prop = null;
 
@@ -434,7 +434,7 @@ export class CN_participant_multiedit extends CN_base_action {
             prop = properties[prop_name];
           } else {
             // look in the sub-groups
-            for (let p in properties) {
+            for (const p in properties) {
               if (properties[p].hasOwnProperty("properties")) {
                 if (Object.keys(properties[p].properties).includes(prop_name)) {
                   prop = properties[p].properties[prop_name];
@@ -472,7 +472,7 @@ export class CN_participant_multiedit extends CN_base_action {
    */
   update_element() {
     // implement the content in each tab
-    for (let module_name in this.#module_list) {
+    for (const module_name in this.#module_list) {
       const mod = this.#module_list[module_name];
       const fields_el = this.get_body_element().querySelector(`#${module_name}-tab-pane div[name=fields]`);
       if ("participant" == module_name) {
@@ -557,7 +557,7 @@ export class CN_participant_multiedit extends CN_base_action {
           '<select class="form-select mb-3" name="participant_column_select"></select>'
         );
         select_el.append(CN_element.create('<option>Select which column to edit</option>'));
-        for (let prop_name in mod.properties) {
+        for (const prop_name in mod.properties) {
           if (!this.#selected_participant_properties.includes(prop_name)) {
             const prop = mod.properties[prop_name];
             select_el.append(CN_element.create(`<option value="${prop_name}">${prop.title}</option>`));
@@ -665,7 +665,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
           fields_el.append(item_row_el);
         } else if (mod.hasOwnProperty("properties")) {
-          for (let prop_name in mod.properties) {
+          for (const prop_name in mod.properties) {
             const module_prop = mod.module.get_property(prop_name);
             const prop = mod.properties[prop_name];
             const prop_id = `${module_name}_${prop_name}`;
@@ -746,7 +746,7 @@ export class CN_participant_multiedit extends CN_base_action {
     const nav_el = body_el.querySelector("ul.nav-tabs");
     const tab_content_el = body_el.querySelector("div.tab-content");
 
-    for (let module_name in this.#module_list) {
+    for (const module_name in this.#module_list) {
       const mod = this.#module_list[module_name];
       const pretty_module_name = CN_common.pretty_print("table", module_name);
 

@@ -293,16 +293,16 @@ export default {
       return select.map( item => this.shorten_select(item) );
     } else if (CN_common.is_object(select)) {
       let new_select = {};
-      for (let key in select) {
+      for (const key in select) {
         if (Object.prototype.hasOwnProperty.call(select, key)) {
-          const value = this.shorten_select(select[key]);
-          if ('alias' == key) key = 'a';
-          else if ('column' == key) key = 'c';
-          else if ('distinct' == key) key = 'd';
-          else if ('from' == key) key = 'f';
-          else if ('table_prefix' == key) key = 'p';
-          else if ('table' == key) key = 't';
-          new_select[key] = value;
+          let new_key = key;
+          if ('alias' == key) new_key = 'a';
+          else if ('column' == key) new_key = 'c';
+          else if ('distinct' == key) new_key = 'd';
+          else if ('from' == key) new_key = 'f';
+          else if ('table_prefix' == key) new_key = 'p';
+          else if ('table' == key) new_key = 't';
+          new_select[new_key] = this.shorten_select(select[key]);
         }
       }
       return new_select;
@@ -367,27 +367,27 @@ export default {
       return modifier.map( item => this.shorten_modifier(item) );
     } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};
-      for (let key in modifier) {
+      for (const key in modifier) {
         if (Object.prototype.hasOwnProperty.call(modifier, key)) {
-          const value = this.shorten_modifier(modifier[key]);
-          if ('alias' == key) key = 'a';
-          else if ('bracket' == key) key = 'b';
-          else if ('column' == key) key = 'c';
-          else if ('having' == key) key = 'h';
-          else if ('join' == key) key = 'j';
-          else if ('limit' == key) key = 'l';
-          else if ('open' == key) key = 'n';
-          else if ('order' == key) key = 'o';
-          else if ('offset' == key) key = 'off';
-          else if ('onleft' == key) key = 'onl';
-          else if ('operator' == key) key = 'op';
-          else if ('onright' == key) key = 'onr';
-          else if ('prepend' == key) key = 'p';
-          else if ('table' == key) key = 't';
-          else if ('type' == key) key = 'tp';
-          else if ('value' == key) key = 'v';
-          else if ('where' == key) key = 'w';
-          new_modifier[key] = value;
+          let new_key = key;
+          if ('alias' == key) new_key = 'a';
+          else if ('bracket' == key) new_key = 'b';
+          else if ('column' == key) new_key = 'c';
+          else if ('having' == key) new_key = 'h';
+          else if ('join' == key) new_key = 'j';
+          else if ('limit' == key) new_key = 'l';
+          else if ('open' == key) new_key = 'n';
+          else if ('order' == key) new_key = 'o';
+          else if ('offset' == key) new_key = 'off';
+          else if ('onleft' == key) new_key = 'onl';
+          else if ('operator' == key) new_key = 'op';
+          else if ('onright' == key) new_key = 'onr';
+          else if ('prepend' == key) new_key = 'p';
+          else if ('table' == key) new_key = 't';
+          else if ('type' == key) new_key = 'tp';
+          else if ('value' == key) new_key = 'v';
+          else if ('where' == key) new_key = 'w';
+          new_modifier[new_key] = this.shorten_modifier(modifier[key]);
         }
       }
       return new_modifier;

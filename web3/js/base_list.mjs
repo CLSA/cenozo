@@ -32,7 +32,7 @@ export class CN_base_list extends CN_base_action {
 
     // setup each column
     this.#columns = model.clone_columns();
-    for (let col_name in this.#columns) {
+    for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
       if (!column.type) column.type = "string";
 
@@ -439,7 +439,7 @@ export class CN_base_list extends CN_base_action {
         }
       }
 
-      for(let page = first_page; page <= last_page; page++) {
+      for (let page = first_page; page <= last_page; page++) {
         let page_el = CN_element.create(`
           <li class="page-item"><button class="page-link">${page}</button></li>
         `);
@@ -507,9 +507,9 @@ export class CN_base_list extends CN_base_action {
   create_placeholder_element() {
     const table_el = CN_element.create(`<table class="table table-striped"><tbody name="body"></tbody></table>`);
 
-    for (let row=0; row<20; row++) {
+    for (let row = 0; row < 20; row++) {
       let tr_el = document.createElement("tr");
-      for (let col=0; col<4; col++) {
+      for (let col = 0; col < 4; col++) {
         let width = Math.ceil(Math.random()*6)+6;
         tr_el.innerHTML += `
           <td class="text-center placeholder-glow">

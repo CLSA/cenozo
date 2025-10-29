@@ -113,7 +113,7 @@ export default {
     }
 
     let new_obj = {};
-    for (let prop_name in x) {
+    for (const prop_name in x) {
       new_obj[prop_name] = this.clone(x[prop_name]);
     }
 
