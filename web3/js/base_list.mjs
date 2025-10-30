@@ -29,8 +29,8 @@ export class CN_base_list extends CN_base_action {
     const parent_model = this.get_model().get_parent_model();
     this.#list_mode = (
       null != parent_model && parent_model.get_module().has_choose(model.get_name()) ?
-        "choose" :
-        "add"
+      "choose" :
+      "add"
     );
 
     // setup each column
