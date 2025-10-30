@@ -237,14 +237,28 @@ export default {
   /**
    * Convenience method for getting files from the API
    * @param strign path: The relative API path
-   * @param string mime_type: The expected mime type
+   * @param string mime_type: The expected mime type (or file extension)
    * @param object params: Query URI parameters
    * @param boolean return_response: Whether to return the fetch response instead of the response's blob data
    * @return Response or object or string
    */
   file: async function (path, mime_type = null, params = {}, return_response = false) {
     const headers = { "X-No-Activity": true };
-    if (mime_type) headers.Accept = mime_type;
+    if (mime_type) {
+      if ("csv" == mime_type) mime_type = "text/csv;charset=utf-8";
+      else if ("jpeg" == mime_type) mime_type = "image/jpeg";
+      else if ("ods" == mime_type) mime_type = "application/vnd.oasis.opendocument.spreadsheet;charset=utf-8";
+      else if ("pdf" == mime_type) mime_type = "application/pdf";
+      else if ("png" == mime_type) mime_type = "image/png";
+      else if ("txt" == mime_type) mime_type = "text/plain";
+      else if ("unknown" == mime_type) mime_type = "application/octet-stream";
+      else if ("wav" == mime_type) mime_type = "audio/wav";
+      else if ("xlsx" == mime_type) mime_type =
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8";
+      else if ("zip" == mime_type) mime_type = "application/zip";
+
+      headers.Accept = mime_type;
+    }
     params.download = true;
     const response = await this.fetch(path, params, { headers: headers });
 
