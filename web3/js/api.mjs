@@ -304,7 +304,7 @@ export default {
    */
   shorten_select: function (select) {
     if (Array.isArray(select)) {
-      return select.map( item => this.shorten_select(item) );
+      return select.map(item => this.shorten_select(item));
     } else if (CN_common.is_object(select)) {
       let new_select = {};
       for (const key in select) {
@@ -378,7 +378,7 @@ export default {
    */
   shorten_modifier: function (modifier) {
     if (Array.isArray(modifier)) {
-      return modifier.map( item => this.shorten_modifier(item) );
+      return modifier.map(item => this.shorten_modifier(item));
     } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};
       for (const key in modifier) {
