@@ -159,7 +159,7 @@ export class CN_base_upload extends CN_base_action {
 
     const back_btn_el = footer_el.querySelector("button[name=back]");
     (async () => { back_btn_el.innerHTML = await this.get_text("view_parent"); })();
-    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+    back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     return footer_el;
   }

@@ -233,7 +233,7 @@ export class CN_base_action extends CN_base_object {
         <i class="bi-arrow-clockwise fs-5"></i>
       </button>
     `);
-    refresh_btn_el.addEventListener("click", async (event) => this.run());
+    refresh_btn_el.addEventListener("click", this.run.bind(this));
     el.append(refresh_btn_el);
     new bootstrap.Tooltip(refresh_btn_el, {
       title: "Refresh Data",

@@ -467,7 +467,7 @@ export class CN_base_list extends CN_base_action {
         btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary"></button>');
         btn_group_el.append(btn_el);
         (async () => { btn_el.innerHTML = await this.get_text("add"); })();
-        btn_el.addEventListener("click", async () => await this.on_add());
+        btn_el.addEventListener("click", this.on_add.bind(this));
       } else if (null != btn_el && !this.get_model().allow_add()) {
         // if we have an add button but adding isn't allowed then remove it
         btn_group_el.removeChild(btn_el);
@@ -478,7 +478,7 @@ export class CN_base_list extends CN_base_action {
         if (null == btn_el) {
           btn_el = CN_element.create('<button name="choose" type="button" class="btn btn-primary"></button>');
           btn_group_el.append(btn_el);
-          btn_el.addEventListener("click", async () => await this.on_choose());
+          btn_el.addEventListener("click", this.on_choose.bind(this));
         }
 
         let cancel_btn_el = this.get_footer_element().querySelector("[name=cancel_choose]");
@@ -491,7 +491,7 @@ export class CN_base_list extends CN_base_action {
             cancel_btn_el = CN_element.create(
               '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
             );
-            cancel_btn_el.addEventListener("click", async () => await this.on_cancel_choose());
+            cancel_btn_el.addEventListener("click", this.on_cancel_choose.bind(this));
             btn_el.parentElement.prepend(cancel_btn_el);
           }
         } else {
@@ -517,7 +517,7 @@ export class CN_base_list extends CN_base_action {
         if (record.chosen) tr_el.classList.add("table-primary");
         if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
       }
-      tr_el.addEventListener("click", async () => await this.on_row_click(record));
+      tr_el.addEventListener("click", this.on_row_click.bind(this, record));
       for (const col_name in this.#columns) {
         const column = this.#columns[col_name];
 

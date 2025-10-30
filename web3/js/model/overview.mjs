@@ -60,7 +60,7 @@ export class CN_overview_view extends CN_base_view {
     header_el.classList.add("placeholder-glow");
 
     const body_el = card_el.querySelector(".card-body");
-    for (let row=0; row<12; row++) {
+    for (let row = 0; row < 12; row++) {
       body_el.append(CN_element.create(`
         <div class="row ${1 == row%2 ? 'bg-dark-subtle' : ''}">
           <label class="col placeholder-glow">

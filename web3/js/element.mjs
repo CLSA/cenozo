@@ -506,7 +506,7 @@ export default {
       if (null == crumb.path) {
         crumb_el.setAttribute("disabled", true);
       } else {
-        crumb_el.addEventListener("click", () => CN_session.navigate_to(crumb.path));
+        crumb_el.addEventListener("click", CN_session.navigate_to.bind(CN_session, crumb.path));
       }
     });
 

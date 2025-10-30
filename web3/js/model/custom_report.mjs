@@ -17,7 +17,7 @@ export class CN_custom_report_model extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        description: { title: "Description", type: "text", align: "left" },
+        description: { title: "Description", type: "text", align: "left", limit: 500 },
       },
       properties: {
         name: { title: "Name", format: "identifier" },
@@ -72,7 +72,7 @@ export class CN_custom_report_view extends CN_base_view {
     );
     download_btn_el.addEventListener(
       "click",
-      async () => await this.get_model().download_report(this.get_model().get_identifier()),
+      this.get_model().download_report.bind(this, this.get_model().get_identifier()),
     );
     footer_el.append(download_btn_el);
 

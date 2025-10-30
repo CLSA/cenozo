@@ -307,12 +307,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
         <button name="back" type="button" class="btn btn-primary">View Stratum</button>
       </div>
     `);
-
-    footer_el.querySelector("button[name=back]").addEventListener(
-      "click",
-      async () => await this.on_navigate_to_parent()
-    );
-
+    footer_el.querySelector("button[name=back]").addEventListener("click", this.on_navigate_to_parent.bind(this));
     return footer_el;
   }
 }

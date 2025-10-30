@@ -36,7 +36,7 @@ export default {
    * Returns the last model in the path (model currently showing on screen)
    * @return model
    */
-  get_leaf_model: function() {
+  get_leaf_model: function () {
     return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[PATH_MODEL_LIST.length-1];
   },
 
@@ -44,7 +44,7 @@ export default {
    * Returns the first model in the path
    * @return model
    */
-  get_root_model: function() {
+  get_root_model: function () {
     return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
   },
 
@@ -52,7 +52,7 @@ export default {
    * Returns the name.action of the root module (or null if there is no root module)
    * @return string
    */
-  get_root_action_name: function() {
+  get_root_action_name: function () {
     const model = 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
     return model ? `${model.get_name()}.${model.get_action_name()}` : null;
   },
@@ -61,12 +61,12 @@ export default {
    * Returns the name.action of the leaf module (or null if there is no leaf module)
    * @return string
    */
-  get_leaf_action_name: function() {
+  get_leaf_action_name: function () {
     const model = this.get_leaf_model();
     return model ? `${model.get_name()}.${model.get_action_name()}` : null;
   },
 
-  set_loading_state: function(loading) {
+  set_loading_state: function (loading) {
     if (loading) {
       document.querySelector("div[name=app_bg]").classList.add("loading");
       document.querySelector("nav.navbar").classList.add("bg-loading");
@@ -80,7 +80,7 @@ export default {
    * Reloads the page at a particular path
    * @param boolean root: Wether to return to the application root
    */
-  reload: function(root = false) {
+  reload: function (root = false) {
     this.update_breadcrumbs(true);
     const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
     menu_btn_group.innerHTML = "";
@@ -101,7 +101,7 @@ export default {
   /**
    * Logs the user out of the application
    */
-  logout: async function() {
+  logout: async function () {
     await CN_element.wait_for(async () => {
       await CN_api.delete("self/0");
       this.reload(true);
@@ -111,7 +111,7 @@ export default {
   /**
    * Reads the user's session data from the server
    */
-  update_data: async function() {
+  update_data: async function () {
     this.data = await CN_api.get("self/0");
 
     // convert use_12hour_clock to am_pm
@@ -162,7 +162,7 @@ export default {
   /**
    * Updates the system message list
    */
-  update_system_messages: async function() {
+  update_system_messages: async function () {
     this.system_message_list = await CN_api.get(
       "self/0/system_message",
       {
@@ -176,7 +176,7 @@ export default {
   /**
    * Updates the breadcrumb trail based on the current URL
    */
-  update_breadcrumbs: function(loading = false) {
+  update_breadcrumbs: function (loading = false) {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
@@ -195,7 +195,7 @@ export default {
    * Gets the current time formatted by the user's preferences
    * @return string
    */
-  get_time: function() {
+  get_time: function () {
     return CN_common.format_time(
       new Date(),
       this.data.user.timezone,
@@ -205,7 +205,7 @@ export default {
     );
   },
 
-  set_timezone: async function(timezone, am_pm) {
+  set_timezone: async function (timezone, am_pm) {
     if (this.data.user.timezone != timezone || this.data.user.am_pm != am_pm) {
       this.update_breadcrumbs(true);
       const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
@@ -256,7 +256,7 @@ export default {
   /**
    * Loads all modules and creates all models based on the current URL
    */
-  load: async function() {
+  load: async function () {
     // un-highlight any selected menu button
     const menu_el = document.getElementById("main-menu-offcanvas").querySelector("div[name=menu]");
     const selected_menu_btn_el = menu_el.querySelector("button.fw-bold");
@@ -357,7 +357,7 @@ export default {
   /**
    * Renders the current state to the UI based on the loaded modules/models
    */
-  render: async function() {
+  render: async function () {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
 
@@ -397,7 +397,7 @@ export default {
   /**
    * Renders an error to the UI
    */
-  render_error: function(error) {
+  render_error: function (error) {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
 
@@ -411,7 +411,7 @@ export default {
   /**
    * Navigates the browser to the given path
    */
-  navigate_to: async function(path) {
+  navigate_to: async function (path) {
     if (this.data.application.development_mode) console.info(`navigating to /${path}`);
     window.history.pushState({}, "", `${ROOT_URL}/${path}`);
 
@@ -426,7 +426,7 @@ export default {
   /**
    * Creates the main UI body
    */
-  create_body: function() {
+  create_body: function () {
     document.querySelector("div[name=app_body]").innerHTML = `
       <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
         <div class="container-fluid">
@@ -494,7 +494,7 @@ export default {
   /**
    * Starts the application
    */
-  start: async function() {
+  start: async function () {
     await this.update_data();
     if (this.data.application.development_mode) console.info("Development mode");
     this.create_body();
@@ -645,7 +645,7 @@ export default {
         const id = this.data.menu.reports[title];
         const btn_el = CN_element.create(`
           <button
-            name="${null == id ? "custom_report.list" : "report_type.view."+id}"
+            name="${null == id ? "custom_report.list" : "report_type.view." + id}"
             type="button"
             class="btn btn-outline-primary"
           >${title}</button>

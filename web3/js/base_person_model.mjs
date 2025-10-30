@@ -29,7 +29,7 @@ export class CN_base_person_view extends CN_base_view {
     );
     notes_btn_el.addEventListener(
       "click",
-      async () => await CN_session.navigate_to(this.get_model().get_notes_url()),
+      CN_session.navigate_to.bind(CN_session, this.get_model().get_notes_url()),
     );
     footer_el.append(notes_btn_el);
 
@@ -39,7 +39,7 @@ export class CN_base_person_view extends CN_base_view {
     );
     history_btn_el.addEventListener(
       "click",
-      async () => await CN_session.navigate_to(this.get_model().get_history_url()),
+      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
     );
     footer_el.append(history_btn_el);
 
@@ -556,12 +556,12 @@ export class CN_base_person_history extends CN_base_action {
   create_all_footer_elements(el) {
     // wire up the buttons
     const back_btn_el = el.querySelector("button[name=back]");
-    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+    back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     const notes_btn_el = el.querySelector("button[name=notes]");
     notes_btn_el.addEventListener(
       "click",
-      async () => await CN_session.navigate_to(this.get_model().get_notes_url()),
+      CN_session.navigate_to.bind(CN_session, this.get_model().get_notes_url()),
     );
   }
 
@@ -849,12 +849,12 @@ export class CN_base_person_notes extends CN_base_action {
   create_all_footer_elements(el) {
     // wire up the buttons
     const back_btn_el = el.querySelector("button[name=back]");
-    back_btn_el.addEventListener("click", async () => await this.on_navigate_to_parent());
+    back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     const history_btn_el = el.querySelector("button[name=history]");
     history_btn_el.addEventListener(
       "click",
-      async () => await CN_session.navigate_to(this.get_model().get_history_url()),
+      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
     );
   }
 

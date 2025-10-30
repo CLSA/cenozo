@@ -23,13 +23,13 @@ export class CN_base_record extends CN_base_action {
     // setup all property group
     const properties = this.get_model().clone_properties();
     this.#property_groups = {};
-    for (let key in properties) {
+    for (const key in properties) {
       const entry = properties[key];
       if (entry.hasOwnProperty("properties")) {
         // this is a group containing its own list of properties
         const group_name = key;
         this.add_property_group(group_name, entry);
-        for (let prop_name in entry.properties) {
+        for (const prop_name in entry.properties) {
           this.add_property(group_name, prop_name, CN_common.clone(entry.properties[prop_name]));
         }
       } else {
@@ -219,7 +219,7 @@ export class CN_base_record extends CN_base_action {
    * @return object
    */
   get_property(prop_name) {
-    for (let group_name in this.#property_groups) {
+    for (const group_name in this.#property_groups) {
       if (this.#property_groups[group_name].properties.hasOwnProperty(prop_name)) {
         return this.#property_groups[group_name].properties[prop_name];
       }
@@ -233,8 +233,8 @@ export class CN_base_record extends CN_base_action {
    */
   get_all_properties() {
     const properties = [];
-    for (let group_name in this.#property_groups) {
-      for (let prop_name in this.#property_groups[group_name].properties) {
+    for (const group_name in this.#property_groups) {
+      for (const prop_name in this.#property_groups[group_name].properties) {
         properties.push(this.#property_groups[group_name].properties[prop_name]);
       }
     }
@@ -249,8 +249,8 @@ export class CN_base_record extends CN_base_action {
 
     // load dynamic enums
     const promise_list = [];
-    for (let group_name in this.#property_groups) {
-      for (let prop_name in this.#property_groups[group_name].properties) {
+    for (const group_name in this.#property_groups) {
+      for (const prop_name in this.#property_groups[group_name].properties) {
         const prop = this.#property_groups[group_name].properties[prop_name];
         promise_list.push((async () => {
           const values = await this.get_model().get_enum_values(prop_name, prop);
@@ -304,7 +304,7 @@ export class CN_base_record extends CN_base_action {
       !this.get_model().allow_edit()
     );
 
-    for (let group_name in this.#property_groups) {
+    for (const group_name in this.#property_groups) {
       const group = this.#property_groups[group_name];
       if ("$main" != group_name) {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
@@ -314,7 +314,7 @@ export class CN_base_record extends CN_base_action {
           group_el.style.removeProperty("display");
         }
       }
-      for (let prop_name in group.properties) {
+      for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
         const control_el = document.getElementById(prop.id);
@@ -349,7 +349,7 @@ export class CN_base_record extends CN_base_action {
     if (this.#property_groups.hasOwnProperty("$main")) {
       const parent_el = CN_element.create('<div class="px-3"></div>');
       form_el.querySelector("fieldset").append(parent_el);
-      for (let prop_name in this.#property_groups.$main.properties) {
+      for (const prop_name in this.#property_groups.$main.properties) {
         parent_el.append(this.create_property_element(prop_name));
       }
     }
@@ -357,7 +357,7 @@ export class CN_base_record extends CN_base_action {
     // now create all other groups
     let accordion_el = null;
 
-    for (let group_name in this.#property_groups) {
+    for (const group_name in this.#property_groups) {
       if ("$main" != group_name) {
         if (null == accordion_el) {
           accordion_el = CN_element.create(`<div class="accordion accordion-flush"></div>`);
@@ -366,7 +366,7 @@ export class CN_base_record extends CN_base_action {
         const group_el = this.create_property_group_element(group_name);
         accordion_el.append(group_el);
         const group_body_el = group_el.querySelector("div.accordion-body");
-        for (let prop_name in this.#property_groups[group_name].properties) {
+        for (const prop_name in this.#property_groups[group_name].properties) {
           group_body_el.append(this.create_property_element(prop_name));
         }
       }
