@@ -31,35 +31,22 @@ div[name=app_bg].loading:before {
 
 .bg-loading {
   background-image:
-    repeating-linear-gradient(-45deg,
+    repeating-linear-gradient(
+      -45deg,
       transparent,
       transparent 1rem,
       rgb(var(--bs-primary-hover-bg)) 1rem,
-      rgb(var(--bs-primary-hover-bg)) 2rem);
+      rgb(var(--bs-primary-hover-bg)) 2rem
+    );
   background-size: 200% 200%;
   animation: barberpole 20s linear infinite;
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0.666;
-  }
+  0% { opacity: 0; }
+  100% { opacity: 0.666; }
 }
 
 @keyframes barberpole {
-  100% {
-    background-position: 100% 100%;
-  }
-}
-
-.table-header:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.col-title {
-  white-space: nowrap;
+  100% { background-position: 100% 100%; }
 }
