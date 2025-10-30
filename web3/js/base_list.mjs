@@ -362,14 +362,12 @@ export class CN_base_list extends CN_base_action {
 
       column.el.setAttribute("sort", "");
       sort_icon.classList.remove('bi-sort-up');
-    }
-    else if (next_sort === "ascending") {
+    } else if (next_sort === "ascending") {
       column.order = true;
       column.reverse = false;
 
       sort_icon.classList.add('bi-sort-down');
-    }
-    else if (next_sort === "descending") {
+    } else if (next_sort === "descending") {
       column.order = true;
       column.reverse = true;
 
