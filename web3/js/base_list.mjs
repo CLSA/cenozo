@@ -747,11 +747,11 @@ export class CN_base_list extends CN_base_action {
     const header_el = CN_element.create_fragment(
       `<th name="${column.title}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
-          <button type="button" class="sort-btn btn btn-light flex-grow-1 text-start text-nowrap rounded-0">
+          <button type="button" class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold">
             ${column.title}
             <i class="sort-icon bi px-1 d-inline-block" style="width:16px;height:16px"></i>
           </button>
-          <button type="button" class="filter-btn btn btn-light rounded-0">
+          <button type="button" class="filter-btn btn btn-secondary rounded-0 mx-1 fw-bold">
             <i class="filter-icon bi bi-filter px-1" style="cursor: pointer;"></i>
           </button>
         </div>
