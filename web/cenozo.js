@@ -2514,8 +2514,7 @@
     "CnModalDatetimeFactory",
     "CnSession",
     "$state",
-    "$filter",
-    function (CnModalDatetimeFactory, CnSession, $state, $filter) {
+    function (CnModalDatetimeFactory, CnSession, $state) {
       return {
         templateUrl: cenozo.getFileUrl("cenozo", "add-input.tpl.html"),
         restrict: "E",
@@ -3289,8 +3288,7 @@
   cenozo.directive("cnViewInput", [
     "CnModalDatetimeFactory",
     "$state",
-    "$filter",
-    function (CnModalDatetimeFactory, $state, $filter) {
+    function (CnModalDatetimeFactory, $state) {
       return {
         templateUrl: cenozo.getFileUrl("cenozo", "view-input.tpl.html"),
         restrict: "E",
@@ -4101,25 +4099,18 @@
     "$filter",
     function ($filter) {
       return function (value, filterStr) {
-        if (angular.isDefined(filterStr) && 0 < filterStr.length) {
-          // convert string into array deliminating by : (but not inside double quotes)
-          var args = [].concat
-            .apply(
-              [],
-              filterStr.split('"').map(function (item, index) {
-                return index % 2 ? item : item.split(":");
-              })
-            )
-            .filter(Boolean);
+        if (angular.isUndefined(value) || null === value) return "(empty)";
+        else if (!angular.isDefined(filterStr) || 0 == filterStr.length) return value;
 
-          var filter = $filter(args.shift());
-          args.unshift(value);
-          return filter.apply(null, args);
-        } else {
-          return angular.isUndefined(value) || null === value
-            ? "(empty)"
-            : value;
-        }
+        // convert string into array deliminating by : (but not inside double quotes)
+        var args = [].concat.apply(
+          [],
+          filterStr.split('"').map((item, index) => index % 2 ? item : item.split(":"))
+        ).filter(Boolean);
+
+        var filter = $filter(args.shift());
+        args.unshift(value);
+        return filter.apply(null, args);
       };
     },
   ]);
