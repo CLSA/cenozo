@@ -31,4 +31,31 @@ export class CN_study_phase_model extends CN_base_model {
       },
     });
   }
+
+  /**
+   * Returns a typeahead object for models that have a typeahead property referencing this model
+   * @return object
+   * @static
+   */
+  static get_typeahead() {
+    return {
+      get_list: async (value) => {
+        return await CN_api.get("study_phase", {
+          select: {
+            column: [
+              { column: "id", alias: "key" },
+              { column: 'CONCAT( study.name, ": ", study_phase.name )', alias: "value" },
+            ],
+          },
+          modifier: {
+            where: [
+              { column: "study.name", operator: "like", value: `%${value}%` },
+              { column: "study_phase.name", operator: "like", value: `%${value}%`, or: true },
+            ],
+            order: 'CONCAT( study.name, ": ", study_phase.name )',
+          },
+        });
+      },
+    };
+  }
 }
