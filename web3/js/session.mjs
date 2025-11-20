@@ -325,9 +325,9 @@ export default {
 
     // create and configure all models
     let parent_model = null;
-    PATH_MODEL_LIST = model_data_list.map(model_data => {
+    PATH_MODEL_LIST = model_data_list.map((model_data, index) => {
       const model = model_data.module.create_model();
-      model.configure(model_data.action, model_data.identifier, parent_model);
+      model.configure(model_data.action, model_data.identifier, parent_model, index == model_data_list.length-1);
       parent_model = model;
       return model;
     });
@@ -345,12 +345,6 @@ export default {
         menu_btn_el = menu_el.querySelector(`button[name="${PATH_MODEL_LIST[0].get_name()}.list"]`);
         if (menu_btn_el) menu_btn_el.classList.add("fw-bold");
       }
-    }
-
-    // and finally, if the leaf model's action is view then configure its children
-    const leaf_model = this.get_leaf_model();
-    if (leaf_model && "view" == leaf_model.get_action_name()) {
-      leaf_model.configure_children();
     }
   },
 

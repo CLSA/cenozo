@@ -26,14 +26,6 @@ export class CN_event_type_model extends CN_base_model {
     });
   }
 
-  /**
-   * Add accept column to participant list
-   */
-  configure_children() {
-    super.configure_children();
-
-    // TODO: add way in base_list to add more columns, then add a "Datetime" columns to the
-    // participant list action (based on event.datetime)
-    const action = this.get_child_model_list().find(model => "participant" == model.get_name()).get_action();
-  }
+  // TODO: add way in base_list to add more columns, then add a "Datetime" columns to the
+  // participant list action (based on event.datetime)
 }

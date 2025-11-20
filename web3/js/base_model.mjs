@@ -28,10 +28,15 @@ export class CN_base_model extends CN_base_object {
   constructor(params) {
     super();
 
-    if (!params.wording) throw new Error("Tried to create model with the wording property.");
-
     const module_name = this.get_class_name().match(/CN_(.+)_model/)[1];
     this.#module = CN_session.get_module(module_name);
+
+    if (!params.wording) {
+      throw new Error(
+        `Tried to create "${module_name}" model but definition is missing "wording" property.`
+      );
+    }
+
     this.#unique_id = [
       this.get_name(),
       [...Array(4)].map(() => Math.floor(Math.random()*16).toString(16)).join('')
@@ -124,7 +129,7 @@ export class CN_base_model extends CN_base_object {
   /**
    * Configures the model's action
    */
-  configure(action_name, identifier=null, parent_model=null) {
+  configure(action_name, identifier=null, parent_model=null, leaf=false) {
     this.#action_name = action_name;
     this.#identifier = identifier;
     this.#parent_model = parent_model;
@@ -155,18 +160,22 @@ export class CN_base_model extends CN_base_object {
       error.message = `Error configuring ${this.get_name()} model: "${action_name}" action ${problem}.`;
       throw error;
     }
+
+    // if we've configured the view action and this is the leaf model then configure the model's children as well
+    if ("view" == action_name && leaf) {
+      this.#child_model_list =
+        this.#module.get_children().concat(this.#module.get_choosing()).map(name => this.configure_child(name));
+    }
   }
 
   /**
    * Creates and configures the model's child and choose models
    */
-  configure_children() {
+  configure_child(name) {
     // create and configure all child and choosing models
-    this.#child_model_list = this.#module.get_children().concat(this.#module.get_choosing()).map(name => {
-      const model = CN_session.get_module(name).create_model();
-      model.configure("list", null, this);
-      return model;
-    });
+    const child_model = CN_session.get_module(name).create_model();
+    child_model.configure("list", null, this);
+    return child_model;
   }
 
   /**
