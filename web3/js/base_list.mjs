@@ -217,21 +217,13 @@ export class CN_base_list extends CN_base_action {
 
     for (const col_name in this.#columns) {
       const col = this.#columns[col_name];
-      if (this.#columns[col_name].table_prefix) {
-        let column = this.#columns[col_name].column;
-        if (!column) column = `${this.get_model().get_name()}.${col_name}`;
-        let [table, name] = column.split(".");
-        params.select.column.push({
-          table: table,
-          column: name,
-          alias: col_name
-        });
-      } else if (undefined !== this.#columns[col_name].column) {
-        params.select.column.push({
-          column: this.#columns[col_name].column,
-          alias: col_name,
-          table_prefix: false,
-        });
+      if (col.table_prefix) {
+        let table = this.get_model().get_name();
+        let name = col_name;
+        if (col.column) [table, name] = col.column.split(".");
+        params.select.column.push({ table: table, column: name, alias: col_name });
+      } else if (col.column) {
+        params.select.column.push({ column: col.column, alias: col_name, table_prefix: false });
       } else {
         // no table prefix means just add the column name
         params.select.column.push(col_name);
