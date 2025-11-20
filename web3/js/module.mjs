@@ -56,24 +56,34 @@ export class CN_module extends CN_base_object {
   action_allowed(action) { return this.#actions.hasOwnProperty(action); }
   action_has_identifier(name) {
     if (!this.action_allowed(name)) {
-      throw new Error(`Tried to get query identifier details for invalid action "${name}"`);
+      throw new Error(
+        `Tried to get query identifier details for invalid action "${name}" in "${this.#name}" module`
+      );
     }
     return this.#actions[name].identifier;
   }
   get_action_query_parameter(name, key) {
     if (!this.action_allowed(name)) {
-      throw new Error(`Tried to get query parameter "${key}" for invalid action "${name}"`);
+      throw new Error(
+        `Tried to get query parameter "${key}" for invalid action "${name}" in "${this.#name}" module`
+      );
     } else if (!this.#actions[name].query_list.includes(key)) {
-      throw new Error(`Tried to get invalid query parameter "${key}" for action "${name}"`);
+      throw new Error(
+        `Tried to get invalid query parameter "${key}" for action "${name}" in "${this.#name}" module`
+      );
     }
 
     return (new URL(window.location)).searchParams.get(key);
   }
   set_action_query_parameter(name, key, value) {
     if (!this.action_allowed(name)) {
-      throw new Error(`Tried to set query parameter "${key}" for invalid action "${name}"`);
+      throw new Error(
+        `Tried to set query parameter "${key}" for invalid action "${name}" in "${this.#name}" module`
+      );
     } else if (!this.#actions[name].query_list.includes(key)) {
-      throw new Error(`Tried to set invalid query parameter "${key}" for action "${name}"`);
+      throw new Error(
+        `Tried to set invalid query parameter "${key}" for action "${name}" in "${this.#name}" module`
+      );
     }
 
     const params = (new URL(window.location)).searchParams;
@@ -98,9 +108,21 @@ export class CN_module extends CN_base_object {
   get_children() { return this.#children; }
   has_choose(module_name) { return this.#choosing.includes(module_name); }
   get_choosing() { return this.#choosing; }
-  create_model() { return new this.#classes.model(); }
+  create_model() {
+    if (!CN_common.is_class(this.#classes.model)) {
+      throw new Error(`Tried to create model for "${this.#name}" module but no model class isn't implemented`);
+    }
+    return new this.#classes.model();
+  }
   action_class_exists(name) { return CN_common.is_class(this.#classes[name]); }
-  create_action(name, model) { return new this.#classes[name](model); }
+  create_action(name, model) {
+    if (!CN_common.is_class(this.#classes[name])) {
+      throw new Error(
+        `Tried to create "${name}" action for "${this.#name}" module but action class isn't implemented`
+      );
+    }
+    return new this.#classes[name](model);
+  }
 
   /**
    * Updates a notation
