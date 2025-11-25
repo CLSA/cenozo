@@ -126,6 +126,7 @@ export default {
     }, {});
 
     // create all modules
+    MODULE_MAP.clear();
     const modules = this.data.modules;
     delete this.data.modules;
     for(const module_name in modules) {
@@ -157,6 +158,8 @@ export default {
 
       MODULE_MAP.set(module_name, new CN_module(params));
     }
+
+    MODULE_MAP.forEach(module => module.resolve_children());
   },
 
   /**
@@ -313,10 +316,9 @@ export default {
       promise_list.push(model_data.module.load_classes());
       model_data_list.push(model_data);
 
-      // if viewing the child model then load its children and choosing module classes as well
+      // if viewing the child model then load its children classes as well
       if ("view" == model_data.action) {
-        promise_list.push(...model_data.module.get_children().map(m => this.get_module(m).load_classes()));
-        promise_list.push(...model_data.module.get_choosing().map(m => this.get_module(m).load_classes()));
+        promise_list.push(...model_data.module.get_child_modules().map(m => m.load_classes()));
       }
     }
 

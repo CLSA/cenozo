@@ -163,8 +163,7 @@ export class CN_base_model extends CN_base_object {
 
     // if we've configured the view action and this is the leaf model then configure the model's children as well
     if ("view" == action_name && leaf) {
-      this.#child_model_list =
-        this.#module.get_children().concat(this.#module.get_choosing()).map(name => this.configure_child(name));
+      this.#child_model_list = this.#module.get_child_modules().map(m => this.configure_child(m.get_name()));
     }
   }
 
@@ -172,7 +171,6 @@ export class CN_base_model extends CN_base_object {
    * Creates and configures the model's child and choose models
    */
   configure_child(name) {
-    // create and configure all child and choosing models
     const child_model = CN_session.get_module(name).create_model();
     child_model.configure("list", null, this);
     return child_model;

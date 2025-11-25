@@ -17,8 +17,8 @@ export class CN_module extends CN_base_object {
   #notations = {};
   #properties = {};
   #actions = {};
-  #children = [];
-  #choosing = [];
+  #child_modules = [];
+  #choosing_modules = [];
   #classes;
 
   /**
@@ -32,8 +32,12 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("framework")) this.#framework = params.framework;
     if (params.hasOwnProperty("notations")) this.#notations = params.notations;
     if (params.hasOwnProperty("properties")) this.#properties = params.properties;
-    if (params.hasOwnProperty("children")) this.#children = params.children.sort();
-    if (params.hasOwnProperty("choosing")) this.#choosing = params.choosing.sort();
+    if (params.hasOwnProperty("children")) this.#child_modules.push.apply(this.#child_modules, params.children);
+    if (params.hasOwnProperty("choosing")) {
+      this.#child_modules.push.apply(this.#child_modules, params.choosing);
+      this.#choosing_modules = params.choosing;
+    }
+    this.#child_modules.sort();
 
     // parse the action parameters
     if (params.hasOwnProperty("actions")) {
@@ -51,6 +55,21 @@ export class CN_module extends CN_base_object {
         };
       }
     }
+  }
+
+  resolve_children() {
+    // convert child module names to module objects
+    this.#child_modules = this.#child_modules.reduce((list, name) => {
+      const module = CN_session.get_module(name);
+      if (module) {
+        list.push(module);
+      } else {
+        // remove it from the choosing_modules list (if found)
+        const index = this.#choosing_modules.indexOf(name);
+        if (-1 !== index) this.#choosing_modules.splice(index, 1);
+      }
+      return list;
+    }, []);
   }
 
   action_allowed(action) { return this.#actions.hasOwnProperty(action); }
@@ -104,13 +123,11 @@ export class CN_module extends CN_base_object {
   get_property_names() { return Object.keys(this.#properties); }
   has_property(name) { return this.#properties.hasOwnProperty(name); }
   get_property(name) { return this.#properties[name]; }
-  has_child(module_name) { return this.#children.includes(module_name); }
-  get_children() { return this.#children; }
-  has_choose(module_name) { return this.#choosing.includes(module_name); }
-  get_choosing() { return this.#choosing; }
+  has_choose(module_name) { return this.#choosing_modules.includes(module_name); }
+  get_child_modules() { return this.#child_modules; }
   create_model() {
     if (!CN_common.is_class(this.#classes.model)) {
-      throw new Error(`Tried to create model for "${this.#name}" module but no model class isn't implemented`);
+      throw new Error(`Tried to create model for "${this.#name}" module but model class isn't implemented`);
     }
     return new this.#classes.model();
   }
