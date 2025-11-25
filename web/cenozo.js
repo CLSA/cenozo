@@ -438,6 +438,9 @@
           } catch (err) {} // do nothing if an exception was thrown
           delete this.moduleList.note;
         } else {
+          // need to override the setting module's framework property
+          if ("setting" == name) this.moduleList[name].framework = false;
+
           angular.extend(this.moduleList[name], {
             marked: false,
             deferred: null,

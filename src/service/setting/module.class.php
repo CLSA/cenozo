@@ -31,4 +31,19 @@ class module extends \cenozo\service\site_restricted_module
       }
     }
   }
+
+  /**
+   * Extend parent method
+   */
+  public function prepare_read( $select, $modifier )
+  {
+    parent::prepare_read( $select, $modifier );
+
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) )
+      $modifier->where( 'setting.site_id', '=', $db_restrict_site->id );
+
+    $modifier->join( 'site', 'setting.site_id', 'site.id' );
+  }
 }
