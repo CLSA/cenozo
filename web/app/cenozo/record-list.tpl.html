@@ -173,15 +173,22 @@
         <tr>
           <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) + ( model.listModel.chooseMode ? 1 : 0 ) }}"
               class="rounded-bottom">
-            <ul uib-pagination class="pagination pull-left"
-                ng-model="model.listModel.paginationModel.currentPage"
-                ng-show="!model.listModel.isLoading && model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
-                ng-change="model.listModel.onPagination()"
-                max-size="model.listModel.paginationModel.showPageLimit"
-                items-per-page="model.listModel.paginationModel.itemsPerPage"
-                total-items="model.listModel.total"
-                previous-text="&lsaquo;"
-                next-text="&rsaquo;"></ul>
+            <ul
+              uib-pagination class="pagination pull-left"
+              ng-model="model.listModel.paginationModel.currentPage"
+              ng-show="!model.listModel.isLoading && model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
+              ng-change="model.listModel.onPagination()"
+              direction-links="false"
+              boundary-links="true"
+              max-size="model.listModel.paginationModel.showPageLimit"
+              items-per-page="model.listModel.paginationModel.itemsPerPage"
+              total-items="model.listModel.total"
+              previous-text="‹"
+              next-text="›"
+              first-text="«"
+              last-text="»"
+              role="menu"
+            ></ul>
             <span class="footer-total" ng-show="!model.listModel.isLoading">
               {{ model.listModel.total }}
               {{ 1 == model.listModel.total ? model.module.name.singular : model.module.name.plural }} total

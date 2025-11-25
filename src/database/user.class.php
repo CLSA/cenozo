@@ -46,6 +46,7 @@ class user extends record
   public function save()
   {
     $new_record = is_null( $this->id );
+    $dogwood_column_changed = $this->has_column_changed( ['password', 'password_type', 'email'] );
 
     // note: if the dogwood manager isn't active then it will do nothing
     $dogwood_manager = lib::create( 'business\dogwood_manager' );
@@ -56,7 +57,7 @@ class user extends record
 
     parent::save();
 
-    if( !$new_record ) $dogwood_manager->update( $this );
+    if( !$new_record && $dogwood_column_changed ) $dogwood_manager->update( $this );
   }
 
   /**
