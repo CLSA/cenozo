@@ -209,6 +209,8 @@ export class CN_base_view extends CN_base_record {
           option_el.removeAttribute("selected");
         }
       });
+    } else if ("audio_url" == prop.type) {
+      control_el.src = value;
     } else if ("file" == prop.type) {
       prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
     } else if ("size" == prop.type) {

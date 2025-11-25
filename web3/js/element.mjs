@@ -129,8 +129,8 @@ export default {
   /**
    * Creates a form element
    * @param string type: One of the following:
-   *   "boolean", "color", "date", "datetime", "datetimesecond", "dob", "dod", "email", "enum", "file",
-   *   "float", "html", "integer", "password", "rank", "size", "string", "text", "time", or "typeahead"
+   *   "audio_url", "boolean", "color", "date", "datetime", "datetimesecond", "dob", "dod", "email", "enum",
+   *   "file", "float", "html", "integer", "password", "rank", "size", "string", "text", "time", or "typeahead"
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
@@ -152,7 +152,9 @@ export default {
     const postfix_div_el = el.querySelector("[name=postfix]");
 
     let control_el = null;
-    if ("file" == type) {
+    if ("audio_url" == type) {
+      control_el = this.create(`<audio controls="" class="w-100"></audio>`);
+    } else if ("file" == type) {
       if (el.params.action && "view" == el.params.action.get_type()) {
         // add a download and filesize elements to the prefix
         prefix_div_el.classList.add("text-nowrap", "pe-3");
@@ -329,7 +331,9 @@ export default {
       // determine if there was an error
       let error = null;
 
-      if ("file" == type) {
+      if ("audio_url" == type) {
+        // no validation required
+      } else if ("file" == type) {
         let files = Array.from(control_el.files);
         if (el.params.action) {
           files = el.params.action.get_property(el.params.name).state.get();

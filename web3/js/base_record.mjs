@@ -462,7 +462,7 @@ export class CN_base_record extends CN_base_action {
       mutation.filter(m => "childList" == m.type).forEach(m => {
         const control_el = document.getElementById(m.target.getAttribute("name"));
         if (control_el) {
-          const prop = this.get_property(control_el.name);
+          const prop = this.get_property(control_el.getAttribute("name"));
           prop.state.bind_element(control_el);
         }
       });

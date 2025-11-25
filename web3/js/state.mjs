@@ -14,8 +14,33 @@ export class CN_state extends CN_base_object {
     this.#element = el;
     this.#element.addEventListener(
       "input",
-      () => this.set("file" == this.#element.type ? this.#element.files : this.#element.value),
+      () => this.set(
+        "file" == this.#element.type ? this.#element.files :
+        "audio" == this.#element.localName ? this.#element.src :
+        this.#element.value
+      ),
     );
+  }
+
+  /**
+   * Updates the element with the state's current value
+   */
+  update_element() {
+    if (this.#element) {
+      if ("file" == this.#element.type) {
+        // only set the element's value when the state's value is a FileList
+        const value = this.get();
+        if (CN_common.is_filelist(value)) {
+          this.#element.files = value;
+        } else {
+          this.#element.value = "";
+        }
+      } else if ("audio" == this.#element.localName) {
+        this.#element.src = this.get();
+      } else {
+        this.#element.value = this.get();
+      }
+    }
   }
 
   /**
@@ -46,20 +71,8 @@ export class CN_state extends CN_base_object {
       this.#stack.push(new_state);
     }
 
-    // apply element binding
-    if (this.#element) {
-      if ("file" == this.#element.type) {
-        // only set the element's value when the state's value is a FileList
-        const value = this.get();
-        if (CN_common.is_filelist(value)) {
-          this.#element.files = value;
-        } else {
-          this.#element.value = "";
-        }
-      } else {
-        this.#element.value = this.get();
-      }
-    }
+    // now apply the element binding
+    this.update_element();
   }
 
   /**
@@ -94,19 +107,7 @@ export class CN_state extends CN_base_object {
       this.#stack.pop();
     }
 
-    // apply element binding
-    if (this.#element) {
-      if ("file" == this.#element.type) {
-        // only set the element's value when the state's value is a FileList
-        const value = this.get();
-        if (CN_common.is_filelist(value)) {
-          this.#element.files = value;
-        } else {
-          this.#element.value = "";
-        }
-      } else {
-        this.#element.value = this.get();
-      }
-    }
+    // now apply the element binding
+    this.update_element();
   }
 }
