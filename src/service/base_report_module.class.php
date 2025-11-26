@@ -67,13 +67,16 @@ class base_report_module extends \cenozo\service\site_restricted_module
             return;
           }
 
-          // restrict report type by role
-          $modifier = lib::create( 'database\modifier' );
-          $modifier->where( 'role_id', '=', $db_role->id );
-          if( 0 == $record->get_report_type()->get_role_count( $modifier ) )
+          // restrict report type by role (if not tier 3)
+          if( 3 > $db_role->tier )
           {
-            $this->get_status()->set_code( 404 );
-            return;
+            $modifier = lib::create( 'database\modifier' );
+            $modifier->where( 'role_id', '=', $db_role->id );
+            if( 0 == $record->get_report_type()->get_role_count( $modifier ) )
+            {
+              $this->get_status()->set_code( 404 );
+              return;
+            }
           }
 
           // restrict by role tier
