@@ -16,7 +16,7 @@ export class CN_setting_model extends CN_base_model {
           meta: { table: "site", column: "name" },
           title: "Site",
           is_constant: () => true,
-        },  
+        },
       },
     });
   }

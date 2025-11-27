@@ -1165,6 +1165,7 @@ export class CN_participant_selection {
     const element_el = CN_element.create_form_element("enum", {
       id: idtype_list_id,
       required: true,
+      on_change: () => this.reset_confirmation(),
       // add the confirm button as a postfix to the identifier-type selector
       set_postfix: () => CN_element.create(
         '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
@@ -1190,12 +1191,7 @@ export class CN_participant_selection {
       }
     });
 
-    this.#idtype_list_el.addEventListener("change", () => {
-      // call all attached callbacks since the selection has changed
-      this.#count_el.innerHTML = "(unconfirmed)";
-      this.#validated = false;
-      this.#selection_changed_callbacks.forEach(callback => callback());
-    });
+    this.#idtype_list_el.addEventListener("change", () => this.reset_confirmation());
 
     // confirm the identifier list with the server
     this.#confirm_btn_el.addEventListener(
@@ -1274,13 +1270,21 @@ export class CN_participant_selection {
   set_data(data) { this.#params.data = data; }
 
   /**
+   * Resets the confirmation of the selection back (does not remove the identifier list)
+   */
+  reset_confirmation() {
+    // call all attached callbacks since the selection has changed
+    this.#validated = false;
+    this.#selection_changed_callbacks.forEach(callback => callback());
+    if (this.#element) this.#count_el.innerHTML = "(unconfirmed)";
+  }
+
+  /**
    * Resets the selection to its initial state
    */
   async reset() {
     this.disable();
-
-    this.#validated = false;
-    this.#selection_changed_callbacks.forEach(callback => callback());
+    this.reset_confirmation();
 
     this.#idtype_list = await CN_api.get("identifier", {
       select: { column: ["id", "name", "regex"] },
@@ -1288,7 +1292,6 @@ export class CN_participant_selection {
     });
 
     if (this.#element) {
-      this.#count_el.innerHTML = "(unconfirmed)";
       this.#identifier_list_el.value = "";
       this.#identifier_list_el.style.height = "";
       this.#identifier_list_el.style.height = "60px";
