@@ -537,8 +537,10 @@ export default {
    * @return bootstrap.Modal
    */
   create_site_role_modal: function () {
+    const el_id = ["cn-site-role-modal", CN_common.get_random_hex_identifier()].join("-");
+
     const modal_el = this.create(`
-      <div id="cn_site_role_modal" class="modal fade" tabindex="-1">
+      <div id="${el_id}" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -574,21 +576,23 @@ export default {
     const ok_btn_el = modal_el.querySelector("[name=ok]");
 
     // add a site enum property
+    const site_el_id = ["cn-site", CN_common.get_random_hex_identifier()].join("-");
     const site_el = this.create('<div class="row mb-3"></div>');
-    const site_label_el = this.create_form_label({ for: "cn_site_role_modal_site", value: "Site" });
+    const site_label_el = this.create_form_label({ for: site_el_id, value: "Site" });
     site_label_el.classList.add("col-sm-3");
     site_el.append(site_label_el);
-    const site_element_el = this.create_form_element("enum", { id: "cn_site_role_modal_site", required: true });
+    const site_element_el = this.create_form_element("enum", { id: site_el_id, required: true });
     site_element_el.classList.add("col-sm-9");
     site_el.append(site_element_el);
     form_el.append(site_el);
 
     // add a role enum property
+    const role_el_id = ["cn-role", CN_common.get_random_hex_identifier()].join("-");
     const role_el = this.create('<div class="row mb-3"></div>');
-    const role_label_el = this.create_form_label({ for: "cn_role_role_modal_role", value: "Role" });
+    const role_label_el = this.create_form_label({ for: role_el_id, value: "Role" });
     role_label_el.classList.add("col-sm-3");
     role_el.append(role_label_el);
-    const role_element_el = this.create_form_element("enum", { id: "cn_role_role_modal_role", required: true });
+    const role_element_el = this.create_form_element("enum", { id: role_el_id, required: true });
     role_element_el.classList.add("col-sm-9");
     role_el.append(role_element_el);
     form_el.append(role_el);
@@ -606,8 +610,8 @@ export default {
         return list;
       }, []);
 
-      const site_control_el = document.getElementById("cn_site_role_modal_site");
-      const role_control_el = document.getElementById("cn_role_role_modal_role");
+      const site_control_el = document.getElementById(site_el_id);
+      const role_control_el = document.getElementById(role_el_id);
 
       // create a function to update the role list based on the currently selected site list
       const update_role_list = () => {
@@ -638,8 +642,8 @@ export default {
 
     ok_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
-      const site_id = document.getElementById("cn_site_role_modal_site").value;
-      const role_id = document.getElementById("cn_role_role_modal_role").value;
+      const site_id = document.getElementById(site_el_id).value;
+      const role_id = document.getElementById(role_el_id).value;
       if (CN_session.data.site.id != site_id || CN_session.data.role.id != role_id) {
         // update the user's site and role
         CN_session.set_loading_state(true);
@@ -657,8 +661,10 @@ export default {
    * @return bootstrap.Modal
    */
   create_clock_settings_modal: function () {
+    const el_id = ["cn-clock-settings-modal", CN_common.get_random_hex_identifier()].join("-");
+
     const modal_el = this.create(`
-      <div id="cn_clock_settings_modal" class="modal fade" tabindex="-1">
+      <div id="${el_id}" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -695,13 +701,14 @@ export default {
     const ok_btn_el = modal_el.querySelector("[name=ok]");
 
     // add a timezone typeahead property
+    const timezone_el_id = ["cn-timezone", CN_common.get_random_hex_identifier()].join("-");
     const timezone_el = this.create('<div class="row mb-3"></div>');
     form_el.append(timezone_el);
     const timezone_label_el = this.create_form_label({ for: "csm_timezone", value: "Timezone" });
     timezone_label_el.classList.add("col-sm-3");
     timezone_el.append(timezone_label_el);
     const timezone_element_el = this.create_form_element("typeahead", {
-      id: "cn_clock_settings_modal_timezone",
+      id: timezone_el_id,
       required: true,
       typeahead: {
         list: CN_timezones,
@@ -712,19 +719,19 @@ export default {
             ok_btn_el.setAttribute("disabled", true);
           }
 
-          const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
+          const timezone_control_el = document.getElementById(timezone_el_id);
           timezone_control_el.value = el.value;
           timezone_control_el.last_selected_value = el.value;
         },
         on_cancel: () => {
-          const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
+          const timezone_control_el = document.getElementById(timezone_el_id);
           timezone_control_el.value = timezone_control_el.last_selected_value;
         },
       },
     });
     timezone_element_el.classList.add("col-sm-9");
     timezone_el.append(timezone_element_el);
-    const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
+    const timezone_control_el = document.getElementById(timezone_el_id);
     timezone_control_el.value = CN_session.data.user.timezone;
     timezone_control_el.last_selected_value = CN_session.data.user.timezone;
     timezone_control_el.addEventListener("blur", () => {
@@ -734,27 +741,28 @@ export default {
     });
 
     // add a use 12-hour clock boolean property
+    const am_pm_el_id = ["cn-am_pm", CN_common.get_random_hex_identifier()].join("-");
     const am_pm_el = this.create('<div class="row mb-3"></div>');
     const am_pm_label_el = this.create_form_label({
-      for: "cn_clock_settings_modal_am_pm",
+      for: am_pm_el_id,
       value: "Use 12-Hour Clock"
     });
     am_pm_label_el.classList.add("col-sm-3");
     am_pm_el.append(am_pm_label_el);
     const am_pm_element_el = this.create_form_element("boolean", {
-      id: "cn_clock_settings_modal_am_pm",
+      id: am_pm_el_id,
       required: true
     });
     am_pm_element_el.classList.add("col-sm-9");
     am_pm_el.append(am_pm_element_el);
     form_el.append(am_pm_el);
-    document.getElementById("cn_clock_settings_modal_am_pm").value = CN_session.data.user.am_pm ? 1 : 0;
+    document.getElementById(am_pm_el_id).value = CN_session.data.user.am_pm ? 1 : 0;
 
     ok_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
       await CN_session.set_timezone(
         timezone_control_el.last_selected_value,
-        1 == document.getElementById("cn_clock_settings_modal_am_pm").value,
+        1 == document.getElementById(am_pm_el_id).value,
       );
     });
 
@@ -766,8 +774,10 @@ export default {
    * @return bootstrap.Modal
    */
   create_account_modal: function () {
+    const el_id = ["cn-clock-settings-modal", CN_common.get_random_hex_identifier()].join("-");
+
     const modal_el = this.create(`
-      <div id="cn_account_modal" class="modal fade" tabindex="-1">
+      <div id="${el_id}" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -803,20 +813,32 @@ export default {
     const ok_btn_el = modal_el.querySelector("[name=ok]");
 
     // create elements
-    let element_list = [
-      { id: "first_name", title: "First Name", type: "string", },
-      { id: "last_name", title: "Last Name", type: "string" },
-      { id: "email", title: "Email", type: "email" },
-    ];
+    const elements = {
+      first_name: {
+        el_id: ["cn-first-name", CN_common.get_random_hex_identifier()].join("-"),
+        title: "First Name",
+        type: "string",
+      },
+      last_name: {
+        el_id: ["cn-last-name", CN_common.get_random_hex_identifier()].join("-"),
+        title: "Last Name",
+        type: "string",
+      },
+      email: {
+        el_id: ["cn-email", CN_common.get_random_hex_identifier()].join("-"),
+        title: "Email",
+        type: "email",
+      },
+    };
 
-    element_list.forEach(element => {
-      let id = `cn_account_modal_${element.id}`;
+    for (const id in elements) {
+      const element = elements[id];
       const el = this.create('<div class="row mb-3"></div>');
-      const label_el = this.create_form_label({ for: id, value: element.title });
+      const label_el = this.create_form_label({ for: element.el_id, value: element.title });
       label_el.classList.add("col-sm-3");
       el.append(label_el);
       const element_el = this.create_form_element(element.type, {
-        id: id,
+        id: element.el_id,
         required: true,
         on_change: (control_el, valid) => {
           if (valid) {
@@ -829,14 +851,14 @@ export default {
       element_el.classList.add("col-sm-9");
       el.append(element_el);
       form_el.append(el);
-      document.getElementById(id).value = CN_session.data.user[element.id];
-    });
+      document.getElementById(element.el_id).value = CN_session.data.user[id];
+    }
 
     ok_btn_el.addEventListener("click", async () => {
       modal_bs.hide();
-      let first_name = document.getElementById("cn_account_modal_first_name").value;
-      let last_name = document.getElementById("cn_account_modal_last_name").value;
-      let email = document.getElementById("cn_account_modal_email").value;
+      let first_name = document.getElementById(elements.first_name.el_id).value;
+      let last_name = document.getElementById(elements.last_name.el_id).value;
+      let email = document.getElementById(elements.email.el_id).value;
       if (
         CN_session.data.user.first_name != first_name ||
         CN_session.data.user.last_name != last_name ||
@@ -868,8 +890,10 @@ export default {
    * @return bootstrap.Modal
    */
   create_password_modal: function () {
+    const el_id = ["cn-password-modal", CN_common.get_random_hex_identifier()].join("-");
+
     const modal_el = this.create(`
-      <div id="cn_password_modal" class="modal fade" tabindex="-1">
+      <div id="${el_id}" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header text-bg-primary">
@@ -906,34 +930,40 @@ export default {
     });
 
     // create elements
-    let element_list = [
-      { id: "current_password", title: "Current Password" },
-      { id: "new_password", title: "New Password" },
-      { id: "new_password_check", title: "Repeat New Password" },
-    ];
+    const elements = {
+      current_password: {
+        title: "Current Password",
+        el_id: ["cn-current-password", CN_common.get_random_hex_identifier()].join("-"),
+      },
+      new_password: {
+        title: "New Password",
+        el_id: ["cn-new-password", CN_common.get_random_hex_identifier()].join("-"),
+      },
+      new_password_check: {
+        title: "Repeat New Password",
+        el_id: ["cn-password-check", CN_common.get_random_hex_identifier()].join("-"),
+      },
+    };
 
-    element_list.forEach(element => {
-      let id = `cn_password_modal_${element.id}`;
+    for (const id in elements) {
+      const element = elements[id];
       const el = this.create('<div class="row mb-3"></div>');
-      const label_el = this.create_form_label({ for: id, value: element.title });
+      const label_el = this.create_form_label({ for: element.el_id, value: element.title });
       label_el.classList.add("col-sm-4");
       el.append(label_el);
-      const element_el = this.create_form_element("password", { id: id, required: true });
+      const element_el = this.create_form_element("password", { id: element.el_id, required: true });
       element_el.classList.add("col-sm-8");
       el.append(element_el);
       form_el.append(el);
-    });
+      element.control_el = document.getElementById(element.el_id);
+    }
 
     // track when the ok button should be enabled
-    const current_password_control_el = document.getElementById("cn_password_modal_current_password");
-    const new_password_control_el = document.getElementById("cn_password_modal_new_password");
-    const new_password_control_check_el = document.getElementById("cn_password_modal_new_password_check");
-
     const update_ok_btn = () => {
       if (
-        0 < current_password_control_el.value.length &&
-        8 <= new_password_control_el.value.length &&
-        8 <= new_password_control_check_el.value.length
+        0 < elements.current_password.control_el.value.length &&
+        8 <= elements.new_password.control_el.value.length &&
+        8 <= elements.new_password_check.control_el.value.length
       ) {
         ok_btn_el.removeAttribute("disabled");
       } else {
@@ -941,14 +971,14 @@ export default {
       }
     };
 
-    current_password_control_el.addEventListener("keyup", update_ok_btn);
-    new_password_control_el.addEventListener("keyup", update_ok_btn);
-    new_password_control_check_el.addEventListener("keyup", update_ok_btn);
+    elements.current_password.control_el.addEventListener("keyup", update_ok_btn);
+    elements.new_password.control_el.addEventListener("keyup", update_ok_btn);
+    elements.new_password_check.control_el.addEventListener("keyup", update_ok_btn);
 
     ok_btn_el.addEventListener("click", async () => {
-      let current_password = current_password_control_el.value;
-      let new_password = new_password_control_el.value;
-      let new_password_check = new_password_control_check_el.value;
+      let current_password = elements.current_password.control_el.value;
+      let new_password = elements.new_password.control_el.value;
+      let new_password_check = elements.new_password_check.control_el.value;
 
       if (new_password !== new_password_check) {
         this.toast({
@@ -1194,6 +1224,7 @@ export default {
    * @return bootstrap.Modal
    */
   input_modal: function (config) {
+    if (undefined === config.id) config.id = ["cn-input", CN_common.get_random_hex_identifier()].join("-");
     if (undefined === config.type) config.type = "primary";
     if (undefined === config.title) config.title = "Please Provide Input";
     if (undefined === config.input) config.input = "string";
@@ -1207,7 +1238,7 @@ export default {
               <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
             </div>
             <div class="modal-body">
-              <label class="form-label text-info-emphasis" for="cn_input_modal">
+              <label class="form-label text-info-emphasis" for="${config.id}">
                 ${config.message}
               </label>
             </div>
@@ -1229,7 +1260,7 @@ export default {
       </div>
     `);
 
-    const input_el = this.create_form_element(config.input, { id: "cn_input_modal", required: config.required });
+    const input_el = this.create_form_element(config.input, config);
     modal_el.querySelector(".modal-body").append(input_el);
 
     document.getElementById("main-content").append(modal_el);
@@ -1237,7 +1268,7 @@ export default {
       modal_el.setAttribute("data-bs-backdrop", "static");
       modal_el.setAttribute("data-bs-keyboard", "false");
     }
-    const control_el = document.getElementById("cn_input_modal");
+    const control_el = document.getElementById(config.id);
     if (config.value) control_el.value = config.value;
 
     const modal_bs = new bootstrap.Modal(modal_el);
