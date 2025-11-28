@@ -37,10 +37,7 @@ export class CN_base_model extends CN_base_object {
       );
     }
 
-    this.#unique_id = [
-      this.get_name(),
-      [...Array(4)].map(() => Math.floor(Math.random()*16).toString(16)).join('')
-    ].join("-");
+    this.#unique_id = [this.get_name(), CN_common.get_random_hex_identifier()].join("-");
     this.#wording = params.wording;
 
     // Note that the properties and columns props are only used when configuring the model.

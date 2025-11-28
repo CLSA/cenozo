@@ -95,6 +95,15 @@ export default {
   is_integer: function (x) { return this.is_type(x, "integer"); },
 
   /**
+   * Returns a random identifier made up of hexidecimal digits
+   * @param integer length: The number of digits
+   * @return string
+   */
+  get_random_hex_identifier: function (length = 4) {
+    return [...Array(length)].map(() => Math.floor(Math.random()*16).toString(16)).join('');
+  },
+
+  /**
    * Returns a promise that resolves after the given delay
    * @param integer ms: The number of miliseconds to sleep for
    */
