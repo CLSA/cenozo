@@ -171,10 +171,13 @@ export class CN_base_record extends CN_base_action {
       if (!prop.typeahead.list) prop.typeahead.list = [];
       if (!prop.typeahead.on_select) {
         prop.typeahead.on_select = item => {
-          prop.state.set(item.value);
-          prop.state.commit();
-          if (CN_common.is_function(prop.element.params.on_change)) {
-            prop.element.params.on_change(document.getElementById(prop.id), true, this);
+          // ignore if the value hasn't changed
+          if (prop.state.get() != item.value) {
+            prop.state.set(item.value);
+            prop.state.commit();
+            if (CN_common.is_function(prop.element.params.on_change)) {
+              prop.element.params.on_change(document.getElementById(prop.id), prop.element.validate(), this);
+            }
           }
         };
       }
@@ -286,7 +289,7 @@ export class CN_base_record extends CN_base_action {
     } else if ("typeahead" == prop.type) {
       // convert from value to key by looking up the element's typeahead list in the params object
       // NOTE: the element's params is not the same as the property's params object (it is cloned)
-      value = prop.element.params.typeahead.list.find(item => value === item.value).key;
+      if (null != value) value = prop.element.params.typeahead.list.find(item => value === item.value).key;
     }
 
     return value;

@@ -239,28 +239,40 @@ export default {
 
         // cancel the typeahead when the escape key is pressed
         control_el.addEventListener("keydown", (event) => {
+          const typeahead = el.params.typeahead;
+
           if ("Escape" == event.key) {
-            if (el.params.typeahead.open) {
-              if (CN_common.is_function(el.params.typeahead.on_cancel)) {
-                el.params.typeahead.on_cancel();
+            if (typeahead.open) {
+              if (CN_common.is_function(typeahead.on_cancel)) {
+                typeahead.on_cancel();
               }
               dropdown_bs.hide()
+            }
+          } else if ("Enter" == event.key) {
+            if ("" === control_el.value) {
+              // the input box is empty, so set to empty
+              if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
             }
           }
         });
         control_el.addEventListener("blur", async () => {
+          const typeahead = el.params.typeahead;
+
           // we may be blurring after a button click, so give it time to process
           await CN_common.sleep(200);
 
-          if (el.params.typeahead.open) {
+          if (typeahead.open) {
             // call on_cancel if the typeahead is open
-            if (CN_common.is_function(el.params.typeahead.on_cancel)) {
-              el.params.typeahead.on_cancel();
+            if (CN_common.is_function(typeahead.on_cancel)) {
+              typeahead.on_cancel();
             }
             dropdown_bs.hide();
-          } else {
-            // return to the last committed value
-            if (el.params.action && el.params.name) {
+          } else if (el.params.action && el.params.name) {
+            if ("" === control_el.value) {
+              // the input box is empty, so set to empty
+              if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
+            } else {
+              // return to the last committed value
               el.params.action.get_property(el.params.name).state.undo(true);
             }
           }
@@ -694,6 +706,12 @@ export default {
       typeahead: {
         list: CN_timezones,
         on_select: (el) => {
+          if (timezone_element_el.validate()) {
+            ok_btn_el.removeAttribute("disabled");
+          } else {
+            ok_btn_el.setAttribute("disabled", true);
+          }
+
           const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
           timezone_control_el.value = el.value;
           timezone_control_el.last_selected_value = el.value;
@@ -702,13 +720,6 @@ export default {
           const timezone_control_el = document.getElementById("cn_clock_settings_modal_timezone");
           timezone_control_el.value = timezone_control_el.last_selected_value;
         },
-      },
-      on_change: (control_el, valid) => {
-        if (valid) {
-          ok_btn_el.removeAttribute("disabled");
-        } else {
-          ok_btn_el.setAttribute("disabled", true);
-        }
       },
     });
     timezone_element_el.classList.add("col-sm-9");
@@ -790,13 +801,6 @@ export default {
 
     // used below
     const ok_btn_el = modal_el.querySelector("[name=ok]");
-    const on_change_fn = (control_el, valid) => {
-      if (valid) {
-        ok_btn_el.removeAttribute("disabled");
-      } else {
-        ok_btn_el.setAttribute("disabled", true);
-      }
-    };
 
     // create elements
     let element_list = [
@@ -814,7 +818,13 @@ export default {
       const element_el = this.create_form_element(element.type, {
         id: id,
         required: true,
-        on_change: on_change_fn
+        on_change: (control_el, valid) => {
+          if (valid) {
+            ok_btn_el.removeAttribute("disabled");
+          } else {
+            ok_btn_el.setAttribute("disabled", true);
+          }
+        },
       });
       element_el.classList.add("col-sm-9");
       el.append(element_el);
