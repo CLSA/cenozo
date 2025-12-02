@@ -130,7 +130,7 @@ export class CN_base_view extends CN_base_record {
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
       this.get_property(prop_name).state.undo();
-      if ("Conflict (409)" == error.name) {
+      if (409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
           this.get_property(prop_name).element.show_error("Conflicts with existing record", 5000);
         });

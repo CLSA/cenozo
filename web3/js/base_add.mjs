@@ -100,7 +100,7 @@ export class CN_base_add extends CN_base_record {
       await this.on_pre_submit(record);
       await this.on_post_submit(await CN_api.post(this.get_model().get_base_path("api"), record));
     } catch (error) {
-      if ("Conflict (409)" == error.name) {
+      if (409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
           const prop = this.get_property(prop_name);
           const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
