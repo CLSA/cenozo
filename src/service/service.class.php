@@ -39,7 +39,7 @@ abstract class service extends \cenozo\base_object
 
     $this->path = $path;
     $this->method = strtoupper( $method );
-    $this->arguments = $args;
+    $this->arguments = $this->convert_tz( $args, true );
     if( !is_array( $this->arguments ) ) $this->arguments = array();
 
     $this->file = $file;
@@ -897,15 +897,17 @@ abstract class service extends \cenozo\base_object
 
     $util_class_name = lib::get_class_name( 'util' );
 
-    $datetime_re = '/^[0-9]{4}-[01][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-5][0-9](\+00:00)?$/';
     if( is_string( $data ) )
     {
-      if( preg_match( $datetime_re, $data ) )
-      {
-        $datetime_obj = $util_class_name::get_datetime_object( $data, $to_utc ? $this->tz : $this->utc_tz );
-        $datetime_obj->setTimezone( $to_utc ? $this->utc_tz : $this->tz );
-        $data = $datetime_obj->format( 'Y-m-d H:i:s' );
-      }
+      $data = preg_replace_callback(
+        '/\b[0-9]{4}-[01][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-5][0-9](\+00:00)?\b/',
+        fn( $a ) => (
+          $util_class_name::get_datetime_object( $a[0], $to_utc ? $this->tz : $this->utc_tz )
+            ->setTimezone( $to_utc ? $this->utc_tz : $this->tz )
+            ->format( 'Y-m-d H:i:s' )
+        ),
+        $data
+      );
     }
     else if( is_array( $data ) )
     {
