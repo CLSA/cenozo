@@ -531,7 +531,7 @@ export class CN_base_list extends CN_base_action {
         } else if ("rank" == column.type) {
           value = CN_common.ordinal_suffix(value);
         } else if (CN_common.is_datetime_type(column.type, "time")) {
-          value = CN_common.format_time(value, column.type);
+          value = CN_common.format_time(value);
         } else if (CN_common.is_string(value) && 0 < column.limit) {
           if (value.length > column.limit) {
             value = value.substring(0, column.limit) + " ...";

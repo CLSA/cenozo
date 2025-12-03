@@ -130,7 +130,12 @@ export default {
    * @return Response or object or string
    */
   get: async function (path, params, return_response = false) {
-    const response = await this.fetch(path, params, { headers: { "X-No-Activity": true } });
+    const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
+    const response = await this.fetch(
+      path,
+      params,
+      { headers: { "X-No-Activity": true, "X-Timezone": timezone } }
+    );
 
     // return the fetch response if requested
     if (return_response) return response;
@@ -172,13 +177,14 @@ export default {
    * @return Response or object or string
    */
   patch: async function (path, data, raw = false, return_response = false) {
+    const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
     const response = await this.fetch(
       path,
       null,
       {
         method: "PATCH",
         body: raw ? data : JSON.stringify(data),
-        headers: { "Content-type": "application/json" },
+        headers: { "Content-type": "application/json", "X-Timezone": timezone },
       },
     );
 
@@ -203,13 +209,14 @@ export default {
    * @return Response or object or string
    */
   post: async function (path, data, raw = false, return_response = false) {
+    const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
     const response = await this.fetch(
       path,
       null,
       {
         method: "POST",
         body: raw ? data : JSON.stringify(data),
-        headers: { "Content-type": "application/json" },
+        headers: { "Content-type": "application/json", "X-Timezone": timezone },
       }
     );
 

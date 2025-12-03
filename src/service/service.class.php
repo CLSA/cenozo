@@ -29,6 +29,14 @@ abstract class service extends \cenozo\base_object
    */
   public function __construct( $method, $path, $args = NULL, $file = NULL )
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    // determine the utc and service timezones
+    $this->utc_tz = new \DateTimeZone( 'UTC' );
+    $tz = $util_class_name::get_header( 'X-Timezone' );
+    try { if( !is_null( $tz ) ) $this->tz = new \DateTimeZone( $tz ); }
+    catch( \Exception $e ) {} // ignore invalid timezones (UTC will be used by default)
+
     $this->path = $path;
     $this->method = strtoupper( $method );
     $this->arguments = $args;
@@ -642,6 +650,12 @@ abstract class service extends \cenozo\base_object
     {
       $util_class_name = lib::get_class_name( 'util' );
       $this->file_as_object = $util_class_name::json_decode( $this->file );
+
+      // convert datetimes to UTC
+      if( !is_null( $this->tz ) && 'UTC' != $this->tz->getName() )
+      {
+        $this->file_as_object = $this->convert_tz( $this->file_as_object, true );
+      }
     }
 
     return $this->file_as_object;
@@ -870,12 +884,51 @@ abstract class service extends \cenozo\base_object
   }
 
   /**
+   * Converts the timezone of all datetime data
+   * 
+   * @param mixed $data: Any data type (string, object, array, NULL, etc)
+   * @param boolean $to_utc: Whether to convert from the service's TZ to UTC or UTC to TZ
+   * @return mixed
+   */
+  private function convert_tz( $data, $to_utc )
+  {
+    // do nothing if the working timezone is UTC
+    if( is_null( $this->tz ) || 'UTC' == $this->tz->getName() ) return $data;
+
+    $util_class_name = lib::get_class_name( 'util' );
+
+    $datetime_re = '/^[0-9]{4}-[01][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-5][0-9](\+00:00)?$/';
+    if( is_string( $data ) )
+    {
+      if( preg_match( $datetime_re, $data ) )
+      {
+        $datetime_obj = $util_class_name::get_datetime_object( $data, $to_utc ? $this->tz : $this->utc_tz );
+        $datetime_obj->setTimezone( $to_utc ? $this->utc_tz : $this->tz );
+        $data = $datetime_obj->format( 'Y-m-d H:i:s' );
+      }
+    }
+    else if( is_array( $data ) )
+    {
+      foreach( $data as $index => $value ) $data[$index] = $this->convert_tz( $value, $to_utc );
+    }
+    else if( is_object( $data ) )
+    {
+      foreach( get_object_vars( $data ) as $key => $value ) $data->$key = $this->convert_tz( $value, $to_utc );
+    }
+
+    return $data;
+  }
+
+  /**
    * Sets the data returned by the service.
    * @param mixed $data
    * @access public
    */
   public function set_data( $data )
   {
+    // convert all datetime timezones
+    if( !is_null( $this->tz ) && 'UTC' != $this->tz->getName() ) $data = $this->convert_tz( $data, false );
+
     $this->data = $data;
     $this->encoded_data = NULL;
   }
@@ -997,6 +1050,20 @@ abstract class service extends \cenozo\base_object
   private $mime_type = NULL;
 
   /**
+   * The timezone the client is working under
+   * @var DateTimeZone
+   * @access protected
+   */
+  protected $tz = NULL;
+
+  /**
+   * A reference to the UTC timezone (set in the contructor)
+   * @var DateTimeZone
+   * @access protected
+   */
+  protected $utc_tz = NULL;
+
+  /**
    * The status object returned in response to the service request
    * @var service\status
    * @access protected
@@ -1092,7 +1159,7 @@ abstract class service extends \cenozo\base_object
    * @static
    */
   protected $extract_parameter_list = [];
-  
+
   /**
    * Whether to check if the user's access has permission to perform this service
    * @var boolean
