@@ -132,7 +132,7 @@ export default {
   /**
    * Determines whether a particular type is a datetime
    * @param string type: The type to check
-   * @param string subtype: A datetime sub-type to restrict to ("date", "time", "second", "timezone")
+   * @param string subtype: A datetime sub-type to restrict to ("date", "time", "second")
    * @return boolean
    */
   is_datetime_type: function (type, subtype) {
@@ -140,11 +140,9 @@ export default {
     if ("date" == subtype) {
       type_list = ["datetimesecond", "datetime", "date", "yearmonth", "dob", "dod"];
     } else if ("time" == subtype) {
-      type_list = ["timesecond", "timesecond_notz", "time", "time_notz"];
+      type_list = ["timesecond", "time"];
     } else if ("second" == subtype) {
-      type_list = ["datetimesecond", "timesecond", "timesecond_notz"];
-    } else if ("timezone" == subtype) {
-      type_list = ["datetimesecond", "datetime", "timesecond", "time"];
+      type_list = ["datetimesecond", "timesecond"];
     } else {
       type_list = [
         "datetimesecond",
@@ -154,9 +152,7 @@ export default {
         "dob",
         "dod",
         "timesecond",
-        "timesecond_notz",
         "time",
-        "time_notz",
       ];
     }
 
@@ -166,22 +162,17 @@ export default {
   /**
    * Returns a time string representation of a datetime
    * @param string|Date value: The datetime to format
-   * @param string timezone: Which timezone to use
    * @param boolean am_pm: Whether to format using am_pm or 24-hour time
    * @param boolean seconds: Whether to include seconds
-   * @param boolean show_timezone: Whether to include the timezone
    * @return string
    */
   format_time: function (
     value,
-    timezone = CN_session.data.user.timezone,
     am_pm = CN_session.data.user.am_pm,
-    seconds = false,
-    show_timezone = false
+    seconds = false
   ) {
-    let options = { timeZone: timezone, hour12: am_pm, hour: am_pm ? "numeric" : "2-digit", minute: "2-digit" };
+    let options = { hour12: am_pm, hour: am_pm ? "numeric" : "2-digit", minute: "2-digit" };
     if (seconds) options.second = "2-digit";
-    if (show_timezone) options.timeZoneName = "short";
     return new Intl.DateTimeFormat('en-CA', options).format(new Date(value));
   },
 
@@ -189,7 +180,6 @@ export default {
    * Returns a datetime string representation of a datetime
    * @param string|Date value: The datetime to format
    * @param string format: Which format to use (yearmonth, dob, dod, date, datetime, datetimesecond, etc)
-   * @param string timezone: Which timezone to use
    * @param boolean am_pm: Whether to format using am_pm or 24-hour time
    * @param boolean long_form: Whether to format in long or short form
    * @return string
@@ -197,11 +187,10 @@ export default {
   format_datetime: function (
     value,
     format,
-    timezone = CN_session.data.user.timezone,
     am_pm = CN_session.data.user.am_pm,
     long_form = false
   ) {
-    let options = { timeZone: timezone };
+    let options = {};
     let include_date = true;
     let include_time = false;
     if ("yearmonth" == format) {
@@ -224,7 +213,7 @@ export default {
     }
     if (include_time) {
       parts.push(
-        this.format_time(value, timezone, am_pm, this.is_datetime_type(format, "second"), long_form)
+        this.format_time(value, am_pm, this.is_datetime_type(format, "second"), long_form)
       );
     }
     return parts.join(" @ ");

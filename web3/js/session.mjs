@@ -199,13 +199,12 @@ export default {
    * @return string
    */
   get_time: function () {
-    return CN_common.format_time(
-      new Date(),
-      this.data.user.timezone,
-      this.data.user.am_pm,
-      false,
-      true
-    );
+    const datetime = CN_common.format_time(new Date());
+    const tz = Intl.DateTimeFormat(
+      'en-CA',
+      { timeZone: this.data.user.timezone, timeZoneName: "short" }
+    ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
+    return `${datetime} ${tz}`;
   },
 
   set_timezone: async function (timezone, am_pm) {
