@@ -827,7 +827,6 @@ export class CN_participant_multiedit extends CN_base_action {
 
           if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
             CN_element.message_modal({
-              static: true,
               title: "No Columns Selected",
               message: "Please select at least one column to edit.",
               type: "danger",
@@ -851,7 +850,6 @@ export class CN_participant_multiedit extends CN_base_action {
         }
 
         CN_element.message_modal({
-          static: true,
           title: (
             "participant" == module_name ?
             "Participant Details Updated" :
@@ -995,7 +993,6 @@ export class CN_participant_scripts extends CN_base_action {
         if (script.end_datetime) {
           if (reversable) {
             const modal = CN_element.confirm_modal({
-              static: true,
               title: `Reverse ${script.name}`,
               message: this.#reverse_messages[script.name],
             });

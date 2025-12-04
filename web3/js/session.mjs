@@ -232,7 +232,7 @@ export default {
             if (0 < keys.length) type = keys[0].replace(/_id$/, "");
           }
 
-          const params = { static: true, type: "danger" };
+          const params = { type: "danger" };
           if (null == type) {
             params.title = "";
             params.message = "";

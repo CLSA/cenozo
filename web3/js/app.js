@@ -13,7 +13,6 @@
     // catch all unhandled exceptions
     window.addEventListener("unhandledrejection", event => {
       const params = {
-        static: true,
         title: "Unexpected Error",
         message: "Sorry, but an unexpected error has occurred which may cause the application to behave incorrectly.",
         type: "danger",

@@ -713,7 +713,6 @@ export class CN_base_person_notes extends CN_base_action {
 
         note_el.querySelector("[name=delete]").addEventListener("click", async () => {
           const modal = CN_element.confirm_modal({
-            static: true,
             title: "Please Confirm",
             message: `Are you sure you wish to delete the note by ${note.first_name} ${note.last_name}?`,
           });

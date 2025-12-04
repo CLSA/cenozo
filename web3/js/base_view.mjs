@@ -149,7 +149,6 @@ export class CN_base_view extends CN_base_record {
   async on_delete() {
     // first confirm
     const modal = CN_element.confirm_modal({
-      static: true,
       title: "Please Confirm",
       message: `Are you sure you wish to delete this ${this.get_model().get_singular()}?`,
     });

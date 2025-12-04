@@ -276,7 +276,6 @@ export class CN_stratum_mass_participant extends CN_base_action {
       });
 
       await CN_element.message_modal({
-        static: true,
         title: `Participants ${"add" == this.#operation ? "Added" : "Removed"}`,
         message: `
           You have successfully ${"add" == this.#operation ? "added" : "removed"} ${response} participant(s)

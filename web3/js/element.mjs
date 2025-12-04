@@ -221,7 +221,12 @@ export default {
         el.params.typeahead.open = false;
 
         // create the typeahead's element
-        const typeahead_el = this.create(`<div class="dropdown"><ul class="dropdown-menu w-100"></ul></div>`);
+        const typeahead_el = this.create(`
+          <div class="dropdown">
+            <button class="d-none" data-bs-toggle="dropdown"></button>
+            <ul class="dropdown-menu w-100"></ul>
+          </div>
+        `);
         const dropdown_bs = new bootstrap.Dropdown(typeahead_el);
 
         // add the typeahead's element after the prop's element once it's been inserted into the DOM
@@ -262,11 +267,13 @@ export default {
           await CN_common.sleep(200);
 
           if (typeahead.open) {
-            // call on_cancel if the typeahead is open
-            if (CN_common.is_function(typeahead.on_cancel)) {
-              typeahead.on_cancel();
+            // if the typeahead is still open but we haven't focussed on a dropdown item then cancel and close
+            if (!document.activeElement.classList.contains("dropdown-item")) {
+              if (CN_common.is_function(typeahead.on_cancel)) {
+                typeahead.on_cancel();
+              }
+              dropdown_bs.hide();
             }
-            dropdown_bs.hide();
           } else if (el.params.action && el.params.name) {
             if ("" === control_el.value) {
               // the input box is empty, so set to empty
@@ -323,6 +330,18 @@ export default {
                   if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
                   dropdown_bs.hide();
                 });
+                item_el.addEventListener("focusout", async () => {
+                  // wait after leaving focus so activeElement becomes the newly focussed element
+                  await CN_common.sleep(200);
+
+                  if (!control_div_el.contains(document.activeElement)) {
+                    // if we've focussed outside of the parent typeahead div then cancel and close
+                    if (CN_common.is_function(typeahead.on_cancel)) {
+                      typeahead.on_cancel();
+                    }
+                    dropdown_bs.hide();
+                  }
+                });
                 return item_el;
               }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
 
@@ -372,6 +391,10 @@ export default {
           re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
         } else if ("integer" == type) {
           re = /^-?[0-9]+$/;
+        } else if (el.params.min_length) {
+          if (control_el.value.length < el.params.min_length) {
+            error = `Must be at least ${el.params.min_length} characters long`;
+          }
         } else if (el.params.format) {
           // determine the regex
           let re = null;
@@ -564,7 +587,7 @@ export default {
 
     document.getElementById("main-content").append(modal_el);
     const form_el = modal_el.querySelector("form");
-    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false });
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
 
     // automatically dispose of the modal once finished
     modal_el.addEventListener("hidden.bs.modal", () => {
@@ -689,7 +712,7 @@ export default {
 
     document.getElementById("main-content").append(modal_el);
     const form_el = modal_el.querySelector("form");
-    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false });
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
 
     // automatically dispose of the modal once finished
     modal_el.addEventListener("hidden.bs.modal", () => {
@@ -801,7 +824,7 @@ export default {
 
     document.getElementById("main-content").append(modal_el);
     const form_el = modal_el.querySelector("form");
-    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false });
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
 
     // automatically dispose of the modal once finished
     modal_el.addEventListener("hidden.bs.modal", () => {
@@ -921,7 +944,7 @@ export default {
     document.getElementById("main-content").append(modal_el);
     const form_el = modal_el.querySelector("form");
     const ok_btn_el = modal_el.querySelector("[name=ok]");
-    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false });
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
 
     // automatically dispose of the modal once finished
     modal_el.addEventListener("hidden.bs.modal", () => {
@@ -1077,10 +1100,7 @@ export default {
       </div>
     `);
     document.getElementById("main-content").append(modal_el);
-    modal_el.setAttribute("data-bs-backdrop", "static");
-    modal_el.setAttribute("data-bs-keyboard", "false");
-
-    const modal_bs = new bootstrap.Modal(modal_el);
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
 
     // wait for delay before showing the modal
     let timeout_id = setTimeout(() => {
@@ -1110,7 +1130,7 @@ export default {
 
   /**
    * Creates a modal message dialog
-   * @param object config: An object that has type, title, message and static properties
+   * @param object config: An object that has type, title and message properties
    * @return bootstrap.Modal
    */
   message_modal: function (config) {
@@ -1135,12 +1155,7 @@ export default {
       </div>
     `);
     document.getElementById("main-content").append(modal_el);
-    if (config.static) {
-      modal_el.setAttribute("data-bs-backdrop", "static");
-      modal_el.setAttribute("data-bs-keyboard", "false");
-    }
-
-    const modal_bs = new bootstrap.Modal(modal_el);
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
     modal_bs.block = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
@@ -1160,7 +1175,7 @@ export default {
 
   /**
    * Creates a modal confirm dialog
-   * @param object config: An object that has type, title, message and static properties
+   * @param object config: An object that has type, title and message properties
    * @return bootstrap.Modal
    */
   confirm_modal: function (config) {
@@ -1193,12 +1208,7 @@ export default {
       </div>
     `);
     document.getElementById("main-content").append(modal_el);
-    if (config.static) {
-      modal_el.setAttribute("data-bs-backdrop", "static");
-      modal_el.setAttribute("data-bs-keyboard", "false");
-    }
-
-    const modal_bs = new bootstrap.Modal(modal_el);
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
     modal_bs.test = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
@@ -1220,7 +1230,7 @@ export default {
 
   /**
    * Creates a modal input dialog
-   * @param object config: An object that has type, title, message, type, required, and static properties
+   * @param object config: An object that has type, title, message, type and required properties
    * @return bootstrap.Modal
    */
   input_modal: function (config) {
@@ -1264,14 +1274,10 @@ export default {
     modal_el.querySelector(".modal-body").append(input_el);
 
     document.getElementById("main-content").append(modal_el);
-    if (config.static) {
-      modal_el.setAttribute("data-bs-backdrop", "static");
-      modal_el.setAttribute("data-bs-keyboard", "false");
-    }
     const control_el = document.getElementById(config.id);
     if (config.value) control_el.value = config.value;
 
-    const modal_bs = new bootstrap.Modal(modal_el);
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
     modal_bs.get = () => {
       return new Promise((resolve, reject) => {
         modal_bs.show();
