@@ -302,10 +302,10 @@ export class CN_base_record extends CN_base_action {
     super.update_element();
 
     // update whether the record can be edited
-    this.get_body_element().querySelector('fieldset').disabled = (
-      "view" == this.get_type() &&
-      !this.get_model().allow_edit()
-    );
+    const fieldset_el = this.get_body_element().querySelector('fieldset');
+    if (fieldset_el) {
+      fieldset_el.disabled = "view" == this.get_type() && !this.get_model().allow_edit();
+    }
 
     for (const group_name in this.#property_groups) {
       const group = this.#property_groups[group_name];
@@ -485,7 +485,11 @@ export class CN_base_record extends CN_base_action {
   render() {
     // remove the card body's padding to make better use of space
     const el = super.render();
-    el.querySelector(":scope > div > div.card > .card-body").classList.add("pb-0", "px-0");
+    el.querySelector(
+      this.get_simple_mode() ?
+      ":scope > div" :
+      ":scope > div > div.card > .card-body"
+    ).classList.add("pb-0", "px-0");
     return el;
   }
 

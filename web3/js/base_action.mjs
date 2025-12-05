@@ -17,6 +17,7 @@ export class CN_base_action extends CN_base_object {
   #is_loading = false;
   #is_placeholder = true;
   #placeholder_timeout_id = null;
+  #simple_mode = false;
   #footer_at_top = false;
 
   /**
@@ -60,6 +61,8 @@ export class CN_base_action extends CN_base_object {
     if (!this.#topfooter_el) this.#topfooter_el = this.create_topfooter_element();
     return this.#topfooter_el;
   }
+  get_simple_mode() { return this.#simple_mode; }
+  set_simple_mode(value) { this.#simple_mode = !!value; }
   get_footer_at_top() { return this.#footer_at_top; }
   set_footer_at_top(value) { this.#footer_at_top = !!value; }
 
@@ -77,22 +80,28 @@ export class CN_base_action extends CN_base_object {
    */
   show_placeholder() {
     this.#is_placeholder = true;
+    if (this.#simple_mode) {
+      const placeholder_el = this.get_placeholder_element();
+      const body_el = this.get_element().querySelector(":scope > div");
+      body_el.innerHTML = "";
+      if (placeholder_el) body_el.append(placeholder_el);
+    } else {
+      const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
+      card_header_el.innerHTML = "Loading...";
 
-    const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
-    card_header_el.innerHTML = "Loading...";
+      if (this.#footer_at_top) {
+        const card_topfooter_el = this.get_element().querySelector(":scope > div > div.card > .card-topfooter");
+        card_topfooter_el.innerHTML = "";
+      }
 
-    if (this.#footer_at_top) {
-      const card_topfooter_el = this.get_element().querySelector(":scope > div > div.card > .card-topfooter");
-      card_topfooter_el.innerHTML = "";
+      const placeholder_el = this.get_placeholder_element();
+      const card_body_el = this.get_element().querySelector(":scope > div > div.card > .card-body");
+      card_body_el.innerHTML = "";
+      if (placeholder_el) card_body_el.append(placeholder_el);
+
+      const card_footer_el = this.get_element().querySelector(":scope > div > div.card > .card-footer");
+      card_footer_el.innerHTML = "";
     }
-
-    const placeholder_el = this.get_placeholder_element();
-    const card_body_el = this.get_element().querySelector(":scope > div > div.card > .card-body");
-    card_body_el.innerHTML = "";
-    if (placeholder_el) card_body_el.append(placeholder_el);
-
-    const card_footer_el = this.get_element().querySelector(":scope > div > div.card > .card-footer");
-    card_footer_el.innerHTML = "";
   }
 
   /**
@@ -101,27 +110,33 @@ export class CN_base_action extends CN_base_object {
   hide_placeholder() {
     this.#is_placeholder = false;
 
-    const header_el = this.get_header_element();
-    const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
-    card_header_el.innerHTML = "";
-    if (header_el) card_header_el.append(this.get_header_element());
+    if (this.#simple_mode) {
+      const body_el = this.get_element().querySelector(":scope > div");
+      body_el.innerHTML = "";
+      if (body_el) body_el.append(this.get_body_element());
+    } else {
+      const header_el = this.get_header_element();
+      const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
+      card_header_el.innerHTML = "";
+      if (header_el) card_header_el.append(this.get_header_element());
 
-    if (this.#footer_at_top) {
-      const topfooter_el = this.get_topfooter_element();
-      const card_topfooter_el = this.get_element().querySelector(":scope > div > div.card > .card-topfooter");
-      card_topfooter_el.innerHTML = "";
-      if (topfooter_el) card_topfooter_el.append(this.get_topfooter_element());
+      if (this.#footer_at_top) {
+        const topfooter_el = this.get_topfooter_element();
+        const card_topfooter_el = this.get_element().querySelector(":scope > div > div.card > .card-topfooter");
+        card_topfooter_el.innerHTML = "";
+        if (topfooter_el) card_topfooter_el.append(this.get_topfooter_element());
+      }
+
+      const body_el = this.get_body_element();
+      const card_body_el = this.get_element().querySelector(":scope > div > div.card > .card-body");
+      card_body_el.innerHTML = "";
+      if (body_el) card_body_el.append(this.get_body_element());
+
+      const footer_el = this.get_footer_element();
+      const card_footer_el = this.get_element().querySelector(":scope > div > div.card > .card-footer");
+      card_footer_el.innerHTML = "";
+      if (footer_el) card_footer_el.append(this.get_footer_element());
     }
-
-    const body_el = this.get_body_element();
-    const card_body_el = this.get_element().querySelector(":scope > div > div.card > .card-body");
-    card_body_el.innerHTML = "";
-    if (body_el) card_body_el.append(this.get_body_element());
-
-    const footer_el = this.get_footer_element();
-    const card_footer_el = this.get_element().querySelector(":scope > div > div.card > .card-footer");
-    card_footer_el.innerHTML = "";
-    if (footer_el) card_footer_el.append(this.get_footer_element());
   }
 
   /**
@@ -285,24 +300,30 @@ export class CN_base_action extends CN_base_object {
     if (null == this.#model.get_action_name()) return el;
 
     el.setAttribute("name", this.#model.get_action_name());
-
     const placeholder_el = this.get_placeholder_element();
-    el.append(CN_element.create_card({
-      header: "Loading...",
-      body: placeholder_el ? placeholder_el : "",
-      footer: "",
-    }));
+    if (this.#simple_mode) {
+      // make sure to put the placeholder inside of a div (for body/placeholder swapping to work correctly)
+      const div_el = CN_element.create("<div></div>");
+      if (placeholder_el) div_el.append(placeholder_el);
+      el.append(div_el);
+    } else {
+      el.append(CN_element.create_card({
+        header: "Loading...",
+        body: placeholder_el ? placeholder_el : "",
+        footer: "",
+      }));
 
-    if (this.#footer_at_top) {
-      el.querySelector(".card-header").after(CN_element.create(`
-        <div
-          class="card-topfooter text-bg-secondary fs-5"
-          style="
-            padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x);
-            border-top: var(--bs-card-border-width) solid var(--bs-card-border-color);
-          "
-        ></div>
-      `));
+      if (this.#footer_at_top) {
+        el.querySelector(".card-header").after(CN_element.create(`
+          <div
+            class="card-topfooter text-bg-secondary fs-5"
+            style="
+              padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x);
+              border-top: var(--bs-card-border-width) solid var(--bs-card-border-color);
+            "
+          ></div>
+        `));
+      }
     }
 
     return el;

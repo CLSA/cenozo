@@ -245,17 +245,20 @@ export class CN_base_view extends CN_base_record {
     super.update_element();
 
     // add a delete button (if allowed)
-    let delete_btn_el = this.get_footer_element().querySelector("button[name=delete]");
-    if (null == delete_btn_el && this.get_model().allow_delete()) {
-      delete_btn_el = CN_element.create(`
-        <button name="delete" type="button" class="btn btn-danger">
-          Delete ${CN_common.uc_words(this.get_model().get_singular())}
-        </button>
-      `);
-      this.get_footer_element().append(delete_btn_el);
-      delete_btn_el.addEventListener("click", this.on_delete.bind(this));
-    } else if (null != delete_btn_el && !this.get_model().allow_delete()) {
-      this.get_footer_element().removeChild(delete_btn_el);
+    const footer_el = this.get_footer_element();
+    if (footer_el) {
+      let delete_btn_el = footer_el.querySelector("button[name=delete]");
+      if (null == delete_btn_el && this.get_model().allow_delete()) {
+        delete_btn_el = CN_element.create(`
+          <button name="delete" type="button" class="btn btn-danger">
+            Delete ${CN_common.uc_words(this.get_model().get_singular())}
+          </button>
+        `);
+        footer_el.append(delete_btn_el);
+        delete_btn_el.addEventListener("click", this.on_delete.bind(this));
+      } else if (null != delete_btn_el && !this.get_model().allow_delete()) {
+        footer_el.removeChild(delete_btn_el);
+      }
     }
 
     // update the child lists
