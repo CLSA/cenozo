@@ -1,36 +1,48 @@
 <ng-form name="innerForm">
-  <div class="form-group"
-       ng-class="{'form-group-condensed': condensed,
-                  'first-form-group': first,
-                  'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid}">
-    <label for="{{ input.key }}"
-           class="control-label"
-           ng-class="{ 'col-sm-3': !noCols }"
-           uib-tooltip-html="input.help"
-           ng-bind-html="getTitle()"></label>
+  <div
+    class="form-group"
+    ng-class="{
+      'form-group-condensed': condensed,
+      'first-form-group': first,
+      'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid
+    }">
+    <label
+      for="{{ input.key }}"
+      class="control-label"
+      ng-class="{ 'col-sm-3': !noCols }"
+      uib-tooltip-html="input.help"
+      ng-bind-html="getTitle()"
+    ></label>
     <div class="row" ng-class="noCols ? 'col-sm-12' : 'col-sm-9'">
       <div ng-class="getColClass()">
-        <div class="input-group"
-             ng-switch="input.type|cnViewType"
-             ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }">
-          <div ng-switch-when="div" ng-bind-html="input.getContent( state, model )" />
+        <div
+          class="input-group"
+          ng-switch="input.type|cnViewType"
+          ng-class="{ 'has-feedback has-error': innerForm.name.$dirty && innerForm.name.$invalid }"
+        >
+          <div ng-switch-when="div" ng-bind-html="input.getContent( state, model )"></div>
           <input ng-switch-when="string"
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
             ng-change="setChanged()"
-            cn-change="model.getEditEnabled() &&
-                       true !== input.isConstant( state, model ) &&
-                       'view' !== input.isConstant( state, model ) && patch()"
+            cn-change="
+              model.getEditEnabled() &&
+              true !== input.isConstant( state, model ) &&
+              view' !== input.isConstant( state, model ) && patch()
+            "
             class="form-control"
             type="text"
             autocomplete="off"
             maxlength="{{ input.maxLength ? input.maxLength : model.metadata.columnList[input.key].max_length }}"
             ng-disabled="disabled"
-            ng-readonly="!model.getEditEnabled() ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model )"
-            ng-required="model.metadata.columnList[input.key].required"></input>
+            ng-readonly="
+              !model.getEditEnabled() ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model )
+            "
+            ng-required="model.metadata.columnList[input.key].required"
+          ></input>
           <div ng-switch-when="percent" style="margin-top: 4px;">
             <div class="col-sm-1">
               <span ng-hide="nan==model.viewModel.record[input.key]">
@@ -39,18 +51,23 @@
             </div>
             <div class="col-sm-11">
               <cn-slider
-                ng-disabled="disabled ||
-                             !model.getEditEnabled() ||
-                             true === input.isConstant( state, model ) ||
-                             'view' == input.isConstant( state, model )"
-                on-blur="model.getEditEnabled() &&
-                         true !== input.isConstant( state, model ) &&
-                         'view' !== input.isConstant( state, model ) && patch()"
+                ng-disabled="
+                  disabled ||
+                  !model.getEditEnabled() ||
+                  true === input.isConstant( state, model ) ||
+                  'view' == input.isConstant( state, model )
+                "
+                on-blur="
+                  model.getEditEnabled() &&
+                  true !== input.isConstant( state, model ) &&
+                  'view' !== input.isConstant( state, model ) && patch()
+                "
                 ng-model="model.viewModel.record[input.key]"
                 precision="2"
                 floor="0.0"
                 ceiling="1.0"
-                step="0.01"></cn-slider>
+                step="0.01"
+              ></cn-slider>
             </div>
           </div>
           <div ng-switch-when="size">
@@ -59,32 +76,43 @@
                 name="name"
                 ng-model="model.viewModel.formattedRecord[input.key][0]"
                 ng-change="setChanged()"
-                cn-change="model.getEditEnabled() &&
-                           true !== input.isConstant( state, model ) &&
-                           'view' !== input.isConstant( state, model ) && patch()"
+                cn-change="
+                  model.getEditEnabled() &&
+                  true !== input.isConstant( state, model ) &&
+                  'view' !== input.isConstant( state, model ) && patch()
+                "
                 class="form-control"
                 type="text"
                 autocomplete="off"
                 ng-disabled="disabled"
-                ng-readonly="!model.getEditEnabled() ||
-                             true === input.isConstant( state, model ) ||
-                             'view' == input.isConstant( state, model )"
-                ng-required="model.metadata.columnList[input.key].required"></input>
+                ng-readonly="
+                  !model.getEditEnabled() ||
+                  true === input.isConstant( state, model ) ||
+                  'view' == input.isConstant( state, model )
+                "
+                ng-required="model.metadata.columnList[input.key].required"
+              ></input>
             </div>
             <div class="col-sm-4 col-slim">
-              <select ng-attr-id="{{ input.key }}"
-                      name="name"
-                      ng-model="model.viewModel.formattedRecord[input.key][1]"
-                      ng-change="model.getEditEnabled() &&
-                                 true !== input.isConstant( state, model ) &&
-                                 'view' !== input.isConstant( state, model ) &&
-                                 patch()"
-                      class="form-control"
-                      ng-disabled="disabled ||
-                                   !model.getEditEnabled() ||
-                                   true === input.isConstant( state, model ) ||
-                                   'view' == input.isConstant( state, model )"
-                      ng-required="model.metadata.columnList[input.key].required">
+              <select
+                ng-attr-id="{{ input.key }}"
+                name="name"
+                ng-model="model.viewModel.formattedRecord[input.key][1]"
+                ng-change="
+                  model.getEditEnabled() &&
+                  true !== input.isConstant( state, model ) &&
+                  'view' !== input.isConstant( state, model ) &&
+                  patch()
+                "
+                class="form-control"
+                ng-disabled="
+                  disabled ||
+                  !model.getEditEnabled() ||
+                  true === input.isConstant( state, model ) ||
+                  'view' == input.isConstant( state, model )
+                "
+                ng-required="model.metadata.columnList[input.key].required"
+              >
                 <option ng-disabled="null === model.viewModel.record[input.key]" value="Bytes">Bytes</option>
                 <option ng-disabled="null === model.viewModel.record[input.key]" value="KB">KB</option>
                 <option ng-disabled="null === model.viewModel.record[input.key]" value="MB">MB</option>
@@ -107,13 +135,17 @@
             class="form-control"
             ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
             type="text"
-            placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
-                         }}type the first few letters to search possible values)"
+            placeholder=
+              "{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+              }}type the first few letters to search possible values)"
             autocomplete="off"
             ng-disabled="disabled"
-            ng-readonly="!model.getEditEnabled() ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model )"></input>
+            ng-readonly="
+              !model.getEditEnabled() ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model )
+            "
+          ></input>
           <input ng-switch-when="lookup-typeahead"
             ng-attr-id="{{ input.key }}"
             name="name"
@@ -126,36 +158,47 @@
             class="form-control"
             ng-class="{ 'loading-small': model.module.getInput( input.key ).typeahead.isLoading }"
             type="text"
-            placeholder="{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
-                         }}type the first few letters to search possible values)"
+            placeholder=
+              "{{ null === model.viewModel.record[input.key] ? '(empty - ' : '('
+              }}type the first few letters to search possible values)"
             autocomplete="off"
             ng-disabled="disabled"
-            ng-readonly="!model.getEditEnabled() ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model )"></input>
+            ng-readonly="
+              !model.getEditEnabled() ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model )
+            "
+          ></input>
           <input ng-switch-when="datetime"
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.formattedRecord[input.key]"
             class="form-control"
             type="text"
-            ng-click="model.getEditEnabled() &&
-                      true !== input.isConstant( state, model ) &&
-                      'view' != input.isConstant( state, model ) &&
-                      selectDatetime()"
+            ng-click="
+              model.getEditEnabled() &&
+              true !== input.isConstant( state, model ) &&
+              'view' != input.isConstant( state, model ) &&
+              selectDatetime()
+            "
             ng-disabled="disabled"
-            ng-readonly="!model.getEditEnabled() ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model )"
-            onkeydown="return false"></input>
+            ng-readonly="
+              !model.getEditEnabled() ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model )
+            "
+            onkeydown="return false"
+          ></input>
           <input ng-switch-when="color"
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
-            ng-change="model.getEditEnabled() &&
-                       true !== input.isConstant( state, model ) &&
-                       'view' !== input.isConstant( state, model ) &&
-                       patch()"
+            ng-change="
+              model.getEditEnabled() &&
+              true !== input.isConstant( state, model ) &&
+              'view' !== input.isConstant( state, model ) &&
+              patch()
+            "
             class="form-control color-input"
             ng-style="{'background-color':model.viewModel.record[input.key]}"
             type="text"
@@ -165,51 +208,68 @@
             autocomplete="off"
             spellcheck="false"
             ng-disabled="disabled"
-            ng-readonly="!model.getEditEnabled() ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model )"
+            ng-readonly="
+              !model.getEditEnabled() ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model )
+            "
             ng-required="model.metadata.columnList[input.key].required"
-            onkeydown="return false"></input>
+            onkeydown="return false"
+          ></input>
           <select ng-switch-when="select"
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-options="item.value as item.name disable when item.disabled for item in input.enumList"
             ng-model="model.viewModel.record[input.key]"
-            ng-change="model.getEditEnabled() &&
-                       true !== input.isConstant( state, model ) &&
-                       'view' !== input.isConstant( state, model ) &&
-                       patch()"
+            ng-change="
+              model.getEditEnabled() &&
+              true !== input.isConstant( state, model ) &&
+              'view' !== input.isConstant( state, model ) &&
+              patch()
+            "
             class="form-control"
-            ng-disabled="disabled ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model ) ||
-                         !model.getEditEnabled() ||
-                         !input.enumList || 1 >= input.enumList.length"
-            ng-required="model.metadata.columnList[input.key].required"></select>
+            ng-disabled="
+              disabled ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model ) ||
+              !model.getEditEnabled() ||
+              !input.enumList || 1 >= input.enumList.length
+            "
+            ng-required="model.metadata.columnList[input.key].required"
+          ></select>
           <textarea ng-switch-when="text"
             cn-elastic
             ng-attr-id="{{ input.key }}"
             name="name"
             ng-model="model.viewModel.record[input.key]"
             ng-change="setChanged()"
-            cn-change="model.getEditEnabled() &&
-                       true !== input.isConstant( state, model ) &&
-                       'view' !== input.isConstant( state, model ) &&
-                       patch()"
+            cn-change="
+              model.getEditEnabled() &&
+              true !== input.isConstant( state, model ) &&
+              'view' !== input.isConstant( state, model ) &&
+              patch()
+            "
             class="form-control"
             maxlength="{{ input.maxLength ? input.maxLength : model.metadata.columnList[input.key].max_length }}"
             ng-disabled="disabled"
-            ng-readonly="!model.getEditEnabled() ||
-                         true === input.isConstant( state, model ) ||
-                         'view' == input.isConstant( state, model )"
-            ng-required="model.metadata.columnList[input.key].required"></textarea>
-          <div ng-switch-when="audio_url"
-               ng-attr-id="{{ input.key }}"
-               name="name">
-            <audio ng-src="{{ model.viewModel.record[input.key] }}"
-                   controls
-                   style="height: 40px;",
-                   class="full-width" />
+            ng-readonly="
+              !model.getEditEnabled() ||
+              true === input.isConstant( state, model ) ||
+              'view' == input.isConstant( state, model )
+            "
+            ng-required="model.metadata.columnList[input.key].required"
+          ></textarea>
+          <div
+            ng-switch-when="audio_url"
+            ng-attr-id="{{ input.key }}"
+            name="name"
+          >
+            <audio
+              ng-src="{{ model.viewModel.record[input.key] }}"
+              controls
+              style="height: 40px;",
+              class="full-width"
+            />
           </div>
           <div
             ng-switch-when="base64"
@@ -218,16 +278,19 @@
             class="vertical-spacer">
             <span
               class="horizontal-spacer">
-              <a download="{{ input.getFilename( state, model ) }}"
-                 ng-show="0 < model.viewModel.record[input.key].size"
-                 ng-href="{{ model.viewModel.record[input.key].data }}"
-                 ng-bind-html="input.getFilename( state, model )"></a>
+              <a
+                download="{{ input.getFilename( state, model ) }}"
+                ng-show="0 < model.viewModel.record[input.key].size"
+                ng-href="{{ model.viewModel.record[input.key].data }}"
+                ng-bind-html="input.getFilename( state, model )"
+              ></a>
               ({{ model.viewModel.record[input.key].size | cnSize }})
             </span>
             <img
               ng-if="'data:image/' == model.viewModel.record[input.key].data.substr(0,11)"
               ng-src="{{ model.viewModel.record[input.key].data }}"
-              class="full-width" />
+              class="full-width"
+            />
             <span
               style="display: inline-block"
               class="horizontal-spacer"
@@ -237,19 +300,25 @@
                 type="file"
                 class="btn btn-default"
                 style="margin-top: -6px"
-                ng-if="model.getEditEnabled() &&
-                       true !== input.isConstant( state, model ) &&
-                       'view' !== input.isConstant( state, model )"
+                ng-if="
+                  model.getEditEnabled() &&
+                  true !== input.isConstant( state, model ) &&
+                  'view' !== input.isConstant( state, model )
+                "
                 ng-model="file.file"
                 accept="{{ input.mimeType }}"
-                cn-upload="file.upload()"></input>
+                cn-upload="file.upload()"
+                ng-required="model.metadata.columnList[input.key].required"
+              ></input>
             </span>
           </div>
-          <div ng-switch-when="file"
-               ng-attr-id="{{ input.key }}"
-               name="name"
-               class="vertical-spacer"
-               ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )">
+          <div
+            ng-switch-when="file"
+            ng-attr-id="{{ input.key }}"
+            name="name"
+            class="vertical-spacer"
+            ng-init="file=model.viewModel.fileList.findByProperty( 'key', input.key )"
+          >
             <div ng-if="model.viewModel.isFileListLoading">(Loading&hellip;)</div>
             <div ng-if="!model.viewModel.isFileListLoading">
               <span ng-if="0 < file.size">
@@ -257,348 +326,124 @@
                   <a ng-click="file.download()" ng-bind-html="model.viewModel.record[input.key]"></a>
                 </span>
                 <span class="horizontal-spacer">({{ file.size | cnSize }})</span>
-                <button class="btn btn-default pull-right"
-                        style="margin-top: -6px"
-                        ng-if="model.getEditEnabled() &&
-                               !model.metadata.columnList[input.key].required &&
-                               true !== input.isConstant( state, model ) &&
-                               'view' !== input.isConstant( state, model )"
-                        ng-click="file.remove()">Remove</button>
+                <button
+                  class="btn btn-default pull-right"
+                  style="margin-top: -6px"
+                  ng-if="
+                    model.getEditEnabled() &&
+                    !model.metadata.columnList[input.key].required &&
+                    true !== input.isConstant( state, model ) &&
+                    'view' !== input.isConstant( state, model )
+                  "
+                  ng-click="file.remove()"
+                >Remove</button>
               </span>
               <span ng-if="!file.size">
                 <label
                   class="btn btn-default"
                   style="margin-top: -6px"
-                  ng-if="model.getEditEnabled() &&
-                         true !== input.isConstant( state, model ) &&
-                         'view' !== input.isConstant( state, model )">
+                  ng-if="
+                    model.getEditEnabled() &&
+                    true !== input.isConstant( state, model ) &&
+                    'view' !== input.isConstant( state, model )
+                  "
+                >
                   {{ file.uploading ? 'uploading' : 'upload' }}...
-                  <input type="file" ng-model="file.file" cn-upload="file.upload()" style="display:none;"></input>
+                  <input
+                    type="file"
+                    ng-model="file.file"
+                    cn-upload="file.upload()"
+                    ng-required="model.metadata.columnList[input.key].required"
+                    style="display:none;"
+                  ></input>
                 </label>
-                <span ng-if="!model.getEditEnabled() ||
-                             true == input.isConstant( state, model ) ||
-                             'view' == input.isConstant( state, model )">(empty)</span>
+                <span
+                  ng-if="
+                    !model.getEditEnabled() ||
+                    true == input.isConstant( state, model ) ||
+                    'view' == input.isConstant( state, model )
+                  "
+                >(empty)</span>
               </span>
             </div>
           </div>
           <div ng-switch-when="days" class="row">
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="sunday">
-                <input id="sunday" name="name"
-                  ng-model="model.viewModel.record.sunday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'sunday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Sunday
-              </label>
-            </div>
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="monday">
-                <input id="monday" name="name"
-                  ng-model="model.viewModel.record.monday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'monday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Monday
-              </label>
-            </div>
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="tuesday">
-                <input id="tuesday" name="name"
-                  ng-model="model.viewModel.record.tuesday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'tuesday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Tuesday
-              </label>
-            </div>
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="wednesday">
-                <input id="wednesday" name="name"
-                  ng-model="model.viewModel.record.wednesday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'wednesday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Wednesday
-              </label>
-            </div>
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="thursday">
-                <input id="thursday" name="name"
-                  ng-model="model.viewModel.record.thursday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'thursday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Thursday
-              </label>
-            </div>
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="friday">
-                <input id="friday" name="name"
-                  ng-model="model.viewModel.record.friday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'friday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Friday
-              </label>
-            </div>
-            <div class="col-sm-1" style="width: 14.28%">
-              <label class="checkbox" style="left: 20px" for="saturday">
-                <input id="saturday" name="name"
-                  ng-model="model.viewModel.record.saturday"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'saturday' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> Saturday
+            <div
+              ng-repeat="day in ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']"
+              class="col-sm-1"
+              style="width: 14.28%"
+            >
+              <label class="checkbox" style="left: 20px" for="{{ day }}">
+                <input id="{{ day }}" name="name"
+                  ng-model="model.viewModel.record[day]"
+                  ng-change="
+                    model.getEditEnabled() &&
+                    true !== input.isConstant( state, model ) &&
+                    'view' !== input.isConstant( state, model ) &&
+                    patch( day )
+                  "
+                  ng-disabled="
+                    disabled ||
+                    !model.getEditEnabled() ||
+                    true === input.isConstant( state, model ) ||
+                    'view' == input.isConstant( state, model )
+                  "
+                  type="checkbox"></input>
+                  {{ day.ucWords() }}
               </label>
             </div>
           </div>
           <div ng-switch-when="months" class="row">
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="january">
-                <input id="january" name="name"
-                  ng-model="model.viewModel.record.january"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'january' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> January
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="february">
-                <input id="february" name="name"
-                  ng-model="model.viewModel.record.february"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'february' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> February
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="march">
-                <input id="march" name="name"
-                  ng-model="model.viewModel.record.march"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'march' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> March
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="april">
-                <input id="april" name="name"
-                  ng-model="model.viewModel.record.april"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'april' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> April
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="may">
-                <input id="may" name="name"
-                  ng-model="model.viewModel.record.may"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'may' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> May
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="june">
-                <input id="june" name="name"
-                  ng-model="model.viewModel.record.june"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'june' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> June
-              </label>
-            </div>
-          </div>
-          <div ng-switch-when="months" class="row">
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="july">
-                <input id="july" name="name"
-                  ng-model="model.viewModel.record.july"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'july' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> July
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="august">
-                <input id="august" name="name"
-                  ng-model="model.viewModel.record.august"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'august' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> August
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="september">
-                <input id="september" name="name"
-                  ng-model="model.viewModel.record.september"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'september' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> September
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="october">
-                <input id="october" name="name"
-                  ng-model="model.viewModel.record.october"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'october' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> October
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="november">
-                <input id="november" name="name"
-                  ng-model="model.viewModel.record.november"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'november' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> November
-              </label>
-            </div>
-            <div class="col-sm-2">
-              <label class="checkbox" style="left: 20px" for="december">
-                <input id="december" name="name"
-                  ng-model="model.viewModel.record.december"
-                  ng-change="model.getEditEnabled() &&
-                             true !== input.isConstant( state, model ) &&
-                             'view' !== input.isConstant( state, model ) &&
-                             patch( 'december' )"
-                  ng-disabled="disabled ||
-                               !model.getEditEnabled() ||
-                               true === input.isConstant( state, model ) ||
-                               'view' == input.isConstant( state, model )"
-                  type="checkbox"></input> December
-              </label>
+            <div
+              ng-repeat="months in [
+                ['january', 'february', 'march', 'april', 'may', 'june'],
+                ['july', 'august', 'september', 'october', 'november', 'december']
+              ]"
+            >
+              <div ng-repeat="month in months" class="col-sm-2">
+                <label class="checkbox" style="left: 20px" for="{{ month }}">
+                  <input id="{{ month }}" name="name"
+                    ng-model="model.viewModel.record[month]"
+                    ng-change="
+                      model.getEditEnabled() &&
+                      true !== input.isConstant( state, model ) &&
+                      'view' !== input.isConstant( state, model ) &&
+                      patch( month )
+                    "
+                    ng-disabled="
+                      disabled ||
+                      !model.getEditEnabled() ||
+                      true === input.isConstant( state, model ) ||
+                      'view' == input.isConstant( state, model )
+                    "
+                    type="checkbox"
+                  ></input>
+                  {{ month.ucWords() }}
+                </label>
+              </div>
             </div>
           </div>
         </div>
         <span ng-if="innerForm.name.$invalid && innerForm.name.$dirty">
-          <span class="help-block" ng-if="innerForm.name.$error.required">
-            Cannot be blank
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$error.format">
-            Invalid format
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$error.conflict">
-            Conflicts with existing record
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$error.editable">
-            Must be chosen from type-ahead list
-          </span>
-          <span class="help-block" ng-if="innerForm.name.$error.custom">
-            {{ innerForm.name.$error.custom }}
-          </span>
+          <span class="help-block" ng-if="innerForm.name.$error.required">Cannot be blank</span>
+          <span class="help-block" ng-if="innerForm.name.$error.format">Invalid format</span>
+          <span class="help-block" ng-if="innerForm.name.$error.conflict">Conflicts with existing record</span>
+          <span class="help-block" ng-if="innerForm.name.$error.editable">Must be chosen from type-ahead list</span>
+          <span class="help-block" ng-if="innerForm.name.$error.custom">{{ innerForm.name.$error.custom }}</span>
         </span>
       </div>
-      <div ng-if="model.getEditEnabled() &&
-                  !['file', 'base64'].includes( input.type ) &&
-                  true !== input.isConstant( state, model ) &&
-                  'view' != input.isConstant( state, model ) &&
-                  !changed &&
-                  model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
-                  !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )"
-           class="col-sm-1 col-slim">
+      <div
+        ng-if="
+          model.getEditEnabled() &&
+          !['file', 'base64'].includes( input.type ) &&
+          true !== input.isConstant( state, model ) &&
+          'view' != input.isConstant( state, model ) &&
+          !changed &&
+          model.viewModel.record[input.key] != model.viewModel.backupRecord[input.key] &&
+          !( !model.viewModel.record[input.key] && !model.viewModel.backupRecord[input.key] )
+        "
+        class="col-sm-1 col-slim"
+      >
         <button class="btn btn-success" type="button" ng-if="input.changed">Save</button>
         <button class="btn btn-warning" type="button" ng-if="!input.changed" ng-click="undo()">Undo</button>
       </div>
