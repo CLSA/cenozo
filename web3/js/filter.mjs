@@ -336,12 +336,12 @@ class Filter {
         "value": condition.get_value(),
       };
 
-      if (condition.get_comparison() === "is_like" || condition.get_comparison() === "not_like") {
+      if (condition.get_comparison() === "is_like" || condition.get_comparison() === "is_not_like") {
         if (condition.get_value().length == 0) {
           modifier["value"] = "<=>";
         }
         else if (!condition.get_value().includes("%")) {
-          modifier["value"] = `%${modifier["value"]}%"`;
+          modifier["value"] = `%${modifier["value"]}%`;
         }
       }
 
@@ -449,7 +449,6 @@ class Condition {
   set_value(value) { this.#value = value; }
   get_data_type() { return this.#data_type; }
   set_data_type(data_type) { this.#data_type = data_type; }
-
   add_listener(listener) {
     this.#listeners.push(listener);
   }
@@ -585,7 +584,7 @@ export function load_filter(filter_data) {
   const filter = new Filter(new Condition(first.c, first.v, null, first.d), first.d);
   for (let i = 1; i < conditions.length; i++) {
     let condition = conditions[i];
-    filter.add_condition(condition.o, condition.c, condition.v);
+    filter.add_condition(condition.o, condition.c, condition.v, condition.d);
   }
   return filter;
 }
