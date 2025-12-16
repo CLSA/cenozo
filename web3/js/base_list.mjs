@@ -645,19 +645,17 @@ export class CN_base_list extends CN_base_action {
     let columns = 0;
     Object.values(this.#columns).forEach(column => {
       columns += column.is_hidden(this.get_model()) ? 0 : 1;
-    })
+    });
     const width = 100 / columns;
 
     const table_el = CN_element.create(`
       <div class="table-responsive">
-        <table class="table table-hover" style="table-layout: fixed">
+        <table class="table table-striped table-hover" style="table-layout: fixed">
           <colgroup>
             ${
-                Object.values(this.#columns).map(column => {
-                  if (!column.is_hidden(this.get_model()))
-                    return `<col style="width: ${width}%;">`
-                  return "";
-                }).join("")
+              Object.values(this.#columns).map(
+                column => !column.is_hidden(this.get_model()) ? `<col style="width: ${width}%;">` : ""
+              ).join("")
             }
             ${("choose" != this.#list_mode && this.get_model().allow_delete()) ? "<col style='width: 50px'>" : ''}
           </colgroup>
@@ -757,8 +755,10 @@ export class CN_base_list extends CN_base_action {
     const header_el = CN_element.create_fragment(
       `<th name="${column.title}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
-          <button type="button"
-            class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold">
+          <button
+            type="button"
+            class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold"
+          >
             ${column.title}
             <i class="sort-icon bi px-1 d-inline-block" style="width:16px;height:16px"></i>
           </button>
