@@ -45,6 +45,7 @@ export class CN_base_list extends CN_base_action {
     this.#columns = model.clone_columns();
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
+
       if (!column.type) column.type = "string";
 
       // by default always prefix the table name
@@ -541,15 +542,11 @@ export class CN_base_list extends CN_base_action {
         //tr_el.innerHTML += `<td>${value}</td>`;
       }
 
-      if ("choose" != this.#list_mode) {
+      if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
         // add the delete button row, only including a button if deleting is allowed
         tr_el.innerHTML += `
           <td class="col-auto d-flex justify-content-end">
-            ${
-              this.get_model().allow_delete() ?
-              '<button name="delete" class="btn btn-sm btn-danger"><i class="bi-x-circle-fill"></i></button>' :
-              ''
-             }
+            <button name="delete" class="btn btn-sm btn-danger"><i class="bi-x-circle-fill"></i></button>
           </td>
         `;
 
@@ -642,12 +639,25 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
-    const width = 100 / Object.entries(this.#columns).length;
+    if (this.#columns.length <= 0)
+      throw new Error("Number of table columns must be > 0");
+
+    let columns = 0;
+    Object.values(this.#columns).forEach(column => {
+      columns += column.is_hidden(this.get_model()) ? 0 : 1;
+    });
+    const width = 100 / columns;
+
     const table_el = CN_element.create(`
       <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover" style="table-layout: fixed">
           <colgroup>
-            ${Object.entries(this.#columns).map(() => `<col style="width: ${width}%;">`).join("")}
+            ${
+              Object.values(this.#columns).map(
+                column => !column.is_hidden(this.get_model()) ? `<col style="width: ${width}%;">` : ""
+              ).join("")
+            }
+            ${("choose" != this.#list_mode && this.get_model().allow_delete()) ? "<col style='width: 50px'>" : ''}
           </colgroup>
           <thead name="header"></thead>
           <tbody name="body"></tbody>
@@ -670,13 +680,22 @@ export class CN_base_list extends CN_base_action {
       this.#columns[col_name]["el"] = table_header_el;
     }
 
-    // if ("choose" != this.#list_mode) {
+    if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
       //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-      // header_tr_el.innerHTML += `<th name="delete" class="col-auto p-0" style="width: 0;" scope="col"></th>`;
-    // }
+      const delete_header = CN_element.create_fragment(
+        `<th name="delete" class="p-0" scope="col"></th>`
+      );
+      header_tr_el.appendChild(delete_header);
+    }
+
+    // Removes right margin from the last column's filter button to align it with the table
+    const last_column_btn = header_tr_el.lastChild.querySelector(".filter-btn");
+    if (last_column_btn) {
+      last_column_btn.classList.remove("mx-1");
+      last_column_btn.classList.add("ms-1");
+    }
 
     table_el.querySelector("thead[name=header]").append(header_tr_el);
-
     return table_el;
   }
 
@@ -736,7 +755,10 @@ export class CN_base_list extends CN_base_action {
     const header_el = CN_element.create_fragment(
       `<th name="${column.title}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
-          <button type="button" class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold">
+          <button
+            type="button"
+            class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold"
+          >
             ${column.title}
             <i class="sort-icon bi px-1 d-inline-block" style="width:16px;height:16px"></i>
           </button>
@@ -762,7 +784,9 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   create_placeholder_element() {
-    const table_el = CN_element.create(`<table class="table table-striped"><tbody name="body"></tbody></table>`);
+    const table_el = CN_element.create(
+      `<table class="table table-striped"><tbody name="body"></tbody></table>`
+    );
 
     for (let row = 0; row < 20; row++) {
       let tr_el = document.createElement("tr");
