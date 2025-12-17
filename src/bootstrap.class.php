@@ -90,7 +90,7 @@ final class bootstrap
 
     // set up the logger and session
     lib::create( 'log' );
-    $this->session = lib::create( 'business\session', $this->settings );
+    $session = lib::create( 'business\session', $this->settings );
 
     // the session is initialized in the launch methods
     if( 'ui' == $launch ) $this->launch_ui();
@@ -99,7 +99,7 @@ final class bootstrap
       'The application is not set up properly.  Please check the launch type sent to the '.
       'initialize() method and make sure it is either "ui" or "api".' );
 
-    $this->session->shutdown();
+    $session->shutdown();
   }
 
   /**
@@ -118,17 +118,18 @@ final class bootstrap
       // if we are maintenance mode then go no further
       if( !$this->settings['general']['maintenance_mode'] )
       {
-        $this->session->initialize();
+        $session = lib::create( 'business\session', $this->settings );
+        $session->initialize();
 
         // make sure the software and database versions match
-        if( $this->settings['general']['version'] != $this->session->get_application()->version )
+        if( $this->settings['general']['version'] != $session->get_application()->version )
         {
           throw lib::create( 'exception\runtime',
             sprintf(
               'The software version (%s) does not match the database version (%s).  The web application will '.
               'remain unavailable until this problem is corrected by an administrator.',
               $this->settings['general']['version'],
-              $this->session->get_application()->version ),
+              $session->get_application()->version ),
             __METHOD__ );
         }
       }
@@ -200,25 +201,26 @@ final class bootstrap
           'Sorry, the system is currently offline for maintenance. '.
           'Please check with an administrator or try again at a later time.', __METHOD__ );
 
-      $this->session->initialize( $this->no_activity );
-      $db = $this->session->get_database();
+      $session = lib::create( 'business\session', $this->settings );
+      $session->initialize( $this->no_activity );
+      $db = $session->get_database();
 
       // set up the identification headers
-      if( !is_null( $this->session->get_site() ) )
-        header( sprintf( 'Site: %s', $util_class_name::json_encode( $this->session->get_site()->name ) ) );
-      if( !is_null( $this->session->get_user() ) )
-        header( sprintf( 'User: %s', $util_class_name::json_encode( $this->session->get_user()->name ) ) );
-      if( !is_null( $this->session->get_role() ) )
-        header( sprintf( 'Role: %s', $util_class_name::json_encode( $this->session->get_role()->name ) ) );
+      if( !is_null( $session->get_site() ) )
+        header( sprintf( 'Site: %s', $util_class_name::json_encode( $session->get_site()->name ) ) );
+      if( !is_null( $session->get_user() ) )
+        header( sprintf( 'User: %s', $util_class_name::json_encode( $session->get_user()->name ) ) );
+      if( !is_null( $session->get_role() ) )
+        header( sprintf( 'Role: %s', $util_class_name::json_encode( $session->get_role()->name ) ) );
 
       // make sure the software and database versions match
-      if( $this->settings['general']['version'] != $this->session->get_application()->version )
+      if( $this->settings['general']['version'] != $session->get_application()->version )
         throw lib::create( 'exception\notice',
           sprintf(
             'The software version (%s) does not match the database version (%s).  The api will '.
             'remain unavailable until this problem is corrected by an administrator.',
             $this->settings['general']['version'],
-            $this->session->get_application()->version ),
+            $session->get_application()->version ),
           __METHOD__ );
 
       // create and process the service
