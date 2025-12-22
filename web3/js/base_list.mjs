@@ -759,6 +759,15 @@ export class CN_base_list extends CN_base_action {
             type="button"
             class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold"
           >
+            ${
+              column.help ?
+                `<i
+                  class="bi-info-circle-fill"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="${column.help}"
+                  style="width:16px;height:16px">
+                </i>` : ''
+            }
             ${column.title}
             <i class="sort-icon bi px-1 d-inline-block" style="width:16px;height:16px"></i>
           </button>
@@ -769,6 +778,8 @@ export class CN_base_list extends CN_base_action {
        </th>`,
     );
 
+    if (column.help)
+      new bootstrap.Tooltip(header_el.querySelector('.bi-info-circle-fill'));
     header_el.addEventListener("click", (event) => this.on_table_header_click(event, column));
 
     const filter_btn = header_el.querySelector(".filter-btn")
