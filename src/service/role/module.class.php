@@ -20,7 +20,6 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
-    
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_site = $session->get_site();
@@ -71,6 +70,13 @@ class module extends \cenozo\service\site_restricted_module
         $select->add_column( 'IFNULL( site_count, 0 )', 'site_count', false );
       if( $select->has_column( 'last_access_datetime' ) )
         $select->add_column( 'role_join_access.last_access_datetime', 'last_access_datetime', false );
+    }
+
+    // if the request is for granting roles then restrict based on the user's role
+    if( $this->get_argument( 'granting', false ) )
+    {
+      $modifier->where( 'tier', '<=', $db_role->tier );
+      if( !$db_role->all_sites ) $modifier->where( 'all_sites', '=', false );
     }
   }
 }
