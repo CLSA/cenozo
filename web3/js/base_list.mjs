@@ -52,7 +52,7 @@ export class CN_base_list extends CN_base_action {
       if (undefined === column.table_prefix) column.table_prefix = true;
 
       // by default left align all columns except for text columns
-      if (undefined === column.align) column.align = "text" == column.type ? "center" : "left";
+      if (undefined === column.align) column.align = "left";
 
       // define the is_hidden function if it hasn't been defined
       if (!CN_common.is_function(column.is_hidden)) {
