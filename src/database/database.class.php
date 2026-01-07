@@ -79,6 +79,28 @@ class database extends \cenozo\base_object
       );
       $schema_list = [sprintf( '"%s"', $this->name ), sprintf( '"%s"', $framework_name )];
 
+      $table_mod = lib::create( 'database\modifier' );
+      $table_mod->where( 'table_schema', 'IN', $schema_list, false );
+      $table_mod->order( 'table_name' );
+      $rows = $this->get_all( sprintf(
+        'SELECT table_schema, table_name, table_collation FROM information_schema.tables %s',
+        $table_mod->get_sql()
+      ) );
+
+      // record the table details
+      foreach( $rows as $row )
+      {
+        extract( $row ); // defines variables based on column values in query
+
+        $this->tables[$table_name] = [
+          'database' => $table_schema,
+          'collation' => $table_collation,
+          'primary' => [],
+          'constraints' => [],
+          'columns' => [],
+        ];
+      }
+
       $column_mod = lib::create( 'database\modifier' );
       $column_mod->where( 'table_schema', 'IN', $schema_list, false );
       $column_mod->where( 'column_type', '!=', '"mediumblob"', false );
@@ -97,7 +119,7 @@ class database extends \cenozo\base_object
         false // do not add table names
       );
 
-      // record the tables, columns and types
+      // record the columns details
       foreach( $rows as $row )
       {
         extract( $row ); // defines variables based on column values in query
@@ -108,21 +130,6 @@ class database extends \cenozo\base_object
           NULL :
           preg_replace( "/^'(.*)'$/", '$1', $column_default )
         );
-
-        if( !array_key_exists( $table_name, $this->tables ) )
-        {
-          $collation = $this->get_one( sprintf(
-            'SELECT table_collation FROM information_schema.tables %s',
-            $table_name
-          ) );
-          $this->tables[$table_name] = [
-            'database' => $table_schema,
-            'collation' => $collation,
-            'primary' => [],
-            'constraints' => [],
-            'columns' => [],
-          ];
-        }
 
         if( 'PRI' == strtoupper( $column_key ) ) $this->tables[$table_name]['primary'][] = $column_name;
 
