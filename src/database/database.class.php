@@ -111,8 +111,13 @@ class database extends \cenozo\base_object
 
         if( !array_key_exists( $table_name, $this->tables ) )
         {
+          $collation = $this->get_one( sprintf(
+            'SELECT table_collation FROM information_schema.tables %s',
+            $table_name
+          ) );
           $this->tables[$table_name] = [
             'database' => $table_schema,
+            'collation' => $collation,
             'primary' => [],
             'constraints' => [],
             'columns' => [],
@@ -376,6 +381,22 @@ class database extends \cenozo\base_object
   public function get_table_names()
   {
     return array_keys( $this->tables );
+  }
+
+  /**
+   * Returns the table's collation
+   * @param string $table_name A table name.
+   * @return string
+   * @access public
+   */
+  public function get_table_collation( $table_name )
+  {
+    if( !$this->table_exists( $table_name ) )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'Tried to get collation for table "%s" which doesn\'t exist.',
+                 $table_name ), __METHOD__ );
+
+    return $this->tables[$table_name]['collation'];
   }
 
   /**
