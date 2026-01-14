@@ -207,6 +207,18 @@ export default {
     return `${datetime} ${tz}`;
   },
 
+  get_timezone: function() {
+    return this.data.user.timezone;
+  },
+
+  get_am_pm: function() {
+    return this.data.user.am_pm;
+  },
+
+  get_tz_offset: function() {
+    return this.data.user.tz_offset;
+  },
+
   set_timezone: async function (timezone, am_pm) {
     if (this.data.user.timezone != timezone || this.data.user.am_pm != am_pm) {
       this.update_breadcrumbs(true);

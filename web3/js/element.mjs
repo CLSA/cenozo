@@ -2,6 +2,7 @@ import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_session from "./session.mjs"
 import CN_timezones from "./timezones.mjs"
+import CN_datetime_modal, { DATE_TYPES } from "./date/datetime_modal.mjs"
 
 /**
  * A list of functions that create various elements
@@ -173,16 +174,9 @@ export default {
         </select>
       `);
     } else if (["date", "datetime", "datetimesecond", "dob", "dod"].includes(type)) {
-      // TODO: implement datetimesecond, datetime, dob and dod
-      if (undefined === el.params.placeholder) el.params.placeholder = "YYYY-MM-DD";
-
       control_el = this.create(`<input class="form-control"></input>`);
-      control_el.addEventListener("keyup", () => {
-        control_el.value = control_el.value
-          .replace(/[^0-9]/g, "")
-          .replace(/^([0-9]{4})([0-9]*)/, "$1-$2")
-          .replace(/^([0-9]{4}-[0-9]{2})([0-9]*)/, "$1-$2")
-          .replace(/^([0-9]{4}-[0-9]{2}-[0-9]{2}).*/, "$1");
+      control_el.addEventListener('click', async () => {
+        control_el.value = await new CN_datetime_modal(new Date(), type).open();
       });
     } else if ("enum" == type) {
       control_el = this.create(`<select class="form-select"></select>`);

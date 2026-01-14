@@ -134,6 +134,13 @@ class get extends \cenozo\service\service
             'menu' => $ui_data['menu'],
           ]
         );
+
+        $pseudo_record['site']['tz_offset'] =
+          $db_site->get_timezone_object()->getOffset(new \DateTime()) / 3600;
+        $pseudo_record['user']['tz_offset'] =
+          $db_user->get_timezone_object()->getOffset(new \DateTime()) / 3600;
+        $pseudo_record['application']['tz_offset'] =
+          $db_application->get_timezone_object()->getOffset(new \DateTime()) / 3600;
       }
       else
       {
