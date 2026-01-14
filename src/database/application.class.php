@@ -39,6 +39,15 @@ class application extends record
   }
 
   /**
+   * Returns the application's timezone as a DateTimeZone object
+   * @access public
+   */
+  public function get_timezone_object()
+  {
+    return new \DateTimeZone( $this->timezone );
+  }
+
+  /**
    * Determine whether the current application has access to the participant
    * 
    * @param database\participant $db_participant

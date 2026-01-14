@@ -1,5 +1,6 @@
 import CN_element from "./element.mjs";
 import CN_common from "./common.mjs";
+import CN_datetime_modal, { DATE_TYPES } from "./date/datetime_modal.mjs";
 
 const STRING_OPERATORS = {
   is: "is",
@@ -19,7 +20,8 @@ const NUMBER_OPERATORS = {
 }
 
 const DATE_OPERATORS = {
-  equal_to: "is equal to",
+  at: "at",
+  not_at: "not at",
 
   after: "is after",
   after_or_at: "is after or at",
@@ -46,8 +48,18 @@ const OPERATOR_MAP = {
   less_than_equals: "<=",
 
   equal_to: "=",
-  not_equal: "!="
+  not_equal: "!=",
+
+  at: "=",
+  not_at: "!=",
+
+  after: ">",
+  after_or_at: ">=",
+
+  before: "<",
+  before_or_at: "<=",
 }
+
 
 export default class CN_filter_modal {
   #column;
@@ -109,7 +121,7 @@ export default class CN_filter_modal {
     this.#clear_btn.addEventListener('click', this.clear.bind(this));
 
     this.#bootstrap_modal = new bootstrap.Modal(this.#modal_el);
-    this.#parent_el.appendChild(this.#modal_el);
+    //this.#parent_el.appendChild(this.#modal_el);
   }
 
   /**
@@ -145,7 +157,10 @@ export default class CN_filter_modal {
     this.set_title(`Restrict ${column.title}`);
 
     const type = this.#column.type ? this.#column.type : "string"
-    const operator = (type === "number" || type === "date") ? "equal_to" : "is";
+    let operator = type === "number" ? "equal_to" : "is";
+
+    if (Object.values(DATE_TYPES).includes(type))
+      operator = "at";
 
     if (this.#column.filter != null) {
       this.#filter = this.#column.filter;
@@ -171,7 +186,7 @@ export default class CN_filter_modal {
    * Adds a new restriction to the filter and rerenders the component
    */
   add_condition() {
-    this.#filter.add_condition("AND", "is", "");
+    this.#filter.add_condition("AND", Object.values(DATE_TYPES).includes(this.#column.type) ? "at" : "is", "");
     this.render();
   }
 
@@ -509,8 +524,15 @@ class Condition {
 
       value_input.value = this.#value ? this.#value : null;
       value_input.addEventListener('change', this.on_value_change.bind(this));
-    }
-    else {
+    } else if (Object.values(DATE_TYPES).includes(this.#data_type)) {
+      value_input = CN_element.create(`
+        <input class="form-control" type="text" value="${this.#value}" placeholder="(empty)" />
+      `);
+      value_input.addEventListener('click', async () => {
+        this.#value = await new CN_datetime_modal(this.#value, this.#data_type).open();
+        value_input.value = this.#value;
+      });
+    } else {
       value_input = CN_element.create(`
         <input class="form-control" type="${this.#data_type}" value="${this.#value}" placeholder="(empty)" />
       `);
@@ -545,7 +567,11 @@ class Condition {
       operators = NUMBER_OPERATORS;
     } else if (this.#data_type === "boolean") {
       operators = BOOLEAN_OPERATORS;
-    } else if (this.#data_type === "date") {
+    } else if (
+      this.#data_type === "date" ||
+      this.#data_type === "datetime" ||
+      this.#data_type === "datetimesecond"
+    ) {
       operators = DATE_OPERATORS;
     } else {
       operators = STRING_OPERATORS;
