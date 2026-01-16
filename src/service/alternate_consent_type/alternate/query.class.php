@@ -29,7 +29,7 @@ class query extends \cenozo\service\query
    */
   protected function get_record_count()
   {
-    $alternate_class_name = lib::create( 'database\alternate' );
+    $alternate_class_name = lib::get_class_name( 'database\alternate' );
 
     $db_alternate_consent_type = $this->get_parent_record();
     $modifier = clone $this->modifier;
@@ -45,7 +45,7 @@ class query extends \cenozo\service\query
    */
   protected function get_record_list()
   {
-    $alternate_class_name = lib::create( 'database\alternate' );
+    $alternate_class_name = lib::get_class_name( 'database\alternate' );
 
     $db_alternate_consent_type = $this->get_parent_record();
     $select = clone $this->select;
