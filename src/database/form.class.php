@@ -231,7 +231,7 @@ class form extends record
 
     $db_alternate->active = true;
     $db_alternate->participant_id = $this->participant_id;
-    $db_alternate->participant_id = $this->get_participant()->language_id;
+    $db_alternate->language_id = $this->get_participant()->language_id;
     $db_alternate->first_name = $data['first_name'];
     $db_alternate->last_name = $data['last_name'];
     $db_alternate->association = 'Unknown';
