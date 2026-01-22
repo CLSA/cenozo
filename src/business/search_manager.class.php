@@ -72,6 +72,10 @@ class search_manager extends \cenozo\singleton
     $setting_manager = lib::create( 'business\setting_manager' );
     $timeout = $setting_manager->get_setting( 'general', 'search_timeout' );
 
+    // turn off INNODB snapshot isolation
+    $snapshot_isolation = $search_class_name::db()->get_one( 'SELECT @@innodb_snapshot_isolation' );
+    if( 0 != $snapshot_isolation ) $search_class_name::db()->execute( 'SET innodb_snapshot_isolation = 0' );
+
     // clean out expired searches
     $delete_mod = lib::create( 'database\modifier' );
     $delete_mod->where( 'datetime', '<', sprintf( 'UTC_TIMESTAMP() - INTERVAL %s MINUTE', $timeout ), false );
@@ -91,5 +95,9 @@ class search_manager extends \cenozo\singleton
         $db_search->save();
       }
     }
+
+    // put back the original snapshot isolation value
+    if( 0 != $snapshot_isolation )
+      $search_class_name::db()->execute( sprintf( 'SET innodb_snapshot_isolation = %s', $snapshot_isolation ) );
   }
 }
