@@ -2,6 +2,7 @@ import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
+import { CN_modal_confirm } from "./element/modal/confirm.mjs"
 
 import { CN_base_add } from "./base_add.mjs"
 import { CN_base_list } from "./base_list.mjs"
@@ -146,12 +147,12 @@ export class CN_traceable_list extends CN_base_list {
     if ("participant" != parent_model.get_name()) return await super.on_delete(record);
 
     // first confirm
-    const modal = CN_element.confirm_modal({
+    const modal = new CN_modal_confirm({
       title: "Please Confirm",
       message: `Are you sure you wish to delete the ${this.get_model().get_singular()} record?`,
     });
 
-    if (await modal.test()) {
+    if (await modal.open()) {
       // now get the reason for the trace and apply it
       let trace_reason = await check_for_trace(
         this.get_model().get_name(),
@@ -203,12 +204,12 @@ export class CN_traceable_view extends CN_base_view {
     if ("participant" != parent_model.get_name()) return await super.on_delete();
 
     // first confirm
-    const modal = CN_element.confirm_modal({
+    const modal = new CN_modal_confirm({
       title: "Please Confirm",
       message: `Are you sure you wish to delete this ${this.get_model().get_singular()}?`,
     });
 
-    if (await modal.test()) {
+    if (await modal.open()) {
       // now get the reason for the trace and apply it
       let trace_reason = await check_for_trace(
         this.get_model().get_name(),

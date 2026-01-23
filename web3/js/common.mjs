@@ -104,6 +104,15 @@ export default {
   },
 
   /**
+   * Returns a string escaping all HTML entities
+   * @param string x: The string to encode
+   * @return string
+   */
+  escape_html: function (x) {
+    return new Option(x).innerHTML;
+  },
+
+  /**
    * Returns a promise that resolves after the given delay
    * @param integer ms: The number of miliseconds to sleep for
    */

@@ -1,7 +1,8 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
+import { CN_element } from "./element/element.mjs"
+import { CN_modal_confirm } from "./element/modal/confirm.mjs"
 import { CN_base_action } from "./base_action.mjs"
 import CN_filter_modal, { load_filter } from "./filter.mjs"
 
@@ -135,12 +136,12 @@ export class CN_base_list extends CN_base_action {
    */
   async on_delete(record) {
     // first confirm
-    const modal = CN_element.confirm_modal({
+    const modal = new CN_modal_confirm({
       title: "Please Confirm",
       message: `Are you sure you wish to delete the ${this.get_model().get_singular()} record?`,
     });
 
-    if (await modal.test()) {
+    if (await modal.open()) {
       await CN_api.delete(`${this.get_model().get_name()}/${record.id}`);
       await this.run();
     }

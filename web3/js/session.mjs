@@ -1,6 +1,7 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"
+import { CN_modal_account } from "./element/modal/account.mjs"
 
 import { CN_error_model } from "./model/error.mjs"
 import { CN_home_model } from "./model/home.mjs"
@@ -533,7 +534,7 @@ export default {
     const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
     account_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      CN_element.create_account_modal().show();
+      (new CN_modal_account).open();
     });
     const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
     timezone_btn_el.addEventListener("click", () => {
