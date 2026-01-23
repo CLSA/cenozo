@@ -1,5 +1,4 @@
 import { CN_base_modal } from "./base_modal.mjs"
-import { CN_element } from "../element.mjs";
 
 const default_config = {
   title: "Please Confirm",
@@ -21,6 +20,6 @@ export class CN_modal_confirm extends CN_base_modal {
    * Implements the parent method
    */
   _create_body_element() {
-    return CN_element.create(`<span>${this.get_config("message")}</span>`);
+    return this.constructor.create(`<span>${this.get_config("message")}</span>`);
   }
 }

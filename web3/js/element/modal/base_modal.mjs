@@ -1,6 +1,5 @@
 import CN_common from "../../common.mjs"
 import { CN_base_element } from "../base_element.mjs"
-import { CN_element } from "../element.mjs"
 
 const default_config = {
   type: "div",
@@ -20,7 +19,7 @@ export class CN_base_modal extends CN_base_element {
   constructor(config) {
     // the type must be div
     config.type = "div";
-    
+
     // the class list is also pre-defined
     config.class = "modal fade";
 
@@ -68,7 +67,7 @@ export class CN_base_modal extends CN_base_element {
    * @return Element
    */
   _create_header_element() {
-    return CN_element.create(`<h1 class="modal-title fw-bold fs-5">${this.get_config("title")}</h1>`);
+    return this.constructor.create(`<h1 class="modal-title fw-bold fs-5">${this.get_config("title")}</h1>`);
   }
 
   /**
@@ -84,7 +83,7 @@ export class CN_base_modal extends CN_base_element {
    * @return Element
    */
   _create_footer_element() {
-    const el = CN_element.create(`
+    const el = this.constructor.create(`
       <div>
         <div name="left-btn-group" class="btn-group"><\div>
         <div name="right-btn-group" class="btn-group">
@@ -95,7 +94,7 @@ export class CN_base_modal extends CN_base_element {
     const right_btn_group = el.querySelector("[name=right-btn-group]");
     this.#resolve_button_list.forEach(button => {
       const title = CN_common.escape_html(button.title);
-      const btn_el = CN_element.create(`
+      const btn_el = this.constructor.create(`
         <button
           type="button"
           name="${title}"
@@ -119,7 +118,7 @@ export class CN_base_modal extends CN_base_element {
   render() {
     const el = super.render();
     el.setAttribute("tabindex", "-1");
-    el.append(CN_element.create(`
+    el.append(this.constructor.create(`
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header ${this.get_config("header_class")}"></div>

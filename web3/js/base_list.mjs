@@ -1,9 +1,9 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_session from "./session.mjs"
-import { CN_element } from "./element/element.mjs"
-import { CN_modal_confirm } from "./element/modal/confirm.mjs"
 import { CN_base_action } from "./base_action.mjs"
+import { CN_base_element } from "./element/base_element.mjs"
+import { CN_modal_confirm } from "./element/modal/confirm.mjs"
 import CN_filter_modal, { load_filter } from "./filter.mjs"
 
 export class CN_base_list extends CN_base_action {
@@ -457,7 +457,7 @@ export class CN_base_list extends CN_base_action {
     if ("add" == this.#list_mode) {
       // if we have no add button and adding is allowed then create it
       if (null == btn_el && this.get_model().allow_add()) {
-        btn_el = CN_element.create('<button name="add" type="button" class="btn btn-primary"></button>');
+        btn_el = CN_base_element.create('<button name="add" type="button" class="btn btn-primary"></button>');
         btn_group_el.append(btn_el);
         (async () => { btn_el.innerHTML = await this.get_text("add"); })();
         btn_el.addEventListener("click", this.on_add.bind(this));
@@ -469,7 +469,7 @@ export class CN_base_list extends CN_base_action {
       // if choosing is allowed then create the choose button (if needed) and configure it
       if (this.get_model().allow_choose()) {
         if (null == btn_el) {
-          btn_el = CN_element.create('<button name="choose" type="button" class="btn btn-primary"></button>');
+          btn_el = CN_base_element.create('<button name="choose" type="button" class="btn btn-primary"></button>');
           btn_group_el.append(btn_el);
           btn_el.addEventListener("click", this.on_choose.bind(this));
         }
@@ -481,7 +481,7 @@ export class CN_base_list extends CN_base_action {
 
           // create the cancel button if it doesn't exist
           if (null == cancel_btn_el) {
-            cancel_btn_el = CN_element.create(
+            cancel_btn_el = CN_base_element.create(
               '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
             );
             cancel_btn_el.addEventListener("click", this.on_cancel_choose.bind(this));
@@ -574,7 +574,7 @@ export class CN_base_list extends CN_base_action {
 
     if (1 < pages) {
       // add the previous button
-      const prev_el = CN_element.create(`
+      const prev_el = CN_base_element.create(`
         <li class="page-item"><button class="page-link"><i class="bi-rewind-fill"></i></button></li>
       `);
       if (1 == this.#current_page) prev_el.classList.add("disabled");
@@ -607,7 +607,7 @@ export class CN_base_list extends CN_base_action {
       }
 
       for (let page = first_page; page <= last_page; page++) {
-        let page_el = CN_element.create(`
+        let page_el = CN_base_element.create(`
           <li class="page-item"><button class="page-link">${page}</button></li>
         `);
         if (page == this.#current_page) page_el.classList.add("active");
@@ -621,7 +621,7 @@ export class CN_base_list extends CN_base_action {
       }
 
       // add the next button
-      const next_el = CN_element.create(`
+      const next_el = CN_base_element.create(`
         <li class="page-item"><button class="page-link"><i class="bi-fast-forward-fill"></i></button></li>
       `);
       if (pages == this.#current_page) next_el.classList.add("disabled");
@@ -649,7 +649,7 @@ export class CN_base_list extends CN_base_action {
     });
     const width = 100 / columns;
 
-    const table_el = CN_element.create(`
+    const table_el = CN_base_element.create(`
       <div class="table-responsive">
         <table class="table table-striped table-hover" style="table-layout: fixed">
           <colgroup>
@@ -683,7 +683,7 @@ export class CN_base_list extends CN_base_action {
 
     if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
       //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-      const delete_header = CN_element.create_fragment(
+      const delete_header = CN_base_element.create_fragment(
         `<th name="delete" class="p-0" scope="col"></th>`
       );
       header_tr_el.appendChild(delete_header);
@@ -753,7 +753,7 @@ export class CN_base_list extends CN_base_action {
    * @returns
    */
   create_table_header_element(column) {
-    const header_el = CN_element.create_fragment(
+    const header_el = CN_base_element.create_fragment(
       `<th name="${column.title}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
           <button
@@ -796,7 +796,7 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   create_placeholder_element() {
-    const table_el = CN_element.create(
+    const table_el = CN_base_element.create(
       `<table class="table table-striped"><tbody name="body"></tbody></table>`
     );
 
@@ -820,15 +820,17 @@ export class CN_base_list extends CN_base_action {
    * Extends parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create('<div class="d-flex align-items-center justify-content-between"></div>');
+    const footer_el = CN_base_element.create(
+      '<div class="d-flex align-items-center justify-content-between"></div>'
+    );
 
-    const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
+    const btn_group_el = CN_base_element.create('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    const summary_el = CN_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
+    const summary_el = CN_base_element.create('<div name="summary" class="text-center fs-6">Loading...</div>');
     footer_el.append(summary_el);
 
-    footer_el.append(CN_element.create(`
+    footer_el.append(CN_base_element.create(`
       <nav aria-label="${CN_common.uc_words(this.get_model().get_singular())} List navigation">
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>

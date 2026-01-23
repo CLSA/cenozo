@@ -1,3 +1,13 @@
+import { CN_base_element } from "./base_element.mjs"
+
+const default_config = {
+  type: "div",
+  class: "d-flex align-items-center",
+};
+
+export class CN_form_element extends CN_base_element {
+  #element_type;
+
   /**
    * Creates a form element
    * @param string type: One of the following:
@@ -6,57 +16,63 @@
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
-  create_form_element: function (type, params) {
-    const el = this.create(`
-      <div class="d-flex align-items-center">
-        <div name="prefix"></div>
+  constructor (element_type, config) {
+    this.#element_type = element_type;
+    super({...default_config, ...config});
+  }
+
+  render() {
+    const el = super.render();
+
+    el.append(CN_element.create([
+      '<div name="prefix"></div>',
+      `
         <div name="input" class="flex-fill">
           <div name="control"></div>
           <small name="error" class="text-danger"></small>
         </div>
-        <div name="postfix"></div>
-      </div>
-    `);
-    el.params = params;
+      `,
+      '<div name="postfix"></div>',
+    ]));
     const prefix_div_el = el.querySelector("[name=prefix]");
     const control_div_el = el.querySelector("[name=control]");
     const error_div_el = el.querySelector("[name=error]");
     const postfix_div_el = el.querySelector("[name=postfix]");
 
     let control_el = null;
-    if ("audio_url" == type) {
+    if ("audio_url" == this.#element_type) {
       control_el = this.create(`<audio controls="" class="w-100"></audio>`);
-    } else if ("file" == type) {
+    } else if ("file" == this.#element_type) {
       if (el.params.action && "view" == el.params.action.get_type()) {
         // add a download and filesize elements to the prefix
         prefix_div_el.classList.add("text-nowrap", "pe-3");
         prefix_div_el.append(this.create(
-          '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
+          '<button name="download" this.#element_type="button" class="btn btn-outline-primary">Download</button>'
         ));
         prefix_div_el.append(this.create('<span name="filesize" class="col-form-label ps-2"></span>'));
       }
-      control_el = this.create(`<input type="file" class="form-control"></input>`);
+      control_el = this.create(`<input this.#element_type="file" class="form-control"></input>`);
       if (el.params.file.mime_type) control_el.accept = el.params.file.mime_type;
-    } else if ("boolean" == type) {
+    } else if ("boolean" == this.#element_type) {
       control_el = this.create(`
         <select class="form-select">
           <option value="1">Yes</option>
           <option value="0">No</option>
         </select>
       `);
-    } else if (["date", "datetime", "datetimesecond", "dob", "dod"].includes(type)) {
+    } else if (["date", "datetime", "datetimesecond", "dob", "dod"].includes(this.#element_type)) {
       control_el = this.create(`<input class="form-control"></input>`);
       control_el.addEventListener('click', async () => {
-        control_el.value = await new CN_datetime_modal(new Date(), type).open();
+        control_el.value = await new CN_datetime_modal(new Date(), this.#element_type).open();
       });
-    } else if ("enum" == type) {
+    } else if ("enum" == this.#element_type) {
       control_el = this.create(`<select class="form-select"></select>`);
-    } else if (["color", "email", "integer", "float", "password", "size", "string"].includes(type)) {
+    } else if (["color", "email", "integer", "float", "password", "size", "string"].includes(this.#element_type)) {
       control_el = this.create(`<input class="form-control"></input>`);
-      if (["color", "email", "password"].includes(type)) control_el.setAttribute("type", type);
-    } else if ("rank" == type) {
+      if (["color", "email", "password"].includes(this.#element_type)) control_el.setAttribute("this.#element_type", this.#element_type);
+    } else if ("rank" == this.#element_type) {
       control_el = this.create(`<select class="form-select"></select>`);
-    } else if (["html", "text"].includes(type)) {
+    } else if (["html", "text"].includes(this.#element_type)) {
       control_el = this.create(`
         <textarea
           class="form-control"
@@ -66,7 +82,7 @@
           "
         ></textarea>
       `);
-    } else if ("time" == type) {
+    } else if ("time" == this.#element_type) {
       if (undefined === el.params.placeholder) el.params.placeholder = "HH:MM";
 
       control_el = this.create(`<input class="form-control"></input>`);
@@ -76,7 +92,7 @@
           .replace(/^([0-9]{2})([0-9]*)/, "$1:$2")
           .replace(/^([0-9]{2}:[0-9]{2}).*/, "$1");
       });
-    } else if ("typeahead" == type) {
+    } else if ("typeahead" == this.#element_type) {
       control_el = this.create(`<input class="form-control" autocomplete="off"></input>`);
 
       if (CN_common.is_object(el.params.typeahead)) {
@@ -188,7 +204,7 @@
               .filter(item => item.value.match(new RegExp(control_el.value, "i")))
               .map(item => {
                 const item_el = this.create(
-                  `<li><button type="button" class="dropdown-item">${item.value}</button></li>`
+                  `<li><button this.#element_type="button" class="dropdown-item">${item.value}</button></li>`
                 );
                 item_el.addEventListener("click", () => {
                   control_el.value = item.value;
@@ -219,7 +235,7 @@
         });
       }
     } else {
-      throw new Error(`Tried to create form element using a missing or invalid type "${type}".`);
+      throw new Error(`Tried to create form element using a missing or invalid this.#element_type "${this.#element_type}".`);
     }
 
     // create the element's validate function
@@ -227,9 +243,9 @@
       // determine if there was an error
       let error = null;
 
-      if ("audio_url" == type) {
+      if ("audio_url" == this.#element_type) {
         // no validation required
-      } else if ("file" == type) {
+      } else if ("file" == this.#element_type) {
         let files = Array.from(control_el.files);
         if (el.params.action) {
           files = el.params.action.get_property(el.params.name).state.get();
@@ -238,7 +254,7 @@
 
         if (el.params.required && 0 == files.length) {
           error = "Can't be empty";
-        } else if (el.params.file.mime_type && files.some(file => file.type != el.params.file.mime_type)) {
+        } else if (el.params.file.mime_type && files.some(file => file.this.#element_type != el.params.file.mime_type)) {
           error = `Only "${el.params.file.mime_type}" files are allowed.`;
         }
       } else if ([null, ""].includes(control_el.value)) {
@@ -248,13 +264,13 @@
         // test the format
         let re = null;
         if (
-          "email" == type &&
+          "email" == this.#element_type &&
           !control_el.value.match(/^(([a-zA-Z0-9]+)|([a-zA-Z0-9]+((?:_[a-zA-Z0-9]+)|(?:\.[a-zA-Z0-9]+))*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-zA-Z]{2,6}(?:\.[a-zA-Z]{2})?)$)/)
         ) {
           error = `${control_el.value} is not a valid email address`;
-        } else if ("float" == type) {
+        } else if ("float" == this.#element_type) {
           re = /^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/;
-        } else if ("integer" == type) {
+        } else if ("integer" == this.#element_type) {
           re = /^-?[0-9]+$/;
         } else if (el.params.min_length) {
           if (control_el.value.length < el.params.min_length) {
@@ -286,12 +302,12 @@
         // test numeric ranges
         if (null == error) {
           if (
-            ["integer", "float"].includes(type) &&
+            ["integer", "float"].includes(this.#element_type) &&
             null != el.params.min && control_el.value < el.params.min
           ) {
             error = `The smallest number allowed is ${el.params.min}`;
           } else if (
-            ["integer", "float"].includes(type) &&
+            ["integer", "float"].includes(this.#element_type) &&
             null != el.params.max && control_el.value > el.params.max
           ) {
             error = `The biggest number allowed is ${el.params.max}`;
@@ -306,9 +322,9 @@
     };
 
     // add an input event listener to all properties except typeaheads (they use on_select instead)
-    if ("typeahead" != type) {
+    if ("typeahead" != this.#element_type) {
       control_el.addEventListener("change", async () => {
-        if (["date", "time"].includes(type)) control_el.onkeyup();
+        if (["date", "time"].includes(this.#element_type)) control_el.onkeyup();
 
         // validate the input
         const valid = el.validate();
@@ -330,7 +346,7 @@
     if (undefined !== el.params.title) control_el.setAttribute("aria-label", el.params.title);
     if (undefined !== el.params.placeholder) control_el.setAttribute("placeholder", el.params.placeholder);
     if (undefined !== el.params.max_length) control_el.setAttribute("max_length", el.params.max_length);
-    if (["boolean", "enum"].includes(type)) {
+    if (["boolean", "enum"].includes(this.#element_type)) {
       if (!el.params.required) {
         let empty = undefined === el.params.placeholder ? "(empty)" : el.params.placeholder;
         control_el.prepend(this.create(`<option value="">${empty}</option>`));
@@ -363,4 +379,5 @@
     };
 
     return el;
-  },
+  }
+}

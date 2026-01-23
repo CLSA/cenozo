@@ -1,6 +1,7 @@
 import CN_common from "../../common.mjs"
+import { CN_base_element } from "../base_element.mjs"
 import { CN_base_modal } from "./base_modal.mjs"
-import { CN_element } from "../element.mjs";
+import { CN_form_element } from "../form_element.mjs";
 import { CN_form_label } from "../form_label.mjs";
 
 export class CN_modal_account extends CN_base_modal {
@@ -43,7 +44,7 @@ export class CN_modal_account extends CN_base_modal {
    * Implements the parent method
    */
   _create_body_element() {
-    const el = CN_element.create(`
+    const el = this.constructor.create(`
       <span class="text-info-emphasis">
         Update your account details here:
       </span>
@@ -72,11 +73,11 @@ export class CN_modal_account extends CN_base_modal {
 
     for (const id in elements) {
       const element = elements[id];
-      const el = CN_element.create('<div class="row mb-3"></div>');
+      const el = this.constructor.create('<div class="row mb-3"></div>');
       const label_el = (new CN_form_label({ for: element.el_id, value: element.title })).render();
       label_el.classList.add("col-sm-3");
       el.append(label_el);
-      const element_el = CN_element.create_form_element(element.type, {
+      const element_el = (new CN_form_element(element.type, {
         id: element.el_id,
         required: true,
         on_change: (control_el, valid) => {
@@ -86,7 +87,7 @@ export class CN_modal_account extends CN_base_modal {
             ok_btn_el.setAttribute("disabled", true);
           }
         },
-      });
+      })).render();
       element_el.classList.add("col-sm-9");
       el.append(element_el);
       form_el.append(el);

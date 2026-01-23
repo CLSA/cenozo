@@ -24,7 +24,7 @@ export class CN_form_label extends CN_base_element {
 
     const for_value = this.get_config("for");
     if (null != for_value) el.setAttribute("for", for_value);
-    
+
     const help = this.get_config("help");
     if (help) {
       el.innerHTML = `<i class="bi-info-circle-fill"></i> ${el.innerHTML}`;
