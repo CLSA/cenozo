@@ -132,7 +132,7 @@ export class CN_base_view extends CN_base_record {
       this.get_property(prop_name).state.undo();
       if (409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
-          this.get_property(prop_name).element.show_error("Conflicts with existing record", 5000);
+          this.get_property(prop_name).form_element.show_error("Conflicts with existing record", 5000);
         });
       } else {
         this.run();
@@ -168,7 +168,7 @@ export class CN_base_view extends CN_base_record {
     const prop = this.get_property(prop_name);
     if ("file" == prop.type) {
       // implement file property's download button
-      prop.element.querySelector("button[name=download]").addEventListener("click", async () => {
+      prop.form_element.render().querySelector("button[name=download]").addEventListener("click", async () => {
         CN_common.download_file(prop.state.get().data, await prop.file.get_filename(this));
       });
     }
@@ -211,7 +211,8 @@ export class CN_base_view extends CN_base_record {
     } else if ("audio_url" == prop.type) {
       control_el.src = value;
     } else if ("file" == prop.type) {
-      prop.element.querySelector("span[name=filesize]").innerHTML = `(${CN_common.format_filesize(value.size)})`;
+      prop.form_element.render().querySelector("span[name=filesize]").innerHTML =
+        `(${CN_common.format_filesize(value.size)})`;
     } else if ("size" == prop.type) {
       control_el.value = CN_common.format_filesize(value);
     } else {

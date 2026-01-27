@@ -390,8 +390,7 @@ class Filter {
   save_to_json(col_name) {
     let column_data = { "n": col_name, "c": [] };
     let modifiers = [];
-    for (let i = 0; i < this.#conditions.length; i++) {
-      let condition = this.#conditions[i];
+    for (let condition of this.#conditions) {
       modifiers.push({
         "c": condition.get_comparison(),
         "d": condition.get_data_type(),
@@ -406,9 +405,8 @@ class Filter {
   render() {
     this.#el = CN_element.create(`<div id="filter"></div>`);
 
-    for (let cur of this.#conditions) {
-      const condition = cur.render();
-      this.#el.appendChild(condition);
+    for (let condition of this.#conditions) {
+      this.#el.appendChild(condition.render());
     }
 
     const add_condition_btn = CN_element.create(`
@@ -426,7 +424,7 @@ class Filter {
     for (let condition of this.#conditions) {
       str += condition.to_string();
       if (condition.operator != null) {
-        str += " " + cur.operator + " ";
+        str += " " + condition.operator + " ";
       }
     }
     return str;
@@ -608,8 +606,7 @@ export function load_filter(filter_data) {
   const conditions = filter_data.c;
   const first = conditions[0];
   const filter = new Filter(new Condition(first.c, first.v, null, first.d), first.d);
-  for (let i = 1; i < conditions.length; i++) {
-    let condition = conditions[i];
+  for (let condition of conditions) {
     filter.add_condition(condition.o, condition.c, condition.v, condition.d);
   }
   return filter;

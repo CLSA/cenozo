@@ -50,7 +50,12 @@ export class CN_base_modal extends CN_base_element {
       this.#resolve = resolve;
       this.#reject = reject;
 
-      this.render();
+      const el = this.render();
+      this.#bootstrap_modal = new bootstrap.Modal(el, { keyboard: false, backdrop: "static" });
+
+      // automatically dispose of the modal once finished
+      el.addEventListener("hidden.bs.modal", this.#destroy.bind(this));
+
       this.#bootstrap_modal.show();
     })
   }
@@ -63,11 +68,10 @@ export class CN_base_modal extends CN_base_element {
   }
 
   /**
-   * Returns the modal's header as an HTML element, can be overridden by child classes if necessary
-   * @return Element
+   * Extends the parent method
    */
   _create_header_element() {
-    return this.constructor.create(`<h1 class="modal-title fw-bold fs-5">${this.get_config("title")}</h1>`);
+    return this.constructor.html(`<h1 class="modal-title fw-bold fs-5">${this.get_config("title")}</h1>`);
   }
 
   /**
@@ -83,18 +87,17 @@ export class CN_base_modal extends CN_base_element {
    * @return Element
    */
   _create_footer_element() {
-    const el = this.constructor.create(`
+    const el = this.constructor.html(`
       <div>
-        <div name="left-btn-group" class="btn-group"><\div>
-        <div name="right-btn-group" class="btn-group">
-        </div>
+        <div name="left-btn-group" class="btn-group"></div>
+        <div name="right-btn-group" class="btn-group"></div>
       </div>
     `);
 
     const right_btn_group = el.querySelector("[name=right-btn-group]");
     this.#resolve_button_list.forEach(button => {
       const title = CN_common.escape_html(button.title);
-      const btn_el = this.constructor.create(`
+      const btn_el = this.constructor.html(`
         <button
           type="button"
           name="${title}"
@@ -115,11 +118,11 @@ export class CN_base_modal extends CN_base_element {
   /**
    * Renders the modal and creates the bootstrap modal object
    */
-  render() {
-    const el = super.render();
+  _create_element() {
+    const el = super._create_element();
     el.setAttribute("tabindex", "-1");
-    el.append(this.constructor.create(`
-      <div class="modal-dialog">
+    el.append(this.constructor.html(`
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header ${this.get_config("header_class")}"></div>
           <div class="modal-body"></div>
@@ -131,11 +134,6 @@ export class CN_base_modal extends CN_base_element {
     el.querySelector("div.modal-header").append(this._create_header_element());
     el.querySelector("div.modal-body").append(this._create_body_element());
     el.querySelector("div.modal-footer").append(this._create_footer_element());
-
-    this.#bootstrap_modal = new bootstrap.Modal(el, { keyboard: false, backdrop: "static" });
-
-    // automatically dispose of the modal once finished
-    el.addEventListener("hidden.bs.modal", this.#destroy.bind(this));
 
     return el;
   }

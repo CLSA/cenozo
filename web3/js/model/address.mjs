@@ -68,7 +68,12 @@ export class CN_address_model extends CN_traceable_model {
           type: "string",
           is_hidden: (model) => !(
             "add" == model.get_action_name() ?
-            1 == model.get_action().get_property("international").element.querySelector("select").value :
+            1 == model.get_action()
+              .get_property("international")
+              .form_element
+              .render()
+              .querySelector("select")
+              .value :
             model.get_action().get_property("international").state.get()
           ),
           help: "International regions are unrestricted and are not automatically set by the postcode.",
@@ -79,7 +84,11 @@ export class CN_address_model extends CN_traceable_model {
           typeahead: CN_country_model.get_typeahead(),
           is_hidden: (model) => !(
             "add" == model.get_action_name() ?
-            1 == model.get_action().get_property("international").element.querySelector("select").value :
+            1 == model.get_action()
+              .get_property("international")
+              .form_element
+              .querySelector("select")
+              .value :
             model.get_action().get_property("international").state.get()
           ),
         },

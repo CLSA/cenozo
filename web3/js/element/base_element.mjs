@@ -11,6 +11,7 @@ export class CN_base_element extends CN_base_object {
   // The DOMParser used by create() when creating elements from HTML strings
   static #dom_parser = new DOMParser();
 
+  #el;
   #config = new Map();
 
   /**
@@ -60,7 +61,7 @@ export class CN_base_element extends CN_base_object {
   /**
    * ADD DOCS
    */
-  render() {
+  _create_element() {
     const el = document.createElement(this.get_config("type"));
 
     const id = this.get_config("id");
@@ -74,11 +75,28 @@ export class CN_base_element extends CN_base_object {
   }
 
   /**
+   * ADD DOCS
+   */
+  render(force = false) {
+    if (force || !this.#el) this.#el = this._create_element();
+    return this.#el;
+  }
+
+  /**
+   * Creates an element and renders it as a single operation
+   * @param object config: A set of key/value pairs containing all of the modal's configuration parameters
+   * @return Element
+   */
+  static create(config) {
+    return (new Object.create(config)).render();
+  }
+
+  /**
    * Converts an HTML string into an Element object
    * @param string html: HTML expressed as a string
    * @return Element
    */
-  static create(html) {
+  static html(html) {
     if (undefined === html) throw new Error("element.create: must provide 1 argument, 0 provided");
     if (0 == html.length) throw new Error("element.create: argument cannot be empty");
 
@@ -96,7 +114,7 @@ export class CN_base_element extends CN_base_object {
    * @param string html: HTML expressed as a string
    * @return DocumentFragment
    */
-  static create_fragment(html) {
+  static html_fragment(html) {
     if (html == null) throw new Error("element.create_fragment: must provide 1 argument, 0 provided");
     if (0 == html.length) throw new Error("element.create: argument cannot be empty");
 

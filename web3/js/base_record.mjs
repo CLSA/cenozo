@@ -3,6 +3,8 @@ import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
+import { CN_form_label } from "./element/form/label.mjs"
+import { CN_form_element } from "./element/form_element.mjs"
 import { CN_state } from "./state.mjs"
 
 export class CN_base_record extends CN_base_action {
@@ -76,7 +78,7 @@ export class CN_base_record extends CN_base_action {
    * The prop object may contain any of the following sub-properties:
    *   title: a string that defines the property's label (should be written in "Title Case")
    *     (the default value is undefined)
-   *   type: one of the types described in CN_element.create_form_element()
+   *   type: one of the types described in CN_form_element
    *     (the default value is "string")
    *   help: text that will appear when hovering over the property's label
    *     (the default is undefined - no help text)
@@ -175,8 +177,10 @@ export class CN_base_record extends CN_base_action {
           if (prop.state.get() != item.value) {
             prop.state.set(item.value);
             prop.state.commit();
-            if (CN_common.is_function(prop.element.params.on_change)) {
-              prop.element.params.on_change(document.getElementById(prop.id), prop.element.validate(), this);
+            if (prop.form_element.has_param("on_change")) {
+              prop.form_element.get_param("on_change")(
+                document.getElementById(prop.id), prop.form_element.validate(), this
+              );
             }
           }
         };
@@ -231,8 +235,7 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
-   * Runs a callback function on all properties
-   * @param function callback: A function that is passed the property as the first argument
+   * Runs an array of all properties
    */
   get_all_properties() {
     const properties = [];
@@ -289,7 +292,9 @@ export class CN_base_record extends CN_base_action {
     } else if ("typeahead" == prop.type) {
       // convert from value to key by looking up the element's typeahead list in the params object
       // NOTE: the element's params is not the same as the property's params object (it is cloned)
-      if (null != value) value = prop.element.params.typeahead.list.find(item => value === item.value).key;
+      if (null != value) {
+        value = prop.form_element.get_param("typeahead").list.find(item => value === item.value).key;
+      }
     }
 
     return value;
@@ -324,7 +329,7 @@ export class CN_base_record extends CN_base_action {
         if (null == control_el) return;
 
         // hide any errors
-        prop.element.hide_error();
+        prop.form_element.hide_error();
 
         // remove any properties that evaluate to hidden
         if (prop.is_hidden(this.get_model())) {
@@ -346,11 +351,11 @@ export class CN_base_record extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
-    const form_el = CN_element.create("<form><fieldset></fieldset></form>");
+    const form_el = CN_form_label.html("<form><fieldset></fieldset></form>");
 
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
-      const parent_el = CN_element.create('<div class="px-3"></div>');
+      const parent_el = CN_form_label.html('<div class="px-3"></div>');
       form_el.querySelector("fieldset").append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
         parent_el.append(this.create_property_element(prop_name));
@@ -363,7 +368,7 @@ export class CN_base_record extends CN_base_action {
     for (const group_name in this.#property_groups) {
       if ("$main" != group_name) {
         if (null == accordion_el) {
-          accordion_el = CN_element.create(`<div class="accordion accordion-flush"></div>`);
+          accordion_el = CN_form_label.html(`<div class="accordion accordion-flush"></div>`);
         }
 
         const group_el = this.create_property_group_element(group_name);
@@ -395,7 +400,7 @@ export class CN_base_record extends CN_base_action {
       </div>
     `);
 
-    return CN_element.create(`<div class="px-3">${el_list.join("")}</div>`);
+    return CN_form_label.html(`<div class="px-3">${el_list.join("")}</div>`);
   }
 
   /**
@@ -406,7 +411,7 @@ export class CN_base_record extends CN_base_action {
   create_property_group_element(group_name) {
     const group = this.#property_groups[group_name];
     const group_id = [this.get_model().get_unique_id(), group_name].join("-");
-    return CN_element.create(`
+    return CN_form_label.html(`
       <div name="${group_name}" class="accordion-item px-0">
         <div class="accordion-header">
           <button
@@ -433,16 +438,17 @@ export class CN_base_record extends CN_base_action {
   create_property_element(prop_name) {
     const module_prop = this.get_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
-    const prop_el = CN_element.create(`<div name="${prop.id}" class="row mb-3"></div>`);
+    const prop_el = CN_form_label.html(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    const label_el = CN_element.create_form_label({ for: prop.id, value: prop.title, help: prop.help });
+    const label_el = CN_form_label.create({ for: prop.id, value: prop.title, help: prop.help });
     label_el.classList.add("col-sm-3");
     prop_el.append(label_el);
 
-    if (!prop.element) {
+    if (!prop.form_element) {
       // determine the property's UI element based on the type
       let params = CN_common.clone(prop);
+      delete params.type;
       if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
       if (undefined === params.placeholder) params.placeholder = "(empty)";
 
@@ -456,8 +462,8 @@ export class CN_base_record extends CN_base_action {
       }
 
       params.action = this;
-      prop.element = CN_element.create_form_element(prop.type, params);
-      prop.element.classList.add("col-sm-9");
+      params.class = "d-flex align-items-center col-sm-9";
+      prop.form_element = new CN_form_element(prop.type, params);
     }
 
     // wait for each control element to be added to the DOM then bind it to the state
@@ -473,8 +479,8 @@ export class CN_base_record extends CN_base_action {
     });
     observer.observe(prop_el, { childList: true });
 
-    // add the value UI element to the property
-    prop_el.append(prop.element);
+    // render the element and add it to the property
+    prop_el.append(prop.form_element.render());
 
     return prop_el;
   }

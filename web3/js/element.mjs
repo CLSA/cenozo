@@ -217,7 +217,6 @@ export default {
         // create the typeahead's element
         const typeahead_el = this.create(`
           <div class="dropdown">
-            <button class="d-none" data-bs-toggle="dropdown"></button>
             <ul class="dropdown-menu w-100"></ul>
           </div>
         `);
@@ -791,7 +790,7 @@ export default {
    * @return bootstrap.Modal
    */
   create_account_modal: function () {
-    const el_id = ["cn-clock-settings-modal", CN_common.get_random_hex_identifier()].join("-");
+    const el_id = ["cn-account-modal", CN_common.get_random_hex_identifier()].join("-");
 
     const modal_el = this.create(`
       <div id="${el_id}" class="modal fade" tabindex="-1">

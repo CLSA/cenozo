@@ -74,7 +74,7 @@ export class CN_base_add extends CN_base_record {
 
     // validate all visible properties
     this.get_all_properties().forEach(prop => {
-      if (!prop.is_hidden(this.get_model()) && !prop.element.validate()) valid = false;
+      if (!prop.is_hidden(this.get_model()) && !prop.form_element.validate()) valid = false;
     });
 
     return valid;
@@ -105,7 +105,7 @@ export class CN_base_add extends CN_base_record {
           const prop = this.get_property(prop_name);
           const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
           const control_el = document.getElementById(prop.id);
-          prop.element.show_error("Conflicts with existing record", 0);
+          prop.form_element.show_error("Conflicts with existing record", 0);
         });
       } else {
         throw error;
