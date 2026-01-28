@@ -25,7 +25,7 @@ export class CN_mail_model extends CN_base_model {
           title: "From Name",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         from_address: {
@@ -34,17 +34,17 @@ export class CN_mail_model extends CN_base_model {
           help: 'Must be in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         to_name: {
           title: "To Name",
           get_default: (model) => {
             const parent_action = model.get_parent_model().get_action();
-            const honorific = parent_action.get_property("honorific").state.get();
-            const first_name = parent_action.get_property("first_name").state.get();
-            const other_name = parent_action.get_property("other_name").state.get();
-            const last_name = parent_action.get_property("last_name").state.get();
+            const honorific = parent_action.get_property_value("honorific");
+            const first_name = parent_action.get_property_value("first_name");
+            const other_name = parent_action.get_property_value("other_name");
+            const last_name = parent_action.get_property_value("last_name");
             let value = `${honorific} ${first_name}`;
             if (other_name) value += ` (${other_name})`;
             value += ` ${last_name}`;
@@ -52,7 +52,7 @@ export class CN_mail_model extends CN_base_model {
           },
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         to_address: {
@@ -61,11 +61,11 @@ export class CN_mail_model extends CN_base_model {
           help: 'Must be in the format "account@domain.name".',
           get_default: (model) => {
             const parent_action = model.get_parent_model().get_action();
-            return parent_action.get_property("email").state.get();
+            return parent_action.get_property_value("email");
           },
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         cc_address: {
@@ -73,7 +73,7 @@ export class CN_mail_model extends CN_base_model {
           help: 'May be a comma-delimited list of email addresses in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         bcc_address: {
@@ -81,7 +81,7 @@ export class CN_mail_model extends CN_base_model {
           help: 'May be a comma-delimited list of email addresses in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         schedule_datetime: {
@@ -90,7 +90,7 @@ export class CN_mail_model extends CN_base_model {
           min: "now",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         sent_datetime: {
@@ -109,7 +109,7 @@ export class CN_mail_model extends CN_base_model {
           title: "Subject",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         body: {
@@ -117,7 +117,7 @@ export class CN_mail_model extends CN_base_model {
           type: "text",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property("sent_datetime").state.get()
+            null != model.get_action().get_property_value("sent_datetime")
           ),
         },
         note: {
@@ -136,7 +136,7 @@ export class CN_mail_model extends CN_base_model {
     return (
       super.allow_delete() &&
       "mail.view" == CN_session.get_leaf_action_name() &&
-      null == this.get_action().get_property("sent_datetime").state.get()
+      null == this.get_action().get_property_value("sent_datetime")
     );
   }
 }
@@ -157,7 +157,7 @@ export class CN_mail_view extends CN_base_view {
         select: { column: ["mail_header", "mail_footer"] },
       });
 
-      let message = this.get_property("body").state.get();
+      let message = this.get_property_value("body");
       if (response.mail_header) {
         // if the header has html bu tthe body doesn't then convert line breaks to elements
         if (response.mail_header.match(/<html>/) && !message.match(/<[^>]+>/)) {

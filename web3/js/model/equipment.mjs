@@ -26,6 +26,7 @@ export class CN_equipment_model extends CN_base_model {
           type: "enum",
           enum: { path: "equipment_type" },
           is_constant: (model) => "view" == model.get_action_name(),
+          // TODO: reimplement
           //isExcluded: function ($state, model) { return "equipment_type" == model.getSubjectFromState(); },
         },
         active: {
@@ -37,6 +38,7 @@ export class CN_equipment_model extends CN_base_model {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
+          // TODO: reimplement
           //isExcluded: function ($state, model) { return !model.showSite(); },
         },
         serial_number: { title: "Serial Number", format: "identifier" },

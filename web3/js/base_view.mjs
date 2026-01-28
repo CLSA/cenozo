@@ -36,11 +36,11 @@ export class CN_base_view extends CN_base_record {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      const name_prop = this.get_property("name");
-      if (name_prop) return name_prop.state.get();
+      const name = this.get_property_value("name");
+      if (name) return name;
 
-      const title_prop = this.get_property("title");
-      if (title_prop) return title_prop.state.get();
+      const title = this.get_property_value("title");
+      if (title) return title;
 
       return CN_common.uc_words(this.get_model().get_singular());
     }
@@ -98,18 +98,20 @@ export class CN_base_view extends CN_base_record {
   async on_load() {
     // load the record
     const record = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
-    this.get_all_properties().forEach(prop => {
+
+    // fill in the property values (if the form_inputs have been created)
+    this.get_all_properties().filter(prop => prop.form_input).forEach(prop => {
       // check for the formatted value for this property
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
         // put the ID in the typeahead list
         prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
-        prop.state.clear();
-        prop.state.set(record[`formatted_${prop.name}`]);
-        prop.state.commit();
+        prop.form_input.clear_value();
+        prop.form_input.set_value(record[`formatted_${prop.name}`]);
+        prop.form_input.commit_value();
       } else if (record.hasOwnProperty(prop.name)) {
-        prop.state.clear();
-        prop.state.set(record[prop.name]);
-        prop.state.commit();
+        prop.form_input.clear_value();
+        prop.form_input.set_value(record[prop.name]);
+        prop.form_input.commit_value();
       }
     });
 
@@ -129,10 +131,10 @@ export class CN_base_view extends CN_base_record {
 
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
-      this.get_property(prop_name).state.undo();
+      this.get_property(prop_name).form_input.undo_value();
       if (409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
-          this.get_property(prop_name).form_element.show_error("Conflicts with existing record", 5000);
+          this.get_property(prop_name).form_input.show_error("Conflicts with existing record", 5000);
         });
       } else {
         this.run();
@@ -168,8 +170,8 @@ export class CN_base_view extends CN_base_record {
     const prop = this.get_property(prop_name);
     if ("file" == prop.type) {
       // implement file property's download button
-      prop.form_element.render().querySelector("button[name=download]").addEventListener("click", async () => {
-        CN_common.download_file(prop.state.get().data, await prop.file.get_filename(this));
+      prop.form_input.render().querySelector("button[name=download]").addEventListener("click", async () => {
+        CN_common.download_file(prop.form_input.get_value().data, await prop.file.get_filename(this));
       });
     }
 
@@ -184,8 +186,13 @@ export class CN_base_view extends CN_base_record {
     const prop = this.get_property(prop_name);
     const control_el = document.getElementById(prop.id);
 
+    // update the input's value and flash the border to indicate that the data has been updated
+    prop.form_input.set_value(prop.form_input.get_value());
+    prop.form_input.flash_border();
+
+    /* TODO: transfer logic to element/form classes
     // rebuild enum select options
-    const value = prop.state.get();
+    const value = prop.form_input.get_value();
     if (["boolean", "enum", "rank"].includes(prop.type)) {
       if ("boolean" != prop.type) {
         control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
@@ -211,7 +218,7 @@ export class CN_base_view extends CN_base_record {
     } else if ("audio_url" == prop.type) {
       control_el.src = value;
     } else if ("file" == prop.type) {
-      prop.form_element.render().querySelector("span[name=filesize]").innerHTML =
+      prop.form_input.render().querySelector("span[name=filesize]").innerHTML =
         `(${CN_common.format_filesize(value.size)})`;
     } else if ("size" == prop.type) {
       control_el.value = CN_common.format_filesize(value);
@@ -224,19 +231,7 @@ export class CN_base_view extends CN_base_record {
         control_el.style.height = control_el.scrollHeight + "px";
       }
     }
-
-    // flash the border green to show the data has been updated
-    const old_style = control_el.style;
-    control_el.style["border-color"] = "green";
-    setTimeout(() => {
-      control_el.style = old_style;
-
-      // we also have to update text input heights since depending on the old_style doesn't seem to work
-      if ("text" == prop.type) {
-        control_el.style.height = "";
-        control_el.style.height = control_el.scrollHeight + "px";
-      }
-    }, 500);
+    */
   }
 
   /**
@@ -403,6 +398,10 @@ export class CN_base_view extends CN_base_record {
    */
   async run(children = false) {
     if (null == this.get_model().get_action_name()) return;
+
+    // Make sure the body has been created before running the action so that the record values can
+    // be stored in the property form_inputs.
+    this.get_body_element();
 
     await super.run(children);
 

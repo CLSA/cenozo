@@ -4,8 +4,12 @@ import CN_element from "./element.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
 import { CN_form_label } from "./element/form/label.mjs"
-import { CN_form_element } from "./element/form_element.mjs"
 import { CN_state } from "./state.mjs"
+
+// form inputs
+import { CN_form_boolean } from "./element/form/boolean.mjs"
+import { CN_form_string } from "./element/form/string.mjs"
+import { CN_form_text } from "./element/form/text.mjs"
 
 export class CN_base_record extends CN_base_action {
   #property_groups;
@@ -78,7 +82,7 @@ export class CN_base_record extends CN_base_action {
    * The prop object may contain any of the following sub-properties:
    *   title: a string that defines the property's label (should be written in "Title Case")
    *     (the default value is undefined)
-   *   type: one of the types described in CN_form_element
+   *   type: one of the input types implemented in element/form/
    *     (the default value is "string")
    *   help: text that will appear when hovering over the property's label
    *     (the default is undefined - no help text)
@@ -86,10 +90,9 @@ export class CN_base_record extends CN_base_action {
    *     (the default is undefined - no format)
    *   regex: restricts the property's value to a regular expression as a string (or array of strings)
    *     (the default is undefined - no regex)
-   *   on_change: an async function which is calledwhen a property's value is changed, with arguments:
-   *     control_el: the property's form element (input, select, textarea, etc)
+   *   on_change: an async function which is called when a property's value is changed, with arguments:
+   *     form_input: the property's form input object (element/form classes)
    *     valid: whether or not the new value is valid
-   *     action: the action object that the property belongs to
    *     (the default function is to call this class' on_change() method)
    *   is_constant: a function that makes the property read-only when it returns true, with arguments:
    *     model: the model of the action that the property belongs to
@@ -154,7 +157,6 @@ export class CN_base_record extends CN_base_action {
     const module_prop = module.get_property(prop_name);
     prop.id = [this.get_model().get_unique_id(), prop_name].join("-");
     prop.name = prop_name;
-    prop.state = new CN_state();
     if (!prop.type) prop.type = "string";
     if (!prop.group) prop.group = null;
 
@@ -174,12 +176,12 @@ export class CN_base_record extends CN_base_action {
       if (!prop.typeahead.on_select) {
         prop.typeahead.on_select = item => {
           // ignore if the value hasn't changed
-          if (prop.state.get() != item.value) {
-            prop.state.set(item.value);
-            prop.state.commit();
-            if (prop.form_element.has_param("on_change")) {
-              prop.form_element.get_param("on_change")(
-                document.getElementById(prop.id), prop.form_element.validate(), this
+          if (prop.get_value() != item.value) {
+            prop.form_input.set_value(item.value);
+            prop.form_input.commit_value();
+            if (prop.form_input.has_param("on_change")) {
+              prop.form_input.get_param("on_change")(
+                document.getElementById(prop.id), prop.form_input.validate(), this
               );
             }
           }
@@ -187,7 +189,7 @@ export class CN_base_record extends CN_base_action {
       }
       if (!prop.typeahead.on_cancel) {
         prop.typeahead.on_cancel = () => {
-          prop.state.undo(true);
+          prop.form_input.undo_value(true);
         }
       }
     } else if (["integer", "float"].includes(prop.type)) {
@@ -248,6 +250,44 @@ export class CN_base_record extends CN_base_action {
   }
 
   /**
+   * ADD DOCS
+   */
+  get_property_value(prop_name) {
+    const prop = this.get_property(prop_name);
+    return null == prop ? undefined : prop.form_input.get_value();
+  }
+
+  /**
+   * Returns a property's value formatted by its type
+   * @param string prop_name: The name of the property
+   * @return (dynamic)
+   */
+  async get_property_formatted_value(prop_name) {
+    const prop = this.get_property(prop_name);
+    return null == prop ? undefined : await prop.form_input.get_formatted_value();
+    
+    /* TODO: move to element/form classes
+    const prop = this.get_property(prop_name);
+    let value = prop.form_input.get_value();
+    if ("typeahead" == prop.type) {
+      // convert from value to key by looking up the element's typeahead list in the params object
+      // NOTE: the element's params is not the same as the property's params object (it is cloned)
+      if (null != value) {
+        value = prop.form_input.get_param("typeahead").list.find(item => value === item.value).key;
+      }
+    }
+    */
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_property_value(prop_name, value) {
+    const prop = this.get_property(prop_name);
+    if (prop) prop.form_input.set_value(value);
+  }
+
+  /**
    * Extends parent class
    */
   async on_load() {
@@ -268,36 +308,6 @@ export class CN_base_record extends CN_base_action {
       }
     }
     await Promise.all(promise_list);
-  }
-
-  /**
-   * Returns a property's value formatted by its type
-   * @param string prop_name: The name of the property
-   * @return (dynamic)
-   */
-  async get_formatted_property(prop_name) {
-    const prop = this.get_property(prop_name);
-    let value = prop.state.get();
-    if ("file" == prop.type) {
-      // convert from blob
-      value = await CN_common.convert_from_blob(prop.file.encoding, value[0]);
-      if ("base64" == prop.file.encoding) {
-        // remove the base64 metadata
-        value = value.replace(/.*;base64,/, "");
-      }
-    } else if ("boolean" == prop.type) {
-      value = "" == value ? null : Number(value);
-    } else if ("date" == prop.type) {
-      if ("" == value) value = null;
-    } else if ("typeahead" == prop.type) {
-      // convert from value to key by looking up the element's typeahead list in the params object
-      // NOTE: the element's params is not the same as the property's params object (it is cloned)
-      if (null != value) {
-        value = prop.form_element.get_param("typeahead").list.find(item => value === item.value).key;
-      }
-    }
-
-    return value;
   }
 
   /**
@@ -325,11 +335,9 @@ export class CN_base_record extends CN_base_action {
       for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
-        const control_el = document.getElementById(prop.id);
-        if (null == control_el) return;
 
         // hide any errors
-        prop.form_element.hide_error();
+        prop.form_input.hide_error();
 
         // remove any properties that evaluate to hidden
         if (prop.is_hidden(this.get_model())) {
@@ -339,7 +347,7 @@ export class CN_base_record extends CN_base_action {
         }
 
         // disable any properties that evaluate to constant
-        control_el.disabled = prop.is_constant(this.get_model());
+        prop.form_input.set_disabled(prop.is_constant(this.get_model()));
 
         // now update the property element (this varies in the child base_add and base_view classes)
         this.update_property_element(prop.name);
@@ -445,7 +453,7 @@ export class CN_base_record extends CN_base_action {
     label_el.classList.add("col-sm-3");
     prop_el.append(label_el);
 
-    if (!prop.form_element) {
+    if (!prop.form_input) {
       // determine the property's UI element based on the type
       let params = CN_common.clone(prop);
       delete params.type;
@@ -458,29 +466,24 @@ export class CN_base_record extends CN_base_action {
 
       // if the prop doesn't have a custom on_change() function then implement the default behaviour
       if (!CN_common.is_function(params.on_change)) {
-        params.on_change = async (control_el, valid) => await this.on_change(prop.name, valid);
+        params.on_change = async (control, valid) => await this.on_change(prop.name, valid);
       }
 
       params.action = this;
       params.class = "d-flex align-items-center col-sm-9";
-      prop.form_element = new CN_form_element(prop.type, params);
+      if ("boolean" == prop.type) {
+        prop.form_input = new CN_form_boolean(params);
+      } else if ("string" == prop.type) {
+        prop.form_input = new CN_form_string(params);
+      } else if ("text" == prop.type) {
+        prop.form_input = new CN_form_text(params);
+      } else {
+        console.warn(`Tried to create invalid property type "${prop.type}"`);
+      }
     }
 
-    // wait for each control element to be added to the DOM then bind it to the state
-    const observer = new MutationObserver(mutation => {
-      mutation.filter(m => "childList" == m.type).forEach(m => {
-        const control_el = document.getElementById(m.target.getAttribute("name"));
-        if (control_el) {
-          const prop = this.get_property(control_el.getAttribute("name"));
-          prop.state.bind_element(control_el);
-        }
-      });
-      observer.disconnect();
-    });
-    observer.observe(prop_el, { childList: true });
-
     // render the element and add it to the property
-    prop_el.append(prop.form_element.render());
+    prop_el.append(prop.form_input.render());
 
     return prop_el;
   }
@@ -506,7 +509,7 @@ export class CN_base_record extends CN_base_action {
     if (valid) {
       await this.on_set_property(prop_name);
     } else if ("view" == this.get_type()) {
-      this.get_property(prop_name).state.undo();
+      this.get_property(prop_name).form_input.undo_value();
     }
   }
 }

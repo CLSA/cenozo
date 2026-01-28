@@ -190,7 +190,7 @@ export class CN_traceable_view extends CN_base_view {
       await super.on_set_property(prop_name);
       this.get_model().add_trace(trace_reason);
     } else {
-      this.get_property(prop_name).state.undo();
+      this.get_property(prop_name).form_input.undo_value();
       this.run();
     }
   }

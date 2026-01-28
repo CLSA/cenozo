@@ -1,11 +1,15 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
+import { CN_base_element } from "./element/base_element.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_base_view } from "./base_view.mjs"
+import { CN_modal_confirm } from "./element/modal/confirm.mjs"
+import { CN_form_label } from "./element/form/label.mjs"
+import { CN_form_string } from "./element/form/string.mjs"
+import { CN_form_text } from "./element/form/text.mjs"
 
 export class CN_base_person_model extends CN_base_model {
   get_history_url() {
@@ -24,7 +28,7 @@ export class CN_base_person_view extends CN_base_view {
     const footer_el = super.create_footer_element();
 
     // add the notes action
-    const notes_btn_el = CN_element.create(
+    const notes_btn_el = CN_base_element.html(
       '<button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>'
     );
     notes_btn_el.addEventListener(
@@ -34,7 +38,7 @@ export class CN_base_person_view extends CN_base_view {
     footer_el.append(notes_btn_el);
 
     // add the history action
-    const history_btn_el = CN_element.create(
+    const history_btn_el = CN_base_element.html(
       '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'
     );
     history_btn_el.addEventListener(
@@ -44,7 +48,7 @@ export class CN_base_person_view extends CN_base_view {
     footer_el.append(history_btn_el);
 
     // add the timezone action
-    const timezone_btn_el = CN_element.create(
+    const timezone_btn_el = CN_base_element.html(
       '<button name="timezone" type="button" class="btn btn-light btn-outline-primary">Use Timezone</button>'
     );
     timezone_btn_el.addEventListener("click", async () => {
@@ -438,7 +442,7 @@ export class CN_base_person_history extends CN_base_action {
     const data_list_el = this.get_element().querySelector("[name=data_list]");
     data_list_el.innerHTML = "";
     this.#data_list.filter(data => null === this.get_query_parameter(data.category.subject)).forEach(data => {
-      data_list_el.append(CN_element.create(`
+      data_list_el.append(CN_base_element.html(`
         <div class="card">
           <div class="card-body row p-2">
             <div class="col-4">
@@ -475,14 +479,14 @@ export class CN_base_person_history extends CN_base_action {
       </div>
     `);
 
-    return CN_element.create(`<div name="data_list" class="container-fluid">${card_list.join("")}</div>`);
+    return CN_base_element.html(`<div name="data_list" class="container-fluid">${card_list.join("")}</div>`);
   }
 
   /**
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create(`
+    const body_el = CN_base_element.html(`
       <div>
         <div name="button_list" class="container-fluid"></div>
         <hr></hr>
@@ -493,7 +497,7 @@ export class CN_base_person_history extends CN_base_action {
     // add the visibility toggles
     const button_list_el = body_el.querySelector("[name=button_list]");
 
-    button_list_el.append(CN_element.create(`
+    button_list_el.append(CN_base_element.html(`
       <div class="row">
         <button name="select_all" class="col btn btn-primary">Select All</button>
         <button name="select_none" class="col btn btn-primary">Select None</button>
@@ -522,11 +526,11 @@ export class CN_base_person_history extends CN_base_action {
       this.update_element();
     });
 
-    const select_group_el = CN_element.create('<div name="select_group" class="row"></div>');
+    const select_group_el = CN_base_element.html('<div name="select_group" class="row"></div>');
     button_list_el.append(select_group_el);
 
     this.#category_list.forEach(category => {
-      const btn_el = CN_element.create(`
+      const btn_el = CN_base_element.html(`
         <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
           ${CN_common.uc_words(category.subject)}
           <i class="bi-${null === this.get_query_parameter(category.subject) ? "check" : "x"}-circle"></i>
@@ -569,7 +573,7 @@ export class CN_base_person_history extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = CN_base_element.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">
           View ${CN_common.uc_words(this.get_model().get_singular())}
@@ -695,7 +699,7 @@ export class CN_base_person_notes extends CN_base_action {
       }
       details += `${CN_common.format_datetime(note.datetime, "datetimesecond")}`;
 
-      const note_el = CN_element.create(`
+      const note_el = CN_base_element.html(`
         <div class="card">
           <div class="card-body row p-2">
             <div class="col-4 ${note.sticky ? "text-primary fw-bold" : ""}">${details}</div>
@@ -712,42 +716,43 @@ export class CN_base_person_notes extends CN_base_action {
         });
 
         note_el.querySelector("[name=delete]").addEventListener("click", async () => {
-          const modal = CN_element.confirm_modal({
+          const modal = new CN_modal_confirm({
             title: "Please Confirm",
             message: `Are you sure you wish to delete the note by ${note.first_name} ${note.last_name}?`,
           });
 
-          if (await modal.test()) {
+          if (await modal.open()) {
             await CN_api.delete(note_path);
             await this.run();
           }
         });
       }
 
-      const input_el = CN_element.create_form_element("text", {
-        id: `note-${note.id}`,
-        required: true,
-        on_change: async (control_el, success) => {
-          if (success) {
-            await CN_api.patch(note_path, { note: control_el.value });
-            control_el.backup_value = control_el.value;
+      note_el.querySelector("[name=note]").append(
+        CN_form_text.create({
+          id: `note-${note.id}`,
+          required: true,
+          on_change: async (control_el, success) => {
+            if (success) {
+              await CN_api.patch(note_path, { note: control_el.value });
+              control_el.backup_value = control_el.value;
 
-            // flash the border green to show the data has been updated
-            const old_style = control_el.style;
-            control_el.style["border-color"] = "green";
-            setTimeout(() => {
-              control_el.style = old_style;
+              // flash the border green to show the data has been updated
+              const old_style = control_el.style;
+              control_el.style["border-color"] = "green";
+              setTimeout(() => {
+                control_el.style = old_style;
+                control_el.style.height = "";
+                control_el.style.height = control_el.scrollHeight + "px";
+              }, 500);
+            } else {
+              control_el.value = control_el.backup_value;
               control_el.style.height = "";
               control_el.style.height = control_el.scrollHeight + "px";
-            }, 500);
-          } else {
-            control_el.value = control_el.backup_value;
-            control_el.style.height = "";
-            control_el.style.height = control_el.scrollHeight + "px";
-          }
-        },
-      });
-      note_el.querySelector("[name=note]").append(input_el);
+            }
+          },
+        })
+      );
 
       // set the note and resize the textarea
       const textarea_el = note_el.querySelector("textarea");
@@ -782,14 +787,14 @@ export class CN_base_person_notes extends CN_base_action {
       </div>
     `);
 
-    return CN_element.create(`<div name="note_list" class="container-fluid">${card_list.join("")}</div>`);
+    return CN_base_element.html(`<div name="note_list" class="container-fluid">${card_list.join("")}</div>`);
   }
 
   /**
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create(`
+    const body_el = CN_base_element.html(`
       <div>
         <div name="note_add" class="container-fluid px-0">
           <div class="card">
@@ -808,35 +813,33 @@ export class CN_base_person_notes extends CN_base_action {
 
     const card_body_el = body_el.querySelector(".card-body");
 
-    const new_note_el = CN_element.create_form_element("text", { id: "new_note" });
-    card_body_el.append(new_note_el);
-
+    const new_note_form_input = new CN_form_text({ id: "new_note" });
+    card_body_el.append(new_note_form_input.render());
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
-      const textarea_el = new_note_el.querySelector("textarea");
       await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
         user_id: CN_session.data.user.id,
         datetime: (new Date()).toISOString(),
-        note: textarea_el.value,
+        note: new_note_form_input.get_value(),
       });
-      textarea_el.value = "";
+      new_note_form_input.set_value("");
       await this.run();
     });
 
     // add the search field
-    const label_el = CN_element.create_form_label({ for: "note_search", value: "Search" });
+    const label_el = CN_form_label.create({ for: "note_search", value: "Search" });
     label_el.classList.add("col-sm-3");
     body_el.querySelector("div.row").append(label_el);
 
-    const search_el = CN_element.create_form_element("string", { id: "note_search" })
-    search_el.classList.add("col-sm-9");
-    const input_el = search_el.querySelector("input");
-    input_el.value = this.get_query_parameter("search");
-    input_el.addEventListener("input", () => {
-      this.set_query_parameter("search", input_el.value);
-      this.update_element();
+    const search_form_input = new CN_form_string({
+      id: "note_search",
+      class: "d-flex align-items-center col-sm-9",
+      on_change: () => {
+        this.set_query_parameter("search", search_form_input.get_value());
+        this.update_element();
+      },
     });
 
-    body_el.querySelector("div.row").append(search_el);
+    body_el.querySelector("div.row").append(search_form_input.render());
 
     return body_el;
   }
@@ -861,7 +864,7 @@ export class CN_base_person_notes extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = CN_base_element.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">
           View ${CN_common.uc_words(this.get_model().get_singular())}

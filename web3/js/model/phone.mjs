@@ -60,8 +60,8 @@ export class CN_phone_view extends CN_traceable_view {
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
       return [
-        this.get_property("rank").state.get(),
-        this.get_property("type").state.get(),
+        this.get_property_value("rank"),
+        this.get_property_value("type"),
       ].join(") ");
     }
     return await super.get_text(type);

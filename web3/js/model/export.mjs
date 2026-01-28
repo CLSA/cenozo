@@ -53,21 +53,21 @@ export class CN_export_model extends CN_base_model {
           title: "Participant Count",
           is_hidden: model => "add" == model.get_action_name(),
           is_constant: () => true,
-          set_postfix: () => {
+          postfix: (el) => {
             const btn_el = CN_element.create(
               '<button type="button" class="btn btn-outline-primary ms-2">Calculate</button>'
             );
             btn_el.addEventListener(
               "click",
               async () => {
-                const state = this.get_action().get_property("participant_count").state;
-                state.set("(calculating...)");
+                const form_input = this.get_action().get_property("participant_count").form_input;
+                form_input.set_value("(calculating...)");
                 btn_el.setAttribute("disabled", true);
-                state.set(await CN_api.count(`${this.get_view_url(null, "api")}/participant`));
+                form_input.set_value(await CN_api.count(`${this.get_view_url(null, "api")}/participant`));
                 btn_el.removeAttribute("disabled");
               },
             );
-            return btn_el;
+            el.append(btn_el);
           },
         },
         description: { title: "Description", type: "text" },
@@ -146,7 +146,7 @@ export class CN_export_model extends CN_base_model {
         enum: {
           get_enums: async (model) => {
             let enums = [];
-            const table_name = model.get_action().get_property("table_name").state.get();
+            const table_name = model.get_action().get_property_value("table_name");
             if ("site" == table_name) {
               enums = [
                 { key: "default", value: "Default" },
@@ -174,7 +174,7 @@ export class CN_export_model extends CN_base_model {
           },
         },
         is_hidden: (model) => {
-          const table_name = model.get_action().get_property("table_name").state.get();
+          const table_name = model.get_action().get_property_value("table_name");
           const table = this.get_export_table(table_name);
           return null == table;
         },
@@ -184,7 +184,7 @@ export class CN_export_model extends CN_base_model {
         type: "enum",
         enum: {
           get_enums: (model) => {
-            const table = model.get_action().get_property("table_name").state.get();
+            const table = model.get_action().get_property_value("table_name");
             return (
               table ?
               CN_session.get_module(table).get_property_names().sort().map( name => ({
@@ -209,7 +209,7 @@ export class CN_export_view extends CN_base_view {
     await super.on_load();
 
     // reset the partcipant count to unknown
-    this.get_property("participant_count").state.set("(not calculated)");
+    this.set_property_value("participant_count", "(not calculated)");
   }
 
   /**

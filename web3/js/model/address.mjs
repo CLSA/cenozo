@@ -58,7 +58,7 @@ export class CN_address_model extends CN_traceable_model {
           },
           is_hidden: (model) => (
             "add" == model.get_action_name() ||
-            model.get_action().get_property("international").state.get()
+            model.get_action().get_property_value("international")
           ),
           is_constant: () => true,
           help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
@@ -70,11 +70,11 @@ export class CN_address_model extends CN_traceable_model {
             "add" == model.get_action_name() ?
             1 == model.get_action()
               .get_property("international")
-              .form_element
+              .form_input
               .render()
               .querySelector("select")
               .value :
-            model.get_action().get_property("international").state.get()
+            model.get_action().get_property_value("international")
           ),
           help: "International regions are unrestricted and are not automatically set by the postcode.",
         },
@@ -86,10 +86,10 @@ export class CN_address_model extends CN_traceable_model {
             "add" == model.get_action_name() ?
             1 == model.get_action()
               .get_property("international")
-              .form_element
+              .form_input
               .querySelector("select")
               .value :
-            model.get_action().get_property("international").state.get()
+            model.get_action().get_property_value("international")
           ),
         },
         postcode: {
@@ -113,7 +113,7 @@ export class CN_address_model extends CN_traceable_model {
 
         months: {
           title: "Available Months",
-          is_hidden: model => !model.get_action().get_property("active").state.get(),
+          is_hidden: model => !model.get_action().get_property_value("active"),
           properties: {
             january: { title: "January", type: "boolean" },
             february: { title: "February", type: "boolean" },
@@ -143,8 +143,8 @@ export class CN_address_view extends CN_traceable_view {
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
       return [
-        this.get_property("rank").state.get(),
-        this.get_property("city").state.get(),
+        this.get_property_value("rank"),
+        this.get_property_value("city"),
       ].join(") ");
     }
     return await super.get_text(type);

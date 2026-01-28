@@ -97,7 +97,7 @@ export class CN_hold_add extends CN_base_add {
       if (404 != error.response.status) throw error;
     }
 
-    if (deceased_hold_type_id == this.get_property("hold_type_id").state.get()) {
+    if (deceased_hold_type_id == this.get_property_value("hold_type_id")) {
       await CN_element.message_modal({
         title: "Date of Death",
         size: "lg",
@@ -125,7 +125,7 @@ export class CN_hold_view extends CN_base_view {
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
       const prop = this.get_property("hold_type_id");
-      const hold_type = prop.enum.values.find(e => e.key == prop.state.get());
+      const hold_type = prop.enum.values.find(e => e.key == prop.form_input.get_value());
       return null == hold_type ? "Removed" : hold_type.value;
     }
     return await super.get_text(type);

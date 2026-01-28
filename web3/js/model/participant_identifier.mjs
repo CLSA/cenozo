@@ -36,7 +36,7 @@ export class CN_participant_identifier_model extends CN_base_model {
           is_constant: (model) => {
             return (
               "view" == model.get_action_name() ?
-              model.get_action().get_property("locked").state.get() :
+              model.get_action().get_property_value("locked") :
               false
             );
           },

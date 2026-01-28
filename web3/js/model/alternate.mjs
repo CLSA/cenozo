@@ -92,8 +92,8 @@ export class CN_alternate_view extends CN_base_person_view {
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
       return [
-        this.get_property("last_name").state.get(),
-        this.get_property("first_name").state.get(),
+        this.get_property_value("last_name"),
+        this.get_property_value("first_name"),
       ].join(", ");
     }
     return await super.get_text(type);

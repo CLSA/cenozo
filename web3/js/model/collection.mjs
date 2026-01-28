@@ -51,7 +51,7 @@ export class CN_collection_model extends CN_base_model {
    * Do not allow editing if the collection is locked
    */
   allow_edit() {
-    return super.allow_edit() && this.get_action().get_property("access").state.get();
+    return super.allow_edit() && this.get_action().get_property_value("access");
   }
 
   /**
@@ -60,7 +60,7 @@ export class CN_collection_model extends CN_base_model {
   allow_delete() {
     return super.allow_delete() && (
       "view" != this.get_action_name() ||
-      this.get_action().get_property("access").state.get()
+      this.get_action().get_property_value("access")
     );
   }
 }

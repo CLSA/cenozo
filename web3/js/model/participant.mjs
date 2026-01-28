@@ -67,7 +67,7 @@ export class CN_participant_model extends CN_base_person_model {
             hold: {
               title: "Hold",
               meta: {}, // predefined by the service
-              set_postfix: () => {
+              postfix: (el) => {
                 const btn_el = CN_element.create(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
                 );
@@ -75,14 +75,14 @@ export class CN_participant_model extends CN_base_person_model {
                   "click",
                   async () => { await CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
                 );
-                return btn_el;
+                el.append(btn_el);
               },
               is_constant: () => true,
             },
             trace: {
               title: "Trace",
               meta: {}, // predefined by the service
-              set_postfix: () => {
+              postfix: (el) => {
                 const btn_el = CN_element.create(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
                 );
@@ -90,14 +90,14 @@ export class CN_participant_model extends CN_base_person_model {
                   "click",
                   async () => { await CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
                 );
-                return btn_el;
+                el.append(btn_el);
               },
               is_constant: () => true,
             },
             proxy: {
               title: "Proxy",
               meta: {}, // predefined by the service
-              set_postfix: () => {
+              postfix: (el) => {
                 const btn_el = CN_element.create(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
                 );
@@ -105,7 +105,7 @@ export class CN_participant_model extends CN_base_person_model {
                   "click",
                   async () => { await CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
                 );
-                return btn_el;
+                el.append(btn_el);
               },
               is_constant: () => true,
             },
@@ -142,13 +142,13 @@ export class CN_participant_model extends CN_base_person_model {
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
               type: "enum",
-              is_constant: (model) => !model.get_action().get_property("date_of_death").state.get(),
+              is_constant: (model) => !model.get_action().get_property_value("date_of_death"),
               help: "Defines how accurate the date of death is.",
             },
             date_of_death_ministry: {
               title: "Death Confirmed by Ministry",
               type: "boolean",
-              is_constant: (model) => !model.get_action().get_property("date_of_death").state.get(),
+              is_constant: (model) => !model.get_action().get_property_value("date_of_death"),
               help: "Determines whether information about the participant's death is confirmed by a ministry",
             },
             language_id: {
@@ -255,7 +255,7 @@ export class CN_participant_view extends CN_base_person_view {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      return this.get_property("uid").state.get();
+      return this.get_property_value("uid");
     }
     return await super.get_text(type);
   }
@@ -508,7 +508,7 @@ export class CN_participant_multiedit extends CN_base_action {
             params.max_length = module_prop.max_length;
           }
 
-          params.set_postfix = () => {
+          params.postfix = (el) => {
             const btn_el = CN_element.create(`
               <button name="remove" type="button" class="btn btn-danger ms-2">
                 <i class="bi-x-circle-fill"></i>
@@ -524,7 +524,7 @@ export class CN_participant_multiedit extends CN_base_action {
                 this.update_element();
               },
             );
-            return btn_el;
+            el.append(btn_el);
           };
 
           const element_el = CN_element.create_form_element(params.type, params);
@@ -1164,9 +1164,9 @@ export class CN_participant_selection {
       required: true,
       on_change: () => this.reset_confirmation(),
       // add the confirm button as a postfix to the identifier-type selector
-      set_postfix: () => CN_element.create(
+      postfix: (el) => el.append(CN_element.create(
         '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
-      ),
+      )),
     });
     element_el.classList.add("col-sm-9");
     row_el.append(element_el);

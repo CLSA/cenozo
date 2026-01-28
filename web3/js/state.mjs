@@ -7,6 +7,13 @@ export class CN_state extends CN_base_object {
   #element;
 
   /**
+   * ADD DOCS
+   */
+  is_bound() {
+    return !!this.#element;
+  }
+
+  /**
    * Binds an element to the state (two-way binding)
    * @param Element el: The element to bind, usually a form element
    */

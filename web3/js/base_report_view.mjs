@@ -22,9 +22,8 @@ export class CN_base_report_view extends CN_base_view {
 
       // determine the file's mime type based on the format property
       let mime_type = "text/csv";
-
       if ("report" == model.get_name()) {
-        const format = this.get_property("format").state.get();
+        const format = this.get_property_value("format");
         if ("Excel" == format) {
           mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
         } else if ("" == format) {
@@ -59,7 +58,7 @@ export class CN_base_report_view extends CN_base_view {
     const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
     const download_btn_el = this.get_footer_element().querySelector("button[name=download]");
 
-    let stage = this.get_property("stage").state.get();
+    const stage = this.get_property_value("stage");
     if ("completed" == stage) {
       download_btn_el.removeAttribute("disabled");
     } else if (!["completed", "failed"].includes(stage)) {
@@ -72,7 +71,7 @@ export class CN_base_report_view extends CN_base_view {
           loading = true;
           await super.run(children);
 
-          let stage = this.get_property("stage").state.get();
+          const stage = this.get_property_value("stage");
           if (["completed", "failed"].includes(stage)) {
             if ("completed" == stage) {
               download_btn_el.removeAttribute("disabled");

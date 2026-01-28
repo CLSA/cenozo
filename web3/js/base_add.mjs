@@ -63,7 +63,7 @@ export class CN_base_add extends CN_base_record {
    * @param string prop_name
    */
   async on_set_property(prop_name) {
-    this.get_property(prop_name).state.commit();
+    this.get_property(prop_name).form_input.commit_value();
   }
 
   /**
@@ -74,7 +74,7 @@ export class CN_base_add extends CN_base_record {
 
     // validate all visible properties
     this.get_all_properties().forEach(prop => {
-      if (!prop.is_hidden(this.get_model()) && !prop.form_element.validate()) valid = false;
+      if (!prop.is_hidden(this.get_model()) && !prop.form_input.validate()) valid = false;
     });
 
     return valid;
@@ -102,10 +102,7 @@ export class CN_base_add extends CN_base_record {
     } catch (error) {
       if (409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
-          const prop = this.get_property(prop_name);
-          const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
-          const control_el = document.getElementById(prop.id);
-          prop.form_element.show_error("Conflicts with existing record", 0);
+          this.get_property(prop_name).form_input.show_error("Conflicts with existing record", 0);
         });
       } else {
         throw error;
@@ -139,8 +136,9 @@ export class CN_base_add extends CN_base_record {
    * @param string prop_name
    */
   update_property_element(prop_name) {
+    /* TODO: transfer logic to element/form classes
     const prop = this.get_property(prop_name);
-    const control_el = document.getElementById(prop.id);
+    const control_el = prop.form_input.get_control_element();
 
     if (["enum", "rank"].includes(prop.type)) {
       // see if the enum values have changed
@@ -213,6 +211,7 @@ export class CN_base_add extends CN_base_record {
         this.#default_values_applied.push(prop_name);
       }
     }
+    */
   }
 
   /**

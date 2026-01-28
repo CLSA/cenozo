@@ -35,7 +35,7 @@ export class CN_export_restriction_model extends CN_base_model {
           type: "enum",
           // don't show logic if this is the first restriction
           is_hidden: (model) => {
-            const rank = model.get_action().get_property("rank").state.get();
+            const rank = model.get_action().get_property_value("rank");
             return !rank || 1 == rank;
           },
         },
@@ -56,8 +56,7 @@ export class CN_export_restriction_view extends CN_base_view {
 
     // if the table name has changed then make sure to update the column_name as well
     if ("table_name" == prop_name) {
-      const prop = this.get_property("column_name");
-      prop.state.set(prop.enum.values[0].key);
+      this.set_property_value("column_name", prop.enum.values[0].key);
       await super.on_set_property("column_name");
     }
   }

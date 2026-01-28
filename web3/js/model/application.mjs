@@ -135,7 +135,7 @@ export class CN_application_view extends CN_base_view {
    */
   get_selector_child_list() {
     return (
-      CN_session.data.application.name == this.get_property("name").state.get() ?
+      CN_session.data.application.name == this.get_property_value("name") ?
       super.get_selector_child_list() :
       super.get_selector_child_list().filter(child => !["collection", "role"].includes(child.model.get_name()))
     );

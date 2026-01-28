@@ -37,8 +37,6 @@ export class CN_export_column_view extends CN_base_view {
 
     // if the table name has changed then make sure to update the column_name as well
     if ("table_name" == prop_name) {
-      const prop = this.get_property("column_name");
-      prop.state.set(prop.enum.values[0].key);
       await super.on_set_property("column_name");
     }
   }
