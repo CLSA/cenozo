@@ -132,12 +132,12 @@ export class CN_export_model extends CN_base_model {
           key: name,
           value: CN_common.pretty_print("table", name),
         })) },
-        on_change: async (control_el, valid, action) => {
+        on_change: async (form_input, valid) => {
           // run the default behaviour
-          await action.on_change("table_name", valid);
+          await form_input.get_action().on_change("table_name", valid);
 
           // re-run the action so the changed property is applied in the view and all child lists
-          if (valid) action.run(true);
+          if (valid) form_input.get_action().run(true);
         }
       },
       subtype: {

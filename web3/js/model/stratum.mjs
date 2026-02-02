@@ -228,9 +228,9 @@ export class CN_stratum_mass_participant extends CN_base_action {
     const element_el = CN_element.create_form_element("enum", {
       id: "operation",
       required: true,
-      on_change: (control_el) => {
-        // since this isn't connected to an action we must define the default behaviour
-        this.#operation = control_el.value;
+      on_change: (form_input) => {
+        // since the form input isn't connected to an action we must define the default behaviour
+        this.#operation = form_input.get_value();
         this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
         this.#participant_selection.reset();
         this.update_element();

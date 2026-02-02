@@ -17,12 +17,30 @@ export class CN_form_text extends CN_base_input {
   }
 
   /**
-   * Extends parent method
+   * Extend parent method
+   */
+  set_value(value) {
+    super.set_value(value);
+    this.#update_textarea_height();
+  }
+
+  /**
+   * Replace parent method
    */
   flash_border() {
-    super.flash_border();
+    const control_el = this.get_control_element();
+    const old_style = control_el.style;
+    control_el.style["border-color"] = "green";
+    setTimeout(() => {
+      control_el.style = old_style;
+      this.#update_textarea_height();
+    }, 500);    
+  }
 
-    // we also have to update text input heights since depending on the old_style doesn't seem to work
+  /**
+   * Resizes the control element's textarea based on its current scroll height
+   */
+  #update_textarea_height() {
     const control_el = this.get_control_element();
     control_el.style.height = "";
     control_el.style.height = control_el.scrollHeight + "px";

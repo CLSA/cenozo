@@ -458,8 +458,6 @@ export class CN_base_record extends CN_base_action {
       let params = CN_common.clone(prop);
       delete params.type;
       if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
-      if (undefined === params.placeholder) params.placeholder = "(empty)";
-
       if (undefined === params.max_length && module_prop && module_prop.max_length) {
         params.max_length = module_prop.max_length;
       }

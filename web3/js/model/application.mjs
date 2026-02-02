@@ -76,9 +76,9 @@ export class CN_application_model extends CN_base_model {
           title: "Primary Colour",
           type: "color",
           help: "The primary colour to use for the application's user interface.",
-          on_change: async (control_el, valid, action) => {
+          on_change: async (form_input, valid) => {
             // run the default behaviour
-            await action.on_change("primary_color", valid);
+            await form_input.get_action().on_change("primary_color", valid);
 
             // then reload the page so the new theme is generated
             if (valid) await CN_session.reload();
@@ -88,9 +88,9 @@ export class CN_application_model extends CN_base_model {
           title: "Secondary Colour",
           type: "color",
           help: "The secondary colour to use for the application's user interface.",
-          on_change: async (control_el, valid, action) => {
+          on_change: async (form_input, valid) => {
             // run the default behaviour
-            await action.on_change("secondary_color", valid);
+            await form_input.get_action().on_change("secondary_color", valid);
 
             // then reload the page so the new theme is generated
             if (valid) await CN_session.reload();

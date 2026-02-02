@@ -114,48 +114,48 @@ export class CN_user_list extends CN_base_list {
   create_footer_element() {
     const footer_el = super.create_footer_element();
 
-    // add the find action
-    const find_btn_el = CN_element.create(
-      '<button name="find" type="button" class="btn btn-light btn-outline-primary">Find User</button>'
-    );
-    find_btn_el.addEventListener("click", async () => {
-      const modal = CN_element.input_modal({
-        title: "Find User",
-        message: "Please provide the username of the user you wish to find.",
-        input: "string",
-        required: true,
-        do_not_close: true,
-      });
-      while (true) {
-        // ask for a username
-        let response = await modal.get();
-        if (undefined === response) {
-          //show = false;
-          modal.hide();
-          break;
-        } else {
-          let user_id = null;
-          try {
-            response = await CN_api.get(`user/name=${response}`, { select: { column: "id" } });
-            user_id = response.id;
-          } catch (error) {
-            // ignore 404s, it just means the username doesn't exist
-            if (404 != error.response.status) throw error;
-          }
-
-          if (null == user_id) {
-            modal.set_error( "Username not found." );
-          } else {
-            //show = false;
+    // add the find action when viewing the base user list
+    if (null == this.get_model().get_parent_model()) {
+      const find_btn_el = CN_element.create(
+        '<button name="find" type="button" class="btn btn-light btn-outline-primary">Find User</button>'
+      );
+      find_btn_el.addEventListener("click", async () => {
+        const modal = CN_element.input_modal({
+          title: "Find User",
+          message: "Please provide the username of the user you wish to find.",
+          input: "string",
+          required: true,
+          do_not_close: true,
+        });
+        while (true) {
+          // ask for a username
+          let response = await modal.get();
+          if (undefined === response) {
             modal.hide();
-            await CN_session.navigate_to(`user/view/${user_id}`);
             break;
+          } else {
+            let user_id = null;
+            try {
+              response = await CN_api.get(`user/name=${response}`, { select: { column: "id" } });
+              user_id = response.id;
+            } catch (error) {
+              // ignore 404s, it just means the username doesn't exist
+              if (404 != error.response.status) throw error;
+            }
+
+            if (null == user_id) {
+              modal.set_error( "Username not found." );
+            } else {
+              modal.hide();
+              await CN_session.navigate_to(`user/view/${user_id}`);
+              break;
+            }
           }
         }
-      }
-    });
+      });
 
-    footer_el.querySelector("div.btn-group").append(find_btn_el);
+      footer_el.querySelector("div.btn-group").append(find_btn_el);
+    }
 
     return footer_el;
   }

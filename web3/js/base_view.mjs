@@ -127,7 +127,7 @@ export class CN_base_view extends CN_base_record {
     try {
       // update the server
       let data = {};
-      data[prop_name] = await this.get_formatted_property(prop_name);
+      data[prop_name] = await this.get_property(prop_name).form_input.get_formatted_value();
 
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
@@ -193,15 +193,13 @@ export class CN_base_view extends CN_base_record {
     /* TODO: transfer logic to element/form classes
     // rebuild enum select options
     const value = prop.form_input.get_value();
-    if (["boolean", "enum", "rank"].includes(prop.type)) {
-      if ("boolean" != prop.type) {
-        control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
-        prop.enum.values.forEach(option => {
-          const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
-          if (option.disabled) option_el.setAttribute("disabled", true);
-          control_el.append(option_el);
-        });
-      }
+    if (["enum", "rank"].includes(prop.type)) {
+      control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
+      prop.enum.values.forEach(option => {
+        const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+        if (option.disabled) option_el.setAttribute("disabled", true);
+        control_el.append(option_el);
+      });
 
       control_el.querySelectorAll("option").forEach(option_el => {
         if (

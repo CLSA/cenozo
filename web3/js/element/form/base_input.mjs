@@ -8,6 +8,7 @@ const default_config = {
 };
 
 export class CN_base_input extends CN_base_element {
+  #action;
   #state;
   #control_id;
   #control_name;
@@ -23,15 +24,29 @@ export class CN_base_input extends CN_base_element {
    * @param object config: A set of key/value pairs containing all of the input's configuration parameters
    */
   constructor (config) {
-    // the id and name are used for an child element, not the root element
+    // the id and name config parameters are used for an child element, not the root element
     const id = config.id;
     delete config.id;
     const name = config.name;
     delete config.name;
 
+    // the action parameter is used to optionally track the action this input belongs to, not the root element
+    const action = config.action;
+    delete config.action;
+
     super({...default_config, ...config});
 
+    this.#action = action; 
+    this.#control_id = id;
+    this.#control_name = name;
     this.#state = new CN_state();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_action() {
+    return this.#action;
   }
 
   /**
@@ -62,6 +77,11 @@ export class CN_base_input extends CN_base_element {
       throw new Error("Tried to create form input but _create_control_element has not been implemented.");
     }
     this.#control_el = this._create_control_element(el);
+    this.set_value(
+      this.has_config("get_default") ?
+      this.get_config("get_default")(this.#action ? this.#action.get_model() : null) :
+      null
+    );
     this.#control_div_el.append(this.#control_el);
 
     // validate and call on_change function when the value changes
@@ -109,8 +129,8 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   on_added_to_dom(mutation_list) {
-    // bind the control to the state once it's been added to the dom
-    if (this.#state && !this.#state.is_bound() && document.contains(this.#control_el)) {
+    // bind the control to the state
+    if (this.#state && !this.#state.is_bound()) {
       this.#state.bind_element(this.#control_el);
     }
   }
@@ -169,7 +189,7 @@ export class CN_base_input extends CN_base_element {
     const value = this.get_value();
     let error = null;
 
-    if ([null, ""].includes(value)) {
+    if ([undefined, null, ""].includes(value)) {
       // the value is empty, so just make sure it isn't required
       if (this.get_config("required")) error = "Can't be empty";
     } else {

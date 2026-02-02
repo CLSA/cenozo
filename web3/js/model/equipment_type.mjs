@@ -2,7 +2,6 @@ import CN_common from "../common.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
-import { CN_base_action } from "../base_action.mjs"
 import { CN_base_model } from "../base_model.mjs"
 import { CN_base_upload } from "../base_upload.mjs"
 import { CN_base_view } from "../base_view.mjs"
