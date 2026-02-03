@@ -1,6 +1,6 @@
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
 
 export class CN_collection_model extends CN_base_model {
   constructor() {
@@ -65,7 +65,7 @@ export class CN_collection_model extends CN_base_model {
   }
 }
 
-export class CN_collection_list extends CN_base_list {
+export class CN_collection_list extends CN_action_list {
   /**
    * Extend parent method to change the user's child title
    */
@@ -75,7 +75,7 @@ export class CN_collection_list extends CN_base_list {
   }
 }
 
-export class CN_collection_view extends CN_base_view {
+export class CN_collection_view extends CN_action_view {
   /**
    * Extend parent method to change the user's child title
    */

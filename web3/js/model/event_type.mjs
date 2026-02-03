@@ -1,4 +1,4 @@
-import { CN_base_model } from "../base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
 export class CN_event_type_model extends CN_base_model {
   constructor() {
@@ -26,6 +26,6 @@ export class CN_event_type_model extends CN_base_model {
     });
   }
 
-  // TODO: add way in base_list to add more columns, then add a "Datetime" columns to the
+  // TODO: add way in action_list to add more columns, then add a "Datetime" columns to the
   // participant list action (based on event.datetime)
 }

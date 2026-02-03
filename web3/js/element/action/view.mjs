@@ -1,10 +1,10 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
+import CN_api from "../../api.mjs"
+import CN_common from "../../common.mjs"
+import CN_element from "../../element.mjs"
 
-import { CN_base_record } from "./base_record.mjs"
+import { CN_action_record } from "./record.mjs"
 
-export class CN_base_view extends CN_base_record {
+export class CN_action_view extends CN_action_record {
   #child_lists_el = null;
   #list_selector_el = null;
 
@@ -220,14 +220,6 @@ export class CN_base_view extends CN_base_record {
         `(${CN_common.format_filesize(value.size)})`;
     } else if ("size" == prop.type) {
       control_el.value = CN_common.format_filesize(value);
-    } else {
-      control_el.value = null === value ? "" : value;
-
-      // update textarea sizes
-      if ("text" == prop.type) {
-        control_el.style.height = "";
-        control_el.style.height = control_el.scrollHeight + "px";
-      }
     }
     */
   }

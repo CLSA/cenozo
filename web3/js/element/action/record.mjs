@@ -1,17 +1,17 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
+import CN_api from "../../api.mjs"
+import CN_common from "../../common.mjs"
+import CN_element from "../../element.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
-import { CN_form_label } from "./element/form/label.mjs"
-import { CN_state } from "./state.mjs"
+import { CN_form_label } from "../form/label.mjs"
+import { CN_state } from "../../state.mjs"
 
 // form inputs
-import { CN_form_boolean } from "./element/form/boolean.mjs"
-import { CN_form_string } from "./element/form/string.mjs"
-import { CN_form_text } from "./element/form/text.mjs"
+import { CN_form_boolean } from "../form/boolean.mjs"
+import { CN_form_string } from "../form/string.mjs"
+import { CN_form_text } from "../form/text.mjs"
 
-export class CN_base_record extends CN_base_action {
+export class CN_action_record extends CN_base_action {
   #property_groups;
   #form_el;
 
@@ -349,7 +349,7 @@ export class CN_base_record extends CN_base_action {
         // disable any properties that evaluate to constant
         prop.form_input.set_disabled(prop.is_constant(this.get_model()));
 
-        // now update the property element (this varies in the child base_add and base_view classes)
+        // now update the property element (this varies in the child action_add and action_view classes)
         this.update_property_element(prop.name);
       }
     }

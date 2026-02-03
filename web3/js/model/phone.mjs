@@ -1,4 +1,4 @@
-import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
+import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
 
 export class CN_phone_model extends CN_traceable_model {
   constructor() {

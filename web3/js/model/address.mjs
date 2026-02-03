@@ -2,7 +2,7 @@ import CN_api from "../api.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
-import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
+import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
 import { CN_country_model } from "./country.mjs"
 
 export class CN_address_model extends CN_traceable_model {

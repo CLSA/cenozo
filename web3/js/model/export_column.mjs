@@ -1,8 +1,8 @@
 import CN_api from "../api.mjs"
 import CN_session from "../session.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
 import { CN_export_model } from "./export.mjs"
 
 export class CN_export_column_model extends CN_base_model {
@@ -28,7 +28,7 @@ export class CN_export_column_model extends CN_base_model {
   }
 }
 
-export class CN_export_column_view extends CN_base_view {
+export class CN_export_column_view extends CN_action_view {
   /**
    * Extend parent method
    */

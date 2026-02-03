@@ -3,8 +3,8 @@ import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 import CN_timezones from "../timezones.mjs"
 
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_model } from "../base_model.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
 export class CN_user_model extends CN_base_model {
   constructor() {
@@ -93,7 +93,7 @@ export class CN_user_model extends CN_base_model {
   }
 }
 
-export class CN_user_list extends CN_base_list {
+export class CN_user_list extends CN_action_list {
   /**
    * Extends the parent method
    */
@@ -161,7 +161,7 @@ export class CN_user_list extends CN_base_list {
   }
 }
 
-export class CN_user_overview extends CN_base_list {
+export class CN_user_overview extends CN_action_list {
   /**
    * Extends the parent method
    */

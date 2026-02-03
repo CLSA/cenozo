@@ -1,7 +1,7 @@
 import CN_session from "../session.mjs"
 
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_model } from "../base_model.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
 export class CN_form_model extends CN_base_model {
   constructor() {
@@ -37,7 +37,7 @@ export class CN_form_model extends CN_base_model {
   }
 }
 
-export class CN_form_list extends CN_base_list {
+export class CN_form_list extends CN_action_list {
   async on_row_click(record) {
     if (!this.is_choosing() && this.get_model().allow_view()) {
       // always view forms using the form_type as the parent

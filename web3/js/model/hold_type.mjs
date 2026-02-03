@@ -1,4 +1,4 @@
-import { CN_base_model } from "../base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
 export class CN_hold_type_model extends CN_base_model {
   constructor() {

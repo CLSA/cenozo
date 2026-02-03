@@ -2,8 +2,8 @@ import CN_api from "../api.mjs"
 import CN_session from "../session.mjs"
 import CN_timezones from "../timezones.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
 import { CN_country_model } from "./country.mjs"
 
 export class CN_application_model extends CN_base_model {
@@ -128,7 +128,7 @@ export class CN_application_model extends CN_base_model {
   }
 }
 
-export class CN_application_view extends CN_base_view {
+export class CN_application_view extends CN_action_view {
   /**
    * Extend the parent method to remove the collection and role list for all applications except the current one.
    * This is because only the current application can get collections and roles from the server.

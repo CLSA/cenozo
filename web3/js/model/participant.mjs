@@ -3,9 +3,9 @@ import CN_common from "../common.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
-import { CN_base_action } from "../base_action.mjs"
+import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
-  from "../base_person_model.mjs"
+  from "./base_person_model.mjs"
 
 export class CN_participant_model extends CN_base_person_model {
   constructor() {

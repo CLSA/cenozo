@@ -1,6 +1,6 @@
 import CN_api from "../api.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_equipment_model } from "./equipment.mjs"
 import { CN_participant_model } from "./participant.mjs"
 

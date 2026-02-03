@@ -1,11 +1,11 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
-import CN_session from "./session.mjs"
+import CN_api from "../../api.mjs"
+import CN_common from "../../common.mjs"
+import CN_element from "../../element.mjs"
+import CN_session from "../../session.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
 
-export class CN_base_upload extends CN_base_action {
+export class CN_action_upload extends CN_base_action {
   #parent_record = null;
   #summary_data = null;
 

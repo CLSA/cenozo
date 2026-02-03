@@ -1,9 +1,9 @@
 import CN_api from "../api.mjs"
 import CN_session from "../session.mjs"
 
-import { CN_base_add } from "../base_add.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_report_view } from "../base_report_view.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_report_view } from "../element/action/report_view.mjs"
 
 export class CN_report_model extends CN_base_model {
   constructor() {
@@ -154,7 +154,7 @@ async function on_load(action) {
   }
 }
 
-export class CN_report_add extends CN_base_add {
+export class CN_report_add extends CN_action_add {
   current_report_type_id; // used in the custom on_load method
 
   /**
@@ -173,7 +173,7 @@ export class CN_report_add extends CN_base_add {
   }
 }
 
-export class CN_report_view extends CN_base_report_view {
+export class CN_report_view extends CN_action_report_view {
   current_report_type_id; // used in the custom on_load method
 
   /**

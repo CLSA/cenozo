@@ -1,13 +1,13 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
-import CN_session from "./session.mjs"
-import { CN_modal_confirm } from "./element/modal/confirm.mjs"
+import CN_api from "../api.mjs"
+import CN_common from "../common.mjs"
+import CN_element from "../element.mjs"
+import CN_session from "../session.mjs"
+import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 
-import { CN_base_add } from "./base_add.mjs"
-import { CN_base_list } from "./base_list.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
-import { CN_base_view } from "./base_view.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
 
 /**
  * Pops up an input dialog to get the reason why a participant will be added to or removed from tracing
@@ -99,7 +99,7 @@ export class CN_traceable_model extends CN_base_model {
   }
 }
 
-export class CN_traceable_add extends CN_base_add {
+export class CN_traceable_add extends CN_action_add {
   #trace_reason;
 
   /**
@@ -137,7 +137,7 @@ export class CN_traceable_add extends CN_base_add {
   }
 }
 
-export class CN_traceable_list extends CN_base_list {
+export class CN_traceable_list extends CN_action_list {
   /**
    * Extends the parent method
    */
@@ -168,7 +168,7 @@ export class CN_traceable_list extends CN_base_list {
   }
 }
 
-export class CN_traceable_view extends CN_base_view {
+export class CN_traceable_view extends CN_action_view {
   /**
    * Extends the parent method
    */

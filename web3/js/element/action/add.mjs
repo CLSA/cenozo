@@ -1,11 +1,11 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
-import CN_session from "./session.mjs"
+import CN_api from "../../api.mjs"
+import CN_common from "../../common.mjs"
+import CN_element from "../../element.mjs"
+import CN_session from "../../session.mjs"
 
-import { CN_base_record } from "./base_record.mjs"
+import { CN_action_record } from "./record.mjs"
 
-export class CN_base_add extends CN_base_record {
+export class CN_action_add extends CN_action_record {
   #default_values_applied = [];
 
   /**
@@ -51,6 +51,7 @@ export class CN_base_add extends CN_base_record {
 
     this.get_all_properties().forEach(prop => {
       // add an extra rank to make room for adding a new record
+      // TODO: test if this is right when reloading the record data multiple times (won't it keep adding more?)
       if ("rank" == prop.type) {
         const extra_rank = prop.enum.values.length + 1;
         prop.enum.values.push({ key: extra_rank, value: CN_common.ordinal_suffix(extra_rank) });
@@ -184,24 +185,6 @@ export class CN_base_add extends CN_base_record {
         });
         this.#default_values_applied.push(prop_name);
       }
-    } else if ("boolean" == prop.type) {
-      // only apply the default value once
-      if (!this.#default_values_applied.includes(prop_name)) {
-        // set the boolean placeholder
-        const empty_option_el = control_el.querySelector('option[value=""]');
-        if (empty_option_el) empty_option_el.innerHTML = `(Select a ${prop.title}...)`;
-
-        let default_value = prop.get_default(this.get_model());
-        default_value = null == default_value ? "" : default_value.toString();
-        control_el.querySelectorAll("option").forEach(option_el => {
-          if (option_el.value === default_value) {
-            option_el.selected = true;
-          } else {
-            option_el.removeAttribute("selected");
-          }
-        });
-        this.#default_values_applied.push(prop_name);
-      }
     } else if ("file" != prop.type) {
       // only apply the default value once
       if (!this.#default_values_applied.includes(prop_name)) {
@@ -212,6 +195,18 @@ export class CN_base_add extends CN_base_record {
       }
     }
     */
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_header_element() {
+    const el = super.create_header_element();
+
+    // remove the refresh button
+    el.querySelector("[name=refresh]").remove();
+
+    return el;
   }
 
   /**

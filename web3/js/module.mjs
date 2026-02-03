@@ -2,10 +2,10 @@ import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_session from "./session.mjs"
 
-import { CN_base_add } from "./base_add.mjs"
-import { CN_base_list } from "./base_list.mjs"
+import { CN_action_add } from "./element/action/add.mjs"
+import { CN_action_list } from "./element/action/list.mjs"
 import { CN_base_object } from "./base_object.mjs"
-import { CN_base_view } from "./base_view.mjs"
+import { CN_action_view } from "./element/action/view.mjs"
 
 /**
  * The session class which handles the application
@@ -179,9 +179,9 @@ export class CN_module extends CN_base_object {
       const prefix = `CN_${this.#name}`;
       this.#classes = {
         model: null,
-        add: CN_base_add,
-        list: CN_base_list,
-        view: CN_base_view,
+        add: CN_action_add,
+        list: CN_action_list,
+        view: CN_action_view,
       };
 
       // load the framework classes and use any that are found

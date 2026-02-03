@@ -1,7 +1,7 @@
-import CN_element from "./element.mjs"
-import CN_session from "./session.mjs"
+import CN_element from "../../element.mjs"
+import CN_session from "../../session.mjs"
 
-import { CN_base_object } from "./base_object.mjs"
+import { CN_base_object } from "../../base_object.mjs"
 
 /**
  * The base class for all action classes (add/view/list/etc)
@@ -220,7 +220,7 @@ export class CN_base_action extends CN_base_object {
 
     // add a data notation button
     const notation_btn_el = CN_element.create(`
-      <button class="btn btn-primary px-2 py-0">
+      <button name="notation" class="btn btn-primary px-2 py-0">
         <i class="bi-info-circle fs-5"></i>
       </button>
     `);
@@ -244,7 +244,7 @@ export class CN_base_action extends CN_base_object {
 
     // add a data refresh button
     const refresh_btn_el = CN_element.create(`
-      <button class="btn btn-primary px-2 py-0">
+      <button name="refresh" class="btn btn-primary px-2 py-0">
         <i class="bi-arrow-clockwise fs-5"></i>
       </button>
     `);

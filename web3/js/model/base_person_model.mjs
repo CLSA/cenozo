@@ -1,15 +1,15 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_session from "./session.mjs"
+import CN_api from "../api.mjs"
+import CN_common from "../common.mjs"
+import CN_session from "../session.mjs"
 
-import { CN_base_action } from "./base_action.mjs"
-import { CN_base_element } from "./element/base_element.mjs"
+import { CN_base_action } from "../element/action/base_action.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
 import { CN_base_model } from "./base_model.mjs"
-import { CN_base_view } from "./base_view.mjs"
-import { CN_modal_confirm } from "./element/modal/confirm.mjs"
-import { CN_form_label } from "./element/form/label.mjs"
-import { CN_form_string } from "./element/form/string.mjs"
-import { CN_form_text } from "./element/form/text.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_modal_confirm } from "../element/modal/confirm.mjs"
+import { CN_form_label } from "../element/form/label.mjs"
+import { CN_form_string } from "../element/form/string.mjs"
+import { CN_form_text } from "../element/form/text.mjs"
 
 export class CN_base_person_model extends CN_base_model {
   get_history_url() {
@@ -20,7 +20,7 @@ export class CN_base_person_model extends CN_base_model {
   }
 }
 
-export class CN_base_person_view extends CN_base_view {
+export class CN_base_person_view extends CN_action_view {
   /**
    * Add operation to the footer element
    */

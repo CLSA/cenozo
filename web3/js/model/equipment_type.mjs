@@ -2,9 +2,9 @@ import CN_common from "../common.mjs"
 import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_upload } from "../base_upload.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_upload } from "../element/action/upload.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
 
 export class CN_equipment_type_model extends CN_base_model {
   constructor() {
@@ -32,7 +32,7 @@ export class CN_equipment_type_model extends CN_base_model {
   }
 }
 
-export class CN_equipment_type_view extends CN_base_view {
+export class CN_equipment_type_view extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
@@ -55,7 +55,7 @@ export class CN_equipment_type_view extends CN_base_view {
   }
 }
 
-export class CN_equipment_type_upload extends CN_base_upload {
+export class CN_equipment_type_upload extends CN_action_upload {
   /**
    * Replace parent method
    */

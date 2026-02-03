@@ -1,12 +1,12 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_session from "./session.mjs"
+import CN_api from "../../api.mjs"
+import CN_common from "../../common.mjs"
+import CN_session from "../../session.mjs"
 import { CN_base_action } from "./base_action.mjs"
-import { CN_base_element } from "./element/base_element.mjs"
-import { CN_modal_confirm } from "./element/modal/confirm.mjs"
-import CN_filter_modal, { load_filter } from "./filter.mjs"
+import { CN_base_element } from "../base_element.mjs"
+import { CN_modal_confirm } from "../modal/confirm.mjs"
+import CN_filter_modal, { load_filter } from "../../filter.mjs"
 
-export class CN_base_list extends CN_base_action {
+export class CN_action_list extends CN_base_action {
   #list_mode;
   #columns;
   #records = [];

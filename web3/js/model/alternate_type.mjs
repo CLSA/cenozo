@@ -1,7 +1,7 @@
 import CN_session from "../session.mjs"
 
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_list } from "../base_list.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
 
 export class CN_alternate_type_model extends CN_base_model {
   constructor() {
@@ -41,7 +41,7 @@ export class CN_alternate_type_model extends CN_base_model {
   }
 }
 
-export class CN_alternate_type_list extends CN_base_list {
+export class CN_alternate_type_list extends CN_action_list {
   /**
    * Extends the parent method
    */

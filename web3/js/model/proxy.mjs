@@ -1,8 +1,8 @@
 import CN_element from "../element.mjs"
 
-import { CN_base_add } from "../base_add.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
 
 export class CN_proxy_model extends CN_base_model {
   constructor() {
@@ -71,7 +71,7 @@ export class CN_proxy_model extends CN_base_model {
   }
 }
 
-export class CN_proxy_add extends CN_base_add {
+export class CN_proxy_add extends CN_action_add {
   async on_submit() {
     let proceed = true;
 
@@ -86,7 +86,7 @@ export class CN_proxy_add extends CN_base_add {
   }
 }
 
-export class CN_proxy_view extends CN_base_view {
+export class CN_proxy_view extends CN_action_view {
   /**
    * Extends the parent method
    */

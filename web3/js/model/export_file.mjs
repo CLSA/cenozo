@@ -1,5 +1,5 @@
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_report_view } from "../base_report_view.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_action_report_view } from "../element/action/report_view.mjs"
 
 export class CN_export_file_model extends CN_base_model {
   constructor() {
@@ -56,4 +56,4 @@ export class CN_export_file_model extends CN_base_model {
   allow_add() { return false; }
 }
 
-export class CN_export_file_view extends CN_base_report_view {}
+export class CN_export_file_view extends CN_action_report_view {}
