@@ -71,17 +71,18 @@ export class CN_base_element extends CN_base_object {
     const class_list = this.get_config("class");
     if (null != class_list) el.classList = class_list;
 
-    const observer = new MutationObserver(mutation => this.on_added_to_dom(mutation));
-    observer.observe(el, { attributes: false, childList: true, characterData: false, subtree: true });
-
     return el;
   }
 
   /**
    * ADD DOCS
    */
-  on_added_to_dom(mutation_list) {
-  }
+  async on_dom_add() {}
+
+  /**
+   * ADD DOCS
+   */
+  async on_dom_remove() {}
 
   /**
    * ADD DOCS

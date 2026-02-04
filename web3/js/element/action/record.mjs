@@ -265,7 +265,7 @@ export class CN_action_record extends CN_base_action {
   async get_property_formatted_value(prop_name) {
     const prop = this.get_property(prop_name);
     return null == prop ? undefined : await prop.form_input.get_formatted_value();
-    
+
     /* TODO: move to element/form classes
     const prop = this.get_property(prop_name);
     let value = prop.form_input.get_value();
@@ -480,8 +480,13 @@ export class CN_action_record extends CN_base_action {
       }
     }
 
-    // render the element and add it to the property
-    prop_el.append(prop.form_input.render());
+    // add the input to the prop, watching for add DOM events (the remove event must be tracked in session.mjs)
+    const input_el = prop.form_input.render();
+    const observer = new MutationObserver(async mutation => {
+      await prop.form_input.on_dom_add();
+    });
+    observer.observe(prop_el, { childList: true });
+    prop_el.append(input_el);
 
     return prop_el;
   }
@@ -489,9 +494,9 @@ export class CN_action_record extends CN_base_action {
   /**
    * Extends parent method
    */
-  render() {
+  _create_element() {
     // remove the card body's padding to make better use of space
-    const el = super.render();
+    const el = super._create_element();
     el.querySelector(
       this.get_simple_mode() ?
       ":scope > div" :

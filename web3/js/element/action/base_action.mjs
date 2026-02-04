@@ -1,12 +1,12 @@
 import CN_element from "../../element.mjs"
 import CN_session from "../../session.mjs"
 
-import { CN_base_object } from "../../base_object.mjs"
+import { CN_base_element } from "../base_element.mjs"
 
 /**
  * The base class for all action classes (add/view/list/etc)
  */
-export class CN_base_action extends CN_base_object {
+export class CN_base_action extends CN_base_element {
   #type;
   #model = null;
   #header_el;
@@ -26,7 +26,7 @@ export class CN_base_action extends CN_base_object {
    * @param base_model model: The model that the action belongs to
    */
   constructor(type, model) {
-    super();
+    super({ name: type });
     this.#type = type;
     this.#model = model;
   }
@@ -195,16 +195,6 @@ export class CN_base_action extends CN_base_object {
   }
 
   /**
-   * This method is run when the action is added to the DOM
-   */
-  async on_dom_add() {}
-
-  /**
-   * This method is run when the action is added to the DOM
-   */
-  async on_dom_remove() {}
-
-  /**
    * Updates the action's element
    */
   update_element() {
@@ -295,11 +285,10 @@ export class CN_base_action extends CN_base_object {
    * Creates the action's element including the header, body and footer sub-elements
    * @return Element
    */
-  render() {
-    const el = CN_element.create(`<div></div>`);
+  _create_element() {
+    const el = super._create_element();
     if (null == this.#model.get_action_name()) return el;
 
-    el.setAttribute("name", this.#model.get_action_name());
     const placeholder_el = this.get_placeholder_element();
     if (this.#simple_mode) {
       // make sure to put the placeholder inside of a div (for body/placeholder swapping to work correctly)

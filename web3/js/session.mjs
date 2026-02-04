@@ -379,23 +379,25 @@ export default {
     // now render and run the leaf module
     const leaf_model_element = leaf_model.render();
 
-    // Fire the model's action's DOM callbacks as the model's element is added to or removed from the DOM
+    // add the leaf model to the main content, watching for add/remove DOM events
     const observer = new MutationObserver(async mutation => {
-      if (!CN_common.is_function(leaf_model.get_action)) {
-        observer.disconnect();
-        return;
-      }
-
-      const action = leaf_model.get_action();
-      if (document.contains(leaf_model_element)) {
-        await action.on_dom_add();
-      } else {
-        await action.on_dom_remove();
-        observer.disconnect();
+      if (CN_common.is_function(leaf_model.get_action)) {
+        const action = leaf_model.get_action();
+        if (document.contains(leaf_model_element)) {
+          await action.on_dom_add();
+        } else {
+          observer.disconnect();
+          const promise_list = (
+            ["add", "view"].includes(action.get_type()) ?
+            action.get_all_properties().map(prop => prop.form_input.on_dom_remove()) :
+            []
+          );
+          promise_list.push(action.on_dom_remove());
+          await Promise.all(promise_list);
+        }
       }
     });
     observer.observe(main_content_el, { childList: true });
-
     main_content_el.append(leaf_model_element);
 
     await leaf_model.run();

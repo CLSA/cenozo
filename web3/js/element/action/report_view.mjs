@@ -46,6 +46,8 @@ export class CN_action_report_view extends CN_action_view {
    * remove the refresh_interval if the action is removed from the DOM
    */
   async on_dom_remove() {
+    await super.on_dom_remove();
+    // TODO: test that this still works
     clearInterval(this.#refresh_interval);
   }
 

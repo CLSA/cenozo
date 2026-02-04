@@ -36,7 +36,7 @@ export class CN_base_input extends CN_base_element {
 
     super({...default_config, ...config});
 
-    this.#action = action; 
+    this.#action = action;
     this.#control_id = id;
     this.#control_name = name;
     this.#state = new CN_state();
@@ -128,7 +128,9 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
-  on_added_to_dom(mutation_list) {
+  async on_dom_add() {
+    await super.on_dom_add();
+
     // bind the control to the state
     if (this.#state && !this.#state.is_bound()) {
       this.#state.bind_element(this.#control_el);

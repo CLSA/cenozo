@@ -149,6 +149,7 @@ export class CN_base_model extends CN_base_object {
         problem = "is not implemented in the model";
       } else {
         this.#action = this.#module.create_action(action_name, this);
+        this.#action.set_config("id", this.#unique_id);
       }
     }
 
@@ -270,8 +271,11 @@ export class CN_base_model extends CN_base_object {
    * @return Element
    */
   render() {
-    this.#element = null == this.#action ? CN_element.create("<div></div>") : this.#action.render();
-    this.#element.id = this.#unique_id;
+    this.#element = (
+      null == this.#action ?
+      CN_element.create(`<div id="${this.#unique_id}"></div>`) :
+      this.#action.render()
+    );
     return this.#element;
   }
 

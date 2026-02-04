@@ -34,7 +34,7 @@ export class CN_form_text extends CN_base_input {
     setTimeout(() => {
       control_el.style = old_style;
       this.#update_textarea_height();
-    }, 500);    
+    }, 500);
   }
 
   /**

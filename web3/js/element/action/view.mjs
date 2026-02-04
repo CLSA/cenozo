@@ -358,8 +358,8 @@ export class CN_action_view extends CN_action_record {
   /**
    * Extends parent method
    */
-  render() {
-    const el = super.render();
+  _create_element() {
+    const el = super._create_element();
 
     // create the child list element
     this.#child_lists_el = CN_element.create('<div name="child-lists"></div>');
