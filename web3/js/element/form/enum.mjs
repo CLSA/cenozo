@@ -27,7 +27,7 @@ export class CN_form_enum extends CN_base_input {
     return this.constructor.html('<select class="form-select"></select>');
   }
 
-  /** 
+  /**
    * Extend parent method
    */
   set_value(value) {
@@ -39,12 +39,12 @@ export class CN_form_enum extends CN_base_input {
         (1 == option_el.value && true === value) ||
         (0 == option_el.value && false === value) ||
         (null != value && option_el.value === value)
-      ) { 
+      ) {
         option_el.selected = true;
       } else {
         option_el.removeAttribute("selected");
-      }   
-    }); 
+      }
+    });
   }
 
   /**
