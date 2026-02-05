@@ -1,3 +1,4 @@
+import CN_common from "../common.mjs"
 import { CN_base_object } from "../base_object.mjs"
 
 const default_config = {
@@ -18,7 +19,11 @@ export class CN_base_element extends CN_base_object {
    * Constructor
    * @param object config: A set of key/value pairs containing all of the modal's configuration parameters
    */
-  constructor(config) {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_base_element contructor");
+    }
+
     super();
 
     // store all properties in the config parameter
@@ -44,7 +49,7 @@ export class CN_base_element extends CN_base_object {
    */
   get_config(name) {
     if (!this.#config.has(name)){
-      console.warn(`Referencing config undefined parameter "${name}" in ${this.get_class_name()} modal`);
+      console.warn(`Referencing undefined config parameter "${name}" in ${this.get_class_name()}`);
     }
     return this.#config.get(name);
   }

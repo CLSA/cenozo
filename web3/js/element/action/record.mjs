@@ -8,8 +8,10 @@ import { CN_state } from "../../state.mjs"
 
 // form inputs
 import { CN_form_boolean } from "../form/boolean.mjs"
+import { CN_form_enum } from "../form/enum.mjs"
 import { CN_form_string } from "../form/string.mjs"
 import { CN_form_text } from "../form/text.mjs"
+import { CN_form_typeahead } from "../form/typeahead.mjs"
 
 export class CN_action_record extends CN_base_action {
   #property_groups;
@@ -132,6 +134,7 @@ export class CN_action_record extends CN_base_action {
    *     typeahead values returned by a user-defined function:
    *       get_list: an async function that returns the typeahead values, with arguments:
    *         value: the search value provided by the user
+   *         form_input: the property's form_input object
    *       Note that this function is often provided by a get_typeahead() function in the related model
    *
    *   Mandatory property for the "file" type:
@@ -176,14 +179,12 @@ export class CN_action_record extends CN_base_action {
       if (!prop.typeahead.on_select) {
         prop.typeahead.on_select = item => {
           // ignore if the value hasn't changed
-          if (prop.get_value() != item.value) {
-            prop.form_input.set_value(item.value);
-            prop.form_input.commit_value();
-            if (prop.form_input.has_param("on_change")) {
-              prop.form_input.get_param("on_change")(
-                document.getElementById(prop.id), prop.form_input.validate(), this
-              );
-            }
+          prop.form_input.set_value(item.value);
+          prop.form_input.commit_value();
+          if (prop.form_input.has_config("on_change")) {
+            prop.form_input.get_config("on_change")(
+              document.getElementById(prop.id), prop.form_input.validate(), this
+            );
           }
         };
       }
@@ -254,7 +255,7 @@ export class CN_action_record extends CN_base_action {
    */
   get_property_value(prop_name) {
     const prop = this.get_property(prop_name);
-    return null == prop ? undefined : prop.form_input.get_value();
+    return !prop || !prop.form_input ? undefined : prop.form_input.get_value();
   }
 
   /**
@@ -265,18 +266,6 @@ export class CN_action_record extends CN_base_action {
   async get_property_formatted_value(prop_name) {
     const prop = this.get_property(prop_name);
     return null == prop ? undefined : await prop.form_input.get_formatted_value();
-
-    /* TODO: move to element/form classes
-    const prop = this.get_property(prop_name);
-    let value = prop.form_input.get_value();
-    if ("typeahead" == prop.type) {
-      // convert from value to key by looking up the element's typeahead list in the params object
-      // NOTE: the element's params is not the same as the property's params object (it is cloned)
-      if (null != value) {
-        value = prop.form_input.get_param("typeahead").list.find(item => value === item.value).key;
-      }
-    }
-    */
   }
 
   /**
@@ -285,29 +274,6 @@ export class CN_action_record extends CN_base_action {
   set_property_value(prop_name, value) {
     const prop = this.get_property(prop_name);
     if (prop) prop.form_input.set_value(value);
-  }
-
-  /**
-   * Extends parent class
-   */
-  async on_load() {
-    await super.on_load();
-
-    // load dynamic enums
-    const promise_list = [];
-    for (const group_name in this.#property_groups) {
-      for (const prop_name in this.#property_groups[group_name].properties) {
-        const prop = this.#property_groups[group_name].properties[prop_name];
-        promise_list.push((async () => {
-          const values = await this.get_model().get_enum_values(prop_name, prop);
-          if (null != values) {
-            if (!CN_common.is_object(prop.enum)) prop.enum = {};
-            prop.enum.values = values;
-          }
-        })());
-      }
-    }
-    await Promise.all(promise_list);
   }
 
   /**
@@ -335,9 +301,6 @@ export class CN_action_record extends CN_base_action {
       for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
-
-        // hide any errors
-        prop.form_input.hide_error();
 
         // remove any properties that evaluate to hidden
         if (prop.is_hidden(this.get_model())) {
@@ -471,10 +434,14 @@ export class CN_action_record extends CN_base_action {
       params.class = "d-flex align-items-center col-sm-9";
       if ("boolean" == prop.type) {
         prop.form_input = new CN_form_boolean(params);
+      } else if ("enum" == prop.type) {
+        prop.form_input = new CN_form_enum(params);
       } else if ("string" == prop.type) {
         prop.form_input = new CN_form_string(params);
       } else if ("text" == prop.type) {
         prop.form_input = new CN_form_text(params);
+      } else if ("typeahead" == prop.type) {
+        prop.form_input = new CN_form_typeahead(params);
       } else {
         console.warn(`Tried to create invalid property type "${prop.type}"`);
       }

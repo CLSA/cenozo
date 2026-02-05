@@ -18,12 +18,17 @@ export class CN_base_input extends CN_base_element {
   #control_div_el;
   #error_div_el;
   #postfix_div_el;
+  #event_listeners = true;
 
   /**
    * Base class for all form inputs
    * @param object config: A set of key/value pairs containing all of the input's configuration parameters
    */
-  constructor (config) {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_base_input contructor");
+    }
+
     // the id and name config parameters are used for an child element, not the root element
     const id = config.id;
     delete config.id;
@@ -45,6 +50,20 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
+  get_event_listeners() {
+    return this.#event_listeners;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_event_listeners(enable) {
+    this.#event_listeners = enable;
+  }
+
+  /**
+   * ADD DOCS
+   */
   get_action() {
     return this.#action;
   }
@@ -54,6 +73,13 @@ export class CN_base_input extends CN_base_element {
    */
   get_control_element() {
     return this.#control_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_control_div_element() {
+    return this.#control_div_el;
   }
 
   /**
@@ -84,16 +110,18 @@ export class CN_base_input extends CN_base_element {
     );
     this.#control_div_el.append(this.#control_el);
 
-    // validate and call on_change function when the value changes
-    this.#control_el.addEventListener("change", async () => {
-      // always validate the input
-      const valid = this.validate();
+    if (this.#event_listeners) {
+      // validate and call on_change function when the value changes
+      this.#control_el.addEventListener("change", async () => {
+        // always validate the input
+        const valid = this.validate();
 
-      // call the on_change function if it exists
-      if (this.has_config("on_change")) {
-        await this.get_config("on_change")(this, valid);
-      }
-    });
+        // call the on_change function if it exists
+        if (this.has_config("on_change")) {
+          await this.get_config("on_change")(this, valid);
+        }
+      });
+    }
 
     // append the control and add prefix and postfix elements
     if (this.has_config("prefix")) {
@@ -184,6 +212,12 @@ export class CN_base_input extends CN_base_element {
   }
 
   /**
+   * ADD DOCS
+   */
+  async update() {
+  }
+
+  /**
    * Determines if there was an error
    * @return boolean
    */
@@ -223,7 +257,7 @@ export class CN_base_input extends CN_base_element {
         if (null == error && this.has_config("regex")) {
           const regex = this.get_config("regex");
           // the regex may be a string or array of strings
-          let regex_list = CN_common.is_array(regex) ?  regex : [regex];
+          let regex_list = CN_common.is_array(regex) ? regex : [regex];
           for (let i = 0; i < regex_list.length; i++) {
             let re = new RegExp(regex_list[i]);
             if (!re.test(value)) {

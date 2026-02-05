@@ -10,6 +10,10 @@ export class CN_modal_account extends CN_base_modal {
   #elements;
 
   constructor(config = { title: "Account Details" }) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_modal_account contructor");
+    }
+
     super(config);
 
     this.#elements = {

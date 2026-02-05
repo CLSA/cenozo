@@ -1,3 +1,4 @@
+import CN_common from "../../common.mjs"
 import { CN_base_modal } from "./base_modal.mjs"
 
 const default_config = {
@@ -8,7 +9,11 @@ const default_config = {
 };
 
 export class CN_modal_confirm extends CN_base_modal {
-  constructor(config) {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_modal_confirm contructor");
+    }
+
     super({...default_config, ...config});
 
     // add the resolve buttons

@@ -182,13 +182,11 @@ export class CN_action_view extends CN_action_record {
    * Extends parent method
    */
   update_property_element(prop_name) {
-    const module_prop = this.get_model().get_module().get_property(prop_name);
-    const prop = this.get_property(prop_name);
-    const control_el = document.getElementById(prop.id);
-
     // update the input's value and flash the border to indicate that the data has been updated
+    const prop = this.get_property(prop_name);
     prop.form_input.set_value(prop.form_input.get_value());
     prop.form_input.flash_border();
+    prop.form_input.update();
 
     /* TODO: transfer logic to element/form classes
     // rebuild enum select options

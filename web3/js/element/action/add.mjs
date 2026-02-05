@@ -137,6 +137,9 @@ export class CN_action_add extends CN_action_record {
    * @param string prop_name
    */
   update_property_element(prop_name) {
+    const prop = this.get_property(prop_name);
+    prop.form_input.update();
+
     /* TODO: transfer logic to element/form classes
     const prop = this.get_property(prop_name);
     const control_el = prop.form_input.get_control_element();

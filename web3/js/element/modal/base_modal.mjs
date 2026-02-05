@@ -16,7 +16,11 @@ export class CN_base_modal extends CN_base_element {
    * Constructor
    * @param object config: A set of key/value pairs containing all of the modal's configuration parameters
    */
-  constructor(config) {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_base_modal contructor");
+    }
+
     // the type must be div
     config.type = "div";
 

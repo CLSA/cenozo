@@ -415,6 +415,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
       if ("note" == module_name) {
       } else if (mod.enum) {
+        /* TODO: is this done in element/form/enum.mjs now or do we need to redesign?
         // load dynamic enums
         promise_list.push((async () => {
           mod.enum.values = await model.get_enum_values(module_name, {
@@ -422,6 +423,7 @@ export class CN_participant_multiedit extends CN_base_action {
             enum: mod.enum
           });
         })());
+        */
       } else if (mod.hasOwnProperty("properties")) {
         const properties = model.clone_properties();
 

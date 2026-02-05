@@ -26,7 +26,11 @@ export class CN_form_element extends CN_base_element {
    * @param object params: An object defining the element (properties depending on element type)
    * @return Element
    */
-  constructor (element_type, config) {
+  constructor(element_type, config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_form_element contructor");
+    }
+
     const id = config.id;
     delete config.id;
     const name = config.name;

@@ -12,7 +12,11 @@ const default_config = {
 };
 
 export class CN_form_file extends CN_base_input {
-  constructor(config) {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_form_file contructor");
+    }
+
     super({...default_config, ...config});
   }
 

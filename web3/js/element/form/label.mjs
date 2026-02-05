@@ -1,3 +1,4 @@
+import CN_common from "../../common.mjs"
 import { CN_base_element } from "../base_element.mjs"
 
 const default_config = {
@@ -9,7 +10,11 @@ const default_config = {
 };
 
 export class CN_form_label extends CN_base_element {
-  constructor (config) {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_form_label contructor");
+    }
+
     super({...default_config, ...config});
   }
 
