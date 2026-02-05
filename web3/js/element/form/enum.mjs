@@ -24,9 +24,27 @@ export class CN_form_enum extends CN_base_input {
    * Extends the parent method
    */
   _create_control_element() {
-    const el = this.constructor.html('<select class="form-select"></select>');
-    this.update();
-    return el;
+    return this.constructor.html('<select class="form-select"></select>');
+  }
+
+  /** 
+   * Extend parent method
+   */
+  set_value(value) {
+    super.set_value(value);
+
+    this.get_control_element().querySelectorAll("option").forEach(option_el => {
+      if (
+        ("" == option_el.value && null === value) ||
+        (1 == option_el.value && true === value) ||
+        (0 == option_el.value && false === value) ||
+        (null != value && option_el.value === value)
+      ) { 
+        option_el.selected = true;
+      } else {
+        option_el.removeAttribute("selected");
+      }   
+    }); 
   }
 
   /**
@@ -36,9 +54,11 @@ export class CN_form_enum extends CN_base_input {
     const enum_obj = this.get_config("enum");
 
     // re-generate the option list
-    if (CN_common.is_function(enum_obj.get_enums)) { // check if a get_enums function exists in the params
+    if (CN_common.is_function(enum_obj.get_enums)) {
+      // check if a get_enums function exists in the params
       enum_obj.values = await enum_obj.get_enums(this);
-    } else if (enum_obj.path) { // check if a path property exists in the params (may be a string or a function)
+    } else if (enum_obj.path) {
+      // check if a path property exists in the params (may be a string or a function)
       // build the params object for getting the enum values
       const get_params = {
         select: enum_obj.select ? enum_obj.select : { column: "name" },
@@ -63,11 +83,15 @@ export class CN_form_enum extends CN_base_input {
         return list;
       }, []);
     } else {
-      // enum properties without an enum path use the column definition
-      const module_prop = this.get_module().get_property(prop_name);
-      const matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-      if (null == matches) throw new Error(`Property ${prop_name} has no valid enum values.`);
-      enum_obj.values = matches[1].split("','").map(v => ({ key: v, value: v, disabled: false }));
+      // check for enums in the column definition (for inputs linked to an action only)
+      const action = this.get_action();
+      if (action) {
+        const module_prop = action.get_model().get_module().get_property(prop_name);
+        const matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
+        if (null == matches) {
+          enum_obj.values = matches[1].split("','").map(v => ({ key: v, value: v, disabled: false }));
+        }
+      }
     }
 
     // now replace the options

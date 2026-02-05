@@ -9,6 +9,7 @@ import { CN_state } from "../../state.mjs"
 // form inputs
 import { CN_form_boolean } from "../form/boolean.mjs"
 import { CN_form_enum } from "../form/enum.mjs"
+import { CN_form_rank } from "../form/rank.mjs"
 import { CN_form_string } from "../form/string.mjs"
 import { CN_form_text } from "../form/text.mjs"
 import { CN_form_typeahead } from "../form/typeahead.mjs"
@@ -436,6 +437,8 @@ export class CN_action_record extends CN_base_action {
         prop.form_input = new CN_form_boolean(params);
       } else if ("enum" == prop.type) {
         prop.form_input = new CN_form_enum(params);
+      } else if ("rank" == prop.type) {
+        prop.form_input = new CN_form_rank(params);
       } else if ("string" == prop.type) {
         prop.form_input = new CN_form_string(params);
       } else if ("text" == prop.type) {

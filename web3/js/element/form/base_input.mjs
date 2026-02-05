@@ -103,6 +103,7 @@ export class CN_base_input extends CN_base_element {
       throw new Error("Tried to create form input but _create_control_element has not been implemented.");
     }
     this.#control_el = this._create_control_element(el);
+    this.update();
     this.set_value(
       this.has_config("get_default") ?
       this.get_config("get_default")(this.#action ? this.#action.get_model() : null) :
