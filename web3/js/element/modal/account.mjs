@@ -3,8 +3,10 @@ import CN_common from "../../common.mjs"
 import CN_session from "../../session.mjs"
 
 import { CN_base_modal } from "./base_modal.mjs"
-import { CN_form_element } from "../form_element.mjs";
-import { CN_form_label } from "../form/label.mjs";
+
+import { CN_input_email } from "../input/email.mjs";
+import { CN_input_label } from "../input/label.mjs";
+import { CN_input_string } from "../input/string.mjs";
 
 export class CN_modal_account extends CN_base_modal {
   #elements;
@@ -20,17 +22,14 @@ export class CN_modal_account extends CN_base_modal {
       first_name: {
         el_id: ["cn-first-name", CN_common.get_random_hex_identifier()].join("-"),
         title: "First Name",
-        type: "string",
       },
       last_name: {
         el_id: ["cn-last-name", CN_common.get_random_hex_identifier()].join("-"),
         title: "Last Name",
-        type: "string",
       },
       email: {
         el_id: ["cn-email", CN_common.get_random_hex_identifier()].join("-"),
         title: "Email",
-        type: "email",
       },
     };
 
@@ -82,12 +81,13 @@ export class CN_modal_account extends CN_base_modal {
     for (const element_name in this.#elements) {
       const element = this.#elements[element_name];
       const el = this.constructor.html('<div class="row mb-3"></div>');
-      const label_el = CN_form_label.create({ for: element.el_id, value: element.title });
+      const label_el = CN_input_label.create({ for: element.el_id, value: element.title });
       label_el.classList.add("col-sm-3");
       el.append(label_el);
-      const form_element = new CN_form_element(element.type, {
+      /* TODO: reimplement
+      const form_input = new CN_input_???(element.type, {
         id: element.el_id,
-        name: element_name,
+        name: element_nameii,
         required: true,
         on_change: (control_el, valid) => {
           const ok_btn_el = el.querySelector("[name=OK]");
@@ -98,10 +98,12 @@ export class CN_modal_account extends CN_base_modal {
           }
         },
       });
-      const element_el = form_element.render();
+      const form_input =
+      const element_el = form_input.render();
       element_el.classList.add("col-sm-9");
       element_el.querySelector("input").value = CN_session.data.user[element_name];
       el.append(element_el);
+      */
       body_el.querySelector("form").append(el);
     }
 

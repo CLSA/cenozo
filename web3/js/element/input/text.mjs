@@ -1,6 +1,6 @@
 import { CN_base_input } from "./base_input.mjs"
 
-export class CN_form_text extends CN_base_input {
+export class CN_input_text extends CN_base_input {
   /**
    * Extends the parent method
    */
@@ -51,5 +51,5 @@ export class CN_form_text extends CN_base_input {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_form_text(config)).render(); }
+  static create(config) { return (new CN_input_text(config)).render(); }
 }

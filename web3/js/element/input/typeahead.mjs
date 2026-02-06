@@ -10,12 +10,12 @@ const default_config = {
   },
 };
 
-export class CN_form_typeahead extends CN_base_input {
+export class CN_input_typeahead extends CN_base_input {
   #typeahead_el;
 
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_form_typeahead contructor");
+      throw new Error("Non-object config argument passed to CN_input_typeahead contructor");
     }
 
     // don't replace the typeahead property in the config if it's an object, merge it with the default instead
@@ -198,5 +198,5 @@ export class CN_form_typeahead extends CN_base_input {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_form_typeahead(config)).render(); }
+  static create(config) { return (new CN_input_typeahead(config)).render(); }
 }

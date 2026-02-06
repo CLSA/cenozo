@@ -9,10 +9,10 @@ const default_config = {
   help: null, // If defined this text will appear in a popup bubble
 };
 
-export class CN_form_label extends CN_base_element {
+export class CN_input_label extends CN_base_element {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_form_label contructor");
+      throw new Error("Non-object config argument passed to CN_input_label contructor");
     }
 
     super({...default_config, ...config});
@@ -46,5 +46,5 @@ export class CN_form_label extends CN_base_element {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_form_label(config)).render(); }
+  static create(config) { return (new CN_input_label(config)).render(); }
 }

@@ -21,7 +21,7 @@ export class CN_base_input extends CN_base_element {
   #event_listeners = true;
 
   /**
-   * Base class for all form inputs
+   * Base class for all inputs
    * @param object config: A set of key/value pairs containing all of the input's configuration parameters
    */
   constructor(config = {}) {
@@ -100,9 +100,11 @@ export class CN_base_input extends CN_base_element {
     el.append(this.#postfix_div_el);
 
     if (!CN_common.is_function(this._create_control_element)) {
-      throw new Error("Tried to create form input but _create_control_element has not been implemented.");
+      throw new Error("Tried to create input but _create_control_element has not been implemented.");
     }
     this.#control_el = this._create_control_element(el);
+    if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
+    if (this.#control_name) this.#control_el.setAttribute("name", this.#control_name);
     this.update();
     this.set_value(
       this.has_config("get_default") ?
@@ -245,9 +247,10 @@ export class CN_base_input extends CN_base_element {
         // test the implicit regex
         let re = null;
         if (this.has_config("format")) {
-          if ("alphanum" == el.params.format) re = /^[a-zA-Z0-9]+$/;
-          else if ("alpha_num" == el.params.format) re = /^[a-zA-Z0-9_]+$/;
-          else if ("identifier" == el.params.format) re = /^[^;=\/]+$/;
+          const format = this.get_config("format");
+          if ("alphanum" == format) re = /^[a-zA-Z0-9]+$/;
+          else if ("alpha_num" == format) re = /^[a-zA-Z0-9_]+$/;
+          else if ("identifier" == format) re = /^[^;=\/]+$/;
         }
 
         if (re && !re.test(value)) {

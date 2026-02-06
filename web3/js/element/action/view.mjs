@@ -2,9 +2,9 @@ import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
 import CN_element from "../../element.mjs"
 
-import { CN_action_record } from "./record.mjs"
+import { CN_action_base_record } from "./base_record.mjs"
 
-export class CN_action_view extends CN_action_record {
+export class CN_action_view extends CN_action_base_record {
   #child_lists_el = null;
   #list_selector_el = null;
 
@@ -188,7 +188,7 @@ export class CN_action_view extends CN_action_record {
     prop.form_input.flash_border();
     prop.form_input.update();
 
-    /* TODO: transfer logic to element/form classes
+    /* TODO: transfer logic to element/input classes
     // rebuild enum select options
     const value = prop.form_input.get_value();
     if (["enum", "rank"].includes(prop.type)) {

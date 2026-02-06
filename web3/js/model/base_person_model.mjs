@@ -7,9 +7,9 @@ import { CN_base_element } from "../element/base_element.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
-import { CN_form_label } from "../element/form/label.mjs"
-import { CN_form_string } from "../element/form/string.mjs"
-import { CN_form_text } from "../element/form/text.mjs"
+import { CN_input_label } from "../element/input/label.mjs"
+import { CN_input_string } from "../element/input/string.mjs"
+import { CN_input_text } from "../element/input/text.mjs"
 
 export class CN_base_person_model extends CN_base_model {
   get_history_url() {
@@ -729,7 +729,7 @@ export class CN_base_person_notes extends CN_base_action {
       }
 
       note_el.querySelector("[name=note]").append(
-        CN_form_text.create({
+        CN_input_text.create({
           id: `note-${note.id}`,
           required: true,
           on_change: async (control_el, success) => {
@@ -813,33 +813,33 @@ export class CN_base_person_notes extends CN_base_action {
 
     const card_body_el = body_el.querySelector(".card-body");
 
-    const new_note_form_input = new CN_form_text({ id: "new_note" });
-    card_body_el.append(new_note_form_input.render());
+    const new_note_input_input = new CN_input_text({ id: "new_note" });
+    card_body_el.append(new_note_input_input.render());
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
       await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
         user_id: CN_session.data.user.id,
         datetime: (new Date()).toISOString(),
-        note: new_note_form_input.get_value(),
+        note: new_note_input_input.get_value(),
       });
-      new_note_form_input.set_value("");
+      new_note_input_input.set_value("");
       await this.run();
     });
 
     // add the search field
-    const label_el = CN_form_label.create({ for: "note_search", value: "Search" });
+    const label_el = CN_input_label.create({ for: "note_search", value: "Search" });
     label_el.classList.add("col-sm-3");
     body_el.querySelector("div.row").append(label_el);
 
-    const search_form_input = new CN_form_string({
+    const search_input_input = new CN_input_string({
       id: "note_search",
       class: "d-flex align-items-center col-sm-9",
       on_change: () => {
-        this.set_query_parameter("search", search_form_input.get_value());
+        this.set_query_parameter("search", search_input_input.get_value());
         this.update_element();
       },
     });
 
-    body_el.querySelector("div.row").append(search_form_input.render());
+    body_el.querySelector("div.row").append(search_input_input.render());
 
     return body_el;
   }

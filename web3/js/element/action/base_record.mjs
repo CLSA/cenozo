@@ -3,18 +3,33 @@ import CN_common from "../../common.mjs"
 import CN_element from "../../element.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
-import { CN_form_label } from "../form/label.mjs"
 import { CN_state } from "../../state.mjs"
 
 // form inputs
-import { CN_form_boolean } from "../form/boolean.mjs"
-import { CN_form_enum } from "../form/enum.mjs"
-import { CN_form_rank } from "../form/rank.mjs"
-import { CN_form_string } from "../form/string.mjs"
-import { CN_form_text } from "../form/text.mjs"
-import { CN_form_typeahead } from "../form/typeahead.mjs"
+import { CN_input_audio_url } from "../input/audio_url.mjs"
+import { CN_input_boolean } from "../input/boolean.mjs"
+import { CN_input_color } from "../input/color.mjs"
+import { CN_input_date } from "../input/date.mjs"
+import { CN_input_datetime } from "../input/datetime.mjs"
+import { CN_input_datetimesecond } from "../input/datetimesecond.mjs"
+import { CN_input_dob } from "../input/dob.mjs"
+import { CN_input_dod } from "../input/dod.mjs"
+import { CN_input_email } from "../input/email.mjs"
+import { CN_input_enum } from "../input/enum.mjs"
+import { CN_input_file } from "../input/file.mjs"
+import { CN_input_float } from "../input/float.mjs"
+import { CN_input_integer } from "../input/integer.mjs"
+import { CN_input_label } from "../input/label.mjs"
+import { CN_input_password } from "../input/password.mjs"
+import { CN_input_rank } from "../input/rank.mjs"
+import { CN_input_size } from "../input/size.mjs"
+import { CN_input_string } from "../input/string.mjs"
+import { CN_input_text } from "../input/text.mjs"
+import { CN_input_time } from "../input/time.mjs"
+import { CN_input_timesecond } from "../input/timesecond.mjs"
+import { CN_input_typeahead } from "../input/typeahead.mjs"
 
-export class CN_action_record extends CN_base_action {
+export class CN_action_base_record extends CN_base_action {
   #property_groups;
   #form_el;
 
@@ -85,7 +100,7 @@ export class CN_action_record extends CN_base_action {
    * The prop object may contain any of the following sub-properties:
    *   title: a string that defines the property's label (should be written in "Title Case")
    *     (the default value is undefined)
-   *   type: one of the input types implemented in element/form/
+   *   type: one of the input types implemented in element/input
    *     (the default value is "string")
    *   help: text that will appear when hovering over the property's label
    *     (the default is undefined - no help text)
@@ -94,7 +109,7 @@ export class CN_action_record extends CN_base_action {
    *   regex: restricts the property's value to a regular expression as a string (or array of strings)
    *     (the default is undefined - no regex)
    *   on_change: an async function which is called when a property's value is changed, with arguments:
-   *     form_input: the property's form input object (element/form classes)
+   *     form_input: the property's form input object (element/input classes)
    *     valid: whether or not the new value is valid
    *     (the default function is to call this class' on_change() method)
    *   is_constant: a function that makes the property read-only when it returns true, with arguments:
@@ -293,21 +308,22 @@ export class CN_action_record extends CN_base_action {
       const group = this.#property_groups[group_name];
       if ("$main" != group_name) {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
+        /*
         if (group.is_hidden(this.get_model())) {
           group_el.style.display = "none";
         } else {
           group_el.style.removeProperty("display");
         }
+        */
       }
       for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
-        const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
 
         // remove any properties that evaluate to hidden
         if (prop.is_hidden(this.get_model())) {
-          prop_el.style.display = "none";
+          prop.form_input.render().style.display = "none";
         } else {
-          prop_el.style.removeProperty("display");
+          prop.form_input.render().style.removeProperty("display");
         }
 
         // disable any properties that evaluate to constant
@@ -323,11 +339,11 @@ export class CN_action_record extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
-    const form_el = CN_form_label.html("<form><fieldset></fieldset></form>");
+    const form_el = CN_input_label.html("<form><fieldset></fieldset></form>");
 
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
-      const parent_el = CN_form_label.html('<div class="px-3"></div>');
+      const parent_el = CN_input_label.html('<div class="px-3"></div>');
       form_el.querySelector("fieldset").append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
         parent_el.append(this.create_property_element(prop_name));
@@ -340,7 +356,7 @@ export class CN_action_record extends CN_base_action {
     for (const group_name in this.#property_groups) {
       if ("$main" != group_name) {
         if (null == accordion_el) {
-          accordion_el = CN_form_label.html(`<div class="accordion accordion-flush"></div>`);
+          accordion_el = CN_input_label.html(`<div class="accordion accordion-flush"></div>`);
         }
 
         const group_el = this.create_property_group_element(group_name);
@@ -372,7 +388,7 @@ export class CN_action_record extends CN_base_action {
       </div>
     `);
 
-    return CN_form_label.html(`<div class="px-3">${el_list.join("")}</div>`);
+    return CN_input_label.html(`<div class="px-3">${el_list.join("")}</div>`);
   }
 
   /**
@@ -383,7 +399,7 @@ export class CN_action_record extends CN_base_action {
   create_property_group_element(group_name) {
     const group = this.#property_groups[group_name];
     const group_id = [this.get_model().get_unique_id(), group_name].join("-");
-    return CN_form_label.html(`
+    return CN_input_label.html(`
       <div name="${group_name}" class="accordion-item px-0">
         <div class="accordion-header">
           <button
@@ -410,10 +426,10 @@ export class CN_action_record extends CN_base_action {
   create_property_element(prop_name) {
     const module_prop = this.get_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
-    const prop_el = CN_form_label.html(`<div name="${prop.id}" class="row mb-3"></div>`);
+    const prop_el = CN_input_label.html(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    const label_el = CN_form_label.create({ for: prop.id, value: prop.title, help: prop.help });
+    const label_el = CN_input_label.create({ for: prop.id, value: prop.title, help: prop.help });
     label_el.classList.add("col-sm-3");
     prop_el.append(label_el);
 
@@ -433,18 +449,49 @@ export class CN_action_record extends CN_base_action {
 
       params.action = this;
       params.class = "d-flex align-items-center col-sm-9";
-      if ("boolean" == prop.type) {
-        prop.form_input = new CN_form_boolean(params);
+
+      if ("audio_url" == prop.type) {
+        prop.form_input = new CN_input_audio_url(params);
+      } else if ("boolean" == prop.type) {
+        prop.form_input = new CN_input_boolean(params);
+      } else if ("color" == prop.type) {
+        prop.form_input = new CN_input_color(params);
+      } else if ("date" == prop.type) {
+        prop.form_input = new CN_input_date(params);
+      } else if ("datetime" == prop.type) {
+        prop.form_input = new CN_input_datetime(params);
+      } else if ("datetimesecond" == prop.type) {
+        prop.form_input = new CN_input_datetimesecond(params);
+      } else if ("dob" == prop.type) {
+        prop.form_input = new CN_input_dob(params);
+      } else if ("dod" == prop.type) {
+        prop.form_input = new CN_input_dod(params);
+      } else if ("email" == prop.type) {
+        prop.form_input = new CN_input_email(params);
       } else if ("enum" == prop.type) {
-        prop.form_input = new CN_form_enum(params);
+        prop.form_input = new CN_input_enum(params);
+      } else if ("file" == prop.type) {
+        prop.form_input = new CN_input_file(params);
+      } else if ("float" == prop.type) {
+        prop.form_input = new CN_input_float(params);
+      } else if ("integer" == prop.type) {
+        prop.form_input = new CN_input_integer(params);
+      } else if ("password" == prop.type) {
+        prop.form_input = new CN_input_password(params);
       } else if ("rank" == prop.type) {
-        prop.form_input = new CN_form_rank(params);
+        prop.form_input = new CN_input_rank(params);
+      } else if ("size" == prop.type) {
+        prop.form_input = new CN_input_size(params);
       } else if ("string" == prop.type) {
-        prop.form_input = new CN_form_string(params);
+        prop.form_input = new CN_input_string(params);
       } else if ("text" == prop.type) {
-        prop.form_input = new CN_form_text(params);
+        prop.form_input = new CN_input_text(params);
+      } else if ("time" == prop.type) {
+        prop.form_input = new CN_input_time(params);
+      } else if ("timesecond" == prop.type) {
+        prop.form_input = new CN_input_timesecond(params);
       } else if ("typeahead" == prop.type) {
-        prop.form_input = new CN_form_typeahead(params);
+        prop.form_input = new CN_input_typeahead(params);
       } else {
         console.warn(`Tried to create invalid property type "${prop.type}"`);
       }

@@ -11,10 +11,10 @@ const default_config = {
   },
 };
 
-export class CN_form_file extends CN_base_input {
+export class CN_input_file extends CN_base_input {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_form_file contructor");
+      throw new Error("Non-object config argument passed to CN_input_file contructor");
     }
 
     super({...default_config, ...config});
@@ -75,5 +75,5 @@ export class CN_form_file extends CN_base_input {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_form_file(config)).render(); }
+  static create(config) { return (new CN_input_file(config)).render(); }
 }

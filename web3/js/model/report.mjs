@@ -143,7 +143,7 @@ async function on_load(action) {
             }
           };
         } else if ("identifier_list" == prop.restriction_type) {
-          params.type = "string";
+          params.type = "text";
         } else {
           params.type = prop.restriction_type;
         }

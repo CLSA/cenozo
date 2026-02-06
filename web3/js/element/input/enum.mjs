@@ -6,10 +6,10 @@ const default_config = {
   enum: { values: [] },
 };
 
-export class CN_form_enum extends CN_base_input {
+export class CN_input_enum extends CN_base_input {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_form_enum contructor");
+      throw new Error("Non-object config argument passed to CN_input_enum contructor");
     }
 
     // don't replace the enum property in the config if it's an object, merge it with the default instead
@@ -51,6 +51,7 @@ export class CN_form_enum extends CN_base_input {
    * Extend parent method
    */
   async update() {
+    const control_el = this.get_control_element();
     const enum_obj = this.get_config("enum");
 
     // re-generate the option list
@@ -86,16 +87,15 @@ export class CN_form_enum extends CN_base_input {
       // check for enums in the column definition (for inputs linked to an action only)
       const action = this.get_action();
       if (action) {
-        const module_prop = action.get_model().get_module().get_property(prop_name);
+        const module_prop = action.get_model().get_module().get_property(control_el.getAttribute("name"));
         const matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-        if (null == matches) {
+        if (null != matches) {
           enum_obj.values = matches[1].split("','").map(v => ({ key: v, value: v, disabled: false }));
         }
       }
     }
 
     // now replace the options
-    const control_el = this.get_control_element();
     control_el.innerHTML = "";
 
     // get the default value
@@ -143,5 +143,5 @@ export class CN_form_enum extends CN_base_input {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_form_enum(config)).render(); }
+  static create(config) { return (new CN_input_enum(config)).render(); }
 }

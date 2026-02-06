@@ -1,5 +1,5 @@
 import CN_common from "../../common.mjs"
-import { CN_form_enum } from "./enum.mjs"
+import { CN_input_enum } from "./enum.mjs"
 
 const default_config = {
   enum: {
@@ -10,10 +10,10 @@ const default_config = {
   },
 };
 
-export class CN_form_boolean extends CN_form_enum {
+export class CN_input_boolean extends CN_input_enum {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_form_boolean contructor");
+      throw new Error("Non-object config argument passed to CN_input_boolean contructor");
     }
 
     // don't replace the enum property in the config if it's an object, merge it with the default instead
@@ -37,5 +37,5 @@ export class CN_form_boolean extends CN_form_enum {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_form_boolean(config)).render(); }
+  static create(config) { return (new CN_input_boolean(config)).render(); }
 }
