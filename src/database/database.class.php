@@ -666,7 +666,24 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_elapsed_time();
       log::$method( "(DB) executing:\n".$sql );
     }
+
+    $snapshot_isolation = 0;
+    if( $ignore_deadlocks )
+    {
+      // turn off INNODB snapshot isolation
+      $snapshot_isolation = $this->get_one( 'SELECT @@innodb_snapshot_isolation' );
+      if( 0 != $snapshot_isolation ) $this->execute( 'SET innodb_snapshot_isolation = 0' );
+    }
+
     $result = $this->connection->query( $sql );
+
+    if( $ignore_deadlocks )
+    {
+      // put back the original snapshot isolation value
+      if( 0 != $snapshot_isolation )
+        $this->execute( sprintf( 'SET innodb_snapshot_isolation = %s', $snapshot_isolation ) );
+    }
+
     if( false === $result )
     {
       // if a deadlock or lock-wait timout has occurred then notify the user with a notice
