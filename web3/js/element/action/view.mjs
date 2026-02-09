@@ -134,7 +134,7 @@ export class CN_action_view extends CN_action_base_record {
       this.get_property(prop_name).form_input.undo_value();
       if (409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
-          this.get_property(prop_name).form_input.show_error("Conflicts with existing record", 5000);
+          this.get_property(prop_name).form_input.show_error("Conflicts with existing record");
         });
       } else {
         this.run();

@@ -428,7 +428,7 @@ export default {
       }
 
       // show any errors
-      if (null != error) el.show_error(error, 4000);
+      if (null != error) el.show_error(error);
 
       return null == error;
     };
@@ -468,7 +468,7 @@ export default {
       if (el.params.required) control_el.setAttribute("required", "required");
     }
 
-    el.show_error = async function (error, time = 300) {
+    el.show_error = async function (error, time = 4000) {
       Object.assign(control_el.style, {
         "border-color": "red",
         "border-width": "3px",

@@ -106,7 +106,7 @@ export class CN_modal_input extends CN_base_modal {
         modal_bs.hide();
 
         // update the server
-        await this.wait_for(async () => {
+        await this.constructor.wait_for(async () => {
           try {
             await CN_api.patch("self/0", {
               user: {

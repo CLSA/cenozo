@@ -23,6 +23,11 @@ export class CN_input_typeahead extends CN_base_input {
       config.typeahead = {...default_config.typeahead, ...config.typeahead};
     }
 
+    // convert 
+    config.typeahead.list = config.typeahead.list.map(
+      item => CN_common.is_object(item) ? item : { key: item, value: item }
+    );
+
     super({...default_config, ...config});
 
     // prevent the base class from adding event listeners (alternative events listened to below)
@@ -112,7 +117,7 @@ export class CN_input_typeahead extends CN_base_input {
         typeahead.timeout_id = null;
       }
 
-      // wait at short while after the user has stopped typing before proceeding
+      // wait a short while after the user has stopped typing before proceeding
       typeahead.timeout_id = setTimeout(typeahead.promise = async () => {
         const typeahead = this.get_config("typeahead");
         typeahead.timeout_id = null;

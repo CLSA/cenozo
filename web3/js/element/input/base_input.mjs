@@ -5,6 +5,7 @@ import { CN_state } from "../../state.mjs"
 const default_config = {
   type: "div",
   class: "d-flex align-items-center",
+  error_timeout: 0,
 };
 
 export class CN_base_input extends CN_base_element {
@@ -193,7 +194,8 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   async get_formatted_value() {
-    return this.get_value();
+    const value = this.get_value();
+    return "" === value ? null : value;
   }
 
   /**
@@ -288,7 +290,11 @@ export class CN_base_input extends CN_base_element {
     }
 
     // show any errors
-    if (null != error) this.show_error(error, 4000);
+    if (null == error) {
+      this.hide_error();
+    } else {
+      this.show_error(error, this.get_config("error_timeout"));
+    }
 
     return null == error;
   }
@@ -312,7 +318,7 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
-  async show_error(error, time = 300) {
+  async show_error(error, time = 4000) {
     // ignore the request if the error div hasn't been created yet
     if (!this.#error_div_el) return;
 

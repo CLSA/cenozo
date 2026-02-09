@@ -22,14 +22,17 @@ export class CN_modal_account extends CN_base_modal {
       first_name: {
         el_id: ["cn-first-name", CN_common.get_random_hex_identifier()].join("-"),
         title: "First Name",
+        type: "string",
       },
       last_name: {
         el_id: ["cn-last-name", CN_common.get_random_hex_identifier()].join("-"),
         title: "Last Name",
+        type: "string",
       },
       email: {
         el_id: ["cn-email", CN_common.get_random_hex_identifier()].join("-"),
         title: "Email",
+        type: "email",
       },
     };
 
@@ -44,7 +47,7 @@ export class CN_modal_account extends CN_base_modal {
         CN_session.data.user.last_name != last_name ||
         CN_session.data.user.email != email
       ) {
-        await this.wait_for(async () => {
+        await this.constructor.wait_for(async () => {
           // update the server
           await CN_api.patch("self/0", {
             user: {
@@ -79,31 +82,32 @@ export class CN_modal_account extends CN_base_modal {
 
     // create elements
     for (const element_name in this.#elements) {
+      // add the label
       const element = this.#elements[element_name];
       const el = this.constructor.html('<div class="row mb-3"></div>');
       const label_el = CN_input_label.create({ for: element.el_id, value: element.title });
       label_el.classList.add("col-sm-3");
       el.append(label_el);
-      /* TODO: reimplement
-      const form_input = new CN_input_???(element.type, {
+
+      // add the input
+      const config = {
         id: element.el_id,
-        name: element_nameii,
+        name: element_name,
         required: true,
         on_change: (control_el, valid) => {
-          const ok_btn_el = el.querySelector("[name=OK]");
+          const ok_btn_el = this.render().querySelector("[name=OK]");
           if (valid) {
             ok_btn_el.removeAttribute("disabled");
           } else {
             ok_btn_el.setAttribute("disabled", true);
           }
         },
-      });
-      const form_input =
+      };
+      const form_input = "string" == element.type ? new CN_input_string(config) : new CN_input_email(config);
       const element_el = form_input.render();
       element_el.classList.add("col-sm-9");
       element_el.querySelector("input").value = CN_session.data.user[element_name];
       el.append(element_el);
-      */
       body_el.querySelector("form").append(el);
     }
 

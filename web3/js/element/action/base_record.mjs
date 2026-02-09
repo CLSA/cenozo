@@ -340,11 +340,11 @@ export class CN_action_base_record extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
-    const form_el = CN_input_label.html("<form><fieldset></fieldset></form>");
+    const form_el = this.constructor.html("<form><fieldset></fieldset></form>");
 
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
-      const parent_el = CN_input_label.html('<div class="px-3"></div>');
+      const parent_el = this.constructor.html('<div class="px-3"></div>');
       form_el.querySelector("fieldset").append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
         parent_el.append(this.create_property_element(prop_name));
@@ -357,7 +357,7 @@ export class CN_action_base_record extends CN_base_action {
     for (const group_name in this.#property_groups) {
       if ("$main" != group_name) {
         if (null == accordion_el) {
-          accordion_el = CN_input_label.html(`<div class="accordion accordion-flush"></div>`);
+          accordion_el = this.constructor.html(`<div class="accordion accordion-flush"></div>`);
         }
 
         const group_el = this.create_property_group_element(group_name);
@@ -389,7 +389,7 @@ export class CN_action_base_record extends CN_base_action {
       </div>
     `);
 
-    return CN_input_label.html(`<div class="px-3">${el_list.join("")}</div>`);
+    return this.constructor.html(`<div class="px-3">${el_list.join("")}</div>`);
   }
 
   /**
@@ -400,7 +400,7 @@ export class CN_action_base_record extends CN_base_action {
   create_property_group_element(group_name) {
     const group = this.#property_groups[group_name];
     const group_id = [this.get_model().get_unique_id(), group_name].join("-");
-    return CN_input_label.html(`
+    return this.constructor.html(`
       <div name="${group_name}" class="accordion-item px-0">
         <div class="accordion-header">
           <button
@@ -427,7 +427,7 @@ export class CN_action_base_record extends CN_base_action {
   create_property_element(prop_name) {
     const module_prop = this.get_model().get_module().get_property(prop_name);
     const prop = this.get_property(prop_name);
-    const prop_el = CN_input_label.html(`<div name="${prop.id}" class="row mb-3"></div>`);
+    const prop_el = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
     const label_el = CN_input_label.create({ for: prop.id, value: prop.title, help: prop.help });
@@ -450,6 +450,9 @@ export class CN_action_base_record extends CN_base_action {
 
       params.action = this;
       params.class = "d-flex align-items-center col-sm-9";
+
+      // make errors in the view action go away after 4 seconds
+      params.error_timeout = "view" == this.get_type() ? 4000 : 0;
 
       if ("audio_url" == prop.type) {
         prop.form_input = new CN_input_audio_url(params);

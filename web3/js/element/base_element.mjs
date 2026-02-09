@@ -98,12 +98,51 @@ export class CN_base_element extends CN_base_object {
   }
 
   /**
-   * Creates an element and renders it as a single operation
-   * @param object config: A set of key/value pairs containing all of the modal's configuration parameters
-   * @return Element
+   * Creates a "please wait" blocking modal
+   * @return Promise
    */
-  static create(config) {
-    return (new Object.create(config)).render();
+  static async wait_for(fn, delay = 500) {
+    const modal_el = this.html(`
+      <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header text-bg-primary">
+              <h1 class="modal-title fw-bold fs-5">Please Wait...</h1>
+            </div>
+            <div class="modal-body text-center">
+              <img src="${CENOZO_URL}/img/loading.gif"></img>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    document.getElementById("main-content").append(modal_el);
+    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
+
+    // wait for delay before showing the modal
+    let timeout_id = setTimeout(() => {
+      // automatically dispose of the modal once finished
+      modal_el.addEventListener("hidden.bs.modal", () => {
+        modal_bs.dispose();
+        modal_el.remove();
+      });
+
+      modal_bs.show();
+      timeout_id = null;
+    }, delay);
+
+    try {
+      // run the provided function
+      await fn();
+    } finally {
+      if (null != timeout_id) {
+        // if the timeout exists then the modal hasn't been shown, so just cancel it
+        clearTimeout(timeout_id);
+      } else {
+        // if the timeout no longer exists then the modal is showing, so hide it
+        modal_bs.hide();
+      }
+    }
   }
 
   /**
