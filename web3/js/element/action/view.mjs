@@ -164,62 +164,11 @@ export class CN_action_view extends CN_action_base_record {
   /**
    * Extends parent method
    */
-  create_property_element(prop_name) {
-    const prop_el = super.create_property_element(prop_name);
-
-    const prop = this.get_property(prop_name);
-    if ("file" == prop.type) {
-      // implement file property's download button
-      prop.form_input.render().querySelector("button[name=download]").addEventListener("click", async () => {
-        CN_common.download_file(prop.form_input.get_value().data, await prop.file.get_filename(this));
-      });
-    }
-
-    return prop_el;
-  }
-
-  /**
-   * Extends parent method
-   */
   update_property_element(prop_name) {
     // update the input's value and flash the border to indicate that the data has been updated
     const prop = this.get_property(prop_name);
-    prop.form_input.set_value(prop.form_input.get_value());
     prop.form_input.flash_border();
     prop.form_input.update();
-
-    /* TODO: transfer logic to element/input classes
-    // rebuild enum select options
-    const value = prop.form_input.get_value();
-    if (["enum", "rank"].includes(prop.type)) {
-      control_el.innerHTML = module_prop && module_prop.required ? "" : `<option value="">(empty)</option>`;
-      prop.enum.values.forEach(option => {
-        const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
-        if (option.disabled) option_el.setAttribute("disabled", true);
-        control_el.append(option_el);
-      });
-
-      control_el.querySelectorAll("option").forEach(option_el => {
-        if (
-          ("" == option_el.value && null === value) ||
-          (1 == option_el.value && true === value) ||
-          (0 == option_el.value && false === value) ||
-          (null != value && option_el.value === value.toString())
-        ) {
-          option_el.selected = true;
-        } else {
-          option_el.removeAttribute("selected");
-        }
-      });
-    } else if ("audio_url" == prop.type) {
-      control_el.src = value;
-    } else if ("file" == prop.type) {
-      prop.form_input.render().querySelector("span[name=filesize]").innerHTML =
-        `(${CN_common.format_filesize(value.size)})`;
-    } else if ("size" == prop.type) {
-      control_el.value = CN_common.format_filesize(value);
-    }
-    */
   }
 
   /**

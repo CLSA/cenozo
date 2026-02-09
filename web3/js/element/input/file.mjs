@@ -1,25 +1,7 @@
 import CN_common from "../../common.mjs"
 import { CN_base_input } from "./base_input.mjs"
 
-const default_config = {
-  prefix: (el) => {
-    el.classList.add("text-nowrap", "pe-3");
-    el.append(this.constructor.html(
-      '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
-    ));
-    el.append(this.constructor.html('<span name="filesize" class="col-form-label ps-2"></span>'));
-  },
-};
-
 export class CN_input_file extends CN_base_input {
-  constructor(config = {}) {
-    if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_file contructor");
-    }
-
-    super({...default_config, ...config});
-  }
-
   /**
    * Extends the parent method
    */
@@ -44,6 +26,30 @@ export class CN_input_file extends CN_base_input {
     }
 
     return value;
+  }
+
+  /**
+   * Extends parent method
+   */
+  set_value(value) {
+    super.set_value(value);
+
+    const prefix_div_el = this.get_prefix_div_element();
+    prefix_div_el.innerHTML = "";
+    if (value) {
+      prefix_div_el.classList.add("text-nowrap", "pe-3");
+      const download_btn = this.constructor.html(
+        '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
+      );
+      download_btn.addEventListener("click", async () => CN_common.download_file(
+        this.get_value().data,
+        await this.get_config("file").get_filename(this.get_action())
+      ));
+      prefix_div_el.append(download_btn);
+      prefix_div_el.append(this.constructor.html(`
+        <span name="filesize" class="col-form-label ps-2">${CN_common.format_filesize(value.size)}</span>
+      `));
+    }
   }
 
   /**

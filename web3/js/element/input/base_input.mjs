@@ -78,6 +78,20 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
+  get_prefix_div_element() {
+    return this.#prefix_div_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_postfix_div_element() {
+    return this.#postfix_div_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
   get_control_div_element() {
     return this.#control_div_el;
   }

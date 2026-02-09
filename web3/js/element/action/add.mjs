@@ -123,65 +123,6 @@ export class CN_action_add extends CN_action_base_record {
   update_property_element(prop_name) {
     const prop = this.get_property(prop_name);
     prop.form_input.update();
-
-    /* TODO: transfer logic to element/input classes
-    const prop = this.get_property(prop_name);
-    const control_el = prop.form_input.get_control_element();
-
-    if (["enum", "rank"].includes(prop.type)) {
-      // see if the enum values have changed
-      let old_value = undefined;
-      const old_enum_values = Array.from(control_el.querySelectorAll("option")).reduce((list, option_el) => {
-        if ("" !== option_el.value) {
-          list.push({
-            key: option_el.value,
-            value: option_el.innerHTML,
-            disabled: option_el.getAttribute("disabled"),
-          });
-          if (option_el.selected) old_value = option_el.value;
-        }
-        return list;
-      }, []);
-
-      if (
-        !this.#default_values_applied.includes(prop_name) ||
-        old_enum_values.length != prop.enum.values.length
-      ) {
-        // rebuild the enum select options
-        control_el.innerHTML = (
-          `<option value="">(Select a ${prop.title}...)</option>`
-        );
-        prop.enum.values.forEach(option => {
-          const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
-          if (option.disabled) option_el.setAttribute("disabled", true);
-          if (undefined !== old_value && old_value == option.key) option_el.selected = true;
-          control_el.append(option_el);
-        });
-      }
-
-      // only apply the default value once
-      if (!this.#default_values_applied.includes(prop_name)) {
-        let default_value = prop.get_default(this.get_model());
-        control_el.querySelectorAll("option").forEach(option_el => {
-          default_value = null == default_value ? "" : default_value.toString();
-          if (option_el.value === default_value) {
-            option_el.selected = true;
-          } else {
-            option_el.removeAttribute("selected");
-          }
-        });
-        this.#default_values_applied.push(prop_name);
-      }
-    } else if ("file" != prop.type) {
-      // only apply the default value once
-      if (!this.#default_values_applied.includes(prop_name)) {
-        let default_value = prop.get_default(this.get_model());
-        if (undefined !== default_value) control_el.value = default_value;
-        if ("typeahead" == prop.type) control_el.last_selected_value = control_el.value;
-        this.#default_values_applied.push(prop_name);
-      }
-    }
-    */
   }
 
   /**
