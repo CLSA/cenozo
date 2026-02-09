@@ -134,7 +134,9 @@ export class CN_action_base_record extends CN_base_action {
    *     (the default is undefined - there is no maximum value)
    *
    *   Mandatory property for the "enum" type:
-   *   enum: an object with one of two sets of properties:
+   *   enum: an object with one of three sets of properties:
+   *     static list of enum values:
+   *       values: an array containing all possible enum values (each having a key, value and disabled property)
    *     enum value retrieved from the server:
    *       path: the API path to get enum values
    *       select: a select property to be used when calling the API for enum values
@@ -308,22 +310,21 @@ export class CN_action_base_record extends CN_base_action {
       const group = this.#property_groups[group_name];
       if ("$main" != group_name) {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
-        /*
         if (group.is_hidden(this.get_model())) {
           group_el.style.display = "none";
         } else {
           group_el.style.removeProperty("display");
         }
-        */
       }
       for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
+        const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
 
         // remove any properties that evaluate to hidden
         if (prop.is_hidden(this.get_model())) {
-          prop.form_input.render().style.display = "none";
+          prop_el.style.display = "none";
         } else {
-          prop.form_input.render().style.removeProperty("display");
+          prop_el.style.removeProperty("display");
         }
 
         // disable any properties that evaluate to constant
@@ -479,6 +480,22 @@ export class CN_action_base_record extends CN_base_action {
       } else if ("password" == prop.type) {
         prop.form_input = new CN_input_password(params);
       } else if ("rank" == prop.type) {
+        // define the max rank
+        params.max_rank = async () => {
+          const model = this.get_model();
+          const response = await CN_api.get(model.get_base_path("api"), {
+            select: { column: {
+              column: `max(${model.get_name()}.rank)`,
+              alias: "max_rank",
+              table_prefix: false
+            } },
+          });
+          return (
+            Number(null == response[0].max_rank ? 0 : response[0].max_rank) +
+            // if this is the add action then add an additional rank
+            ("add" == this.get_type() ? 1 : 0)
+          );
+        };
         prop.form_input = new CN_input_rank(params);
       } else if ("size" == prop.type) {
         prop.form_input = new CN_input_size(params);

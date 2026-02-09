@@ -84,11 +84,7 @@ export class CN_address_model extends CN_traceable_model {
           typeahead: CN_country_model.get_typeahead(),
           is_hidden: (model) => !(
             "add" == model.get_action_name() ?
-            1 == model.get_action()
-              .get_property("international")
-              .form_input
-              .querySelector("select")
-              .value :
+            1 == model.get_action().get_property("international").form_input.get_value() :
             model.get_action().get_property_value("international")
           ),
         },

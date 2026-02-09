@@ -44,22 +44,6 @@ export class CN_action_add extends CN_action_base_record {
   }
 
   /**
-   * Extends the parent method
-   */
-  async on_load() {
-    await super.on_load();
-
-    this.get_all_properties().forEach(prop => {
-      // add an extra rank to make room for adding a new record
-      // TODO: test if this is right when reloading the record data multiple times (won't it keep adding more?)
-      if ("rank" == prop.type) {
-        const extra_rank = prop.enum.values.length + 1;
-        prop.enum.values.push({ key: extra_rank, value: CN_common.ordinal_suffix(extra_rank) });
-      }
-    });
-  }
-
-  /**
    * Commits a property's UI value to the state
    * @param string prop_name
    */

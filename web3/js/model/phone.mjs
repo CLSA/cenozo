@@ -19,9 +19,9 @@ export class CN_phone_model extends CN_traceable_model {
           title: "Associated Address",
           type: "enum",
           enum: {
-            path: (model) => {
+            path: (form_input) => {
               // get a list of the owner's addresses
-              const base_url = model.get_parent_model().get_view_url(null, "api");
+              const base_url = form_input.get_action().get_model().get_parent_model().get_view_url(null, "api");
               return `${base_url}/address`;
             },
             select: { column: [

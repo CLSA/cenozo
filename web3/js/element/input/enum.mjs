@@ -55,6 +55,7 @@ export class CN_input_enum extends CN_base_input {
     const enum_obj = this.get_config("enum");
 
     // re-generate the option list
+    let new_values = true;
     if (CN_common.is_function(enum_obj.get_enums)) {
       // check if a get_enums function exists in the params
       enum_obj.values = await enum_obj.get_enums(this);
@@ -91,51 +92,59 @@ export class CN_input_enum extends CN_base_input {
         const matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
         if (null != matches) {
           enum_obj.values = matches[1].split("','").map(v => ({ key: v, value: v, disabled: false }));
+        } else {
+          new_values = false;
         }
       }
     }
 
-    // now replace the options
-    control_el.innerHTML = "";
+    if (
+      new_values ||
+      (0 == enum_obj.values.length && 0 < control_el.innerHTML.length) ||
+      (0 < enum_obj.values.length && 0 == control_el.innerHTML.length)
+    ) {
+      // now replace the options
+      control_el.innerHTML = "";
 
-    // get the default value
-    const required = this.get_config("required");
-    const default_value = (
-      this.has_config("get_default") ?
-      this.get_config("get_default")(this.get_action() ? this.get_action().get_model() : null) :
-      null
-    );
+      // get the default value
+      const required = this.get_config("required");
+      const default_value = (
+        this.has_config("get_default") ?
+        this.get_config("get_default")(this.get_action() ? this.get_action().get_model() : null) :
+        null
+      );
 
-    // add a placeholder option
-    if (!required || null == default_value) {
-      control_el.prepend(this.constructor.html(`
-        <option value="">${
-          this.has_config("placeholder") ?
-          this.get_config("placeholder") : // use the placeholder in the config if one exists
-          (required ? "(Select an option...)" : "(empty)")
-        }</option>
-      `));
-    }
-
-    const value = this.get_value();
-    enum_obj.values.forEach(option => {
-      const option_el = this.constructor.html(`<option value="${option.key}">${option.value}</option>`);
-      if (option.disabled) option_el.setAttribute("disabled", true);
-
-      // determine which option is selected
-      if (
-        ("" == option.key && null === value) ||
-        (1 == option.key && true === value) ||
-        (0 == option.key && false === value) ||
-        (null != value && option.key === value)
-      ) {
-        option_el.selected = true;
-      } else {
-        option_el.removeAttribute("selected");
+      // add a placeholder option
+      if (!required || null == default_value) {
+        control_el.prepend(this.constructor.html(`
+          <option value="">${
+            this.has_config("placeholder") ?
+            this.get_config("placeholder") : // use the placeholder in the config if one exists
+            (required ? "(Select an option...)" : "(empty)")
+          }</option>
+        `));
       }
 
-      control_el.append(option_el);
-    });
+      const value = this.get_value();
+      enum_obj.values.forEach(option => {
+        const option_el = this.constructor.html(`<option value="${option.key}">${option.value}</option>`);
+        if (option.disabled) option_el.setAttribute("disabled", true);
+
+        // determine which option is selected
+        if (
+          ("" == option.key && null === value) ||
+          (1 == option.key && true === value) ||
+          (0 == option.key && false === value) ||
+          (null != value && option.key === value)
+        ) {
+          option_el.selected = true;
+        } else {
+          option_el.removeAttribute("selected");
+        }
+
+        control_el.append(option_el);
+      });
+    }
   }
 
   /**
