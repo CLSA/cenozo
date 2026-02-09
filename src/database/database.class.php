@@ -224,6 +224,16 @@ class database extends \cenozo\base_object
   }
 
   /**
+   * Turns off snapshot isolation (if version allows)
+   */
+  public function turn_off_snapshot_isolation()
+  {
+    // first make sure system variable exists
+    if( $this->get_one( 'SHOW GLOBAL VARIABLES LIKE "%innodb_snapshot_isolation%"' ) )
+      $this->execute( 'SET innodb_snapshot_isolation = 0' );
+  }
+
+  /**
    * Start a database transaction.
    * Transactions are automatically completed in the destructor.  To force-fail (rollback)
    * a transaction call fail_transaction()
@@ -666,7 +676,10 @@ class database extends \cenozo\base_object
       $time = $util_class_name::get_elapsed_time();
       log::$method( "(DB) executing:\n".$sql );
     }
+
+    if( $ignore_deadlocks ) $this->turn_off_snapshot_isolation();
     $result = $this->connection->query( $sql );
+
     if( false === $result )
     {
       // if a deadlock or lock-wait timout has occurred then notify the user with a notice
