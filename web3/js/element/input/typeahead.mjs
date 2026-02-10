@@ -12,18 +12,31 @@ const default_config = {
 
 export class CN_input_typeahead extends CN_base_input {
   #typeahead_el;
+  #dropdown_bs;
 
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_typeahead contructor");
     }
 
+    // define the default on_select and on_cancel functions
+    default_config.typeahead.on_select = (item) => {
+      this.set_value(item.value);
+      this.commit_value();
+      if (this.has_config("on_change")) {
+        this.get_config("on_change")(this, this.validate());
+      }
+    };
+    default_config.typeahead.on_cancel = () => {
+      this.undo_value(false);
+    };
+
     // don't replace the typeahead property in the config if it's an object, merge it with the default instead
     if (CN_common.is_object(config.typeahead)) {
       config.typeahead = {...default_config.typeahead, ...config.typeahead};
     }
 
-    // convert 
+    // convert string list values to objects
     config.typeahead.list = config.typeahead.list.map(
       item => CN_common.is_object(item) ? item : { key: item, value: item }
     );
@@ -48,7 +61,7 @@ export class CN_input_typeahead extends CN_base_input {
         <ul class="dropdown-menu w-100"></ul>
       </div>
     `);
-    const dropdown_bs = new bootstrap.Dropdown(this.#typeahead_el);
+    this.#dropdown_bs = new bootstrap.Dropdown(this.#typeahead_el);
 
     // track whether the dropdown is open or not
     this.#typeahead_el.addEventListener(
@@ -65,10 +78,8 @@ export class CN_input_typeahead extends CN_base_input {
       const typeahead = this.get_config("typeahead");
       if ("Escape" == event.key) {
         if (typeahead.open) {
-          if (CN_common.is_function(typeahead.on_cancel)) {
-            typeahead.on_cancel();
-          }
-          dropdown_bs.hide()
+          if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
+          this.#dropdown_bs.hide();
         }
       } else if ("Enter" == event.key) {
         if ("" === this.get_value()) {
@@ -85,24 +96,23 @@ export class CN_input_typeahead extends CN_base_input {
       if (typeahead.open) {
         // if the typeahead is still open but we haven't focussed on a dropdown item then cancel and close
         if (!document.activeElement.classList.contains("dropdown-item")) {
-          if (CN_common.is_function(typeahead.on_cancel)) {
-            typeahead.on_cancel();
-          }
-          dropdown_bs.hide();
+          if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
+          this.#dropdown_bs.hide();
         }
-      } else if (this.get_action() && this.get_config("name")) {
+      } else if (this.get_config("name")) {
         if ("" === this.get_value()) {
           // the input box is empty, so set to empty
           if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
         } else {
           // return to the last committed value
-          this.get_action().get_property(this.get_config("name")).state.undo(true);
+          this.undo_value(true);
         }
       }
     });
 
     // listen for when the input's value has changed
     el.addEventListener("input", async () => {
+          this.#dropdown_bs.show();
       const typeahead = this.get_config("typeahead");
 
       // only proceed if the typeahead isn't loading and we've reached the min length threshold
@@ -146,20 +156,7 @@ export class CN_input_typeahead extends CN_base_input {
               const typeahead = this.get_config("typeahead");
               this.set_value(item.value);
               if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
-              dropdown_bs.hide();
-            });
-            item_el.addEventListener("focusout", async () => {
-              // wait after leaving focus so activeElement becomes the newly focussed element
-              await CN_common.sleep(200);
-
-              if (!this.get_control_div_element().contains(document.activeElement)) {
-                // if we've focussed outside of the parent typeahead div then cancel and close
-                const typeahead = this.get_config("typeahead");
-                if (CN_common.is_function(typeahead.on_cancel)) {
-                  typeahead.on_cancel();
-                }
-                dropdown_bs.hide();
-              }
+              this.#dropdown_bs.hide();
             });
             return item_el;
           }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
@@ -168,7 +165,9 @@ export class CN_input_typeahead extends CN_base_input {
         const ul_el = this.#typeahead_el.querySelector("ul");
         ul_el.innerHTML = "";
         li_el_list.forEach(item_el => ul_el.append(item_el));
-        if (!typeahead.open) dropdown_bs.show();
+        if (!typeahead.open) {
+          this.#dropdown_bs.show();
+        }
       }, 200);
     });
 
@@ -197,11 +196,4 @@ export class CN_input_typeahead extends CN_base_input {
     // add the typeahead's element after the prop's element once it's been inserted into the DOM
     this.get_control_element().after(this.#typeahead_el);
   }
-
-  /**
-   * Convenience method to create and render the element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create(config) { return (new CN_input_typeahead(config)).render(); }
 }

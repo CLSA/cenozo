@@ -190,28 +190,7 @@ export class CN_action_base_record extends CN_base_action {
       }
     }
 
-    // typeaheads need special configuration
-    if ("typeahead" == prop.type) {
-      if (!prop.typeahead) prop.typeahead = {};
-      if (!prop.typeahead.list) prop.typeahead.list = [];
-      if (!prop.typeahead.on_select) {
-        prop.typeahead.on_select = item => {
-          // ignore if the value hasn't changed
-          prop.form_input.set_value(item.value);
-          prop.form_input.commit_value();
-          if (prop.form_input.has_config("on_change")) {
-            prop.form_input.get_config("on_change")(
-              document.getElementById(prop.id), prop.form_input.validate(), this
-            );
-          }
-        };
-      }
-      if (!prop.typeahead.on_cancel) {
-        prop.typeahead.on_cancel = () => {
-          prop.form_input.undo_value(true);
-        }
-      }
-    } else if (["integer", "float"].includes(prop.type)) {
+    if (["integer", "float"].includes(prop.type)) {
       // numerical properties may have min/max values
       prop.min = prop.hasOwnProperty("min") ? prop.min : (prop.type.match(/unsigned/) ? 0 : null);
       prop.max = prop.hasOwnProperty("max") ? prop.max : null;
@@ -347,7 +326,9 @@ export class CN_action_base_record extends CN_base_action {
       const parent_el = this.constructor.html('<div class="px-3"></div>');
       form_el.querySelector("fieldset").append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
-        parent_el.append(this.create_property_element(prop_name));
+        const prop = this.#property_groups.$main.properties[prop_name];
+        prop.element = this.create_property_element(prop_name);
+        parent_el.append(prop.element);
       }
     }
 
@@ -364,7 +345,9 @@ export class CN_action_base_record extends CN_base_action {
         accordion_el.append(group_el);
         const group_body_el = group_el.querySelector("div.accordion-body");
         for (const prop_name in this.#property_groups[group_name].properties) {
-          group_body_el.append(this.create_property_element(prop_name));
+          const prop = this.#property_groups[group_name].properties[prop_name];
+          prop.element = this.create_property_element(prop_name);
+          group_body_el.append(prop.element);
         }
       }
     }
@@ -517,13 +500,9 @@ export class CN_action_base_record extends CN_base_action {
       }
     }
 
-    // add the input to the prop, watching for add DOM events (the remove event must be tracked in session.mjs)
-    const input_el = prop.form_input.render();
-    const observer = new MutationObserver(async mutation => {
-      await prop.form_input.on_dom_add();
-    });
-    observer.observe(prop_el, { childList: true });
-    prop_el.append(input_el);
+    // connect the prop element and input
+    prop.form_input.set_parent_element(prop_el);
+    prop_el.append(prop.form_input.render());
 
     return prop_el;
   }
@@ -551,5 +530,24 @@ export class CN_action_base_record extends CN_base_action {
     } else if ("view" == this.get_type()) {
       this.get_property(prop_name).form_input.undo_value();
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_add() {
+    super.on_dom_add();
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    // remove all inputs before removing from the DOM
+    this.get_all_properties().forEach(prop => {
+      if (prop.element) prop.element.innerHTML = "";
+    });
+
+    super.on_dom_remove();
   }
 }

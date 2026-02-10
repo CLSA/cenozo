@@ -38,8 +38,8 @@ export class CN_search_result_list extends CN_action_list {
   /**
    * Extends the parent method
    */
-  render() {
-    const el = super.render();
+  _create_element() {
+    const el = super._create_element();
 
     // add a search box below the header
     const id = [this.get_model().get_unique_id(), "query"].join("-");

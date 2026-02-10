@@ -6,6 +6,10 @@ import CN_session from "../session.mjs"
 import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
   from "./base_person_model.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_input_label } from "../element/input/label.mjs"
+import { CN_modal_confirm } from "../element/modal/confirm.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_participant_model extends CN_base_person_model {
   constructor() {
@@ -68,7 +72,7 @@ export class CN_participant_model extends CN_base_person_model {
               title: "Hold",
               meta: {}, // predefined by the service
               postfix: (el) => {
-                const btn_el = CN_element.create(
+                const btn_el = CN_base_element.html(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
                 );
                 btn_el.addEventListener(
@@ -83,7 +87,7 @@ export class CN_participant_model extends CN_base_person_model {
               title: "Trace",
               meta: {}, // predefined by the service
               postfix: (el) => {
-                const btn_el = CN_element.create(
+                const btn_el = CN_base_element.html(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
                 );
                 btn_el.addEventListener(
@@ -98,7 +102,7 @@ export class CN_participant_model extends CN_base_person_model {
               title: "Proxy",
               meta: {}, // predefined by the service
               postfix: (el) => {
-                const btn_el = CN_element.create(
+                const btn_el = CN_base_element.html(
                   '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
                 );
                 btn_el.addEventListener(
@@ -269,7 +273,7 @@ export class CN_participant_view extends CN_base_person_view {
     // add the scripts action
     const token_module = CN_session.get_module("token");
     if (token_module && token_module.action_allowed("add")) {
-      const scripts_btn_el = CN_element.create(
+      const scripts_btn_el = CN_base_element.html(
         '<button name="scripts" type="button" class="btn btn-light btn-outline-primary">Scripts</button>'
       );
       scripts_btn_el.addEventListener("click", async () => {
@@ -493,9 +497,9 @@ export class CN_participant_multiedit extends CN_base_action {
           const module_prop = this.#module_list.participant.module.get_property(prop_name);
           const prop = mod.properties[prop_name];
           const prop_id = `participant_${prop_name}`;
-          const row_el = CN_element.create('<div class="row mb-3"></div>');
+          const row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const label_el = CN_element.create_form_label({ for: prop_id, value: prop.title });
+          const label_el = CN_input_label.create({ for: prop_id, value: prop.title });
           label_el.classList.add("col-sm-3");
           row_el.append(label_el);
 
@@ -511,7 +515,7 @@ export class CN_participant_multiedit extends CN_base_action {
           }
 
           params.postfix = (el) => {
-            const btn_el = CN_element.create(`
+            const btn_el = CN_base_element.html(`
               <button name="remove" type="button" class="btn btn-danger ms-2">
                 <i class="bi-x-circle-fill"></i>
               </button>
@@ -540,7 +544,7 @@ export class CN_participant_multiedit extends CN_base_action {
             // build the enum select inputs
             const control_el = element_el.querySelector("select");
             prop.enum.values.forEach(option => {
-              const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+              const option_el = CN_base_element.html(`<option value="${option.key}">${option.value}</option>`);
               if (option.disabled) option_el.setAttribute("disabled", true);
               if (prev_params[prop_name] == option.key) option_el.selected = true;
               control_el.append(option_el);
@@ -555,14 +559,14 @@ export class CN_participant_multiedit extends CN_base_action {
         });
 
         // create a way to select participant properties
-        const select_el = CN_element.create(
+        const select_el = CN_base_element.html(
           '<select class="form-select mb-3" name="participant_column_select"></select>'
         );
-        select_el.append(CN_element.create('<option>Select which column to edit</option>'));
+        select_el.append(CN_base_element.html('<option>Select which column to edit</option>'));
         for (const prop_name in mod.properties) {
           if (!this.#selected_participant_properties.includes(prop_name)) {
             const prop = mod.properties[prop_name];
-            select_el.append(CN_element.create(`<option value="${prop_name}">${prop.title}</option>`));
+            select_el.append(CN_base_element.html(`<option value="${prop_name}">${prop.title}</option>`));
           }
         }
         select_el.addEventListener("change", () => {
@@ -580,9 +584,9 @@ export class CN_participant_multiedit extends CN_base_action {
         if ("note" == module_name) {
           // add the sticky boolean
           let sticky_prop_id = `${module_name}_sticky`;
-          const sticky_row_el = CN_element.create('<div class="row mb-3"></div>');
+          const sticky_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const sticky_label_el = CN_element.create_form_label({ for: sticky_prop_id, value: "Sticky" });
+          const sticky_label_el = CN_input_label.create({ for: sticky_prop_id, value: "Sticky" });
           sticky_label_el.classList.add("col-sm-3");
           sticky_row_el.append(sticky_label_el);
 
@@ -598,9 +602,9 @@ export class CN_participant_multiedit extends CN_base_action {
 
           // add the note text box
           let note_prop_id = `${module_name}_note`;
-          const note_row_el = CN_element.create('<div class="row mb-3"></div>');
+          const note_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const note_label_el = CN_element.create_form_label({ for: note_prop_id, value: "Note" });
+          const note_label_el = CN_input_label.create({ for: note_prop_id, value: "Note" });
           note_label_el.classList.add("col-sm-3");
           note_row_el.append(note_label_el);
 
@@ -618,9 +622,9 @@ export class CN_participant_multiedit extends CN_base_action {
 
           // add the opertion enum (add/remove)
           let op_prop_id = `${module_name}_operation`;
-          const op_row_el = CN_element.create('<div class="row mb-3"></div>');
+          const op_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const op_label_el = CN_element.create_form_label({ for: op_prop_id, value: "Operation" });
+          const op_label_el = CN_input_label.create({ for: op_prop_id, value: "Operation" });
           op_label_el.classList.add("col-sm-3");
           op_row_el.append(op_label_el);
 
@@ -634,19 +638,19 @@ export class CN_participant_multiedit extends CN_base_action {
 
           const op_control_el = op_element_el.querySelector("select");
           op_control_el.append(
-            CN_element.create(`<option value="add">Add to ${pretty_module_name}</option>`)
+            CN_base_element.html(`<option value="add">Add to ${pretty_module_name}</option>`)
           );
           op_control_el.append(
-            CN_element.create(`<option value="remove">Remove from ${pretty_module_name}</option>`)
+            CN_base_element.html(`<option value="remove">Remove from ${pretty_module_name}</option>`)
           );
 
           fields_el.append(op_row_el);
 
           // add the item enum
           let item_prop_id = `${module_name}_id`;
-          const item_row_el = CN_element.create('<div class="row mb-3"></div>');
+          const item_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const item_label_el = CN_element.create_form_label({ for: item_prop_id, value: pretty_module_name });
+          const item_label_el = CN_input_label.create({ for: item_prop_id, value: pretty_module_name });
           item_label_el.classList.add("col-sm-3");
           item_row_el.append(item_label_el);
 
@@ -660,7 +664,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
           const item_control_el = item_element_el.querySelector("select");
           mod.enum.values.forEach(option => {
-            const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+            const option_el = CN_base_element.html(`<option value="${option.key}">${option.value}</option>`);
             if (option.disabled) option_el.setAttribute("disabled", true);
             item_control_el.append(option_el);
           });
@@ -671,9 +675,9 @@ export class CN_participant_multiedit extends CN_base_action {
             const module_prop = mod.module.get_property(prop_name);
             const prop = mod.properties[prop_name];
             const prop_id = `${module_name}_${prop_name}`;
-            const row_el = CN_element.create('<div class="row mb-3"></div>');
+            const row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-            const label_el = CN_element.create_form_label({ for: prop_id, value: prop.title });
+            const label_el = CN_input_label.create({ for: prop_id, value: prop.title });
             label_el.classList.add("col-sm-3");
             row_el.append(label_el);
 
@@ -697,7 +701,7 @@ export class CN_participant_multiedit extends CN_base_action {
             if ("enum" == params.type) {
               const control_el = element_el.querySelector("select");
               prop.enum.values.forEach(option => {
-                const option_el = CN_element.create(`<option value="${option.key}">${option.value}</option>`);
+                const option_el = CN_base_element.html(`<option value="${option.key}">${option.value}</option>`);
                 if (option.disabled) option_el.setAttribute("disabled", true);
                 control_el.append(option_el);
               });
@@ -714,7 +718,7 @@ export class CN_participant_multiedit extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create(`
+    const body_el = CN_base_element.html(`
       <div class="container-fluid">
         <div class="container-fluid text-info-emphasis">
           In order to edit multiple participants at once you must first select which participants to edit.
@@ -752,7 +756,7 @@ export class CN_participant_multiedit extends CN_base_action {
       const mod = this.#module_list[module_name];
       const pretty_module_name = CN_common.pretty_print("table", module_name);
 
-      nav_el.append(CN_element.create(`
+      nav_el.append(CN_base_element.html(`
         <li class="nav-item" role="presentation">
           <button
             class="nav-link ${"participant" == module_name ? "active" : ""}"
@@ -767,7 +771,7 @@ export class CN_participant_multiedit extends CN_base_action {
         </li>
       `));
 
-      const tab_el = CN_element.create(`
+      const tab_el = CN_base_element.html(`
         <div
           class="tab-pane fade border border-top-0 pt-3 ${"participant" == module_name ? "show active" : ""}"
           id="${module_name}-tab-pane"
@@ -792,7 +796,7 @@ export class CN_participant_multiedit extends CN_base_action {
         </div>
       `);
 
-      const proceed_btn_el = CN_element.create(`
+      const proceed_btn_el = CN_base_element.html(`
         <button class="btn btn-primary" name="proceed">${
           "participant" == module_name ?
           "Change Details" :
@@ -804,7 +808,7 @@ export class CN_participant_multiedit extends CN_base_action {
 
       proceed_btn_el.addEventListener("click", async () => {
         let response = null;
-        await CN_element.wait_for(async () => {
+        await CN_base_element.wait_for(async () => {
           const data = {
             identifier_id: this.#participant_selection.get_idtype(),
             identifier_list: this.#participant_selection.get_identifier_list(),
@@ -828,11 +832,11 @@ export class CN_participant_multiedit extends CN_base_action {
           }, {});
 
           if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
-            CN_element.message_modal({
+            await (new CN_modal_message({
               title: "No Columns Selected",
               message: "Please select at least one column to edit.",
               type: "danger",
-            }).show();
+            })).open();
             return;
           }
 
@@ -851,7 +855,7 @@ export class CN_participant_multiedit extends CN_base_action {
           } the "${name}" ${pretty_module_name}.`;
         }
 
-        CN_element.message_modal({
+        await (new CN_modal_message({
           title: (
             "participant" == module_name ?
             "Participant Details Updated" :
@@ -860,7 +864,7 @@ export class CN_participant_multiedit extends CN_base_action {
             `${pretty_module_name} Records Added`
           ),
           message: message,
-        }).show();
+        })).open();
       });
 
       tab_el.querySelector("div.card-footer").append(proceed_btn_el);
@@ -874,7 +878,7 @@ export class CN_participant_multiedit extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = CN_base_element.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">View Participant List</button>
       </div>
@@ -984,7 +988,7 @@ export class CN_participant_scripts extends CN_base_action {
           `${script.name} Completed (${CN_common.format_datetime(script.end_datetime, "datetime")})`
         );
       }
-      const btn_el = CN_element.create(
+      const btn_el = CN_base_element.html(
         `<button
           type="button"
           class="btn btn-outline-primary w-100"
@@ -994,13 +998,13 @@ export class CN_participant_scripts extends CN_base_action {
       btn_el.addEventListener("click", async () => {
         if (script.end_datetime) {
           if (reversable) {
-            const modal = CN_element.confirm_modal({
+            const modal = new CN_modal_confirm({
               title: `Reverse ${script.name}`,
               message: this.#reverse_messages[script.name],
             });
 
-            if (await modal.test()) {
-              await CN_element.wait_for(async () => {
+            if (await modal.open()) {
+              await CN_base_element.wait_for(async () => {
                 const params = {};
                 params[`reverse_${script.name.replace(/ /, "_").toLowerCase()}`] = true;
                 await CN_api.patch(`participant/${this.get_model().get_identifier()}`, params);
@@ -1011,7 +1015,7 @@ export class CN_participant_scripts extends CN_base_action {
         } else {
           // request a token if one doesn't already exist
           if (null == script.token) {
-            await CN_element.wait_for(async () => {
+            await CN_base_element.wait_for(async () => {
               const response = await CN_api.post(`script/${script.id}/pine_response`, {
                 identifier: this.get_model().get_identifier(),
               })
@@ -1021,13 +1025,13 @@ export class CN_participant_scripts extends CN_base_action {
 
           // if we still don't have a token then there's a problem
           if (null == script.token) {
-            CN_element.message_modal({
+            await (new CN_modal_message({
               title: "Respondent Not Found",
               message:
                 "Unable to find the respondent record belonging to the script you are trying to launch. " +
                 "If the problem persists please contact support.",
               type: "danger",
-            }).show();
+            })).open();
           } else {
             // launch the sript
             const url_params = {
@@ -1058,7 +1062,7 @@ export class CN_participant_scripts extends CN_base_action {
    * Extend parent method
    */
   create_placeholder_element() {
-    return CN_element.create(`
+    return CN_base_element.html(`
       <div>
         <div class="text-info-emphasis pb-2">
           Select which utility script you wish to launch on behalf of the participant.
@@ -1082,7 +1086,7 @@ export class CN_participant_scripts extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    return CN_element.create(`
+    return CN_base_element.html(`
       <div>
         <div class="text-info-emphasis pb-2">
           Select which utility script you wish to launch on behalf of the participant.
@@ -1096,7 +1100,7 @@ export class CN_participant_scripts extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = CN_base_element.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">View Participant</button>
       </div>
@@ -1145,20 +1149,20 @@ export class CN_participant_selection {
     );
 
     this.#element = CN_element.create_card({
-      header: CN_element.create(`
+      header: CN_base_element.html(`
         <div class="d-flex">
           <div class="flex-grow-1">Participant Selection</div>
           <div name="count" class="fw-normal">(unconfirmed)</div>
         </div>
       `),
       body: CN_element.create_form_element("text", { id: identifier_list_id }),
-      footer: CN_element.create('<div class="row"></div>'),
+      footer: CN_base_element.html('<div class="row"></div>'),
     });
     this.#element.querySelector("div.card-body").classList.add("p-0");
 
     // add the identifier-type list and confirm button
     const row_el = this.#element.querySelector("div.row");
-    const label_el = CN_element.create_form_label({ for: idtype_list_id, value: "Identifier" });
+    const label_el = CN_input_label.create({ for: idtype_list_id, value: "Identifier" });
     label_el.classList.add("col-sm-3");
     row_el.append(label_el);
     const element_el = CN_element.create_form_element("enum", {
@@ -1166,7 +1170,7 @@ export class CN_participant_selection {
       required: true,
       on_change: () => this.reset_confirmation(),
       // add the confirm button as a postfix to the identifier-type selector
-      postfix: (el) => el.append(CN_element.create(
+      postfix: (el) => el.append(CN_base_element.html(
         '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
       )),
     });
@@ -1295,10 +1299,10 @@ export class CN_participant_selection {
       this.#identifier_list_el.style.height = "";
       this.#identifier_list_el.style.height = "60px";
       this.#idtype_list_el.innerHTML = "";
-      this.#idtype_list_el.append(CN_element.create('<option value="null" selected>UID</option>'));
+      this.#idtype_list_el.append(CN_base_element.html('<option value="null" selected>UID</option>'));
       this.#idtype_list.forEach(idtype => {
         this.#idtype_list_el.append(
-          CN_element.create(`<option value="${idtype.id}">${idtype.name}</option>`)
+          CN_base_element.html(`<option value="${idtype.id}">${idtype.name}</option>`)
         );
       });
     }

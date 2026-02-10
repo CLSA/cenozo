@@ -1,9 +1,10 @@
 import CN_api from "../api.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_mail_model extends CN_base_model {
   constructor() {
@@ -148,7 +149,7 @@ export class CN_mail_view extends CN_action_view {
   create_footer_element() {
     const footer_el = super.create_footer_element();
 
-    const preview_btn_el = CN_element.create(
+    const preview_btn_el = CN_base_element.html(
       '<button name="preview" type="button" class="btn btn-light btn-outline-primary">Preview</button>'
     );
     preview_btn_el.addEventListener("click", async () => {
@@ -167,11 +168,11 @@ export class CN_mail_view extends CN_action_view {
       }
       if (response.mail_footer) message += "\n" + response.mail_footer;
 
-      CN_element.message_modal({
+      await (new CN_modal_message({
         title: "Mail Preview",
         message: message,
         size: "xl",
-      }).show();
+      })).open();
     });
     footer_el.append(preview_btn_el);
 

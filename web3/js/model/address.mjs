@@ -66,27 +66,14 @@ export class CN_address_model extends CN_traceable_model {
         international_region: {
           title: "Region",
           type: "string",
-          is_hidden: (model) => !(
-            "add" == model.get_action_name() ?
-            1 == model.get_action()
-              .get_property("international")
-              .form_input
-              .render()
-              .querySelector("select")
-              .value :
-            model.get_action().get_property_value("international")
-          ),
+          is_hidden: (model) => !model.get_action().get_property_value("international"),
           help: "International regions are unrestricted and are not automatically set by the postcode.",
         },
         international_country_id: {
           title: "Country",
           type: "typeahead",
           typeahead: CN_country_model.get_typeahead(),
-          is_hidden: (model) => !(
-            "add" == model.get_action_name() ?
-            1 == model.get_action().get_property("international").form_input.get_value() :
-            model.get_action().get_property_value("international")
-          ),
+          is_hidden: (model) => !model.get_action().get_property_value("international"),
         },
         postcode: {
           title: "Postcode",

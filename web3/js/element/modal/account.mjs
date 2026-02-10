@@ -19,52 +19,37 @@ export class CN_modal_account extends CN_base_modal {
     super(config);
 
     this.#elements = {
-      first_name: {
-        el_id: ["cn-first-name", CN_common.get_random_hex_identifier()].join("-"),
-        title: "First Name",
-        type: "string",
-      },
-      last_name: {
-        el_id: ["cn-last-name", CN_common.get_random_hex_identifier()].join("-"),
-        title: "Last Name",
-        type: "string",
-      },
-      email: {
-        el_id: ["cn-email", CN_common.get_random_hex_identifier()].join("-"),
-        title: "Email",
-        type: "email",
-      },
+      first_name: { title: "First Name", type: "string" },
+      last_name: { title: "Last Name", type: "string" },
+      email: { title: "Email", type: "email" },
     };
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", false);
     this.add_resolve_button("success", "OK", async () => {
-      let first_name = document.getElementById(this.#elements.first_name.el_id).value;
-      let last_name = document.getElementById(this.#elements.last_name.el_id).value;
-      let email = document.getElementById(this.#elements.email.el_id).value;
+      const data = {
+        user: {
+          first_name: this.#elements.first_name.form_input.get_value(),
+          last_name: this.#elements.last_name.form_input.get_value(),
+          email: this.#elements.email.form_input.get_value(),
+        },
+      };
       if (
-        CN_session.data.user.first_name != first_name ||
-        CN_session.data.user.last_name != last_name ||
-        CN_session.data.user.email != email
+        CN_session.data.user.first_name != data.user.first_name ||
+        CN_session.data.user.last_name != data.user.last_name ||
+        CN_session.data.user.email != data.user.email
       ) {
         await this.constructor.wait_for(async () => {
           // update the server
-          await CN_api.patch("self/0", {
-            user: {
-              first_name: first_name,
-              last_name: last_name,
-              email: email,
-            },
-          });
+          await CN_api.patch("self/0", data);
 
           // update the UI
-          CN_session.data.user.first_name = first_name;
-          CN_session.data.user.last_name = last_name;
-          CN_session.data.user.email = email;
+          CN_session.data.user.first_name = data.user.first_name;
+          CN_session.data.user.last_name = data.user.last_name;
+          CN_session.data.user.email = data.user.email;
         });
-
-        return true;
       }
+      return true;
     });
   }
 
@@ -76,26 +61,21 @@ export class CN_modal_account extends CN_base_modal {
       <div>
         <span class="text-info-emphasis">Update your account details here:</span>
         <hr />
-        <form></form>
+        <div name="inputs"></div>
       </div>
     `);
 
-    // create elements
+    // create form elements
     for (const element_name in this.#elements) {
-      // add the label
-      const element = this.#elements[element_name];
-      const el = this.constructor.html('<div class="row mb-3"></div>');
-      const label_el = CN_input_label.create({ for: element.el_id, value: element.title });
-      label_el.classList.add("col-sm-3");
-      el.append(label_el);
-
-      // add the input
+      // create the config
       const config = {
-        id: element.el_id,
+        id: ["cn-" + element_name, CN_common.get_random_hex_identifier()].join("-"),
         name: element_name,
         required: true,
+        class: "d-flex align-items-center col-sm-9",
+        get_default: () => CN_session.data.user[element_name],
         on_change: (control_el, valid) => {
-          const ok_btn_el = this.render().querySelector("[name=OK]");
+          const ok_btn_el = this.get_resolve_button("OK").element;
           if (valid) {
             ok_btn_el.removeAttribute("disabled");
           } else {
@@ -103,12 +83,19 @@ export class CN_modal_account extends CN_base_modal {
           }
         },
       };
-      const form_input = "string" == element.type ? new CN_input_string(config) : new CN_input_email(config);
-      const element_el = form_input.render();
-      element_el.classList.add("col-sm-9");
-      element_el.querySelector("input").value = CN_session.data.user[element_name];
-      el.append(element_el);
-      body_el.querySelector("form").append(el);
+
+      // add the label
+      const element = this.#elements[element_name];
+      const el = this.constructor.html('<div class="row mb-3"></div>');
+      const label_el = CN_input_label.create({ for: config.id, value: element.title });
+      label_el.classList.add("col-sm-3");
+      el.append(label_el);
+
+      // add the input
+      element.form_input = "string" == element.type ? new CN_input_string(config) : new CN_input_email(config);
+      element.form_input.set_parent_element(el);
+      el.append(element.form_input.render());
+      body_el.querySelector("div[name=inputs]").append(el);
     }
 
     return body_el;

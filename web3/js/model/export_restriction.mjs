@@ -56,7 +56,10 @@ export class CN_export_restriction_view extends CN_action_view {
 
     // if the table name has changed then make sure to update the column_name as well
     if ("table_name" == prop_name) {
-      this.set_property_value("column_name", prop.enum.values[0].key);
+      this.set_property_value(
+        "column_name",
+        this.get_property(prop_name).form_input.get_config("enum").values[0].key
+      );
       await super.on_set_property("column_name");
     }
   }

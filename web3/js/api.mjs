@@ -1,6 +1,7 @@
 import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
 import CN_session from "./session.mjs"
+
+import { CN_modal_message } from "./element/modal/message.mjs"
 
 /**
  * The API class provides a way to communicate with the server's API
@@ -52,7 +53,7 @@ export default {
         role_id != CN_session.data.role.id
       )
     ) {
-      await CN_element.message_modal({
+      await (CN_modal_message({
         title: "Login Mismatch",
         size: "lg",
         type: "danger",
@@ -66,7 +67,7 @@ export default {
             If this message persists then please contact support as someone else may be logged into your account.
           </div>
         `,
-      }).block();
+      })).open();
 
       CN_session.reload(true);
       const error = new Error("Session mismatch.");

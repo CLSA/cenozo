@@ -1,9 +1,9 @@
 import CN_api from "../api.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_list } from "../element/action/list.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_form_association_model extends CN_base_model {
   constructor() {
@@ -55,11 +55,11 @@ export class CN_form_association_list extends CN_action_list {
         }
         await CN_session.navigate_to(path);
       } else {
-        CN_element.message_modal({
+        await (new CN_modal_message({
           title: "Permission Denied",
           message: `You do not have access to viewing ${model.get_plural()} records.`,
           type: "danger",
-        }).show();
+        })).open();
       }
     }
   }

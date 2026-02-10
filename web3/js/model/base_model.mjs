@@ -126,7 +126,7 @@ export class CN_base_model extends CN_base_object {
   /**
    * Configures the model's action
    */
-  configure(action_name, identifier=null, parent_model=null, leaf=false) {
+  configure(parent_el, action_name, identifier=null, parent_model=null, leaf=false) {
     this.#action_name = action_name;
     this.#identifier = identifier;
     this.#parent_model = parent_model;
@@ -150,6 +150,7 @@ export class CN_base_model extends CN_base_object {
       } else {
         this.#action = this.#module.create_action(action_name, this);
         this.#action.set_config("id", this.#unique_id);
+        this.#action.set_parent_element(parent_el);
       }
     }
 
@@ -170,7 +171,7 @@ export class CN_base_model extends CN_base_object {
    */
   configure_child(name) {
     const child_model = CN_session.get_module(name).create_model();
-    child_model.configure("list", null, this);
+    child_model.configure(null, "list", null, this);
     return child_model;
   }
 

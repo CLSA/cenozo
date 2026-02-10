@@ -732,23 +732,12 @@ export class CN_base_person_notes extends CN_base_action {
         CN_input_text.create({
           id: `note-${note.id}`,
           required: true,
-          on_change: async (control_el, success) => {
-            if (success) {
-              await CN_api.patch(note_path, { note: control_el.value });
-              control_el.backup_value = control_el.value;
-
-              // flash the border green to show the data has been updated
-              const old_style = control_el.style;
-              control_el.style["border-color"] = "green";
-              setTimeout(() => {
-                control_el.style = old_style;
-                control_el.style.height = "";
-                control_el.style.height = control_el.scrollHeight + "px";
-              }, 500);
+          on_change: async (form_input, valid) => {
+            if (valid) {
+              await CN_api.patch(note_path, { note: form_input.get_value() });
+              form_input.flash_border();
             } else {
-              control_el.value = control_el.backup_value;
-              control_el.style.height = "";
-              control_el.style.height = control_el.scrollHeight + "px";
+              form_input.undo_value();
             }
           },
         })
@@ -813,15 +802,16 @@ export class CN_base_person_notes extends CN_base_action {
 
     const card_body_el = body_el.querySelector(".card-body");
 
-    const new_note_input_input = new CN_input_text({ id: "new_note" });
-    card_body_el.append(new_note_input_input.render());
+    const new_note_input = new CN_input_text({ id: "new_note" });
+    new_note_input.set_parent_element(card_body_el);
+    card_body_el.append(new_note_input.render());
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
       await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
         user_id: CN_session.data.user.id,
         datetime: (new Date()).toISOString(),
-        note: new_note_input_input.get_value(),
+        note: new_note_input.get_value(),
       });
-      new_note_input_input.set_value("");
+      new_note_input.set_value("");
       await this.run();
     });
 
@@ -830,16 +820,16 @@ export class CN_base_person_notes extends CN_base_action {
     label_el.classList.add("col-sm-3");
     body_el.querySelector("div.row").append(label_el);
 
-    const search_input_input = new CN_input_string({
+    const note_search_input = new CN_input_string({
       id: "note_search",
       class: "d-flex align-items-center col-sm-9",
-      on_change: () => {
-        this.set_query_parameter("search", search_input_input.get_value());
+      on_change: async (form_input, valid) => {
+        if (valid) this.set_query_parameter("search", form_input.get_value());
         this.update_element();
       },
     });
-
-    body_el.querySelector("div.row").append(search_input_input.render());
+    note_search_input.set_parent_element(body_el);
+    body_el.querySelector("div.row").append(note_search_input.render());
 
     return body_el;
   }

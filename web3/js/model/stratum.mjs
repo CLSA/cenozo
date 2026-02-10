@@ -7,6 +7,9 @@ import { CN_participant_selection } from "./participant.mjs"
 import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_input_label } from "../element/input/label.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_stratum_model extends CN_base_model {
   constructor() {
@@ -101,7 +104,7 @@ export class CN_stratum_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     if (this.get_model().get_module().action_allowed("mass_participant")) {
-      const mass_participant_btn_el = CN_element.create(`
+      const mass_participant_btn_el = CN_base_element.html(`
         <button name="mass_participant" type="button" class="btn btn-light btn-outline-primary">
           Manage Stratum Participants
         </button>
@@ -201,7 +204,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create(`
+    const body_el = CN_base_element.html(`
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
           This utility allows you to add or remove lists of participants to or from the
@@ -221,7 +224,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
 
     // add the operation type select
     const footer_el = body_el.querySelector("[name=operation]");
-    const label_el = CN_element.create_form_label({ for: "operation", value: "Operation" });
+    const label_el = CN_input_label.create({ for: "operation", value: "Operation" });
     label_el.classList.add("col-sm-3");
     footer_el.append(label_el);
 
@@ -239,10 +242,10 @@ export class CN_stratum_mass_participant extends CN_base_action {
     element_el.classList.add("col-sm-9");
 
     const operation_el = element_el.querySelector("#operation");
-    operation_el.append(CN_element.create(
+    operation_el.append(CN_base_element.html(
       '<option value="add" selected>Add to Stratum</option>'
     ));
-    operation_el.append(CN_element.create(
+    operation_el.append(CN_base_element.html(
       '<option value="remove">Remove from Stratum</option>'
     ));
     footer_el.append(element_el);
@@ -260,11 +263,11 @@ export class CN_stratum_mass_participant extends CN_base_action {
       this.update_element();
     });
 
-    const summary_el = CN_element.create('<div class="container-fluid"></div>');
+    const summary_el = CN_base_element.html('<div class="container-fluid"></div>');
     body_el.append(summary_el);
 
     // create the confirm button
-    const confirm_btn_el = CN_element.create(
+    const confirm_btn_el = CN_base_element.html(
       '<button name="confirm" type="button" class="btn btn-primary"></button>'
     );
     confirm_btn_el.addEventListener("click", async () => {
@@ -275,13 +278,13 @@ export class CN_stratum_mass_participant extends CN_base_action {
         identifier_list: this.#participant_selection.get_identifier_list(),
       });
 
-      await CN_element.message_modal({
+      await (new CN_modal_message({
         title: `Participants ${"add" == this.#operation ? "Added" : "Removed"}`,
         message: `
           You have successfully ${"add" == this.#operation ? "added" : "removed"} ${response} participant(s)
           ${"add" == this.#operation ? "to" : "from"} the ${this.#stratum.name} stratum.
         `,
-      }).block();
+      })).open();
 
       await this.on_load();
     });
@@ -301,7 +304,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = CN_base_element.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">View Stratum</button>
       </div>

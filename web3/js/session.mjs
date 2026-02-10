@@ -2,6 +2,8 @@ import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
 import CN_element from "./element.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
+import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
+import { CN_modal_message } from "./element/modal/message.mjs"
 
 import { CN_error_model } from "./model/error.mjs"
 import { CN_home_model } from "./model/home.mjs"
@@ -258,7 +260,7 @@ export default {
             );
           }
 
-          await CN_element.message_modal(params).block();
+          await (new CN_modal_message(params)).open();
         } else {
           throw error;
         }
@@ -272,8 +274,10 @@ export default {
    * Loads all modules and creates all models based on the current URL
    */
   load: async function () {
-    // un-highlight any selected menu button
+    const main_content_el = document.getElementById("main-content");
     const menu_el = document.getElementById("main-menu-offcanvas").querySelector("div[name=menu]");
+
+    // un-highlight any selected menu button
     const selected_menu_btn_el = menu_el.querySelector("button.fw-bold");
     if (selected_menu_btn_el) selected_menu_btn_el.classList.remove("fw-bold");
 
@@ -341,7 +345,13 @@ export default {
     let parent_model = null;
     PATH_MODEL_LIST = model_data_list.map((model_data, index) => {
       const model = model_data.module.create_model();
-      model.configure(model_data.action, model_data.identifier, parent_model, index == model_data_list.length-1);
+      model.configure(
+        main_content_el,
+        model_data.action,
+        model_data.identifier,
+        parent_model,
+        index == model_data_list.length-1
+      );
       parent_model = model;
       return model;
     });
@@ -377,29 +387,7 @@ export default {
     await Promise.all(PATH_MODEL_LIST.slice(0, -1).map(model => model.get_action().on_load()));
 
     // now render and run the leaf module
-    const leaf_model_element = leaf_model.render();
-
-    // add the leaf model to the main content, watching for add/remove DOM events
-    const observer = new MutationObserver(async mutation => {
-      if (CN_common.is_function(leaf_model.get_action)) {
-        const action = leaf_model.get_action();
-        if (document.contains(leaf_model_element)) {
-          await action.on_dom_add();
-        } else {
-          observer.disconnect();
-          const promise_list = (
-            ["add", "view"].includes(action.get_type()) ?
-            action.get_all_properties().map(prop => prop.form_input.on_dom_remove()) :
-            []
-          );
-          promise_list.push(action.on_dom_remove());
-          await Promise.all(promise_list);
-        }
-      }
-    });
-    observer.observe(main_content_el, { childList: true });
-    main_content_el.append(leaf_model_element);
-
+    main_content_el.append(leaf_model.render());
     await leaf_model.run();
     await this.update_breadcrumbs();
   },
@@ -531,7 +519,7 @@ export default {
     const clock_el = main_menu_header_el.querySelector("button[name=clock]");
     clock_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      CN_element.create_clock_settings_modal().show();
+      (new CN_modal_clock_settings).open();
     });
     const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
     account_btn_el.addEventListener("click", () => {
@@ -541,7 +529,7 @@ export default {
     const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
     timezone_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      CN_element.create_clock_settings_modal().show();
+      (new CN_modal_clock_settings).open();
     });
     const password_btn_el = main_menu_offcanvas_el.querySelector("button[name=password]");
     password_btn_el.addEventListener("click", () => {

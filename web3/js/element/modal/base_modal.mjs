@@ -4,6 +4,7 @@ import { CN_base_element } from "../base_element.mjs"
 const default_config = {
   type: "div",
   header_class: "text-bg-primary",
+  size: "lg",
 };
 
 export class CN_base_modal extends CN_base_element {
@@ -43,6 +44,15 @@ export class CN_base_modal extends CN_base_element {
    */
   add_resolve_button(class_type, title, value) {
     this.#resolve_button_list.push({ class_type, title, value });
+  }
+
+  /**
+   * Returns a resolve button by title
+   * @param string title: The button's title
+   * @return { class_type, title, value, element }
+   */
+  get_resolve_button(title) {
+    return this.#resolve_button_list.find(o => o.title == title);
   }
 
   /**
@@ -92,16 +102,16 @@ export class CN_base_modal extends CN_base_element {
    */
   _create_footer_element() {
     const el = this.constructor.html(`
-      <div>
-        <div name="left-btn-group" class="btn-group"></div>
-        <div name="right-btn-group" class="btn-group"></div>
+      <div class="d-flex">
+        <div name="left-btn-group" class="flex-fill btn-group"></div>
+        <div name="right-btn-group" class="flex-fill btn-group"></div>
       </div>
     `);
 
     const right_btn_group = el.querySelector("[name=right-btn-group]");
     this.#resolve_button_list.forEach(button => {
       const title = CN_common.escape_html(button.title);
-      const btn_el = this.constructor.html(`
+      button.element = this.constructor.html(`
         <button
           type="button"
           name="${title}"
@@ -109,11 +119,11 @@ export class CN_base_modal extends CN_base_element {
           data-bs-dismiss="modal"
         >${button.title}</button>
       `);
-      btn_el.addEventListener("click", async () => {
+      button.element.addEventListener("click", async () => {
         // Note: button.value may be a function
         this._resolve(CN_common.is_function(button.value) ? await button.value() : button.value);
       });
-      right_btn_group.append(btn_el);
+      right_btn_group.append(button.element);
     });
 
     return el;
@@ -126,11 +136,11 @@ export class CN_base_modal extends CN_base_element {
     const el = super._create_element();
     el.setAttribute("tabindex", "-1");
     el.append(this.constructor.html(`
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-${this.get_config("size")}">
         <div class="modal-content">
           <div class="modal-header ${this.get_config("header_class")}"></div>
           <div class="modal-body"></div>
-          <div class="modal-footer d-flex justify-content-between text-bg-secondary fs-5"></div>
+          <div class="modal-footer text-bg-secondary fs-5"></div>
         </div>
       </div>
     `));

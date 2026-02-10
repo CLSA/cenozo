@@ -13,6 +13,7 @@ export class CN_base_element extends CN_base_object {
   static #dom_parser = new DOMParser();
 
   #el;
+  #parent_el;
   #config = new Map();
 
   /**
@@ -61,6 +62,27 @@ export class CN_base_element extends CN_base_object {
    */
   set_config(name, value) {
     this.#config.set(name, value);
+  }
+
+  /**
+   * Sets the element's parent (needed to fire DOM add/remove events)
+   */
+  set_parent_element(parent_el) {
+    this.#parent_el = parent_el;
+
+    if (null != this.#parent_el) {
+      const observer = new MutationObserver(async mutation => {
+        if (this.#el) {
+          if (this.#parent_el.contains(this.#el)) {
+            await this.on_dom_add();
+          } else {
+            observer.disconnect();
+            await this.on_dom_remove();
+          }
+        }
+      });
+      observer.observe(this.#parent_el, { childList: true });
+    }
   }
 
   /**

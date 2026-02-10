@@ -1,10 +1,10 @@
 import CN_api from "../api.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_action_add } from "../element/action/add.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_hold_model extends CN_base_model {
   constructor() {
@@ -98,7 +98,7 @@ export class CN_hold_add extends CN_action_add {
     }
 
     if (deceased_hold_type_id == this.get_property_value("hold_type_id")) {
-      await CN_element.message_modal({
+      await (new CN_modal_message({
         title: "Date of Death",
         size: "lg",
         message: `
@@ -111,7 +111,7 @@ export class CN_hold_add extends CN_action_add {
             defining details including whether only the year, year and month, or full date is known.
           </div>
         `,
-      }).block();
+      })).open();
     }
 
     await super.on_submit();
