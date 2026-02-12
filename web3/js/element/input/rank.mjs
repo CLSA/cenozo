@@ -1,17 +1,19 @@
 import CN_common from "../../common.mjs"
 import { CN_input_enum } from "./enum.mjs"
 
-const default_config = {
-  max_rank: 1,
-};
-
 export class CN_input_rank extends CN_input_enum {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_rank contructor");
     }
 
-    const cnf = {...default_config, ...config};
+    const cnf = {
+      ...{
+        // default config
+        max_rank: 1,
+      },
+      ...config
+    };
 
     // create the parent enum property based on the max_rank
     cnf.enum = {

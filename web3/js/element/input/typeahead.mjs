@@ -1,15 +1,6 @@
 import CN_common from "../../common.mjs"
 import { CN_base_input } from "./base_input.mjs"
 
-const default_config = {
-  typeahead: {
-    min_length: 2,
-    promise: null,
-    timeout_id: null,
-    open: false,
-  },
-};
-
 export class CN_input_typeahead extends CN_base_input {
   #typeahead_el;
   #dropdown_bs;
@@ -19,16 +10,23 @@ export class CN_input_typeahead extends CN_base_input {
       throw new Error("Non-object config argument passed to CN_input_typeahead contructor");
     }
 
-    // define the default on_select and on_cancel functions
-    default_config.typeahead.on_select = (item) => {
-      this.set_value(item.value);
-      this.commit_value();
-      if (this.has_config("on_change")) {
-        this.get_config("on_change")(this, this.validate());
-      }
-    };
-    default_config.typeahead.on_cancel = () => {
-      this.undo_value(false);
+    const default_config = {
+      typeahead: {
+        min_length: 2,
+        promise: null,
+        timeout_id: null,
+        open: false,
+        on_select: (item) => {
+          this.set_value(item.value);
+          this.commit_value();
+          if (this.has_config("on_change")) {
+            this.get_config("on_change")(this, this.validate());
+          }
+        },
+        on_cancel: () => {
+          this.undo_value(false);
+        },
+      },
     };
 
     // don't replace the typeahead property in the config if it's an object, merge it with the default instead
@@ -37,9 +35,11 @@ export class CN_input_typeahead extends CN_base_input {
     }
 
     // convert string list values to objects
-    config.typeahead.list = config.typeahead.list.map(
-      item => CN_common.is_object(item) ? item : { key: item, value: item }
-    );
+    if (CN_common.is_array(config.typeahead.list)) {
+      config.typeahead.list = config.typeahead.list.map(
+        item => CN_common.is_object(item) ? item : { key: item, value: item }
+      );
+    }
 
     super({...default_config, ...config});
 
@@ -82,9 +82,10 @@ export class CN_input_typeahead extends CN_base_input {
           this.#dropdown_bs.hide();
         }
       } else if ("Enter" == event.key) {
-        if ("" === this.get_value()) {
+        if (null === this.get_value()) {
           // the input box is empty, so set to empty
           if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
+          this.#dropdown_bs.hide();
         }
       }
     });
@@ -99,10 +100,11 @@ export class CN_input_typeahead extends CN_base_input {
           if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
           this.#dropdown_bs.hide();
         }
-      } else if (this.get_config("name")) {
-        if ("" === this.get_value()) {
+      } else {
+        if (null === this.get_value()) {
           // the input box is empty, so set to empty
           if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
+          this.#dropdown_bs.hide();
         } else {
           // return to the last committed value
           this.undo_value(true);
@@ -112,11 +114,7 @@ export class CN_input_typeahead extends CN_base_input {
 
     // listen for when the input's value has changed
     el.addEventListener("input", async () => {
-          this.#dropdown_bs.show();
       const typeahead = this.get_config("typeahead");
-
-      // only proceed if the typeahead isn't loading and we've reached the min length threshold
-      if (typeahead.min_length > this.get_value().length) return;
 
       // wait for the last request to complete
       await typeahead.promise;
@@ -129,44 +127,54 @@ export class CN_input_typeahead extends CN_base_input {
 
       // wait a short while after the user has stopped typing before proceeding
       typeahead.timeout_id = setTimeout(typeahead.promise = async () => {
+        const value = this.get_value();
         const typeahead = this.get_config("typeahead");
         typeahead.timeout_id = null;
 
-        // generate the list if the get_list() function exists
-        if (CN_common.is_function(typeahead.get_list)) {
-          typeahead.list = await typeahead.get_list(this.get_value(), this);
+        // only proceed if the typeahead isn't loading and we've reached the min length threshold
+        let li_el_list = [];
+        if (null != value && typeahead.min_length <= value.length) {
+          // generate the list if the get_list() function exists
+          if (CN_common.is_function(typeahead.get_list)) {
+            typeahead.list = null === value ? [] : await typeahead.get_list(value, this);
+          }
+
+          // convert string values to objects with key and value pairs
+          typeahead.list = typeahead.list.map(
+            item => CN_common.is_object(item) ? item : { key: item, value: item }
+          );
+
+          // now create a list of <li> elements for the typeahead's <ul> element
+          // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
+          if (null != value) {
+            li_el_list = typeahead.list
+              // Make sure only matching items are included (this is already done in get_list() but not when
+              // the list isn't dynamic
+              .filter(item => item.value.match(new RegExp(RegExp.escape(value), "i")))
+              .map(item => {
+                const item_el = this.constructor.html(
+                  `<li><button type="button" class="dropdown-item">${item.value}</button></li>`
+                );
+                item_el.addEventListener("click", () => {
+                  const typeahead = this.get_config("typeahead");
+                  this.set_value(item.value);
+                  if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
+                  this.#dropdown_bs.hide();
+                });
+                return item_el;
+              }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
+          }
         }
 
-        // convert string values to objects with key and value pairs
-        typeahead.list = typeahead.list.map(
-          item => CN_common.is_object(item) ? item : { key: item, value: item }
-        );
-
-        // now create a list of <li> elements for the typeahead's <ul> element
-        // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
-        const li_el_list = typeahead.list
-          // Make sure only matching items are included (this is already done in get_list() but not when
-          // the list isn't dynamic
-          .filter(item => item.value.match(new RegExp(RegExp.escape(this.get_value()), "i")))
-          .map(item => {
-            const item_el = this.constructor.html(
-              `<li><button type="button" class="dropdown-item">${item.value}</button></li>`
-            );
-            item_el.addEventListener("click", () => {
-              const typeahead = this.get_config("typeahead");
-              this.set_value(item.value);
-              if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
-              this.#dropdown_bs.hide();
-            });
-            return item_el;
-          }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
 
         // now replace the dropdown's list with the matching items
         const ul_el = this.#typeahead_el.querySelector("ul");
         ul_el.innerHTML = "";
         li_el_list.forEach(item_el => ul_el.append(item_el));
-        if (!typeahead.open) {
+        if (0 < li_el_list.length && !typeahead.open) {
           this.#dropdown_bs.show();
+        } else if (0 == li_el_list.length && typeahead.open)  {
+          this.#dropdown_bs.hide();
         }
       }, 200);
     });
@@ -177,7 +185,16 @@ export class CN_input_typeahead extends CN_base_input {
   /**
    * Extend parent method
    */
-  get_formatted_value() {
+  get_value() {
+    let value = super.get_value();
+    if (CN_common.is_string(value)) value = value.trim();
+    return "" === value ? null : value;
+  }
+
+  /**
+   * Extend parent method
+   */
+  async get_value_for_record() {
     // convert from value to key by looking up the element's typeahead list in the params object
     // NOTE: the element's params is not the same as the property's params object (it is cloned)
     let value = this.get_value();

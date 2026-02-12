@@ -127,8 +127,7 @@ export class CN_action_view extends CN_action_base_record {
     try {
       // update the server
       let data = {};
-      data[prop_name] = await this.get_property(prop_name).form_input.get_formatted_value();
-
+      data[prop_name] = await this.get_property_value_for_record(prop_name);
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
       this.get_property(prop_name).form_input.undo_value();

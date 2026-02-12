@@ -72,12 +72,12 @@ export class CN_action_add extends CN_action_base_record {
     const valid = await this.validate();
     if (!valid) return;
 
-    // build the record, running all get_formatted_value() async calls in parallel
+    // build the record
     let record = {};
     await Promise.all(
       this.get_all_properties()
         .filter(prop => !prop.is_hidden(this.get_model()))
-        .map(prop => (async () => record[prop.name] = await prop.form_input.get_formatted_value())())
+        .map(prop => (async () => record[prop.name] = await this.get_property_value_for_record(prop.name))())
     );
 
     try {

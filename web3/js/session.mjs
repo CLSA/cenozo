@@ -4,6 +4,7 @@ import CN_element from "./element.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
 import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
 import { CN_modal_message } from "./element/modal/message.mjs"
+import { CN_modal_password } from "./element/modal/password.mjs"
 
 import { CN_error_model } from "./model/error.mjs"
 import { CN_home_model } from "./model/home.mjs"
@@ -519,22 +520,22 @@ export default {
     const clock_el = main_menu_header_el.querySelector("button[name=clock]");
     clock_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_clock_settings).open();
+      (new CN_modal_clock_settings()).open();
     });
     const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
     account_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_account).open();
+      (new CN_modal_account()).open();
     });
     const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
     timezone_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_clock_settings).open();
+      (new CN_modal_clock_settings()).open();
     });
     const password_btn_el = main_menu_offcanvas_el.querySelector("button[name=password]");
     password_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      CN_element.create_password_modal().show();
+      (new CN_modal_password()).open();
     });
     const logout_btn_el = main_menu_offcanvas_el.querySelector("button[name=logout]");
     logout_btn_el.addEventListener("click", async () => {

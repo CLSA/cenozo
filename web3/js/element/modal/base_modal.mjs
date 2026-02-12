@@ -1,12 +1,6 @@
 import CN_common from "../../common.mjs"
 import { CN_base_element } from "../base_element.mjs"
 
-const default_config = {
-  type: "div",
-  header_class: "text-bg-primary",
-  size: "lg",
-};
-
 export class CN_base_modal extends CN_base_element {
   #resolve_button_list = [];
   #bootstrap_modal;
@@ -28,7 +22,14 @@ export class CN_base_modal extends CN_base_element {
     // the class list is also pre-defined
     config.class = "modal fade";
 
-    super({...default_config, ...config});
+    super({
+      ...{
+        // default config
+        header_class: "text-bg-primary",
+        size: "lg",
+      },
+      ...config
+    });
 
     // always setup a unique element id if one hasn't already be defined
     if (null == this.get_config("id")) {

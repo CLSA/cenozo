@@ -18,21 +18,20 @@ export class CN_modal_account extends CN_base_modal {
 
     super(config);
 
-    this.#elements = {
-      first_name: { title: "First Name", type: "string" },
-      last_name: { title: "Last Name", type: "string" },
-      email: { title: "Email", type: "email" },
-    };
+    this.#elements = [
+      { name: "first_name", title: "First Name", type: "string" },
+      { name: "last_name", title: "Last Name", type: "string" },
+      { name: "email", title: "Email", type: "email" },
+    ];
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", false);
     this.add_resolve_button("success", "OK", async () => {
       const data = {
-        user: {
-          first_name: this.#elements.first_name.form_input.get_value(),
-          last_name: this.#elements.last_name.form_input.get_value(),
-          email: this.#elements.email.form_input.get_value(),
-        },
+        user: this.#elements.reduce((obj, element) => {
+          obj[element.name] = element.form_input.get_value();
+          return obj;
+        }, {}),
       };
       if (
         CN_session.data.user.first_name != data.user.first_name ||
@@ -66,26 +65,26 @@ export class CN_modal_account extends CN_base_modal {
     `);
 
     // create form elements
-    for (const element_name in this.#elements) {
+    this.#elements.forEach(element => {
       // create the config
       const config = {
-        id: ["cn-" + element_name, CN_common.get_random_hex_identifier()].join("-"),
-        name: element_name,
+        id: ["cn-" + element.name, CN_common.get_random_hex_identifier()].join("-"),
+        name: element.name,
         required: true,
         class: "d-flex align-items-center col-sm-9",
-        get_default: () => CN_session.data.user[element_name],
-        on_change: (control_el, valid) => {
+        get_default: () => CN_session.data.user[element.name],
+        on_change: (form_input, valid) => {
+          // see if all inputs are valid
           const ok_btn_el = this.get_resolve_button("OK").element;
-          if (valid) {
-            ok_btn_el.removeAttribute("disabled");
-          } else {
+          if (this.#elements.some(e => !e.form_input.validate())) {
             ok_btn_el.setAttribute("disabled", true);
+          } else {
+            ok_btn_el.removeAttribute("disabled");
           }
         },
       };
 
       // add the label
-      const element = this.#elements[element_name];
       const el = this.constructor.html('<div class="row mb-3"></div>');
       const label_el = CN_input_label.create({ for: config.id, value: element.title });
       label_el.classList.add("col-sm-3");
@@ -96,7 +95,7 @@ export class CN_modal_account extends CN_base_modal {
       element.form_input.set_parent_element(el);
       el.append(element.form_input.render());
       body_el.querySelector("div[name=inputs]").append(el);
-    }
+    });
 
     return body_el;
   }

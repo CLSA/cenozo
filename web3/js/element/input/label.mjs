@@ -1,21 +1,23 @@
 import CN_common from "../../common.mjs"
 import { CN_base_element } from "../base_element.mjs"
 
-const default_config = {
-  type: "label",
-  class: "col-form-label text-end fw-bold",
-  for: null, // the ID the label refers to
-  value: "Label",
-  help: null, // If defined this text will appear in a popup bubble
-};
-
 export class CN_input_label extends CN_base_element {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_label contructor");
     }
 
-    super({...default_config, ...config});
+    super({
+      ...{
+        // default config
+        type: "label",
+        class: "col-form-label text-end fw-bold",
+        for: null, // the ID the label refers to
+        value: "Label",
+        help: null, // If defined this text will appear in a popup bubble
+      },
+      ...config
+    });
   }
 
   /**

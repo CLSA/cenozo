@@ -1,34 +1,43 @@
 import CN_common from "../../common.mjs"
 import { CN_input_enum } from "./enum.mjs"
 
-const default_config = {
-  enum: {
-    values: [
-      {key: 1, value: "Yes", disabled: false},
-      {key: 0, value: "No", disabled: false}
-    ],
-  },
-};
-
 export class CN_input_boolean extends CN_input_enum {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_boolean contructor");
     }
 
+    const values = [
+      {key: true, value: "Yes", disabled: false},
+      {key: false, value: "No", disabled: false}
+    ];
+
     // don't replace the enum property in the config if it's an object, merge it with the default instead
-    if (CN_common.is_object(config.enum)) {
-      config.enum = {...default_config.enum, ...config.enum};
+    if (CN_common.is_object(config.enum) && !CN_common.is_array(config.enum.values)) {
+      config.enum.values = values;
     }
 
-    super({...default_config, ...config});
+    super({
+      ...{
+        // default config
+        enum: { values: values },
+      },
+      ...config
+    });
   }
 
   /**
    * Extends parent method
    */
-  get_formatted_value() {
-    const value = this.get_value();
-    return "" == value ? null : Number(value);
+  get_value() {
+    return [1, "1", true, "true"].includes(super.get_value());
+  }
+
+  /**
+   * Extends parent method
+   */
+  async get_value_for_record() {
+    const value = await super.get_value_for_record();
+    return null == value ? null : Number(value);
   }
 }

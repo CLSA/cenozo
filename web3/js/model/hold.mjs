@@ -124,8 +124,9 @@ export class CN_hold_view extends CN_action_view {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      const prop = this.get_property("hold_type_id");
-      const hold_type = prop.enum.values.find(e => e.key == prop.form_input.get_value());
+      const hold_type = this.get_property("hold_type_id").get_config("enum").values.find(
+        e => e.key == this.get_property_value("hold_type_id")
+      );
       return null == hold_type ? "Removed" : hold_type.value;
     }
     return await super.get_text(type);

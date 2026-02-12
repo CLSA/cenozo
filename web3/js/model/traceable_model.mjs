@@ -173,25 +173,25 @@ export class CN_traceable_view extends CN_action_view {
    * Extends the parent method
    */
   async on_set_property(prop_name) {
-    // only test participants for tracing
+    // only test when setting a participant's active value
     const parent_model = this.get_model().get_parent_model();
-    if ("active" != prop_name || "participant" != parent_model.get_name()) {
-      return await super.on_set_property(prop_name);
-    }
+    if ("active" == prop_name && "participant" == parent_model.get_name()) {
+      let trace_reason = await check_for_trace(
+        this.get_model().get_name(),
+        this.get_property_value(prop_name) ? "added" : "removed",
+        parent_model.get_identifier()
+      );
 
-    let trace_reason = await check_for_trace(
-      this.get_model().get_name(),
-      await this.get_formatted_property(prop_name) ? "added" : "removed",
-      parent_model.get_identifier()
-    );
-
-    if (trace_reason) {
-      // if a reason was given then update the participant with a new trace
-      await super.on_set_property(prop_name);
-      this.get_model().add_trace(trace_reason);
+      if (trace_reason) {
+        // if a reason was given then update the participant with a new trace
+        await super.on_set_property(prop_name);
+        this.get_model().add_trace(trace_reason);
+      } else {
+        this.get_property(prop_name).form_input.undo_value();
+        this.run();
+      }
     } else {
-      this.get_property(prop_name).form_input.undo_value();
-      this.run();
+      await super.on_set_property(prop_name);
     }
   }
 

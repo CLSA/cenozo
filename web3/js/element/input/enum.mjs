@@ -2,22 +2,24 @@ import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
 import { CN_base_input } from "./base_input.mjs"
 
-const default_config = {
-  enum: { values: [] },
-};
-
 export class CN_input_enum extends CN_base_input {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_enum contructor");
     }
 
-    // don't replace the enum property in the config if it's an object, merge it with the default instead
-    if (CN_common.is_object(config.enum)) {
-      config.enum = {...default_config.enum, ...config.enum};
+    // make sure the enum config object has a values array
+    if (CN_common.is_object(config.enum) && !CN_common.is_array(config.enum.values)) {
+      config.enum.values = [];
     }
 
-    super({...default_config, ...config});
+    super({
+      ...{
+        // default config
+        enum: { values: [] }
+      },
+      ...config}
+    );
   }
 
   /**
@@ -33,13 +35,10 @@ export class CN_input_enum extends CN_base_input {
   set_value(value) {
     super.set_value(value);
 
-    this.get_control_element().querySelectorAll("option").forEach(option_el => {
-      if (
-        ("" == option_el.value && null === value) ||
-        (1 == option_el.value && true === value) ||
-        (0 == option_el.value && false === value) ||
-        (null != value && option_el.value === value)
-      ) {
+    const el = this.get_control_element();
+    this.get_config("enum").values.forEach(option => {
+      const option_el = el.querySelector(`option[value="${option.key}"]`);
+      if (value == option.key) {
         option_el.selected = true;
       } else {
         option_el.removeAttribute("selected");

@@ -76,8 +76,9 @@ export class CN_proxy_add extends CN_action_add {
     let proceed = true;
 
     // show the prompt before adding, if there is one
-    const prop = this.get_property("proxy_type_id");
-    const proxy_type = prop.enum.values.find(e => e.key == prop.form_input.get_value());
+    const proxy_type = this.get_property("proxy_type_id").get_config("enum").values.find(
+      e => e.key == this.get_property_value("proxy_type_id")
+    );
     if (proxy_type && proxy_type.prompt) {
       proceed = await CN_element.confirm_modal({ message: prompt }).test();
     }
@@ -92,8 +93,9 @@ export class CN_proxy_view extends CN_action_view {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      const prop = this.get_property("proxy_type_id");
-      const proxy_type = prop.enum.values.find(e => e.key == prop.form_input.get_value());
+      const proxy_type = this.get_property("proxy_type_id").get_config("enum").values.find(
+        e => e.key == this.get_property_value("proxy_type_id")
+      );
       return null == proxy_type ? "Removed" : proxy_type.value;
     }
     return await super.get_text(type);

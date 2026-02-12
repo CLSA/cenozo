@@ -2,12 +2,6 @@ import CN_common from "../../common.mjs"
 import { CN_base_element } from "../base_element.mjs"
 import { CN_state } from "../../state.mjs"
 
-const default_config = {
-  type: "div",
-  class: "d-flex align-items-center",
-  error_timeout: 0,
-};
-
 export class CN_base_input extends CN_base_element {
   #action;
   #state;
@@ -40,7 +34,15 @@ export class CN_base_input extends CN_base_element {
     const action = config.action;
     delete config.action;
 
-    super({...default_config, ...config});
+    super({
+      ...{
+        // default config
+        type: "div",
+        class: "d-flex align-items-center",
+        error_timeout: 0,
+      },
+      ...config
+    });
 
     this.#action = action;
     this.#control_id = id;
@@ -193,7 +195,7 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
-  async get_formatted_value() {
+  async get_value_for_record() {
     const value = this.get_value();
     return "" === value ? null : value;
   }

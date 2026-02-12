@@ -18,16 +18,16 @@ export class CN_modal_clock_settings extends CN_base_modal {
 
     super(config);
 
-    this.#elements = {
-      timezone: { title: "Timezone", type: "typeahead" },
-      am_pm: { title: "Use 12-Hour Clock", type: "boolean" },
-    };
+    this.#elements = [
+      { name: 'timezone', title: "Timezone", type: "typeahead" },
+      { name: 'am_pm', title: "Use 12-Hour Clock", type: "boolean" },
+    ];
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", false);
     this.add_resolve_button("success", "OK", async () => {
-      const timezone = this.#elements.timezone.form_input.get_value();
-      const am_pm = this.#elements.am_pm.form_input.get_value();
+      const timezone = this.#elements.find(e => e.name == "timezone").form_input.get_value();
+      const am_pm = this.#elements.find(e => e.name == "am_pm").form_input.get_value();
       if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
         await CN_session.set_timezone(timezone, am_pm);
       }
@@ -51,28 +51,28 @@ export class CN_modal_clock_settings extends CN_base_modal {
     `);
 
     // create form elements
-    for (const element_name in this.#elements) {
+    this.#elements.forEach(element => {
       // create the config
       const config = {
-        id: ["cn-" + element_name, CN_common.get_random_hex_identifier()].join("-"),
-        name: element_name,
+        id: ["cn-" + element.name, CN_common.get_random_hex_identifier()].join("-"),
+        name: element.name,
         required: true,
         class: "d-flex align-items-center col-sm-9",
-        get_default: () => CN_session.data.user[element_name],
-        on_change: (control_el, valid) => {
+        get_default: () => CN_session.data.user[element.name],
+        on_change: (form_input, valid) => {
+          // see if all inputs are valid
           const ok_btn_el = this.get_resolve_button("OK").element;
-          if (valid) {
-            ok_btn_el.removeAttribute("disabled");
-          } else {
+          if (this.#elements.some(e => !e.form_input.validate())) {
             ok_btn_el.setAttribute("disabled", true);
+          } else {
+            ok_btn_el.removeAttribute("disabled");
           }
         },
       };
 
-      if ("timezone" == element_name) config.typeahead = { list: CN_timezones };
+      if ("timezone" == element.name) config.typeahead = { list: CN_timezones };
 
       // add the label
-      const element = this.#elements[element_name];
       const el = this.constructor.html('<div class="row mb-3"></div>');
       const label_el = CN_input_label.create({ for: config.id, value: element.title });
       label_el.classList.add("col-sm-3");
@@ -87,7 +87,7 @@ export class CN_modal_clock_settings extends CN_base_modal {
       element.form_input.set_parent_element(el);
       el.append(element.form_input.render());
       body_el.querySelector("div[name=inputs]").append(el);
-    }
+    });
 
     return body_el;
   }

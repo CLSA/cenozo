@@ -8,7 +8,6 @@
   window.addEventListener("load", async () => {
     const CN_common = (await import("./common.mjs")).default;
     const CN_session = (await import("./session.mjs")).default;
-    
     const { CN_modal_message } = (await import("./element/modal/message.mjs"));
 
     // catch all unhandled exceptions

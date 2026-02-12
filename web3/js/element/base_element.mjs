@@ -1,13 +1,6 @@
 import CN_common from "../common.mjs"
 import { CN_base_object } from "../base_object.mjs"
 
-const default_config = {
-  type: "div", // the root element type
-  id: null, // will be added to the element as an attribute if defined
-  name: null, // will be added to the element as an attribute if defined
-  class: null, // will be added to the element as an attribute if defined
-};
-
 export class CN_base_element extends CN_base_object {
   // The DOMParser used by create() when creating elements from HTML strings
   static #dom_parser = new DOMParser();
@@ -28,7 +21,16 @@ export class CN_base_element extends CN_base_object {
     super();
 
     // store all properties in the config parameter
-    config = {...default_config, ...config};
+    config = {
+      ...{
+        // default config
+        type: "div", // the root element type
+        id: null, // will be added to the element as an attribute if defined
+        name: null, // will be added to the element as an attribute if defined
+        class: null, // will be added to the element as an attribute if defined
+      },
+      ...config
+    };
     for(const name in config) {
       this.#config.set(name, config[name]);
     }

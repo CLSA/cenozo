@@ -111,7 +111,7 @@ export class CN_action_base_record extends CN_base_action {
    *   on_change: an async function which is called when a property's value is changed, with arguments:
    *     form_input: the property's form input object (element/input classes)
    *     valid: whether or not the new value is valid
-   *     (the default function is to call this class' on_change() method)
+   *     (the default function is to call this class' on_property_change() method)
    *   is_constant: a function that makes the property read-only when it returns true, with arguments:
    *     model: the model of the action that the property belongs to
    *     (the default function always returns false)
@@ -256,13 +256,13 @@ export class CN_action_base_record extends CN_base_action {
   }
 
   /**
-   * Returns a property's value formatted by its type
+   * Returns a property's value formatted by its type for writing to a database record
    * @param string prop_name: The name of the property
    * @return (dynamic)
    */
-  async get_property_formatted_value(prop_name) {
+  async get_property_value_for_record(prop_name) {
     const prop = this.get_property(prop_name);
-    return null == prop ? undefined : await prop.form_input.get_formatted_value();
+    return !prop || !prop.form_input ? undefined : await prop.form_input.get_value_for_record();
   }
 
   /**
@@ -270,7 +270,7 @@ export class CN_action_base_record extends CN_base_action {
    */
   set_property_value(prop_name, value) {
     const prop = this.get_property(prop_name);
-    if (prop) prop.form_input.set_value(value);
+    if (prop && prop.form_input) prop.form_input.set_value(value);
   }
 
   /**
@@ -428,7 +428,7 @@ export class CN_action_base_record extends CN_base_action {
 
       // if the prop doesn't have a custom on_change() function then implement the default behaviour
       if (!CN_common.is_function(params.on_change)) {
-        params.on_change = async (control, valid) => await this.on_change(prop.name, valid);
+        params.on_change = async (form_input, valid) => await this.on_property_change(prop.name, valid);
       }
 
       params.action = this;
@@ -524,7 +524,7 @@ export class CN_action_base_record extends CN_base_action {
   /**
    * ADD DOCS
    */
-  async on_change(prop_name, valid) {
+  async on_property_change(prop_name, valid) {
     if (valid) {
       await this.on_set_property(prop_name);
     } else if ("view" == this.get_type()) {

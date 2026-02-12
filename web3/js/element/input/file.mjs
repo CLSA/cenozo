@@ -13,9 +13,9 @@ export class CN_input_file extends CN_base_input {
   }
 
   /**
-   * Extends parent method
+   * Overrides parent method
    */
-  async get_formatted_value() {
+  async get_value_for_record() {
     const file = this.get_config("file");
 
     // convert from blob

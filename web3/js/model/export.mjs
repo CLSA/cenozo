@@ -60,10 +60,12 @@ export class CN_export_model extends CN_base_model {
             btn_el.addEventListener(
               "click",
               async () => {
-                const form_input = this.get_action().get_property("participant_count").form_input;
-                form_input.set_value("(calculating...)");
+                this.get_action().set_property_value("participant_count", "(calculating...)");
                 btn_el.setAttribute("disabled", true);
-                form_input.set_value(await CN_api.count(`${this.get_view_url(null, "api")}/participant`));
+                this.get_action().set_property_value(
+                  "participant_count",
+                  await CN_api.count(`${this.get_view_url(null, "api")}/participant`)
+                );
                 btn_el.removeAttribute("disabled");
               },
             );
@@ -134,7 +136,7 @@ export class CN_export_model extends CN_base_model {
         })) },
         on_change: async (form_input, valid) => {
           // run the default behaviour
-          await form_input.get_action().on_change("table_name", valid);
+          await form_input.get_action().on_property_change("table_name", valid);
 
           // re-run the action so the changed property is applied in the view and all child lists
           if (valid) form_input.get_action().run(true);
