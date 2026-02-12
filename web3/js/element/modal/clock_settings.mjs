@@ -2,15 +2,9 @@ import CN_common from "../../common.mjs"
 import CN_session from "../../session.mjs"
 import CN_timezones from "../../timezones.mjs"
 
-import { CN_base_modal } from "./base_modal.mjs"
+import { CN_base_modal_form } from "./base_modal_form.mjs"
 
-import { CN_input_boolean } from "../input/boolean.mjs";
-import { CN_input_label } from "../input/label.mjs";
-import { CN_input_typeahead } from "../input/typeahead.mjs";
-
-export class CN_modal_clock_settings extends CN_base_modal {
-  #elements;
-
+export class CN_modal_clock_settings extends CN_base_modal_form {
   constructor(config = { title: "Clock Settings" }) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_modal_clock_settings contructor");
@@ -18,76 +12,55 @@ export class CN_modal_clock_settings extends CN_base_modal {
 
     super(config);
 
-    this.#elements = [
-      { name: 'timezone', title: "Timezone", type: "typeahead" },
-      { name: 'am_pm', title: "Use 12-Hour Clock", type: "boolean" },
-    ];
+    this.add_input(
+      "typeahead",
+      "timezone",
+      "Timezone",
+      {
+        get_default: () => CN_session.data.user.timezone,
+        typeahead: { list: CN_timezones },
+      }
+    );
+    this.add_input("boolean", "am_pm", "Use 12-Hour Clock", { get_default: () => CN_session.data.user.am_pm });
 
     // add the resolve buttons
-    this.add_resolve_button("light", "Cancel", false);
+    this.add_resolve_button("light", "Cancel", () => this._resolve(false));
     this.add_resolve_button("success", "OK", async () => {
-      const timezone = this.#elements.find(e => e.name == "timezone").form_input.get_value();
-      const am_pm = this.#elements.find(e => e.name == "am_pm").form_input.get_value();
+      const timezone = this.get_input_value("timezone");
+      const am_pm = this.get_input_value("am_pm");
       if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
         await CN_session.set_timezone(timezone, am_pm);
       }
-      return true;
+      this._resolve(true);
     });
+  }
+
+  /**
+   * Extend parent method
+   */
+  check_form() {
+    const check = super.check_form();
+    const ok_btn_el = this.get_resolve_button("OK").element;
+    if (check) {
+      ok_btn_el.removeAttribute("disabled");
+    } else {
+      ok_btn_el.setAttribute("disabled", true);
+    }
+
+    return check;
   }
 
   /**
    * Implements the parent method
    */
   _create_body_element() {
-    const body_el = this.constructor.html(`
-      <div>
-        <span class="text-info-emphasis">
-          Select which timezone you would like times to be displayed in.<br />
-          Note that most timezones have multiple names, you may choose any.
-        </span>
-        <hr />
-        <div name="inputs"></div>
+    const body_el = super._create_body_element();
+    body_el.querySelector("div[name=description]").append(this.constructor.html(`
+      <div class="text-info-emphasis">
+        Select which timezone you would like times to be displayed in.<br />
+        Note that most timezones have multiple names, you may choose any.
       </div>
-    `);
-
-    // create form elements
-    this.#elements.forEach(element => {
-      // create the config
-      const config = {
-        id: ["cn-" + element.name, CN_common.get_random_hex_identifier()].join("-"),
-        name: element.name,
-        required: true,
-        class: "d-flex align-items-center col-sm-9",
-        get_default: () => CN_session.data.user[element.name],
-        on_change: (form_input, valid) => {
-          // see if all inputs are valid
-          const ok_btn_el = this.get_resolve_button("OK").element;
-          if (this.#elements.some(e => !e.form_input.validate())) {
-            ok_btn_el.setAttribute("disabled", true);
-          } else {
-            ok_btn_el.removeAttribute("disabled");
-          }
-        },
-      };
-
-      if ("timezone" == element.name) config.typeahead = { list: CN_timezones };
-
-      // add the label
-      const el = this.constructor.html('<div class="row mb-3"></div>');
-      const label_el = CN_input_label.create({ for: config.id, value: element.title });
-      label_el.classList.add("col-sm-3");
-      el.append(label_el);
-
-      // add the input
-      element.form_input = (
-        "typeahead" == element.type ?
-        new CN_input_typeahead(config) :
-        new CN_input_boolean(config)
-      );
-      element.form_input.set_parent_element(el);
-      el.append(element.form_input.render());
-      body_el.querySelector("div[name=inputs]").append(el);
-    });
+    `));
 
     return body_el;
   }

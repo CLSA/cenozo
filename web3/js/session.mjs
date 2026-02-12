@@ -476,16 +476,6 @@ export default {
           <div name="menu" class="row mt-1 g-2"></div>
         </div>
       </div>
-
-      <div
-        id="main-toast-container"
-        aria-live="polite"
-        aria-atomic="true"
-        class="d-flex justify-content-center align-items-center w-100"
-      >
-        <div class="toast-container top-0 start-50 translate-middle-x p-3">
-        </div>
-      </div>
       <div id="main-content" class="container-fluid my-2"></div>
     `;
   },

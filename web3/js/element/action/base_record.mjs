@@ -4,30 +4,8 @@ import CN_element from "../../element.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
 import { CN_state } from "../../state.mjs"
-
-// form inputs
-import { CN_input_audio_url } from "../input/audio_url.mjs"
-import { CN_input_boolean } from "../input/boolean.mjs"
-import { CN_input_color } from "../input/color.mjs"
-import { CN_input_date } from "../input/date.mjs"
-import { CN_input_datetime } from "../input/datetime.mjs"
-import { CN_input_datetimesecond } from "../input/datetimesecond.mjs"
-import { CN_input_dob } from "../input/dob.mjs"
-import { CN_input_dod } from "../input/dod.mjs"
-import { CN_input_email } from "../input/email.mjs"
-import { CN_input_enum } from "../input/enum.mjs"
-import { CN_input_file } from "../input/file.mjs"
-import { CN_input_float } from "../input/float.mjs"
-import { CN_input_integer } from "../input/integer.mjs"
+import { CN_input } from "../input/input.mjs"
 import { CN_input_label } from "../input/label.mjs"
-import { CN_input_password } from "../input/password.mjs"
-import { CN_input_rank } from "../input/rank.mjs"
-import { CN_input_size } from "../input/size.mjs"
-import { CN_input_string } from "../input/string.mjs"
-import { CN_input_text } from "../input/text.mjs"
-import { CN_input_time } from "../input/time.mjs"
-import { CN_input_timesecond } from "../input/timesecond.mjs"
-import { CN_input_typeahead } from "../input/typeahead.mjs"
 
 export class CN_action_base_record extends CN_base_action {
   #property_groups;
@@ -437,35 +415,7 @@ export class CN_action_base_record extends CN_base_action {
       // make errors in the view action go away after 4 seconds
       params.error_timeout = "view" == this.get_type() ? 4000 : 0;
 
-      if ("audio_url" == prop.type) {
-        prop.form_input = new CN_input_audio_url(params);
-      } else if ("boolean" == prop.type) {
-        prop.form_input = new CN_input_boolean(params);
-      } else if ("color" == prop.type) {
-        prop.form_input = new CN_input_color(params);
-      } else if ("date" == prop.type) {
-        prop.form_input = new CN_input_date(params);
-      } else if ("datetime" == prop.type) {
-        prop.form_input = new CN_input_datetime(params);
-      } else if ("datetimesecond" == prop.type) {
-        prop.form_input = new CN_input_datetimesecond(params);
-      } else if ("dob" == prop.type) {
-        prop.form_input = new CN_input_dob(params);
-      } else if ("dod" == prop.type) {
-        prop.form_input = new CN_input_dod(params);
-      } else if ("email" == prop.type) {
-        prop.form_input = new CN_input_email(params);
-      } else if ("enum" == prop.type) {
-        prop.form_input = new CN_input_enum(params);
-      } else if ("file" == prop.type) {
-        prop.form_input = new CN_input_file(params);
-      } else if ("float" == prop.type) {
-        prop.form_input = new CN_input_float(params);
-      } else if ("integer" == prop.type) {
-        prop.form_input = new CN_input_integer(params);
-      } else if ("password" == prop.type) {
-        prop.form_input = new CN_input_password(params);
-      } else if ("rank" == prop.type) {
+      if ("rank" == prop.type) {
         // define the max rank
         params.max_rank = async () => {
           const model = this.get_model();
@@ -482,22 +432,8 @@ export class CN_action_base_record extends CN_base_action {
             ("add" == this.get_type() ? 1 : 0)
           );
         };
-        prop.form_input = new CN_input_rank(params);
-      } else if ("size" == prop.type) {
-        prop.form_input = new CN_input_size(params);
-      } else if ("string" == prop.type) {
-        prop.form_input = new CN_input_string(params);
-      } else if ("text" == prop.type) {
-        prop.form_input = new CN_input_text(params);
-      } else if ("time" == prop.type) {
-        prop.form_input = new CN_input_time(params);
-      } else if ("timesecond" == prop.type) {
-        prop.form_input = new CN_input_timesecond(params);
-      } else if ("typeahead" == prop.type) {
-        prop.form_input = new CN_input_typeahead(params);
-      } else {
-        console.warn(`Tried to create invalid property type "${prop.type}"`);
       }
+      prop.form_input = CN_input.create(prop.type, params);
     }
 
     // connect the prop element and input

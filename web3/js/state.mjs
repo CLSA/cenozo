@@ -28,7 +28,9 @@ export class CN_state extends CN_base_object {
     // set the state's value now and anytime the element changes
     this.#element = el;
     set();
-    this.#element.addEventListener("input", set);
+
+    // the last argument is true so that this listener is fired before any other
+    this.#element.addEventListener("input", set, true);
   }
 
   /**

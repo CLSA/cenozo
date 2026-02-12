@@ -9,6 +9,10 @@ export class CN_input_base_string extends CN_base_input {
     const control_el = this.constructor.html('<input class="form-control"></input>');
     if (["color", "email", "password"].includes(input_type)) {
       control_el.setAttribute("type", input_type);
+
+      if("password" == input_type) {
+        control_el.setAttribute("autocomplete", "new-password");
+      }
     }
     return control_el;
   }

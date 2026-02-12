@@ -41,10 +41,10 @@ export class CN_base_modal extends CN_base_element {
    * Adds a button to the modal's footer that will resolve with the given value
    * @param string class_type: The button's class type (primary, secondary, success, danger, warning, info or light)
    * @param string title: The button's title
-   * @param mixed value: The value to resolve the modal as, or a function that returns that value when called
+   * @param mixed on_click: Fired when the button is clicked (typically calling this._resolve())
    */
-  add_resolve_button(class_type, title, value) {
-    this.#resolve_button_list.push({ class_type, title, value });
+  add_resolve_button(class_type, title, on_click) {
+    this.#resolve_button_list.push({ class_type, title, on_click });
   }
 
   /**
@@ -54,6 +54,15 @@ export class CN_base_modal extends CN_base_element {
    */
   get_resolve_button(title) {
     return this.#resolve_button_list.find(o => o.title == title);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_disabled(disabled) {
+    this.#resolve_button_list.forEach(button => {
+      button.element.disabled = disabled;
+    });
   }
 
   /**
@@ -76,9 +85,17 @@ export class CN_base_modal extends CN_base_element {
   }
 
   /**
+   * ADD DOCS
+   */
+  close() {
+    this.#bootstrap_modal.hide();
+  }
+
+  /**
    * Resolves the modal with the given value, typically used by the modal's button event listeners
    */
   _resolve(value) {
+    this.close();
     this.#resolve(value);
   }
 
@@ -117,13 +134,9 @@ export class CN_base_modal extends CN_base_element {
           type="button"
           name="${title}"
           class="btn btn-${button.class_type}"
-          data-bs-dismiss="modal"
         >${button.title}</button>
       `);
-      button.element.addEventListener("click", async () => {
-        // Note: button.value may be a function
-        this._resolve(CN_common.is_function(button.value) ? await button.value() : button.value);
-      });
+      button.element.addEventListener("click", button.on_click);
       right_btn_group.append(button.element);
     });
 
