@@ -5,6 +5,7 @@ import { CN_modal_account } from "./element/modal/account.mjs"
 import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
 import { CN_modal_message } from "./element/modal/message.mjs"
 import { CN_modal_password } from "./element/modal/password.mjs"
+import { CN_modal_site_role } from "./element/modal/site_role.mjs"
 
 import { CN_error_model } from "./model/error.mjs"
 import { CN_home_model } from "./model/home.mjs"
@@ -497,7 +498,7 @@ export default {
     access_el.innerHTML = `${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}`;
     access_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      CN_element.create_site_role_modal().show();
+      (new CN_modal_site_role()).open();
     });
 
     // keep the clock running

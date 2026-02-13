@@ -32,6 +32,15 @@ export class CN_input_enum extends CN_base_input {
   /**
    * Extend parent method
    */
+  get_value() {
+    // cast integer values as a number instead of a string
+    const value = super.get_value();
+    return CN_common.is_integer(value) ? Number(value) : value;
+  }
+
+  /**
+   * Extend parent method
+   */
   set_value(value) {
     super.set_value(value);
 

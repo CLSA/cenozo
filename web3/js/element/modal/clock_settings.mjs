@@ -29,7 +29,12 @@ export class CN_modal_clock_settings extends CN_base_modal_form {
       const timezone = this.get_input_value("timezone");
       const am_pm = this.get_input_value("am_pm");
       if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
-        await CN_session.set_timezone(timezone, am_pm);
+        try {
+          this.set_disabled(true);
+          await CN_session.set_timezone(timezone, am_pm);
+        } finally {
+          this.set_disabled(false);
+        }
       }
       this._resolve(true);
     });

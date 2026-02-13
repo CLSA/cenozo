@@ -30,7 +30,9 @@ export class CN_input_boolean extends CN_input_enum {
    * Extends parent method
    */
   get_value() {
-    return [1, "1", true, "true"].includes(super.get_value());
+    // cast non null values as a boolean
+    const value = super.get_value();
+    return ["", null].includes(value) ? null : [1, true, "true"].includes(value);
   }
 
   /**

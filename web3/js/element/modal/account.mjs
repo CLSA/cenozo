@@ -32,13 +32,17 @@ export class CN_modal_account extends CN_base_modal_form {
         CN_session.data.user.email != data.user.email
       ) {
         // update the server
-        this.set_disabled(true);
-        await CN_api.patch("self/0", data);
+        try {
+          this.set_disabled(true);
+          await CN_api.patch("self/0", data);
 
-        // update the UI
-        CN_session.data.user.first_name = data.user.first_name;
-        CN_session.data.user.last_name = data.user.last_name;
-        CN_session.data.user.email = data.user.email;
+          // update the UI
+          CN_session.data.user.first_name = data.user.first_name;
+          CN_session.data.user.last_name = data.user.last_name;
+          CN_session.data.user.email = data.user.email;
+        } finally {
+          this.set_disabled(false);
+        }
       }
       this._resolve(true);
     });

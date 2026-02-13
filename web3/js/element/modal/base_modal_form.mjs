@@ -10,7 +10,7 @@ import { CN_input_label } from "../input/label.mjs";
 export class CN_base_modal_form extends CN_base_modal {
   #input_list = [];
 
-  /** 
+  /**
    * ADD DOCS
    */
   add_input(type, name, title, config = {}) {
@@ -32,14 +32,14 @@ export class CN_base_modal_form extends CN_base_modal {
     return input ? input.form_input.get_value() : null;
   }
 
-  /** 
+  /**
    * ADD DOCS
    */
   check_form() {
     return !this.#input_list.some(e => !e.form_input.validate());
   }
 
-  /** 
+  /**
    * ADD DOCS
    */
   set_disabled(disabled) {
