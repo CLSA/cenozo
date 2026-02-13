@@ -8,7 +8,7 @@ import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
-import { CN_input_label } from "../element/input/label.mjs"
+import { CN_element_label } from "../element/label.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_stratum_model extends CN_base_model {
@@ -224,7 +224,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
 
     // add the operation type select
     const footer_el = body_el.querySelector("[name=operation]");
-    const label_el = CN_input_label.create({ for: "operation", value: "Operation" });
+    const label_el = CN_element_label.create({ for: "operation", value: "Operation" });
     label_el.classList.add("col-sm-3");
     footer_el.append(label_el);
 

@@ -1,10 +1,10 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 
 export class CN_custom_report_model extends CN_base_model {
@@ -36,7 +36,7 @@ export class CN_custom_report_model extends CN_base_model {
   }
 
   async download_report(id) {
-    await CN_element.wait_for(async () => {
+    await CN_base_element.wait_for(async () => {
       const response = await CN_api.file(`custom_report/${id}`, "text/csv", { file: "report" }, true);
       CN_common.download_file(
         await response.blob(),
@@ -67,7 +67,7 @@ export class CN_custom_report_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     // add the download action
-    const download_btn_el = CN_element.create(
+    const download_btn_el = CN_base_element.html(
       '<button name="download" type="button" class="btn btn-light btn-outline-primary">Run Report</button>'
     );
     download_btn_el.addEventListener(

@@ -1,8 +1,8 @@
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
 import { CN_action_upload } from "../element/action/upload.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 
@@ -45,7 +45,7 @@ export class CN_identifier_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     if (this.get_model().get_module().action_allowed("upload")) {
-      const upload_btn_el = CN_element.create(`
+      const upload_btn_el = CN_base_element.html(`
         <button name="upload" type="button" class="btn btn-light btn-outline-primary">
           Import Identifier Data
         </button>
@@ -79,7 +79,7 @@ export class CN_identifier_upload extends CN_action_upload {
     if (CN_common.is_object(summary_data)) {
       const summary_card_el = this.get_body_element().querySelector("[name=summary] div.card-body");
 
-      summary_card_el.append(CN_element.create(`
+      summary_card_el.append(CN_base_element.html(`
         <div class="container">
           <div class="fs-5 fw-bold">Results</div>
           <ul>
@@ -91,28 +91,28 @@ export class CN_identifier_upload extends CN_action_upload {
       `));
 
       if (0 < summary_data.error_list.length) {
-        const invalid_el = CN_element.create(`
+        const invalid_el = CN_base_element.html(`
           <div class="container">
             <div class="fs-5 fw-bold">Errors</div>
           </div>
         `);
-        const ul_el = CN_element.create('<ul class="text-danger"></ul>');
+        const ul_el = CN_base_element.html('<ul class="text-danger"></ul>');
         summary_data.error_list.forEach(
-          error => ul_el.append(CN_element.create(`<li>Line ${error.line}: ${error.message}</li>`))
+          error => ul_el.append(CN_base_element.html(`<li>Line ${error.line}: ${error.message}</li>`))
         );
         invalid_el.append(ul_el);
         summary_card_el.append(invalid_el);
       }
 
       if (0 < summary_data.warning_list.length) {
-        const invalid_el = CN_element.create(`
+        const invalid_el = CN_base_element.html(`
           <div class="container">
             <div class="fs-5 fw-bold">Warnings</div>
           </div>
         `);
-        const ul_el = CN_element.create('<ul class="text-danger"></ul>');
+        const ul_el = CN_base_element.html('<ul class="text-danger"></ul>');
         summary_data.warning_list.forEach(
-          warning => ul_el.append(CN_element.create(`<li>Line ${warning.line}: ${warning.message}</li>`))
+          warning => ul_el.append(CN_base_element.html(`<li>Line ${warning.line}: ${warning.message}</li>`))
         );
         invalid_el.append(ul_el);
         summary_card_el.append(invalid_el);
@@ -126,7 +126,7 @@ export class CN_identifier_upload extends CN_action_upload {
   create_body_element() {
     const body_el = super.create_body_element();
 
-    body_el.prepend(CN_element.create(`
+    body_el.prepend(CN_base_element.html(`
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
           This utility allows you to upload participant identifier data from a CSV file.

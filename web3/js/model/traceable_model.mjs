@@ -1,6 +1,5 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 

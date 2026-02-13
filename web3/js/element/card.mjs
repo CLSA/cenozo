@@ -1,50 +1,75 @@
-  /**
-   * Creates a card element containing header, body and footer sub-elements
-   * @return Element
+import CN_common from "../common.mjs"
+import { CN_base_element } from "./base_element.mjs"
+
+export class CN_element_card extends CN_base_element {
+  constructor(config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_element_card contructor");
+    }   
+
+    super({
+      ...{
+        // default config
+        type: "div",
+        class: "container-fluid mb-2 p-0",
+        header: null,
+        body: null,
+        footer: null,
+      },  
+      ...config
+    }); 
+  }
+
+  /** 
+   * Extend parent method
    */
-  create_card: function (child_elements = {}) {
-    const el = this.create(`
-      <div class="container-fluid mb-2 p-0">
-        <div class="card">
-          <div class="card-header text-bg-primary fw-bold fs-5"></div>
-          <div class="card-body"></div>
-          <div class="card-footer text-bg-secondary fs-5"></div>
-        </div>
+  _create_element() {
+    const el = super._create_element();
+    el.append(this.constructor.html(`
+      <div class="card">
+        <div class="card-header text-bg-primary fw-bold fs-5"></div>
+        <div class="card-body"></div>
+        <div class="card-footer text-bg-secondary fs-5"></div>
       </div>
-    `);
+    `));
 
-    if (undefined !== child_elements.header) {
-      const header_el = el.querySelector(".card-header");
-      if (CN_common.is_string(child_elements.header)) {
-        header_el.innerHTML = child_elements.header;
-      } else if (CN_common.is_element(child_elements.header)) {
-        header_el.append(child_elements.header);
-      } else if (!child_elements.header) {
-        header_el.remove();
-      }
+    const header = this.get_config("header");
+    const header_el = el.querySelector(".card-header");
+    if (CN_common.is_string(header)) {
+      header_el.innerHTML = header;
+    } else if (CN_common.is_element(header)) {
+      header_el.append(header);
+    } else if (!header) {
+      header_el.remove();
     }
 
-    if (undefined !== child_elements.body) {
-      const body_el = el.querySelector(".card-body");
-      if (CN_common.is_string(child_elements.body)) {
-        body_el.innerHTML = child_elements.body;
-      } else if (CN_common.is_element(child_elements.body)) {
-        body_el.append(child_elements.body);
-      } else if (!child_elements.body) {
-        body_el.remove();
-      }
+    const body = this.get_config("body");
+    const body_el = el.querySelector(".card-body");
+    if (CN_common.is_string(body)) {
+      body_el.innerHTML = body;
+    } else if (CN_common.is_element(body)) {
+      body_el.append(body);
+    } else if (!body) {
+      body_el.remove();
     }
 
-    if (undefined !== child_elements.footer) {
-      const footer_el = el.querySelector(".card-footer");
-      if (CN_common.is_string(child_elements.footer)) {
-        footer_el.innerHTML = child_elements.footer;
-      } else if (CN_common.is_element(child_elements.footer)) {
-        footer_el.append(child_elements.footer);
-      } else if (!child_elements.footer) {
-        footer_el.remove();
-      }
+    const footer = this.get_config("footer");
+    const footer_el = el.querySelector(".card-footer");
+    if (CN_common.is_string(footer)) {
+      footer_el.innerHTML = footer;
+    } else if (CN_common.is_element(footer)) {
+      footer_el.append(footer);
+    } else if (!footer) {
+      footer_el.remove();
     }
 
     return el;
-  },
+  }
+
+  /** 
+   * Convenience method to create and render the element (without needing access to the created object)
+   * @param object params: The parameters sent to the class constructor
+   * @return Element
+   */
+  static create(config) { return (new CN_element_card(config)).render(); }
+}

@@ -1,9 +1,9 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_user_model } from "./user.mjs"
 
@@ -54,7 +54,7 @@ export class CN_export_model extends CN_base_model {
           is_hidden: model => "add" == model.get_action_name(),
           is_constant: () => true,
           postfix: (el) => {
-            const btn_el = CN_element.create(
+            const btn_el = CN_base_element.html(
               '<button type="button" class="btn btn-outline-primary ms-2">Calculate</button>'
             );
             btn_el.addEventListener(
@@ -221,7 +221,7 @@ export class CN_export_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     // add the generate action
-    const generate_btn_el = CN_element.create(
+    const generate_btn_el = CN_base_element.html(
       '<button name="generate" type="button" class="btn btn-light btn-outline-primary">Generate</button>'
     );
     generate_btn_el.addEventListener("click", async () => {
@@ -233,7 +233,7 @@ export class CN_export_view extends CN_action_view {
     footer_el.append(generate_btn_el);
 
     // add the duplicate action
-    const duplicate_btn_el = CN_element.create(
+    const duplicate_btn_el = CN_base_element.html(
       '<button name="duplicate" type="button" class="btn btn-light btn-outline-primary">Duplicate</button>'
     );
     duplicate_btn_el.addEventListener("click", async () => {

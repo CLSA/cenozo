@@ -1,6 +1,5 @@
 import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
-import CN_element from "../../element.mjs"
 
 import { CN_action_view } from "./view.mjs"
 
@@ -14,7 +13,7 @@ export class CN_action_report_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     // add the download button
-    const download_btn_el = CN_element.create(
+    const download_btn_el = this.constructor.html(
       '<button name="download" type="button" class="btn btn-light btn-outline-primary" disabled>Download</button>'
     );
     download_btn_el.addEventListener("click", async () => {

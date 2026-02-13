@@ -1,6 +1,5 @@
 import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
-import CN_element from "../../element.mjs"
 import CN_session from "../../session.mjs"
 
 import { CN_action_base_record } from "./base_record.mjs"
@@ -141,16 +140,16 @@ export class CN_action_add extends CN_action_base_record {
    * Extends parent method
    */
   create_footer_element() {
-    const btn_group_el = CN_element.create('<div class="btn-group" role="group"></div>');
+    const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
 
-    const submit_btn_el = CN_element.create(
+    const submit_btn_el = this.constructor.html(
       '<button name="submit" type="button" class="btn btn-primary">Submit</button>'
     );
     btn_group_el.append(submit_btn_el);
     (async () => { submit_btn_el.innerHTML = await this.get_text("submit"); })();
     submit_btn_el.addEventListener("click", this.on_submit.bind(this));
 
-    const cancel_btn_el = CN_element.create(
+    const cancel_btn_el = this.constructor.html(
       '<button name="cancel" type="button" class="btn btn-light">Cancel</button>'
     );
     btn_group_el.append(cancel_btn_el);

@@ -7,7 +7,7 @@ import { CN_base_element } from "../element/base_element.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
-import { CN_input_label } from "../element/input/label.mjs"
+import { CN_element_label } from "../element/label.mjs"
 import { CN_input_string } from "../element/input/string.mjs"
 import { CN_input_text } from "../element/input/text.mjs"
 
@@ -816,7 +816,7 @@ export class CN_base_person_notes extends CN_base_action {
     });
 
     // add the search field
-    const label_el = CN_input_label.create({ for: "note_search", value: "Search" });
+    const label_el = CN_element_label.create({ for: "note_search", value: "Search" });
     label_el.classList.add("col-sm-3");
     body_el.querySelector("div.row").append(label_el);
 

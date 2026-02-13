@@ -1,8 +1,7 @@
-import CN_element from "../element.mjs"
-
 import { CN_action_add } from "../element/action/add.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 
 export class CN_proxy_model extends CN_base_model {
   constructor() {
@@ -80,7 +79,7 @@ export class CN_proxy_add extends CN_action_add {
       e => e.key == this.get_property_value("proxy_type_id")
     );
     if (proxy_type && proxy_type.prompt) {
-      proceed = await CN_element.confirm_modal({ message: prompt }).test();
+      proceed = await (new CN_modal_confirm({ message: prompt })).open();
     }
 
     return proceed ? await super.on_submit() : null;

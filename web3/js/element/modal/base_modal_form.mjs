@@ -5,7 +5,7 @@ import CN_session from "../../session.mjs"
 import { CN_base_modal } from "./base_modal.mjs"
 
 import { CN_input } from "../input/input.mjs";
-import { CN_input_label } from "../input/label.mjs";
+import { CN_element_label } from "../label.mjs";
 
 export class CN_base_modal_form extends CN_base_modal {
   #input_list = [];
@@ -86,7 +86,7 @@ export class CN_base_modal_form extends CN_base_modal {
 
       // add the label
       const el = this.constructor.html('<div class="row mb-3"></div>');
-      const label_el = CN_input_label.create({ for: config.id, value: input.title });
+      const label_el = CN_element_label.create({ for: config.id, value: input.title });
       label_el.classList.add("col-sm-3");
       el.append(label_el);
 

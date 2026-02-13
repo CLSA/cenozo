@@ -1,8 +1,9 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_element_card } from "../element/card.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 
 export class CN_overview_model extends CN_base_model {
@@ -48,9 +49,9 @@ export class CN_overview_view extends CN_action_view {
    * Override this method to create an overview-specific placeholder
    */
   create_placeholder_element() {
-    const el = CN_element.create('<div class="px-3"></div>');
-    const card_el = CN_element.create_card({
-      header: CN_element.create(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
+    const el = CN_base_element.html('<div class="px-3"></div>');
+    const card_el = CN_element_card.create({
+      header: CN_base_element.html(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
       footer: null,
     });
     card_el.classList.add("mt-2");
@@ -61,7 +62,7 @@ export class CN_overview_view extends CN_action_view {
 
     const body_el = card_el.querySelector(".card-body");
     for (let row = 0; row < 12; row++) {
-      body_el.append(CN_element.create(`
+      body_el.append(CN_base_element.html(`
         <div class="row ${1 == row%2 ? 'bg-dark-subtle' : ''}">
           <label class="col placeholder-glow">
             <span class="placeholder col-${Math.ceil(Math.random()*3)+6}"></span>
@@ -80,7 +81,7 @@ export class CN_overview_view extends CN_action_view {
    * Override this method to display the overview instead of viewing it as a record
    */
   create_body_element() {
-    return CN_element.create("<div></div>");
+    return CN_base_element.html("<div></div>");
   }
 
   /**
@@ -99,12 +100,12 @@ export class CN_overview_view extends CN_action_view {
       if (CN_common.is_array(node.value)) {
         // put the node in a card
         if (null == node.label) {
-          const container_el = CN_element.create('<div class="px-3"></div>');
+          const container_el = CN_base_element.html('<div class="px-3"></div>');
           node.value.forEach(child_node => add_node(child_node, container_el));
           parent.append(container_el);
         } else {
-          const card_el = CN_element.create_card({
-            header: CN_element.create(`<div class="d-flex"><div class="flex-grow-1">${node.label}</div></div>`),
+          const card_el = CN_element_card.create({
+            header: CN_base_element.html(`<div class="d-flex"><div class="flex-grow-1">${node.label}</div></div>`),
             footer: null
           });
           card_el.classList.add("mt-2");
@@ -119,7 +120,7 @@ export class CN_overview_view extends CN_action_view {
             body_el.classList.add("collapse");
 
             // add a chevron button
-            header_el.querySelector("div.d-flex").append(CN_element.create(`
+            header_el.querySelector("div.d-flex").append(CN_base_element.html(`
               <button class="btn btn-primary px-2 py-0">
                 <i class="bi-chevron-down"></i>
               </button>
@@ -144,7 +145,7 @@ export class CN_overview_view extends CN_action_view {
         // add the label/value as a row to the parent
         const stripe = 1 == parent.children.length%2;
 
-        const child_el = CN_element.create(`
+        const child_el = CN_base_element.html(`
           <div class="row ${stripe ? 'bg-dark-subtle' : ''}">
             <label class="col fw-bold">${node.label}</label>
             <div class="col text-end">${node.value}</div>

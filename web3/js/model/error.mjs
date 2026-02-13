@@ -1,6 +1,6 @@
-import CN_element from "../element.mjs"
-
 import { CN_base_object } from "../base_object.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_element_card } from "../element/card.mjs"
 
 export class CN_error_model extends CN_base_object {
   #name;
@@ -52,7 +52,7 @@ export class CN_error_model extends CN_base_object {
     }
     console.error(message);
 
-    this.#element = CN_element.create_card();
+    this.#element = CN_element_card.create();
     const header_el = this.#element.querySelector(".card-header");
     header_el.classList.add("bg-danger");
     (async () => {
@@ -64,7 +64,7 @@ export class CN_error_model extends CN_base_object {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
-    (async () => { breadcrumbs_el.append(await CN_element.create_breadcrumb_trail("Error")); })();
+    (async () => { breadcrumbs_el.append(await CN_base_element.create_breadcrumb_trail("Error")); })();
 
     return this.#element;
   }

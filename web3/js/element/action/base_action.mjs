@@ -1,7 +1,8 @@
-import CN_element from "../../element.mjs"
 import CN_session from "../../session.mjs"
 
 import { CN_base_element } from "../base_element.mjs"
+import { CN_element_card } from "../card.mjs"
+import { CN_element_loading_box } from "../loading_box.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
 
 /**
@@ -206,11 +207,11 @@ export class CN_base_action extends CN_base_element {
    * @return Element
    */
   create_header_element() {
-    const el = CN_element.create('<div class="d-flex"><div class="flex-grow-1"></div></div>');
+    const el = this.constructor.html('<div class="d-flex"><div class="flex-grow-1"></div></div>');
     (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
 
     // add a data notation button
-    const notation_btn_el = CN_element.create(`
+    const notation_btn_el = this.constructor.html(`
       <button name="notation" class="btn btn-primary px-2 py-0">
         <i class="bi-info-circle fs-5"></i>
       </button>
@@ -234,7 +235,7 @@ export class CN_base_action extends CN_base_element {
     });
 
     // add a data refresh button
-    const refresh_btn_el = CN_element.create(`
+    const refresh_btn_el = this.constructor.html(`
       <button name="refresh" class="btn btn-primary px-2 py-0">
         <i class="bi-arrow-clockwise fs-5"></i>
       </button>
@@ -271,7 +272,7 @@ export class CN_base_action extends CN_base_element {
    * @return Element
    */
   create_placeholder_element() {
-    return CN_element.create_loading_box();
+    return CN_element_loading_box.create();
   }
 
   /**
@@ -293,18 +294,18 @@ export class CN_base_action extends CN_base_element {
     const placeholder_el = this.get_placeholder_element();
     if (this.#simple_mode) {
       // make sure to put the placeholder inside of a div (for body/placeholder swapping to work correctly)
-      const div_el = CN_element.create("<div></div>");
+      const div_el = this.constructor.html("<div></div>");
       if (placeholder_el) div_el.append(placeholder_el);
       el.append(div_el);
     } else {
-      el.append(CN_element.create_card({
+      el.append(CN_element_card.create({
         header: "Loading...",
         body: placeholder_el ? placeholder_el : "",
         footer: "",
       }));
 
       if (this.#footer_at_top) {
-        el.querySelector(".card-header").after(CN_element.create(`
+        el.querySelector(".card-header").after(this.constructor.html(`
           <div
             class="card-topfooter text-bg-secondary fs-5"
             style="

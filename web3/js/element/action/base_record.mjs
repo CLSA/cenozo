@@ -1,11 +1,10 @@
 import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
-import CN_element from "../../element.mjs"
 
 import { CN_base_action } from "./base_action.mjs"
 import { CN_state } from "../../state.mjs"
 import { CN_input } from "../input/input.mjs"
-import { CN_input_label } from "../input/label.mjs"
+import { CN_element_label } from "../label.mjs"
 
 export class CN_action_base_record extends CN_base_action {
   #property_groups;
@@ -391,7 +390,7 @@ export class CN_action_base_record extends CN_base_action {
     const prop_el = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    const label_el = CN_input_label.create({ for: prop.id, value: prop.title, help: prop.help });
+    const label_el = CN_element_label.create({ for: prop.id, value: prop.title, help: prop.help });
     label_el.classList.add("col-sm-3");
     prop_el.append(label_el);
 

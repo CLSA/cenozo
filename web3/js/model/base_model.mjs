@@ -1,9 +1,9 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_object } from "../base_object.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
 
 export class CN_base_model extends CN_base_object {
   #unique_id;
@@ -208,7 +208,7 @@ export class CN_base_model extends CN_base_object {
   render() {
     this.#element = (
       null == this.#action ?
-      CN_element.create(`<div id="${this.#unique_id}"></div>`) :
+      CN_base_element.html(`<div id="${this.#unique_id}"></div>`) :
       this.#action.render()
     );
     return this.#element;

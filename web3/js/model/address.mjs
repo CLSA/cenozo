@@ -1,9 +1,9 @@
 import CN_api from "../api.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
 import { CN_country_model } from "./country.mjs"
+const { CN_base_element } = await import(`${CENOZO_URL}/js/element/base_element.mjs`);
 
 export class CN_address_model extends CN_traceable_model {
   constructor() {
@@ -140,7 +140,7 @@ export class CN_address_view extends CN_traceable_view {
     const footer_el = super.create_footer_element();
 
     // add the timezone action
-    const timezone_btn_el = CN_element.create(
+    const timezone_btn_el = CN_base_element.html(
       '<button name="timezone" type="button" class="btn btn-light btn-outline-primary">Use Timezone</button>'
     );
     timezone_btn_el.addEventListener("click", async () => {

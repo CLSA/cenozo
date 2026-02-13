@@ -1,13 +1,14 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
   from "./base_person_model.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
-import { CN_input_label } from "../element/input/label.mjs"
+import { CN_element_card } from "../element/card.mjs"
+import { CN_element_label } from "../element/label.mjs"
+import { CN_input } from "../element/input/input.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
 
@@ -499,16 +500,21 @@ export class CN_participant_multiedit extends CN_base_action {
           const prop_id = `participant_${prop_name}`;
           const row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const label_el = CN_input_label.create({ for: prop_id, value: prop.title });
+          const label_el = CN_element_label.create({ for: prop_id, value: prop.title });
           label_el.classList.add("col-sm-3");
           row_el.append(label_el);
 
           // determine the property's UI element based on the type
           let params = CN_common.clone(prop);
           params.id = prop_id;
+          params.class = "d-flex align-items-center col-sm-9";
+          params.name = "element";
           if (!params.type) params.type = "string";
           if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
           if (undefined === params.placeholder) params.placeholder = "(empty)";
+
+          // restore any previous values
+          if ("enum" != params.type && prev_params[prop_name]) params.value = prev_params[prop_name];
 
           if (undefined === params.max_length && module_prop && module_prop.max_length) {
             params.max_length = module_prop.max_length;
@@ -533,29 +539,11 @@ export class CN_participant_multiedit extends CN_base_action {
             el.append(btn_el);
           };
 
-          const element_el = CN_element.create_form_element(params.type, params);
-          element_el.classList.add("col-sm-9");
-          element_el.setAttribute("name", "element");
-          row_el.append(element_el);
+          const form_input = new CN_input(params.type, params);
+          form_input.set_parent_element(row_el);
+          row_el.append(form_input.render());
 
           fields_el.append(row_el);
-
-          if ("enum" == params.type) {
-            // build the enum select inputs
-            const control_el = element_el.querySelector("select");
-            prop.enum.values.forEach(option => {
-              const option_el = CN_base_element.html(`<option value="${option.key}">${option.value}</option>`);
-              if (option.disabled) option_el.setAttribute("disabled", true);
-              if (prev_params[prop_name] == option.key) option_el.selected = true;
-              control_el.append(option_el);
-            });
-          } else {
-            // restore any previous values
-            if (prev_params[prop_name]) {
-              const control_el = element_el.querySelector(`#${prop_id}`);
-              control_el.value = prev_params[prop_name];
-            }
-          }
         });
 
         // create a way to select participant properties
@@ -586,17 +574,18 @@ export class CN_participant_multiedit extends CN_base_action {
           let sticky_prop_id = `${module_name}_sticky`;
           const sticky_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const sticky_label_el = CN_input_label.create({ for: sticky_prop_id, value: "Sticky" });
+          const sticky_label_el = CN_element_label.create({ for: sticky_prop_id, value: "Sticky" });
           sticky_label_el.classList.add("col-sm-3");
           sticky_row_el.append(sticky_label_el);
 
-          const sticky_element_el = CN_element.create_form_element(
-            "boolean",
-            { id: sticky_prop_id, required: true }
-          );
-          sticky_element_el.classList.add("col-sm-9");
-          sticky_element_el.setAttribute("name", "element");
-          sticky_row_el.append(sticky_element_el);
+          const sticky_form_input = new CN_input( "boolean", {
+            id: sticky_prop_id,
+            required: true,
+            name: "element",
+            class: "d-flex align-items-center col-sm-9"
+          });
+          sticky_form_input.set_parent_element(sticky_row_el);
+          sticky_row_el.append(sticky_form_input.render());
 
           fields_el.append(sticky_row_el);
 
@@ -604,17 +593,18 @@ export class CN_participant_multiedit extends CN_base_action {
           let note_prop_id = `${module_name}_note`;
           const note_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const note_label_el = CN_input_label.create({ for: note_prop_id, value: "Note" });
+          const note_label_el = CN_element_label.create({ for: note_prop_id, value: "Note" });
           note_label_el.classList.add("col-sm-3");
           note_row_el.append(note_label_el);
 
-          const note_element_el = CN_element.create_form_element(
-            "text",
-            { id: note_prop_id, required: true }
-          );
-          note_element_el.classList.add("col-sm-9");
-          note_element_el.setAttribute("name", "element");
-          note_row_el.append(note_element_el);
+          const note_form_input = new CN_input( "text", {
+            id: note_prop_id,
+            required: true,
+            name: "element",
+            class: "d-flex align-items-center col-sm-9"
+          });
+          note_form_input.set_parent_element(note_row_el);
+          note_row_el.append(note_form_input.render());
 
           fields_el.append(note_row_el);
         } else if (mod.enum) {
@@ -624,25 +614,22 @@ export class CN_participant_multiedit extends CN_base_action {
           let op_prop_id = `${module_name}_operation`;
           const op_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const op_label_el = CN_input_label.create({ for: op_prop_id, value: "Operation" });
+          const op_label_el = CN_element_label.create({ for: op_prop_id, value: "Operation" });
           op_label_el.classList.add("col-sm-3");
           op_row_el.append(op_label_el);
 
-          const op_element_el = CN_element.create_form_element(
-            "enum",
-            { id: op_prop_id, required: true }
-          );
-          op_element_el.classList.add("col-sm-9");
-          op_element_el.setAttribute("name", "element");
-          op_row_el.append(op_element_el);
-
-          const op_control_el = op_element_el.querySelector("select");
-          op_control_el.append(
-            CN_base_element.html(`<option value="add">Add to ${pretty_module_name}</option>`)
-          );
-          op_control_el.append(
-            CN_base_element.html(`<option value="remove">Remove from ${pretty_module_name}</option>`)
-          );
+          const op_form_input = new CN_input( "enum", {
+            id: op_prop_id,
+            required: true,
+            name: "element",
+            class: "d-flex align-items-center col-sm-9",
+            enum: [
+              { key: "add", value: `Add to ${pretty_module_name}` },
+              { key: "remove", value: `Remove from ${pretty_module_name}` },
+            ],
+          });
+          op_form_input.set_parent_element(op_row_el);
+          op_row_el.append(op_form_input.render());
 
           fields_el.append(op_row_el);
 
@@ -650,24 +637,19 @@ export class CN_participant_multiedit extends CN_base_action {
           let item_prop_id = `${module_name}_id`;
           const item_row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-          const item_label_el = CN_input_label.create({ for: item_prop_id, value: pretty_module_name });
+          const item_label_el = CN_element_label.create({ for: item_prop_id, value: pretty_module_name });
           item_label_el.classList.add("col-sm-3");
           item_row_el.append(item_label_el);
 
-          const item_element_el = CN_element.create_form_element(
-            "enum",
-            { id: item_prop_id, required: true }
-          );
-          item_element_el.classList.add("col-sm-9");
-          item_element_el.setAttribute("name", "element");
-          item_row_el.append(item_element_el);
-
-          const item_control_el = item_element_el.querySelector("select");
-          mod.enum.values.forEach(option => {
-            const option_el = CN_base_element.html(`<option value="${option.key}">${option.value}</option>`);
-            if (option.disabled) option_el.setAttribute("disabled", true);
-            item_control_el.append(option_el);
+          const item_form_input = new CN_input( "enum", {
+            id: item_prop_id,
+            required: true,
+            name: "element",
+            class: "d-flex align-items-center col-sm-9",
+            enum: mod.enum,
           });
+          item_form_input.set_parent_element(item_row_el);
+          item_row_el.append(item_form_input.render());
 
           fields_el.append(item_row_el);
         } else if (mod.hasOwnProperty("properties")) {
@@ -677,13 +659,16 @@ export class CN_participant_multiedit extends CN_base_action {
             const prop_id = `${module_name}_${prop_name}`;
             const row_el = CN_base_element.html('<div class="row mb-3"></div>');
 
-            const label_el = CN_input_label.create({ for: prop_id, value: prop.title });
+            const label_el = CN_element_label.create({ for: prop_id, value: prop.title });
             label_el.classList.add("col-sm-3");
             row_el.append(label_el);
 
             // determine the property's UI element based on the type
             let params = CN_common.clone(prop);
             params.id = prop_id;
+            params.class = "d-flex align-items-center col-sm-9";
+            params.name = "element";
+
             if (!params.type) params.type = "string";
             if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
             if (undefined === params.placeholder) params.placeholder = "(empty)";
@@ -692,20 +677,9 @@ export class CN_participant_multiedit extends CN_base_action {
               params.max_length = module_prop.max_length;
             }
 
-            const element_el = CN_element.create_form_element(params.type, params);
-            element_el.classList.add("col-sm-9");
-            element_el.setAttribute("name", "element");
-            row_el.append(element_el);
-
-            // build the enum select options
-            if ("enum" == params.type) {
-              const control_el = element_el.querySelector("select");
-              prop.enum.values.forEach(option => {
-                const option_el = CN_base_element.html(`<option value="${option.key}">${option.value}</option>`);
-                if (option.disabled) option_el.setAttribute("disabled", true);
-                control_el.append(option_el);
-              });
-            }
+            const form_input = new CN_input(params.type, params);
+            form_input.set_parent_element(row_el);
+            row_el.append(form_input.render());
 
             fields_el.append(row_el);
           }
@@ -1148,25 +1122,26 @@ export class CN_participant_selection {
       "idtype_list"
     );
 
-    this.#element = CN_element.create_card({
+    this.#element = CN_element_card.create({
       header: CN_base_element.html(`
         <div class="d-flex">
           <div class="flex-grow-1">Participant Selection</div>
           <div name="count" class="fw-normal">(unconfirmed)</div>
         </div>
       `),
-      body: CN_element.create_form_element("text", { id: identifier_list_id }),
+      body: new CN_input("text", { id: identifier_list_id }),
       footer: CN_base_element.html('<div class="row"></div>'),
     });
     this.#element.querySelector("div.card-body").classList.add("p-0");
 
     // add the identifier-type list and confirm button
     const row_el = this.#element.querySelector("div.row");
-    const label_el = CN_input_label.create({ for: idtype_list_id, value: "Identifier" });
+    const label_el = CN_element_label.create({ for: idtype_list_id, value: "Identifier" });
     label_el.classList.add("col-sm-3");
     row_el.append(label_el);
-    const element_el = CN_element.create_form_element("enum", {
+    const form_input = new CN_input("enum", {
       id: idtype_list_id,
+      class: "d-flex align-items-center col-sm-9",
       required: true,
       on_change: () => this.reset_confirmation(),
       // add the confirm button as a postfix to the identifier-type selector
@@ -1174,8 +1149,8 @@ export class CN_participant_selection {
         '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
       )),
     });
-    element_el.classList.add("col-sm-9");
-    row_el.append(element_el);
+    form_input.set_parent_element(row_el);
+    row_el.append(form_input.render());
 
     this.#count_el = this.#element.querySelector("div[name=count]");
     this.#identifier_list_el = this.#element.querySelector("#" + identifier_list_id);

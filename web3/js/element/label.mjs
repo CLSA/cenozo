@@ -1,10 +1,10 @@
-import CN_common from "../../common.mjs"
-import { CN_base_element } from "../base_element.mjs"
+import CN_common from "../common.mjs"
+import { CN_base_element } from "./base_element.mjs"
 
-export class CN_input_label extends CN_base_element {
+export class CN_element_label extends CN_base_element {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_label contructor");
+      throw new Error("Non-object config argument passed to CN_element_label contructor");
     }
 
     super({
@@ -21,9 +21,7 @@ export class CN_input_label extends CN_base_element {
   }
 
   /**
-   * Creates a form label
-   * @param object params: An object that has value, for and name properties
-   * @return Element
+   * Extend parent method
    */
   _create_element() {
     const el = super._create_element();
@@ -48,5 +46,5 @@ export class CN_input_label extends CN_base_element {
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */
-  static create(config) { return (new CN_input_label(config)).render(); }
+  static create(config) { return (new CN_element_label(config)).render(); }
 }

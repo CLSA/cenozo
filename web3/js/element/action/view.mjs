@@ -1,8 +1,9 @@
 import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
-import CN_element from "../../element.mjs"
 
 import { CN_action_base_record } from "./base_record.mjs"
+import { CN_element_card } from "../card.mjs"
+import { CN_modal_confirm } from "../modal/confirm.mjs"
 
 export class CN_action_view extends CN_action_base_record {
   #child_lists_el = null;
@@ -149,10 +150,10 @@ export class CN_action_view extends CN_action_base_record {
    */
   async on_delete() {
     // first confirm
-    const modal = CN_element.confirm_modal({
+    const modal = (new CN_modal_confirm({
       title: "Please Confirm",
       message: `Are you sure you wish to delete this ${this.get_model().get_singular()}?`,
-    });
+    })).open();
 
     if (await modal.test()) {
       await CN_api.delete(this.get_model().get_view_url(null, "api"));
@@ -181,7 +182,7 @@ export class CN_action_view extends CN_action_base_record {
     if (footer_el) {
       let delete_btn_el = footer_el.querySelector("button[name=delete]");
       if (null == delete_btn_el && this.get_model().allow_delete()) {
-        delete_btn_el = CN_element.create(`
+        delete_btn_el = this.constructor.html(`
           <button name="delete" type="button" class="btn btn-danger">
             Delete ${CN_common.uc_words(this.get_model().get_singular())}
           </button>
@@ -233,7 +234,7 @@ export class CN_action_view extends CN_action_base_record {
         if (null == total) total = "...";
         const selected = this.get_query_parameter("tab") == child.model.get_name();
         const title = `${child.title} [${total}]`;
-        const child_btn_el = CN_element.create(`
+        const child_btn_el = this.constructor.html(`
           <button
             name="${child.model.get_name()}"
             type="button"
@@ -287,7 +288,7 @@ export class CN_action_view extends CN_action_base_record {
    * Extends parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = this.constructor.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">Back</button>
       </div>
@@ -308,12 +309,12 @@ export class CN_action_view extends CN_action_base_record {
     const el = super._create_element();
 
     // create the child list element
-    this.#child_lists_el = CN_element.create('<div name="child-lists"></div>');
+    this.#child_lists_el = this.constructor.html('<div name="child-lists"></div>');
     el.append(this.#child_lists_el);
 
     // create the list-selector control element
-    this.#list_selector_el = CN_element.create_card({
-      header: CN_element.create(`
+    this.#list_selector_el = CN_element_card.create({
+      header: this.constructor.html(`
         <div class="d-flex">
           <div class="flex-grow-1">
             List Selector
@@ -321,7 +322,7 @@ export class CN_action_view extends CN_action_base_record {
         </div>
       `),
       body: null,
-      footer: CN_element.create(`<div class="row"></div>`),
+      footer: this.constructor.html(`<div class="row"></div>`),
     });
     this.#list_selector_el.setAttribute("name", "list-selector");
 
