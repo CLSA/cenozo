@@ -3,6 +3,7 @@ import { CN_base_element } from "../base_element.mjs"
 
 export class CN_base_modal extends CN_base_element {
   #resolve_button_list = [];
+  #modal_event_listener_list = [];
   #bootstrap_modal;
   #resolve;
   #reject;
@@ -27,6 +28,7 @@ export class CN_base_modal extends CN_base_element {
         // default config
         header_class: "text-bg-primary",
         size: "lg",
+        do_not_close: false,
       },
       ...config
     });
@@ -35,6 +37,9 @@ export class CN_base_modal extends CN_base_element {
     if (null == this.get_config("id")) {
       this.set_config("id", [this.get_class_name(), CN_common.get_random_hex_identifier()].join("-"));
     }
+
+    // automatically dispose of the modal once finished
+    this.add_modal_event_listener("hidden", this.#destroy.bind(this));
   }
 
   /**
@@ -74,11 +79,15 @@ export class CN_base_modal extends CN_base_element {
       this.#resolve = resolve;
       this.#reject = reject;
 
-      const el = this.render();
-      this.#bootstrap_modal = new bootstrap.Modal(el, { keyboard: false, backdrop: "static" });
+      if (!this.#bootstrap_modal) {
+        const el = this.render();
+        this.#bootstrap_modal = new bootstrap.Modal(el, { keyboard: false, backdrop: "static" });
 
-      // automatically dispose of the modal once finished
-      el.addEventListener("hidden.bs.modal", this.#destroy.bind(this));
+        // add all modal listeners
+        this.#modal_event_listener_list.forEach(obj => {
+          el.addEventListener(`${obj.type}.bs.modal`, obj.listener);
+        });
+      }
 
       this.#bootstrap_modal.show();
     })
@@ -92,10 +101,17 @@ export class CN_base_modal extends CN_base_element {
   }
 
   /**
+   * ADD DOCS
+   */
+  add_modal_event_listener(type, listener) {
+    this.#modal_event_listener_list.push({ type, listener });
+  }
+
+  /**
    * Resolves the modal with the given value, typically used by the modal's button event listeners
    */
   _resolve(value) {
-    this.close();
+    if (!this.get_config("do_not_close")) this.close();
     this.#resolve(value);
   }
 

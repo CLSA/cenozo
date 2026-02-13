@@ -2,6 +2,7 @@ import CN_element from "../../element.mjs"
 import CN_session from "../../session.mjs"
 
 import { CN_base_element } from "../base_element.mjs"
+import { CN_modal_input } from "../modal/input.mjs"
 
 /**
  * The base class for all action classes (add/view/list/etc)
@@ -216,12 +217,12 @@ export class CN_base_action extends CN_base_element {
     `);
     notation_btn_el.addEventListener("click", async (event) => {
       const module = this.get_model().get_module();
-      const response = await CN_element.input_modal({
+      const response = await (new CN_modal_input({
         title: "Page Documentation",
         message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
         input: "text",
         value: module.get_notation(this.#type),
-      }).get();
+      })).open();
 
       if (undefined !== response) module.set_notation(this.#type, response);
     });

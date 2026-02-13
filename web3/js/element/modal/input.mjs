@@ -1,89 +1,56 @@
-import { CN_base_modal } from "../base_modal.mjs"
+import CN_common from "../../common.mjs"
+import { CN_base_modal_form } from "./base_modal_form.mjs"
 
-export class CN_modal_input extends CN_base_modal {
+export class CN_modal_input extends CN_base_modal_form {
+  constructor(config = { title: "Please Provide Input", message: "Enter Value", input: "string" }) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_modal_account contructor");
+    }
+
+    super(config);
+
+    const input_config = { class: "d-flex align-items-center" };
+    if (this.has_config("value")) input_config.get_default = () => this.get_config("value");
+    if (this.has_config("required")) input_config.required = this.get_config("required");
+
+    this.add_input(
+      this.get_config("input"),
+      "input",
+      this.get_config("message"),
+      input_config,
+    );
+
+    // add the resolve buttons
+    this.add_resolve_button("light", "Cancel", () => this._resolve(undefined));
+    this.add_resolve_button("success", "OK", async () => {
+      this._resolve(this.get_input("input").form_input.get_value_for_record());
+    });
+  }
+
   /**
-   * Creates a modal input dialog
-   * @param object config: An object that has type, title, message, type and required properties
-   * @return bootstrap.Modal
+   * Extend parent method
    */
-  input_modal: function (config) {
-    if (undefined === config.id) config.id = ["cn-input", CN_common.get_random_hex_identifier()].join("-");
-    if (undefined === config.type) config.type = "primary";
-    if (undefined === config.title) config.title = "Please Provide Input";
-    if (undefined === config.input) config.input = "string";
-    if (undefined === config.do_not_close) config.do_not_close = false;
+  check_form() {
+    const check = super.check_form();
+    const ok_btn_el = this.get_resolve_button("OK").element;
+    if (check) {
+      ok_btn_el.removeAttribute("disabled");
+    } else {
+      ok_btn_el.setAttribute("disabled", true);
+    }
 
-    const modal_el = this.create(`
-      <div class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header text-bg-${config.type}">
-              <h1 class="modal-title fw-bold fs-5">${config.title}</h1>
-            </div>
-            <div class="modal-body">
-              <label class="form-label text-info-emphasis" for="${config.id}">
-                ${config.message}
-              </label>
-            </div>
-            <div class="modal-footer text-bg-secondary py-1">
-              <button
-                name="cancel"
-                type="button"
-                class="btn btn-primary col-2"
-                data-bs-dismiss="modal"
-              >Cancel</button>
-              <button
-                name="confirm"
-                type="button"
-                class="btn btn-primary col-2"
-              >Confirm</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `);
+    return check;
+  }
 
-    const input_el = this.create_form_element(config.input, config);
-    modal_el.querySelector(".modal-body").append(input_el);
+  /**
+   * Extend parent method
+   */
+  _create_body_element() {
+    const body_el = super._create_body_element();
 
-    document.getElementById("main-content").append(modal_el);
-    const control_el = document.getElementById(config.id);
-    if (config.value) control_el.value = config.value;
+    body_el.querySelector("hr").remove();
+    body_el.querySelector("label").classList = "col-form-label";
 
-    const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
-    modal_bs.get = () => {
-      return new Promise((resolve, reject) => {
-        modal_bs.show();
-        modal_el.querySelector("[name=cancel]").addEventListener("click", () => resolve(undefined));
-        modal_el.querySelector("[name=confirm]").addEventListener("click", () => {
-          if (input_el.validate()) {
-            resolve(control_el.value);
-            if (!config.do_not_close) modal_bs.hide();
-          }
-        });
-        // resolved undefined if closing any other way
-        modal_el.addEventListener("hidden.bs.modal", () => resolve(undefined));
-      });
-    };
-
-    modal_bs.set_error = (error) => {
-      input_el.querySelector("[name=error]").innerHTML = error;
-    };
-
-    // update the size of text inputs after the modal is showing
-    modal_el.addEventListener("shown.bs.modal", () => {
-      if (config.value && "text" == config.input) {
-        control_el.style.height = "";
-        control_el.style.height = control_el.scrollHeight + "px";
-      }
-    });
-
-    // automatically dispose of the modal once finished
-    modal_el.addEventListener("hidden.bs.modal", () => {
-      modal_bs.dispose();
-      modal_el.remove();
-    });
-
-    return modal_bs;
-  },
+    return body_el;
+  }
 }

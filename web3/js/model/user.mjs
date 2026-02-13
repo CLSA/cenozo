@@ -5,6 +5,7 @@ import CN_timezones from "../timezones.mjs"
 
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_modal_input } from "../element/modal/input.mjs"
 
 export class CN_user_model extends CN_base_model {
   constructor() {
@@ -120,23 +121,27 @@ export class CN_user_list extends CN_action_list {
         '<button name="find" type="button" class="btn btn-light btn-outline-primary">Find User</button>'
       );
       find_btn_el.addEventListener("click", async () => {
-        const modal = CN_element.input_modal({
+        const modal = new CN_modal_input({
           title: "Find User",
           message: "Please provide the username of the user you wish to find.",
           input: "string",
           required: true,
           do_not_close: true,
         });
+
         while (true) {
-          // ask for a username
-          let response = await modal.get();
-          if (undefined === response) {
-            modal.hide();
+          const username = await modal.open();
+          modal.set_disabled(true);
+          if (undefined === username) {
+            modal.close();
             break;
           } else {
             let user_id = null;
             try {
-              response = await CN_api.get(`user/name=${response}`, { select: { column: "id" } });
+              const response = await CN_api.get(
+                `user/name=${encodeURIComponent(username)}`,
+                { select: { column: "id" } }
+              );
               user_id = response.id;
             } catch (error) {
               // ignore 404s, it just means the username doesn't exist
@@ -144,13 +149,14 @@ export class CN_user_list extends CN_action_list {
             }
 
             if (null == user_id) {
-              modal.set_error( "Username not found." );
+              modal.get_input("input").form_input.show_error( "Username not found." );
             } else {
-              modal.hide();
+              modal.close();
               await CN_session.navigate_to(`user/view/${user_id}`);
               break;
             }
           }
+          modal.set_disabled(false);
         }
       });
 

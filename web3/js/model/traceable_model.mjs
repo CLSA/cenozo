@@ -8,6 +8,7 @@ import { CN_action_add } from "../element/action/add.mjs"
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_modal_input } from "../element/modal/input.mjs"
 
 /**
  * Pops up an input dialog to get the reason why a participant will be added to or removed from tracing
@@ -52,7 +53,7 @@ async function check_for_trace(type, action, identifier) {
   if ("removed" == action) {
     // check to see if tracing will be required after removing/deactivating the contact type
     if (1 == data[changing_count_column] && null == data.trace_type) {
-      response = await CN_element.input_modal({
+      response = await (new CN_modal_input({
         title: "Tracing Required",
         message: `
           If you proceed the participant will no longer have an active ${type}.
@@ -60,12 +61,12 @@ async function check_for_trace(type, action, identifier) {
         `,
         required: true,
         input: "string",
-      }).get();
+      })).open();
     }
   } else {
     // check to see if tracing will be resolved after adding/activating the contact type
     if (0 == data[changing_count_column] && 0 < data[other_count_column] && null != data.trace_type) {
-      response = await CN_element.input_modal({
+      response = await (new CN_modal_input({
         title: "Tracing Completed",
         message: `
           Before your change the participant did not have an active ${type}.
@@ -73,11 +74,11 @@ async function check_for_trace(type, action, identifier) {
         `,
         required: true,
         input: "string",
-      }).get();
+      })).open();
     }
   }
 
-  // if the input_modal was cancelled then the value will be undefined
+  // if the modal was cancelled then the value will be undefined
   return undefined === response ? false : response;
 }
 
