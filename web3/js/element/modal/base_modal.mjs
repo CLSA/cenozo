@@ -136,9 +136,9 @@ export class CN_base_modal extends CN_base_element {
    */
   _create_footer_element() {
     const el = this.constructor.html(`
-      <div class="d-flex">
-        <div name="left-btn-group" class="flex-fill btn-group"></div>
-        <div name="right-btn-group" class="flex-fill btn-group"></div>
+      <div class="d-flex w-100">
+        <div name="left-btn-group" class="me-auto btn-group"></div>
+        <div name="right-btn-group" class="btn-group"></div>
       </div>
     `);
 

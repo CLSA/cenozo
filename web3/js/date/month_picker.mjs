@@ -1,5 +1,5 @@
 import { CN_base_object } from "../base_object.mjs";
-import CN_element from "../element.mjs";
+import { CN_base_element } from "../element/base_element.mjs";
 
 export default class CN_month_picker extends CN_base_object {
   #parent_el;
@@ -86,8 +86,8 @@ export default class CN_month_picker extends CN_base_object {
    */
   render() {
     this.#parent_el.innerHTML = "";
-    this.#el = CN_element.create_fragment(`
-      <div class="row gx-4 justify-space-between w-100">
+    this.#el = CN_base_element.html(`
+      <div class="row w-100 p-2">
         <button name="prev_year" class="btn btn-sm btn-primary col-1">
           <i class="bi bi-caret-left-fill"></i>
         </button>

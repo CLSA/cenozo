@@ -682,9 +682,7 @@ export class CN_action_list extends CN_base_action {
 
     if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
       //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-      const delete_header = this.constructor.html_fragment(
-        `<th name="delete" class="p-0" scope="col"></th>`
-      );
+      const delete_header = this.constructor.html('<th name="delete" class="p-0" scope="col"></th>');
       header_tr_el.appendChild(delete_header);
     }
 
@@ -752,7 +750,7 @@ export class CN_action_list extends CN_base_action {
    * @returns
    */
   create_table_header_element(column) {
-    const header_el = this.constructor.html_fragment(
+    const header_el = this.constructor.html(
       `<th name="${column.title}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
           <button

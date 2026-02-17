@@ -1,5 +1,5 @@
 import { CN_base_object } from "../base_object.mjs"
-import CN_element from "../element.mjs"
+import { CN_base_element } from "../element/base_element.mjs";
 
 export default class CN_time_picker extends CN_base_object {
   #parent_el;
@@ -75,21 +75,15 @@ export default class CN_time_picker extends CN_base_object {
 
   render() {
     this.#parent_el.innerHTML = "";
-    this.#el = CN_element.create_fragment(`
+    this.#el = CN_base_element.html(`
       <div class="container">
         <div class="row">
-          <div class="col-3">
-            <label for="time" class="form-label fw-bold">Time:</label>
-          </div>
-          <div class="col-9">
-            <p id="time">${this.#get_display_time()}</p>
-          </div>
+          <label for="time" class="form-label text-end fw-bold col-2">Time:</label>
+          <div class="col-10" id="time">${this.#get_display_time()}</div>
         </div>
         <div class="row">
-          <div class="col-3">
-            <label for="hour" class="form-label fw-bold">Hour:</label>
-          </div>
-          <div class="col-9">
+          <label for="hour" class="form-label text-end fw-bold col-2">Hour:</label>
+          <div class="col-10">
             <input
               type="range"
               value=${this.#hour}
@@ -101,10 +95,8 @@ export default class CN_time_picker extends CN_base_object {
           </div>
         </div>
         <div class="row">
-          <div class="col-3">
-            <label for="minute" class="form-label fw-bold">Minute:</label>
-          </div>
-          <div class="col-9">
+          <label for="minute" class="form-label text-end fw-bold col-2">Minute:</label>
+          <div class="col-10">
             <input
               type="range"
               value=${this.#minute}
@@ -115,7 +107,6 @@ export default class CN_time_picker extends CN_base_object {
             ></input>
           </div>
         </div>
-
       </div>
     `);
 
@@ -132,12 +123,10 @@ export default class CN_time_picker extends CN_base_object {
     });
 
     if (this.#options.show_seconds) {
-      this.#second_el = CN_element.create_fragment(`
+      this.#second_el = CN_base_element.html(`
         <div class="row">
-          <div class="col-3">
-            <label for="second" class="form-label fw-bold">Second:</label>
-          </div>
-          <div class="col-9">
+          <label for="second" class="form-label text-end fw-bold col-2">Second:</label>
+          <div class="col-10">
             <input
               type="range"
               value=${this.#second}

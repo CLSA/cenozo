@@ -199,11 +199,11 @@ export class CN_base_element extends CN_base_object {
     })()));
 
     // add each crumb to the trail, interspersed by chevrons
-    const root_el = this.create("<div></div>");
+    const root_el = this.html("<div></div>");
     let last_crumb_el = null;
     crumb_list.forEach(crumb => {
-      root_el.append(this.create('<i class="bi-chevron-compact-right text-light"></i>'));
-      let crumb_el = this.create(`
+      root_el.append(this.html('<i class="bi-chevron-compact-right text-light"></i>'));
+      let crumb_el = this.html(`
         <button
           class="btn btn-primary px-1"
           data-bs-dismiss="offcanvas"
@@ -227,33 +227,28 @@ export class CN_base_element extends CN_base_object {
 
   /**
    * Converts an HTML string into an Element object
-   * @param string html: HTML expressed as a string
+   * @param string input: HTML expressed as a string
    * @return Element
    */
-  static html(html) {
-    if (undefined === html) throw new Error("element.create: must provide 1 argument, 0 provided");
+  static html(input) {
+    if (undefined === input) throw new Error("element.create: must provide 1 argument, 0 provided");
+
+    let html = input.trim();
     if (0 == html.length) throw new Error("element.create: argument cannot be empty");
 
-    return (
-      Array.isArray(html) ?
-      // return an array of elements
-      html.map(str => CN_base_element.#dom_parser.parseFromString(str, "text/html").body.firstChild) :
-      // if the first character isn't opening an element then assume it is the element name only
-      CN_base_element.#dom_parser.parseFromString(html, "text/html").body.firstChild
-    );
+    // some elements can't be created with the dom parser, so create it using createElement() instead
+    if (html.match(/^<t[drh]/)) {
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      return template.content.firstElementChild;
+    }
+
+    return CN_base_element.#dom_parser.parseFromString(html, "text/html").body.firstChild;
   }
 
-  /**
-   * Converts an HTML string into a DocumentFragment object
-   * @param string html: HTML expressed as a string
-   * @return DocumentFragment
-   */
   static html_fragment(html) {
-    if (html == null) throw new Error("element.create_fragment: must provide 1 argument, 0 provided");
-    if (0 == html.length) throw new Error("element.create: argument cannot be empty");
-
     const template = document.createElement('template');
-    template.innerHTML = html.trim(); // Use trim() to handle leading/trailing whitespace
+    template.innerHTML = html;
     return template.content.firstElementChild;
   }
 }

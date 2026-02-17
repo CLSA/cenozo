@@ -15,6 +15,7 @@ export default {
     if ("object" == type) return !this.is_type(x, "array") && "object" === typeof x && null != x;
     if ("array" == type) return Array.isArray(x);
     if ("blob" == type) return this.is_type(x, "object") && x instanceof Blob;
+    if ("date" == type) return this.is_type(x, "object") && x instanceof Date;
     if ("element" == type) return this.is_type(x, "object") && (x instanceof Element || x instanceof HTMLDocument);
     if ("filelist" == type) return this.is_type(x, "object") && x instanceof FileList;
     if ("function" == type) return "function" === typeof x;

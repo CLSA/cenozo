@@ -1,5 +1,5 @@
 import { CN_base_object } from "../base_object.mjs";
-import CN_element from "../element.mjs"
+import { CN_base_element } from "../element/base_element.mjs";
 
 export default class CN_year_picker extends CN_base_object {
   #parent_el;
@@ -76,8 +76,8 @@ export default class CN_year_picker extends CN_base_object {
    */
   render() {
     this.#parent_el.innerHTML = "";
-    this.#el = CN_element.create_fragment(`
-      <div class="row gx-4 justify-space-between">
+    this.#el = CN_base_element.html(`
+      <div class="row w-100 p-2">
         <button name="prev_years" class="btn btn-sm btn-primary col-1">
           <i class="bi bi-caret-left-fill"></i>
         </button>
@@ -111,10 +111,10 @@ export default class CN_year_picker extends CN_base_object {
 
     const body = this.#el.querySelector('tbody');
     for (let row = this.#start_year; row < this.#start_year + this.#year_range; row += 5) {
-      const tr = CN_element.create_fragment("<tr></tr>");
+      const tr = CN_base_element.html("<tr></tr>");
       for (let col = 0; col < 5; col++) {
-        const td = CN_element.create_fragment(`<td class="text-center p-0"></td>`);
-        const btn = CN_element.create_fragment(`
+        const td = CN_base_element.html(`<td class="text-center p-0"></td>`);
+        const btn = CN_base_element.html(`
           <button
             class="btn btn-light col-12 rounded-0"
             value="${row + col}"

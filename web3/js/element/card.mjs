@@ -5,7 +5,7 @@ export class CN_element_card extends CN_base_element {
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_element_card contructor");
-    }   
+    }
 
     super({
       ...{
@@ -15,12 +15,12 @@ export class CN_element_card extends CN_base_element {
         header: null,
         body: null,
         footer: null,
-      },  
+      },
       ...config
-    }); 
+    });
   }
 
-  /** 
+  /**
    * Extend parent method
    */
   _create_element() {
@@ -66,7 +66,7 @@ export class CN_element_card extends CN_base_element {
     return el;
   }
 
-  /** 
+  /**
    * Convenience method to create and render the element (without needing access to the created object)
    * @param object params: The parameters sent to the class constructor
    * @return Element

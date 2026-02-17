@@ -1,6 +1,7 @@
-import CN_element from "./element.mjs";
 import CN_common from "./common.mjs";
-import CN_datetime_modal, { DATE_TYPES } from "./date/datetime_modal.mjs";
+
+import { CN_base_element } from "./element/base_element.mjs"
+import { CN_modal_datetime } from "./element/modal/datetime.mjs";
 
 const STRING_OPERATORS = {
   is: "is",
@@ -84,7 +85,7 @@ export default class CN_filter_modal {
     this.#parent_el = parent_el;
     this.#options = options;
 
-    this.#modal_el = CN_element.create(`
+    this.#modal_el = CN_base_element.html(`
       <div id="filter-modal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
@@ -159,7 +160,7 @@ export default class CN_filter_modal {
     const type = this.#column.type ? this.#column.type : "string"
     let operator = type === "number" ? "equal_to" : "is";
 
-    if (Object.values(DATE_TYPES).includes(type))
+    if (CN_common.is_datetime_type(type, "date"))
       operator = "at";
 
     if (this.#column.filter != null) {
@@ -186,7 +187,7 @@ export default class CN_filter_modal {
    * Adds a new restriction to the filter and rerenders the component
    */
   add_condition() {
-    this.#filter.add_condition("AND", Object.values(DATE_TYPES).includes(this.#column.type) ? "at" : "is", "");
+    this.#filter.add_condition("AND", CN_common.is_datetime_type(this.#column.type, "date") ? "at" : "is", "");
     this.render();
   }
 
@@ -222,7 +223,7 @@ export default class CN_filter_modal {
    */
   render() {
     this.#modal_body.innerHTML = '';
-    const description_el = CN_element.create(`
+    const description_el = CN_base_element.html(`
       <p class="fs-6">
         Provide how you wish to restrict the <strong>
         ${CN_common.uc_first(this.#options.tableName)}</strong> listing based on the <strong>
@@ -403,13 +404,13 @@ class Filter {
   }
 
   render() {
-    this.#el = CN_element.create(`<div id="filter"></div>`);
+    this.#el = CN_base_element.html(`<div id="filter"></div>`);
 
     for (let condition of this.#conditions) {
       this.#el.appendChild(condition.render());
     }
 
-    const add_condition_btn = CN_element.create(`
+    const add_condition_btn = CN_base_element.html(`
       <button id="add-condition" type="button" class="btn btn-primary btn-sm w-100 mb-2">
         Add Filter <i class="bi bi-plus"></i>
       </button>
@@ -496,10 +497,10 @@ class Condition {
   }
 
   render() {
-    const condition = CN_element.create('<div class="row"></div>');
+    const condition = CN_base_element.html('<div class="row"></div>');
 
     if (this.#operator) {
-      this.#operator_select_el = CN_element.create(`
+      this.#operator_select_el = CN_base_element.html(`
         <select class="form-select" name="operator-select" style="flex-grow: unset; flex-basis: 90px" aria-label="Operator select">
           <option selected value="AND">AND</option>
           <option value="OR">OR</option>
@@ -512,7 +513,7 @@ class Condition {
 
     let value_input = null;
     if (this.#data_type === "boolean") {
-      value_input = CN_element.create(`
+      value_input = CN_base_element.html(`
         <select value="${this.#value ? this.#value : null}" class="form-control">
           <option value="null">(empty)</option>
           <option value="true">Yes</option>
@@ -522,23 +523,23 @@ class Condition {
 
       value_input.value = this.#value ? this.#value : null;
       value_input.addEventListener('change', this.on_value_change.bind(this));
-    } else if (Object.values(DATE_TYPES).includes(this.#data_type)) {
-      value_input = CN_element.create(`
+    } else if (CN_common.is_datetime_type(this.#data_type, "date")) {
+      value_input = CN_base_element.html(`
         <input class="form-control" type="text" value="${this.#value}" placeholder="(empty)" />
       `);
       value_input.addEventListener('click', async () => {
-        this.#value = await new CN_datetime_modal(this.#value, this.#data_type).open();
+        this.#value = await (new CN_modal_datetime({ mode: this.#data_type, value: this.#value })).open();
         value_input.value = this.#value;
       });
     } else {
-      value_input = CN_element.create(`
+      value_input = CN_base_element.html(`
         <input class="form-control" type="${this.#data_type}" value="${this.#value}" placeholder="(empty)" />
       `);
       value_input.addEventListener('input', this.on_value_change.bind(this));
     }
     this.#value_input_el = value_input;
 
-    const input_group_el = CN_element.create('<div class="input-group py-2"></div>');
+    const input_group_el = CN_base_element.html('<div class="input-group py-2"></div>');
     const comparison_select = this.#render_comparison_select();
     if (this.#operator) {
       input_group_el.appendChild(this.#operator_select_el);
@@ -547,7 +548,7 @@ class Condition {
     input_group_el.appendChild(value_input);
 
     if (this.#allow_removal) {
-      const remove_btn = CN_element.create(`
+      const remove_btn = CN_base_element.html(`
         <button type="button" class="btn btn-danger"><i class="bi bi-trash"></i></button>
       `);
       remove_btn.addEventListener('click', this.on_remove.bind(this));
@@ -575,7 +576,7 @@ class Condition {
       operators = STRING_OPERATORS;
     }
 
-    this.#comparison_select_el = CN_element.create(`
+    this.#comparison_select_el = CN_base_element.html(`
       <select
         name="comparison-select"
         style="flex-grow: unset; flex-basis: 120px"

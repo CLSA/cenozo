@@ -1,8 +1,8 @@
-import { CN_base_object } from "../base_object.mjs";
-import CN_element from "../element.mjs";
 import CN_month_picker from "./month_picker.mjs";
 import CN_year_picker from "./year_picker.mjs";
 
+import { CN_base_object } from "../base_object.mjs";
+import { CN_base_element } from "../element/base_element.mjs";
 
 // Months are 0-indexed in js Date api
 export const Months = {
@@ -269,8 +269,8 @@ export default class CN_calendar extends CN_base_object {
   #render_day() {
     this.#parent_el.innerHTML = "";
 
-    this.#el = CN_element.create_fragment(`
-      <div class="row gx-4 p-2 justify-space-between">
+    this.#el = CN_base_element.html(`
+      <div class="row w-100 p-2">
         <button name="prev_month" class="btn btn-sm btn-primary col-1">
           <i class="bi bi-caret-left-fill"></i>
         </button>
@@ -292,7 +292,7 @@ export default class CN_calendar extends CN_base_object {
     this.#change_view_btn = this.#el.querySelector('[name="change_view"]');
     this.#change_view_btn.addEventListener('click', this.change_view.bind(this));
 
-    const calendar_el = CN_element.create_fragment(`
+    const calendar_el = CN_base_element.html(`
       <table class="table table-responsive">
         <thead>
           <tr>
@@ -311,13 +311,13 @@ export default class CN_calendar extends CN_base_object {
     let tr = null;
     for (let i = 0; i < this.#calendar.length; i++) {
       if (i % 7 == 0) {
-        tr = CN_element.create_fragment("<tr></tr>");
+        tr = CN_base_element.html("<tr></tr>");
         calendar_el.appendChild(tr);
       }
 
       const date = this.#calendar[i];
       const disabled = this.#should_disable_date(date);
-      const date_btn = CN_element.create_fragment(`
+      const date_btn = CN_base_element.html(`
         <td class="text-center p-0">
           <button class="
             btn btn-light col-12 rounded-0
