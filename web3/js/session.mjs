@@ -1,6 +1,6 @@
 import CN_api from "./api.mjs"
 import CN_common from "./common.mjs"
-import CN_element from "./element.mjs"
+import { CN_base_element } from "./element/base_element.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
 import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
 import { CN_modal_message } from "./element/modal/message.mjs"
@@ -89,7 +89,7 @@ export default {
     this.update_breadcrumbs(true);
     const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
     menu_btn_group.innerHTML = "";
-    menu_btn_group.append(CN_element.create(`
+    menu_btn_group.append(CN_base_element.html(`
       <div class="spinner-border text-light" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
@@ -107,7 +107,7 @@ export default {
    * Logs the user out of the application
    */
   logout: async function () {
-    await CN_element.wait_for(async () => {
+    await CN_base_element.wait_for(async () => {
       await CN_api.delete("self/0");
       this.reload(true);
     });
@@ -191,7 +191,7 @@ export default {
     (async () => {
       if (!loading) await this.update_system_messages();
       breadcrumbs_el.append(
-        await CN_element.create_breadcrumb_trail(
+        await CN_base_element.create_breadcrumb_trail(
           loading ? "Loading..." : null,
           loading ? [] : PATH_MODEL_LIST,
         )
@@ -229,7 +229,7 @@ export default {
       this.update_breadcrumbs(true);
       const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
       menu_btn_group.innerHTML = "";
-      menu_btn_group.append(CN_element.create(`
+      menu_btn_group.append(CN_base_element.html(`
         <div class="spinner-border text-light" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -544,7 +544,7 @@ export default {
 
     // build the lists sub-menu
     if (null != this.data.menu.lists) {
-      const sub_menu_el = CN_element.create(`
+      const sub_menu_el = CN_base_element.html(`
         <div name="lists">
           <div class="btn-group-vertical w-100">
             <button type="button" class="btn btn-primary" disabled>Lists</button>
@@ -556,7 +556,7 @@ export default {
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
       if (split_lists) {
-        btn_group_el.append(CN_element.create(`
+        btn_group_el.append(CN_base_element.html(`
           <div class="row w-100 g-0">
             <div name="a" class="col btn-group-vertical pe-0"></div>
             <div name="b" class="col btn-group-vertical ps-0"></div>
@@ -568,7 +568,7 @@ export default {
       let index = 0;
       for (const title in this.data.menu.lists) {
         const name = this.data.menu.lists[title];
-        const btn_el = CN_element.create(`
+        const btn_el = CN_base_element.html(`
           <button name="${name}.list" type="button" class="btn btn-outline-primary">${title}</button>
         `);
         btn_el.addEventListener("click", async () => {
@@ -590,7 +590,7 @@ export default {
 
     // build the utilities sub-menu
     if (null != this.data.menu.utilities) {
-      const sub_menu_el = CN_element.create(`
+      const sub_menu_el = CN_base_element.html(`
         <div name="utilities">
           <div class="btn-group-vertical w-100">
             <button type="button" class="btn btn-primary" disabled>Utilities</button>
@@ -603,7 +603,7 @@ export default {
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
       for (const title in this.data.menu.utilities) {
         const utility = this.data.menu.utilities[title];
-        const btn_el = CN_element.create(`
+        const btn_el = CN_base_element.html(`
           <button
             name="${utility.subject}.${utility.action}"
             type="button"
@@ -620,7 +620,7 @@ export default {
 
     // build the reports sub-menu
     if (null != this.data.menu.reports) {
-      const sub_menu_el = CN_element.create(`
+      const sub_menu_el = CN_base_element.html(`
         <div name="reports">
           <div class="btn-group-vertical w-100">
             <button type="button" class="btn btn-primary" disabled>Reports</button>
@@ -633,7 +633,7 @@ export default {
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
       for (const title in this.data.menu.reports) {
         const id = this.data.menu.reports[title];
-        const btn_el = CN_element.create(`
+        const btn_el = CN_base_element.html(`
           <button
             name="${null == id ? "custom_report.list" : "report_type.view." + id}"
             type="button"

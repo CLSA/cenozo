@@ -1,6 +1,5 @@
 import CN_api from "../api.mjs"
 import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
 import CN_session from "../session.mjs"
 import { CN_participant_selection } from "./participant.mjs"
 
@@ -8,7 +7,9 @@ import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
+import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
+import { CN_input_enum } from "../element/input/enum.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_stratum_model extends CN_base_model {
@@ -228,9 +229,16 @@ export class CN_stratum_mass_participant extends CN_base_action {
     label_el.classList.add("col-sm-3");
     footer_el.append(label_el);
 
-    const element_el = CN_element.create_form_element("enum", {
+    const operation_form_input = new CN_input_enum({
       id: "operation",
+      class: "d-flex align-items-center col-sm-9",
       required: true,
+      enum: {
+       values: [
+         { key: "add", value: "Add to Stratum" },
+         { key: "remove", value: "Remove from Stratum" },
+       ],
+      },
       on_change: (form_input) => {
         // since the form input isn't connected to an action we must define the default behaviour
         this.#operation = form_input.get_value();
@@ -239,16 +247,9 @@ export class CN_stratum_mass_participant extends CN_base_action {
         this.update_element();
       },
     });
-    element_el.classList.add("col-sm-9");
 
-    const operation_el = element_el.querySelector("#operation");
-    operation_el.append(CN_base_element.html(
-      '<option value="add" selected>Add to Stratum</option>'
-    ));
-    operation_el.append(CN_base_element.html(
-      '<option value="remove">Remove from Stratum</option>'
-    ));
-    footer_el.append(element_el);
+    operation_form_input.set_parent_element(footer_el);
+    footer_el.append(operation_form_input.render());
 
     // add the participant selection
     body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
@@ -290,7 +291,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
     });
 
     // add the confirm card
-    const confirm_selection_el = CN_element.create_card({
+    const confirm_selection_el = CN_element_card.create({
       header: "Confirm Selection",
       body: "",
       footer: confirm_btn_el,
