@@ -47,23 +47,22 @@ export class CN_search_result_list extends CN_action_list {
     const query_el = CN_base_element.html(
       '<div class="container-fluid bg-secondary p-2"><div class="row"></div></div>'
     );
-    const label_el = CN_element_label.create({ for: id, value: "Search" });
-    label_el.classList.add("col-sm-1");
-    query_el.querySelector("div.row").append(label_el);
-    const form_input = new CN_input_string({
+    CN_element_label.create_element(query_el.querySelector("div.row"), {
+      for: id,
+      value: "Search",
+      class: "col-sm-1",
+    });
+    CN_input_string.create_element(query_el.querySelector("div.row"),{
       id: id,
-      class: "d-flex align-items-center col-sm-11",
+      class: "col-sm-11",
       value: this.get_query_parameter("q"),
-      on_change: async () => {
+      on_change: async (form_input) => {
         // when changing the search value set the query parameter and re-run the action
         this.set_query_parameter("q", form_input.get_value());
         await this.run();
       },
     });
 
-    const row_el = query_el.querySelector("div.row");
-    form_input.set_parent_element(row_el);
-    row_el.append(form_input.render());
     el.querySelector(".card-header").after(query_el);
 
     return el;

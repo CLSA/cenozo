@@ -133,8 +133,8 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Constructor
    * @param base_model model: The model that the action belongs to
    */
-  constructor(model) {
-    super("mass_participant", model);
+  constructor(parent_el, model) {
+    super("mass_participant", parent_el, model);
   }
 
   /**
@@ -225,13 +225,11 @@ export class CN_stratum_mass_participant extends CN_base_action {
 
     // add the operation type select
     const footer_el = body_el.querySelector("[name=operation]");
-    const label_el = CN_element_label.create({ for: "operation", value: "Operation" });
-    label_el.classList.add("col-sm-3");
-    footer_el.append(label_el);
+    CN_element_label.create_element(footer_el, { for: "operation", value: "Operation", class: "col-sm-3" });
 
-    const operation_form_input = new CN_input_enum({
+    CN_input_enum.create_element(footer_el, {
       id: "operation",
-      class: "d-flex align-items-center col-sm-9",
+      class: "col-sm-9",
       required: true,
       enum: {
        values: [
@@ -247,9 +245,6 @@ export class CN_stratum_mass_participant extends CN_base_action {
         this.update_element();
       },
     });
-
-    operation_form_input.set_parent_element(footer_el);
-    footer_el.append(operation_form_input.render());
 
     // add the participant selection
     body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
@@ -291,12 +286,11 @@ export class CN_stratum_mass_participant extends CN_base_action {
     });
 
     // add the confirm card
-    const confirm_selection_el = CN_element_card.create({
+    CN_element_card.create_element(body_el.querySelector("[name=participant-confirm]"), {
       header: "Confirm Selection",
       body: "",
       footer: confirm_btn_el,
     });
-    body_el.querySelector("[name=participant-confirm]").append(confirm_selection_el);
 
     return body_el;
   }

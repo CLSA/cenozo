@@ -21,7 +21,7 @@ export class CN_modal_input extends CN_base_modal_form {
 
     super(config);
 
-    const input_config = { class: "d-flex align-items-center" };
+    const input_config = {};
     if (this.has_config("value")) input_config.get_default = () => this.get_config("value");
     if (this.has_config("required")) input_config.required = this.get_config("required");
 

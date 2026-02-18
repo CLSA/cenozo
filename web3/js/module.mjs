@@ -132,13 +132,13 @@ export class CN_module extends CN_base_object {
     return new this.#classes.model();
   }
   action_class_exists(name) { return CN_common.is_class(this.#classes[name]); }
-  create_action(name, model) {
+  create_action(name, parent_el, model) {
     if (!CN_common.is_class(this.#classes[name])) {
       throw new Error(
         `Tried to create "${name}" action for "${this.#name}" module but action class isn't implemented`
       );
     }
-    return new this.#classes[name](model);
+    return new this.#classes[name](parent_el, model);
   }
 
   /**

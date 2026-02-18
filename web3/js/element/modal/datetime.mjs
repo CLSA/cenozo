@@ -42,9 +42,9 @@ export class CN_modal_datetime extends CN_base_modal {
     if (["", null].includes(value)) {
       this.#date_parts = this.#extract_date_parts(new Date().toISOString(), CN_session.data.user.timezone);
     } else if (CN_common.is_string(value)) {
-      this.#date_parts = this.#extract_date_parts(new Date(date).toISOString(), 'UTC');
+      this.#date_parts = this.#extract_date_parts(new Date(value).toISOString(), 'UTC');
     } else if (CN_common.is_date(value)) {
-      this.#date_parts = this.#extract_date_parts(date, 'UTC');
+      this.#date_parts = this.#extract_date_parts(value, 'UTC');
     }
 
     if (["dob", "dod"].includes(mode)) {

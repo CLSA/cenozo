@@ -70,8 +70,8 @@ export class CN_base_person_history extends CN_base_action {
    * Constructor
    * @param base_model model: The model that the action belongs to
    */
-  constructor(model) {
-    super("history", model);
+  constructor(parent_el, model) {
+    super("history", parent_el, model);
     this.set_footer_at_top(true);
 
     const base_path = this.get_model().get_view_url(null, "api");
@@ -603,8 +603,8 @@ export class CN_base_person_notes extends CN_base_action {
    * Constructor
    * @param base_model model: The model the action belongs to
    */
-  constructor(model) {
-    super("notes", model);
+  constructor(parent_el, model) {
+    super("notes", parent_el, model);
     this.set_footer_at_top(true);
   }
 
@@ -728,20 +728,18 @@ export class CN_base_person_notes extends CN_base_action {
         });
       }
 
-      note_el.querySelector("[name=note]").append(
-        CN_input_text.create({
-          id: `note-${note.id}`,
-          required: true,
-          on_change: async (form_input, valid) => {
-            if (valid) {
-              await CN_api.patch(note_path, { note: form_input.get_value() });
-              form_input.flash_border();
-            } else {
-              form_input.undo_value();
-            }
-          },
-        })
-      );
+      CN_input_text.create_element(note_el.querySelector("[name=note]"), {
+        id: `note-${note.id}`,
+        required: true,
+        on_change: async (form_input, valid) => {
+          if (valid) {
+            await CN_api.patch(note_path, { note: form_input.get_value() });
+            form_input.flash_border();
+          } else {
+            form_input.undo_value();
+          }
+        },
+      });
 
       // set the note and resize the textarea
       const textarea_el = note_el.querySelector("textarea");
@@ -802,9 +800,8 @@ export class CN_base_person_notes extends CN_base_action {
 
     const card_body_el = body_el.querySelector(".card-body");
 
-    const new_note_input = new CN_input_text({ id: "new_note" });
-    new_note_input.set_parent_element(card_body_el);
-    card_body_el.append(new_note_input.render());
+    const new_note_input = new CN_input_text(card_body_el, { id: "new_note" });
+    card_body_el.append(new_note_input.get_element());
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
       await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
         user_id: CN_session.data.user.id,
@@ -816,20 +813,16 @@ export class CN_base_person_notes extends CN_base_action {
     });
 
     // add the search field
-    const label_el = CN_element_label.create({ for: "note_search", value: "Search" });
-    label_el.classList.add("col-sm-3");
-    body_el.querySelector("div.row").append(label_el);
+    CN_element_label.create_element(body_el, { for: "note_search", value: "Search", class: "col-sm-3" });
 
-    const note_search_input = new CN_input_string({
+    CN_input_string.create_element(body_el.querySelector("div.row"), {
       id: "note_search",
-      class: "d-flex align-items-center col-sm-9",
+      class: "col-sm-9",
       on_change: async (form_input, valid) => {
         if (valid) this.set_query_parameter("search", form_input.get_value());
         this.update_element();
       },
     });
-    note_search_input.set_parent_element(body_el);
-    body_el.querySelector("div.row").append(note_search_input.render());
 
     return body_el;
   }

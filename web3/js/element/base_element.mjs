@@ -14,7 +14,7 @@ export class CN_base_element extends CN_base_object {
    * Constructor
    * @param object config: A set of key/value pairs containing all of the modal's configuration parameters
    */
-  constructor(config = {}) {
+  constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_base_element contructor");
     }
@@ -35,6 +35,8 @@ export class CN_base_element extends CN_base_object {
     for(const name in config) {
       this.#config.set(name, config[name]);
     }
+
+    this.set_parent_element(parent_el);
   }
 
   /**
@@ -56,6 +58,14 @@ export class CN_base_element extends CN_base_object {
       console.warn(`Referencing undefined config parameter "${name}" in ${this.get_class_name()}`);
     }
     return this.#config.get(name);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_element() {
+    if (undefined === this.#el) this.render();
+    return this.#el;
   }
 
   /**
@@ -118,8 +128,7 @@ export class CN_base_element extends CN_base_object {
    * ADD DOCS
    */
   render(force = false) {
-    if (force || !this.#el) this.#el = this._create_element();
-    return this.#el;
+    if (force || undefined === this.#el) this.#el = this._create_element();
   }
 
   /**

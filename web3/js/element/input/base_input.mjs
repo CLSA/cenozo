@@ -19,7 +19,7 @@ export class CN_base_input extends CN_base_element {
    * Base class for all inputs
    * @param object config: A set of key/value pairs containing all of the input's configuration parameters
    */
-  constructor(config = {}) {
+  constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_base_input contructor");
     }
@@ -34,11 +34,13 @@ export class CN_base_input extends CN_base_element {
     const action = config.action;
     delete config.action;
 
-    super({
+    // don't replace classes, append them instead
+    config.class = ["d-flex align-items-center", config.class].join(" ").trim();
+
+    super(parent_el, {
       ...{
         // default config
         type: "div",
-        class: "d-flex align-items-center",
         error_timeout: 0,
       },
       ...config

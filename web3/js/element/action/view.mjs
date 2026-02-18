@@ -13,8 +13,8 @@ export class CN_action_view extends CN_action_base_record {
    * Constructor
    * @param base_model model: The model that the action belongs to
    */
-  constructor(model) {
-    super("view", model);
+  constructor(parent_el, model) {
+    super("view", parent_el, model);
   }
 
   /**
@@ -313,7 +313,7 @@ export class CN_action_view extends CN_action_base_record {
     el.append(this.#child_lists_el);
 
     // create the list-selector control element
-    this.#list_selector_el = CN_element_card.create({
+    this.#list_selector_el = CN_element_card.create_element(null, {
       header: this.constructor.html(`
         <div class="d-flex">
           <div class="flex-grow-1">

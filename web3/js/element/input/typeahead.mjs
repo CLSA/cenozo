@@ -5,7 +5,7 @@ export class CN_input_typeahead extends CN_base_input {
   #typeahead_el;
   #dropdown_bs;
 
-  constructor(config = {}) {
+  constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_typeahead contructor");
     }
@@ -41,7 +41,7 @@ export class CN_input_typeahead extends CN_base_input {
       );
     }
 
-    super({...default_config, ...config});
+    super(parent_el, {...default_config, ...config});
 
     // prevent the base class from adding event listeners (alternative events listened to below)
     this.set_event_listeners(false);
@@ -212,5 +212,16 @@ export class CN_input_typeahead extends CN_base_input {
 
     // add the typeahead's element after the prop's element once it's been inserted into the DOM
     this.get_control_element().after(this.#typeahead_el);
+  }
+
+  /**
+   * Convenience method to create and render the element (without needing access to the created object)
+   * @param object params: The parameters sent to the class constructor
+   * @return Element
+   */
+  static create_element(parent_el = null, config = {}) {
+    const el = new CN_input_typeahead(parent_el, config).get_element();
+    if (parent_el) parent_el.append(el);
+    return el;
   }
 }

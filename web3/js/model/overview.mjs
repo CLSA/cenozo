@@ -50,12 +50,11 @@ export class CN_overview_view extends CN_action_view {
    */
   create_placeholder_element() {
     const el = CN_base_element.html('<div class="px-3"></div>');
-    const card_el = CN_element_card.create({
+    const card_el = CN_element_card.create_element(el, {
       header: CN_base_element.html(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
       footer: null,
+      class: "mt-2",
     });
-    card_el.classList.add("mt-2");
-    el.append(card_el);
 
     const header_el = card_el.querySelector(".card-header");
     header_el.classList.add("placeholder-glow");
@@ -96,25 +95,25 @@ export class CN_overview_view extends CN_action_view {
    */
   update_element() {
     // build the overview based on the data property
-    const add_node = (node, parent) => {
+    const add_node = (node, parent_el) => {
       if (CN_common.is_array(node.value)) {
         // put the node in a card
         if (null == node.label) {
           const container_el = CN_base_element.html('<div class="px-3"></div>');
           node.value.forEach(child_node => add_node(child_node, container_el));
-          parent.append(container_el);
+          parent_el.append(container_el);
         } else {
-          const card_el = CN_element_card.create({
+          const card_el = CN_element_card.create_element(parent_el, {
             header: CN_base_element.html(`<div class="d-flex"><div class="flex-grow-1">${node.label}</div></div>`),
-            footer: null
+            footer: null,
+            class: "mt-2",
           });
-          card_el.classList.add("mt-2");
 
           const header_el = card_el.querySelector(".card-header");
           const body_el = card_el.querySelector(".card-body");
 
           // if we're adding multiple cards to the parent then make all cards after the first collapsable
-          if (0 < parent.querySelectorAll(":scope > div.container-fluid").length) {
+          if (0 < parent_el.querySelectorAll(":scope > div.container-fluid").length) {
             const id = ["overview", Math.round(Math.random()*10000000000)].join("-");
             body_el.setAttribute("id", id);
             body_el.classList.add("collapse");
@@ -139,11 +138,10 @@ export class CN_overview_view extends CN_action_view {
           }
 
           node.value.forEach(child_node => add_node(child_node, body_el));
-          parent.append(card_el);
         }
       } else {
         // add the label/value as a row to the parent
-        const stripe = 1 == parent.children.length%2;
+        const stripe = 1 == parent_el.children.length%2;
 
         const child_el = CN_base_element.html(`
           <div class="row ${stripe ? 'bg-dark-subtle' : ''}">
@@ -162,7 +160,7 @@ export class CN_overview_view extends CN_action_view {
           if (stripe) child_el.classList.add("bg-dark-subtle");
         });
 
-        parent.append(child_el);
+        parent_el.append(child_el);
       }
     };
 

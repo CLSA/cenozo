@@ -78,7 +78,7 @@ export class CN_base_modal_form extends CN_base_modal {
           id: ["cn-" + input.name, CN_common.get_random_hex_identifier()].join("-"),
           name: input.name,
           required: true,
-          class: "d-flex align-items-center col-sm-9",
+          class: "col-sm-9",
           on_change: (form_input, valid) => this.check_form(),
         },
         ...input.config,
@@ -86,14 +86,15 @@ export class CN_base_modal_form extends CN_base_modal {
 
       // add the label
       const el = this.constructor.html('<div class="row mb-3"></div>');
-      const label_el = CN_element_label.create({ for: config.id, value: input.title });
-      label_el.classList.add("col-sm-3");
-      el.append(label_el);
+      const label_el = CN_element_label.create_element(el, {
+        for: config.id,
+        value: input.title,
+        class: "col-sm-3",
+      });
 
       // add the input
-      input.form_input = CN_input.create(input.type, config);
-      input.form_input.set_parent_element(el);
-      el.append(input.form_input.render());
+      input.form_input = CN_input.create_input(input.type, el, config);
+      el.append(input.form_input.get_element());
       body_el.querySelector("div[name=inputs]").append(el);
 
       // if this is a text input update the size after the modal is showing

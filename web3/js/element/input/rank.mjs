@@ -2,7 +2,7 @@ import CN_common from "../../common.mjs"
 import { CN_input_enum } from "./enum.mjs"
 
 export class CN_input_rank extends CN_input_enum {
-  constructor(config = {}) {
+  constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_input_rank contructor");
     }
@@ -27,6 +27,17 @@ export class CN_input_rank extends CN_input_enum {
       },
     };
 
-    super(cnf);
+    super(parent_el, cnf);
+  }
+
+  /**
+   * Convenience method to create and render the element (without needing access to the created object)
+   * @param object params: The parameters sent to the class constructor
+   * @return Element
+   */
+  static create_element(parent_el = null, config = {}) {
+    const el = new CN_input_rank(parent_el, config).get_element();
+    if (parent_el) parent_el.append(el);
+    return el;
   }
 }

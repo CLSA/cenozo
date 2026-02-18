@@ -12,8 +12,8 @@ export class CN_action_add extends CN_action_base_record {
    *
    * @param base_model model: The model that the action belongs to
    */
-  constructor(model) {
-    super("add", model);
+  constructor(parent_el, model) {
+    super("add", parent_el, model);
   }
 
   /**

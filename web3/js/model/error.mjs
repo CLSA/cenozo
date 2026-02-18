@@ -52,7 +52,7 @@ export class CN_error_model extends CN_base_object {
     }
     console.error(message);
 
-    this.#element = CN_element_card.create();
+    this.#element = CN_element_card.create_element();
     const header_el = this.#element.querySelector(".card-header");
     header_el.classList.add("bg-danger");
     (async () => {

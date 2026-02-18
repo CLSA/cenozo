@@ -140,6 +140,45 @@ export default {
   },
 
   /**
+   * ADD DOCS
+   */
+  get_month: function (index = null, loc = "en") {
+    if (null != index) {
+      const m = Number(index);
+      if (!this.is_integer(m) || 0 > m || 11 < m) throw new Error("Tried to get month with invalid index.");
+      // use a date such that the month can be set from a zero-based index
+      const date = new Date(0);
+      date.setUTCFullYear(2000);
+      date.setUTCMonth(m);
+      date.setUTCDate(2);
+      date.setUTCHours(12);
+      return date.toLocaleString(loc, { month: "long" });
+    }
+
+    // return the full list
+    return new Array(12).fill(0).map((zero, i) => this.get_month(i, loc));
+  },
+
+  /**
+   * ADD DOCS
+   */
+  get_weekday: function (index = null, loc = "en") {
+    if (null != index) {
+      const w = Number(index);
+      if (!this.is_integer(w) || 0 > w || 6 < w) throw new Error("Tried to get weekday with invalid index.");
+      // use a date such that the weekday can be set from a zero-based index
+      const date = new Date(0);
+      date.setUTCMonth(5);
+      date.setUTCDate(w);
+      date.setUTCHours(12);
+      return date.toLocaleString(loc, { weekday: "long" });
+    }
+
+    // return the full list
+    return new Array(7).fill(0).map((zero, i) => this.get_weekday(i, loc));
+  },
+
+  /**
    * Determines whether a particular type is a datetime
    * @param string type: The type to check
    * @param string subtype: A datetime sub-type to restrict to ("date", "time", "second")

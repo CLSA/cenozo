@@ -23,7 +23,7 @@ export class CN_base_modal extends CN_base_element {
     // the class list is also pre-defined
     config.class = "modal fade";
 
-    super({
+    super(null, {
       ...{
         // default config
         header_class: "text-bg-primary",
@@ -80,7 +80,7 @@ export class CN_base_modal extends CN_base_element {
       this.#reject = reject;
 
       if (!this.#bootstrap_modal) {
-        const el = this.render();
+        const el = this.get_element();
         this.#bootstrap_modal = new bootstrap.Modal(el, { keyboard: false, backdrop: "static" });
 
         // add all modal listeners

@@ -1,4 +1,5 @@
 import CN_api from "../api.mjs"
+import CN_common from "../common.mjs"
 import CN_session from "../session.mjs"
 
 import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
@@ -97,20 +98,10 @@ export class CN_address_model extends CN_traceable_model {
         months: {
           title: "Available Months",
           is_hidden: model => !model.get_action().get_property_value("active"),
-          properties: {
-            january: { title: "January", type: "boolean" },
-            february: { title: "February", type: "boolean" },
-            march: { title: "March", type: "boolean" },
-            april: { title: "April", type: "boolean" },
-            may: { title: "May", type: "boolean" },
-            june: { title: "June", type: "boolean" },
-            july: { title: "July", type: "boolean" },
-            august: { title: "August", type: "boolean" },
-            september: { title: "September", type: "boolean" },
-            october: { title: "October", type: "boolean" },
-            november: { title: "November", type: "boolean" },
-            december: { title: "December", type: "boolean" },
-          },
+          properties: CN_common.get_month().reduce((obj, month) => {
+            obj[month.toLowerCase()] = { title: month, type: "boolean" };
+            return obj;
+          }, {}),
         },
       },
     });

@@ -23,29 +23,40 @@ import { CN_input_timesecond } from "./timesecond.mjs"
 import { CN_input_typeahead } from "./typeahead.mjs"
 
 export class CN_input extends CN_base_object {
-  static create(type, params) {
-    if ("audio_url" == type) return new CN_input_audio_url(params);
-    if ("boolean" == type) return new CN_input_boolean(params);
-    if ("color" == type) return new CN_input_color(params);
-    if ("date" == type) return new CN_input_date(params);
-    if ("datetime" == type) return new CN_input_datetime(params);
-    if ("datetimesecond" == type) return new CN_input_datetimesecond(params);
-    if ("dob" == type) return new CN_input_dob(params);
-    if ("dod" == type) return new CN_input_dod(params);
-    if ("email" == type) return new CN_input_email(params);
-    if ("enum" == type) return new CN_input_enum(params);
-    if ("file" == type) return new CN_input_file(params);
-    if ("float" == type) return new CN_input_float(params);
-    if ("integer" == type) return new CN_input_integer(params);
-    if ("password" == type) return new CN_input_password(params);
-    if ("rank" == type) return new CN_input_rank(params);
-    if ("size" == type) return new CN_input_size(params);
-    if ("string" == type) return new CN_input_string(params);
-    if ("text" == type) return new CN_input_text(params);
-    if ("time" == type) return new CN_input_time(params);
-    if ("timesecond" == type) return new CN_input_timesecond(params);
-    if ("typeahead" == type) return new CN_input_typeahead(params);
+  static create_input(type, parent_el, config) {
+    if ("audio_url" == type) return new CN_input_audio_url(parent_el, config);
+    if ("boolean" == type) return new CN_input_boolean(parent_el, config);
+    if ("color" == type) return new CN_input_color(parent_el, config);
+    if ("date" == type) return new CN_input_date(parent_el, config);
+    if ("datetime" == type) return new CN_input_datetime(parent_el, config);
+    if ("datetimesecond" == type) return new CN_input_datetimesecond(parent_el, config);
+    if ("dob" == type) return new CN_input_dob(parent_el, config);
+    if ("dod" == type) return new CN_input_dod(parent_el, config);
+    if ("email" == type) return new CN_input_email(parent_el, config);
+    if ("enum" == type) return new CN_input_enum(parent_el, config);
+    if ("file" == type) return new CN_input_file(parent_el, config);
+    if ("float" == type) return new CN_input_float(parent_el, config);
+    if ("integer" == type) return new CN_input_integer(parent_el, config);
+    if ("password" == type) return new CN_input_password(parent_el, config);
+    if ("rank" == type) return new CN_input_rank(parent_el, config);
+    if ("size" == type) return new CN_input_size(parent_el, config);
+    if ("string" == type) return new CN_input_string(parent_el, config);
+    if ("text" == type) return new CN_input_text(parent_el, config);
+    if ("time" == type) return new CN_input_time(parent_el, config);
+    if ("timesecond" == type) return new CN_input_timesecond(parent_el, config);
+    if ("typeahead" == type) return new CN_input_typeahead(parent_el, config);
 
     throw new Error(`Tried to create invalid input type "${type}"`);
+  }
+
+  /**
+   * Convenience method to create and render the element (without needing access to the created object)
+   * @param object config: The parameters sent to the class constructor
+   * @return Element
+   */
+  static create_element(type, parent_el, config) {
+    const el = CN_input.create_input(type, parent_el, config).get_element()
+    if (parent_el) parent_el.append(el);
+    return el;
   }
 }

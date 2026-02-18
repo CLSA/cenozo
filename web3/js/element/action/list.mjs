@@ -22,8 +22,8 @@ export class CN_action_list extends CN_base_action {
    * TODO: document a full description of the columns parameter
    * @param base_model model: The model that the list action belongs to
    */
-  constructor(model) {
-    super("list", model);
+  constructor(parent_el, model) {
+    super("list", parent_el, model);
 
     // determine whether the list is in choosing mode
     const parent_model = this.get_model().get_parent_model();

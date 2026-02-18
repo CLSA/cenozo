@@ -15,8 +15,8 @@ export class CN_action_base_record extends CN_base_action {
    * @param string type: The type of action (either "add" or "view")
    * @param base_model model: The model that the action belongs to
    */
-  constructor(type, model) {
-    super(type, model);
+  constructor(type, parent_el, model) {
+    super(type, parent_el, model);
 
     // while setting up all property groups keep track of all property names to ensure they are unique
     let existing_properties = {};
@@ -390,9 +390,12 @@ export class CN_action_base_record extends CN_base_action {
     const prop_el = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    const label_el = CN_element_label.create({ for: prop.id, value: prop.title, help: prop.help });
+    const label_el = CN_element_label.create_element( prop_el, {
+      for: prop.id,
+      value: prop.title,
+      help: prop.help
+    });
     label_el.classList.add("col-sm-3");
-    prop_el.append(label_el);
 
     if (!prop.form_input) {
       // determine the property's UI element based on the type
@@ -432,12 +435,9 @@ export class CN_action_base_record extends CN_base_action {
           );
         };
       }
-      prop.form_input = CN_input.create(prop.type, params);
+      prop.form_input = CN_input.create_input(prop.type, prop_el, params);
+      prop_el.append(prop.form_input.get_element());
     }
-
-    // connect the prop element and input
-    prop.form_input.set_parent_element(prop_el);
-    prop_el.append(prop.form_input.render());
 
     return prop_el;
   }

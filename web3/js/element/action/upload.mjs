@@ -15,8 +15,8 @@ export class CN_action_upload extends CN_base_action {
    * Constructor
    * @param base_model model: The model that the action belongs to
    */
-  constructor(model) {
-    super("upload", model);
+  constructor(parent_el, model) {
+    super("upload", parent_el, model);
   }
 
   // Access methods
@@ -78,11 +78,11 @@ export class CN_action_upload extends CN_base_action {
     summary_el.innerHTML = "";
 
     if (CN_common.is_object(this.#summary_data)) {
-      summary_el.append(CN_element_card.create({
+      CN_element_card.create_element(summary_el, {
         header: "Upload Summary",
         body: "",
         footer: "",
-      }));
+      });
 
       if (this.upload_is_valid()) {
         // create the upload button to be used below
@@ -113,14 +113,16 @@ export class CN_action_upload extends CN_base_action {
     // add the file input
     const row_el = this.constructor.html('<div class="row mx-1 pb-2"></div>');
 
-    const label_el = CN_element_label.create({ for: "file", value: "CSV Data File" });
-    label_el.classList.add("col-sm-3");
-    row_el.append(label_el);
+    const label_el = CN_element_label.create_element(row_el, {
+      for: "file",
+      class: "col-sm-3",
+      value: "CSV Data File"
+    });
 
-    const file_form_input = new CN_input_file({
+    const file_form_input = new CN_input_file(row_el, {
       id: "file",
       type: "file",
-      class: "d-flex align-items-center col-sm-9",
+      class: "col-sm-9",
       file: { encoding: "text", mime_type: "text/csv" },
       on_change: async (form_input) => {
         this.#summary_data = await CN_api.patch(
@@ -133,9 +135,7 @@ export class CN_action_upload extends CN_base_action {
       },
       required: true,
     });
-
-    file_form_input.set_parent_element(row_el);
-    row_el.append(file_form_input.render());
+    row_el.append(file_form_input.get_element());
 
     body_el.append(row_el);
 
