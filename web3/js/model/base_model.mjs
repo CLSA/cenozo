@@ -9,6 +9,7 @@ export class CN_base_model extends CN_base_object {
   #unique_id;
   #module;
   #wording;
+  #default_order;
   #properties_template;
   #columns_template;
   #element = null;
@@ -40,6 +41,8 @@ export class CN_base_model extends CN_base_object {
     this.#unique_id = [this.get_name(), CN_common.get_random_hex_identifier()].join("-");
     this.#wording = params.wording;
 
+    this.#default_order = params.order ? params.order : null;
+
     // Note that the properties and columns props are only used when configuring the model.
     this.#properties_template = params.properties;
     this.#columns_template = params.columns;
@@ -58,6 +61,7 @@ export class CN_base_model extends CN_base_object {
   get_singular() { return this.#wording.singular; }
   get_plural() { return this.#wording.plural; }
   get_posessive() { return this.#wording.posessive; }
+  get_default_order() { return this.#default_order; }
   get_list_url() { return this.get_base_path("url") + "/list"; }
   get_add_url() { return this.get_base_path("url") + "/add"; }
   get_view_url(id = null, type = "url") {

@@ -3,6 +3,39 @@ import CN_session from "./session.mjs"
 
 import { CN_modal_message } from "./element/modal/message.mjs"
 
+const SELECT_SHORT_NAMES = {
+  alias: 'a',
+  column: 'c',
+  distinct: 'd',
+  from: 'f',
+  table_prefix: 'p',
+  table: 't',
+};
+const SELECT_LONG_NAMES = {};
+for (const long in SELECT_SHORT_NAMES) SELECT_LONG_NAMES[SELECT_SHORT_NAMES[long]] = long;
+
+const MODIFIER_SHORT_NAMES = {
+  alias: 'a',
+  bracket: 'b',
+  column: 'c',
+  having: 'h',
+  join: 'j',
+  limit: 'l',
+  open: 'n',
+  order: 'o',
+  offset: 'off',
+  onleft: 'onl',
+  operator: 'op',
+  onright: 'onr',
+  prepend: 'p',
+  table: 't',
+  type: 'tp',
+  value: 'v',
+  where: 'w',
+};
+const MODIFIER_LONG_NAMES = {};
+for (const long in MODIFIER_SHORT_NAMES) MODIFIER_LONG_NAMES[MODIFIER_SHORT_NAMES[long]] = long;
+
 /**
  * The API class provides a way to communicate with the server's API
  *
@@ -306,35 +339,6 @@ export default {
   },
 
   /**
-   * Shortens all select properties
-   * @param object select
-   * @return object
-   */
-  shorten_select: function (select) {
-    if (Array.isArray(select)) {
-      return select.map(item => this.shorten_select(item));
-    } else if (CN_common.is_object(select)) {
-      let new_select = {};
-      for (const key in select) {
-        if (Object.prototype.hasOwnProperty.call(select, key)) {
-          let new_key = key;
-          if ('alias' == key) new_key = 'a';
-          else if ('column' == key) new_key = 'c';
-          else if ('distinct' == key) new_key = 'd';
-          else if ('from' == key) new_key = 'f';
-          else if ('table_prefix' == key) new_key = 'p';
-          else if ('table' == key) new_key = 't';
-          new_select[new_key] = this.shorten_select(select[key]);
-        }
-      }
-      return new_select;
-    }
-
-    // return non array/objects unchanged
-    return select;
-  },
-
-  /**
    * Converts a modifier parameter into a stringified query parameter
    *
    * Modifier objects take the following form:
@@ -380,6 +384,58 @@ export default {
   },
 
   /**
+   * Shortens all select properties
+   * @param object select
+   * @return object
+   */
+  shorten_select: function (select) {
+    if (Array.isArray(select)) {
+      return select.map(item => this.shorten_select(item));
+    } else if (CN_common.is_object(select)) {
+      let new_select = {};
+      for (const k in select) {
+        if (Object.prototype.hasOwnProperty.call(select, k)) {
+          new_select[
+            SELECT_SHORT_NAMES[k] ?
+            SELECT_SHORT_NAMES[k] :
+            k
+          ] = this.shorten_select(select[k]);
+        }
+      }
+      return new_select;
+    }
+
+    // return non array/objects unchanged
+    return select;
+  },
+
+  /**
+   * Lengthens all select properties
+   * @param object select
+   * @return object
+   */
+  lengthen_select: function (select) {
+    if (Array.isArray(select)) {
+      return select.map(item => this.lengthen_select(item));
+    } else if (CN_common.is_object(select)) {
+      let new_select = {};
+      for (const k in select) {
+        if (Object.prototype.hasOwnProperty.call(select, k)) {
+          new_select[
+            SELECT_LONG_NAMES[k] ?
+            SELECT_LONG_NAMES[k] :
+            k
+          ] = this.lengthen_select(select[k]);
+        }
+      }
+      return new_select;
+    }
+
+    // return non array/objects unchanged
+    return select;
+  },
+
+  /**
    * Shortens all modifier properties
    * @param object modifier
    * @return object
@@ -389,27 +445,39 @@ export default {
       return modifier.map(item => this.shorten_modifier(item));
     } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};
-      for (const key in modifier) {
-        if (Object.prototype.hasOwnProperty.call(modifier, key)) {
-          let new_key = key;
-          if ('alias' == key) new_key = 'a';
-          else if ('bracket' == key) new_key = 'b';
-          else if ('column' == key) new_key = 'c';
-          else if ('having' == key) new_key = 'h';
-          else if ('join' == key) new_key = 'j';
-          else if ('limit' == key) new_key = 'l';
-          else if ('open' == key) new_key = 'n';
-          else if ('order' == key) new_key = 'o';
-          else if ('offset' == key) new_key = 'off';
-          else if ('onleft' == key) new_key = 'onl';
-          else if ('operator' == key) new_key = 'op';
-          else if ('onright' == key) new_key = 'onr';
-          else if ('prepend' == key) new_key = 'p';
-          else if ('table' == key) new_key = 't';
-          else if ('type' == key) new_key = 'tp';
-          else if ('value' == key) new_key = 'v';
-          else if ('where' == key) new_key = 'w';
-          new_modifier[new_key] = this.shorten_modifier(modifier[key]);
+      for (const k in modifier) {
+        if (Object.prototype.hasOwnProperty.call(modifier, k)) {
+          new_modifier[
+            MODIFIER_SHORT_NAMES[k] ?
+            MODIFIER_SHORT_NAMES[k] :
+            k
+          ] = this.shorten_modifier(modifier[k]);
+        }
+      }
+      return new_modifier;
+    }
+
+    // return non array/objects unchanged
+    return modifier;
+  },
+
+  /**
+   * Lengthens all modifier properties
+   * @param object modifier
+   * @return object
+   */
+  lengthen_modifier: function (modifier) {
+    if (Array.isArray(modifier)) {
+      return modifier.map(item => this.lengthen_modifier(item));
+    } else if (CN_common.is_object(modifier)) {
+      let new_modifier = {};
+      for (const k in modifier) {
+        if (Object.prototype.hasOwnProperty.call(modifier, k)) {
+          new_modifier[
+            MODIFIER_LONG_NAMES[k] ?
+            MODIFIER_LONG_NAMES[k] :
+            k
+          ] = this.lengthen_modifier(modifier[k]);
         }
       }
       return new_modifier;

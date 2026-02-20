@@ -3,7 +3,7 @@ import CN_common from "../../common.mjs"
 import CN_session from "../../session.mjs"
 import { CN_base_action } from "./base_action.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
-import CN_filter_modal, { load_filter } from "../../filter.mjs"
+import { CN_modal_column_filter } from "../modal/column_filter.mjs"
 
 export class CN_action_list extends CN_base_action {
   #list_mode;
@@ -13,7 +13,6 @@ export class CN_action_list extends CN_base_action {
   #limit = null;
   #offset = null;
   #current_page = 1;
-  #filter_modal;
   #is_choosing = false;
   #choosing_list;
 
@@ -33,25 +32,23 @@ export class CN_action_list extends CN_base_action {
       "add"
     );
 
-    // setup each column
-    const page_param = this.get_query_parameter("page");
-    if (page_param) {
-      this.#current_page = page_param;
-    }
+    // Get any table configurations from from URL query parameters
+    const tables = JSON.parse(this.get_query_parameter("tables"));
 
-    const order_param = this.get_query_parameter("order");
-    const reverse_param = this.get_query_parameter("reverse");
+    const table_config = (
+      CN_common.is_object(tables) && tables[model.get_name()] ?
+      tables[model.get_name()] :
+      { order: model.get_default_order(), columns: {} }
+    );
 
     this.#columns = model.clone_columns();
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
 
+      // define column default properties
+      column.name = col_name;
       if (!column.type) column.type = "string";
-
-      // by default always prefix the table name
       if (undefined === column.table_prefix) column.table_prefix = true;
-
-      // by default left align all columns except for text columns
       if (undefined === column.align) column.align = "left";
 
       // define the is_hidden function if it hasn't been defined
@@ -65,39 +62,17 @@ export class CN_action_list extends CN_base_action {
         };
       }
 
-      column.col_name = col_name;
-      if ((order_param != null && reverse_param != null) && order_param === col_name) {
-        column.order = true;
-        column.reverse = reverse_param == "true";
-      }
+      // define this column's initial condition_list based on the table config
+      column.condition_list = (
+        table_config.columns[col_name] ?
+        CN_api.lengthen_modifier(table_config.columns[col_name]) :
+        []
+      );
     }
-
-    const restrict = this.get_query_parameter("restrict");
-    // Load each columns filter and order state from URL query parameters
-    if (restrict) {
-      const filters = JSON.parse(restrict);
-      for (const filter_data of filters) {
-        const col = this.#columns[filter_data.n];
-        const filter = load_filter(filter_data);
-        col.filter = filter;
-      }
-    }
-
-    this.#filter_modal = new CN_filter_modal(document.getElementById('main-content'),
-      {
-        title: "Filter",
-        tableName: this.get_model().get_singular(),
-        message: "",
-        okText: "Ok",
-        cancelText: "Cancel"
-      }
-    );
-    this.#filter_modal.add_listener(this);
   }
 
   // access methods
   is_choosing() { return this.#is_choosing; }
-  get_total_records() { return this.#total_records; }
 
   /**
    * Extends the parent method
@@ -120,6 +95,28 @@ export class CN_action_list extends CN_base_action {
     }
 
     return await super.get_text(type);
+  }
+
+  /**
+   * Returns whether any of the list's columns has any conditions
+   * @return boolean
+   */
+  has_column_filters() {
+    for (const col_name in this.#columns) {
+      if (0 < this.#columns[col_name].condition_list.length) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Returns the formatted record count (eg: [num] followed by * if the table is filtered)
+   * @return string
+   */
+  get_formatted_record_count() {
+    return (
+      `[${null === this.#total_records ? "..." : this.#total_records}]` +
+      (this.has_column_filters() ? "*" : "")
+    );
   }
 
   /**
@@ -174,24 +171,6 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
-   * Makes an API call to get table data
-   */
-  async get_records() {
-    this.on_pre_loading();
-
-    const response = await CN_api.get(this.get_model().get_base_path("api"), this.get_on_load_parameters(), true);
-    this.#limit = response.headers.get('X-Limit');
-    this.#offset = response.headers.get('X-Offset');
-    this.#total_records = response.headers.get('X-Total');
-
-    // replace the records at the current page with the returned records
-    //const records = await response.json();
-    this.#records = await response.json();
-    this.on_post_loading();
-    this.update_element();
-  }
-
-  /**
    * Override the parent method
    */
   get_on_load_path() {
@@ -216,25 +195,62 @@ export class CN_action_list extends CN_base_action {
     if (this.#is_choosing) params.choosing = 1;
 
     for (const col_name in this.#columns) {
-      const col = this.#columns[col_name];
-      if (col.table_prefix) {
-        let table = this.get_model().get_name();
-        let name = col_name;
-        if (col.column) [table, name] = col.column.split(".");
-        params.select.column.push({ table: table, column: name, alias: col_name });
-      } else if (col.column) {
-        params.select.column.push({ column: col.column, alias: col_name, table_prefix: false });
+      const column = this.#columns[col_name];
+      let table_name = this.get_model().get_name();
+      let effective_col_name = col_name;
+      if (column.table_prefix) {
+        if (column.column) [table_name, effective_col_name] = column.column.split(".");
+        params.select.column.push({ table: table_name, column: effective_col_name, alias: col_name });
+      } else if (column.column) {
+        params.select.column.push({ column: column.column, alias: col_name, table_prefix: false });
       } else {
         // no table prefix means just add the column name
         params.select.column.push(col_name);
       }
-      if (col.order) {
-        params.modifier.order.push({ [col_name]: col.reverse });
+      
+      if (column.is_hidden(this.get_model())) continue;
+      
+      if (column.order) {
+        params.modifier.order.push({ [col_name]: column.reverse });
       }
 
-      if (col.filter) {
-        const column_modifier = col.filter.get_modifiers(col_name);
-        params.modifier.where.push(...column_modifier);
+      // convert the column's condition list into where statements
+      if (!column.is_hidden(this.get_model())) {
+        if (1 < column.condition_list.length) params.modifier.where.push({ bracket: true, open: true });
+
+        params.modifier.where = [
+          ...params.modifier.where,
+          ...column.condition_list.map(condition => {
+            const where = {
+              ...{
+                column: (
+                  column.table_prefix ?
+                  `${table_name}.${effective_col_name}` :
+                  effective_col_name
+                ),
+              },
+              ...condition
+            };
+
+            // use the column definition if there is one
+            if (column.column) where.column = column.column;
+
+            // setup LIKE operations
+            if (["LIKE", "NOT LIKE"].includes(where.operator)) {
+              if (0 == where.value.length) {
+                // LIKE "" is meaningless, so search for <=> "" instead
+                where.operator = "<=>";
+              } else if (!where.operator.includes("%")) {
+                // LIKE without % is meaningless, so enclose the value in %
+                where.value = `%${where.value}%`;
+              }
+            }
+
+            return where;
+          }),
+        ];
+
+        if (1 < column.condition_list.length) params.modifier.where.push({ bracket: true, open: false });
       }
     }
 
@@ -252,6 +268,7 @@ export class CN_action_list extends CN_base_action {
     this.#limit = response.headers.get('X-Limit');
     this.#offset = response.headers.get('X-Offset');
     this.#total_records = response.headers.get('X-Total');
+    const filters = this.has_column_filters();
 
     // update the parent's child list record count
     if (parent_model && "view" == parent_model.get_action_name()) {
@@ -259,27 +276,13 @@ export class CN_action_list extends CN_base_action {
       if (child_lists_el) {
         const btn_el = child_lists_el.querySelector(`button[name=${model.get_name()}]`);
         if (btn_el) {
-          btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\]/, ` [${this.#total_records}]`);
+          btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\].*/, ` ${this.get_formatted_record_count()}`);
         }
       }
     }
 
     // replace the records at the current page with the returned records
     this.#records = await response.json();
-
-    // run all filters, creating a list of promises as we go
-    const promise_list = [];
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      if (CN_common.is_function(column.filter)) {
-        promise_list.push(...this.#records.map(record =>
-          (async () => record[col_name] = await column.filter(model, record))()
-        ));
-      }
-    }
-
-    // run all filter promises in parallel
-    await Promise.all(promise_list);
 
     if (this.#is_choosing) {
       // make note of chosen records
@@ -331,7 +334,8 @@ export class CN_action_list extends CN_base_action {
    * @param {*} event
    * @param {*} column
    */
-  async on_table_header_click(event, column) {
+  async on_sort_column(event, column) {
+    /*
     this.remove_table_header_sorts(column);
     const previous_sort = column.el.hasAttribute("sort") ? column.el.getAttribute("sort") : "";
 
@@ -346,7 +350,7 @@ export class CN_action_list extends CN_base_action {
       throw new Error("Unknown sort");
     }
 
-    const sort_icon = column.el.querySelector(".sort-icon");
+    const sort_icon = column.el.querySelector("[name=sort-icon]");
 
     if (next_sort === "") {
       delete column.order;
@@ -371,6 +375,7 @@ export class CN_action_list extends CN_base_action {
 
     this.update_query_parameters()
     this.get_records();
+    */
   }
 
   /**
@@ -385,11 +390,13 @@ export class CN_action_list extends CN_base_action {
       delete column.order;
       delete column.reverse;
 
-      if (column.el?.hasAttribute("sort")) {
+      /*
+      if (column.el.hasAttribute("sort")) {
         column.el.removeAttribute('sort');
-        column.el.querySelector('.sort-icon').classList.remove('bi-sort-up');
-        column.el.querySelector('.sort-icon').classList.remove('bi-sort-down');
+        column.el.querySelector('[name=sort-icon]').classList.remove('bi-sort-up');
+        column.el.querySelector('[name=sort-icon]').classList.remove('bi-sort-down');
       }
+      */
     }
   }
 
@@ -428,25 +435,74 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
+   * Updates the query parameters with the current table configuration
+   * The tables parameter has the following form: {
+   *   <table_name>: {
+   *     order: null or [{}] or { column }
+   *     columns: {
+   *       <column_name>: [{
+   *         operator: =|!=|<|>|LIKE|NOT LIKE|etc,
+   *         value: the value to compare to,
+   *         or: true when logically ORing the comparison (optional)
+   *       )],
+   *     }
+   *   }
+   * }
+   */
+  update_query_parameters() {
+    const columns = {};
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (0 < column.condition_list.length) {
+        columns[col_name] = column.condition_list;
+      }
+    }
+
+    const name = this.get_model().get_name();
+    let tables = JSON.parse(this.get_query_parameter("tables"));
+    if (0 == Object.keys(columns).length) {
+      if (CN_common.is_object(tables) && tables[name]) delete tables[name];
+      if (!CN_common.is_object(tables) || 0 == Object.keys(tables)) tables = null;
+    } else {
+      if (!CN_common.is_object(tables)) tables = {};
+      if (!tables[name]) tables[name] = {};
+      tables[name].columns = columns;
+    }
+
+    this.set_query_parameter("tables", null == tables ? null : JSON.stringify(tables));
+  }
+  
+  /**
    * Extends parent method
    */
   update_element() {
     super.update_element();
-    this.update_query_parameters();
 
+    const model = this.get_model();
     for (const col_name in this.#columns) {
-      const col = this.#columns[col_name];
-      if ("order" in col && "reverse" in col) {
-        const sort = col.reverse ? "descending" : "ascending";
-
-        col.el.querySelector('.sort-icon').classList.add(sort === "ascending" ? "bi-sort-down" : "bi-sort-up");
-        col.el.setAttribute('sort', sort);
+      const column = this.#columns[col_name];
+      /*
+      if ("order" in column && "reverse" in column) {
+        const sort = column.reverse ? "descending" : "ascending";
+        column.el.querySelector('[name=sort-icon]').classList.add(
+          sort === "ascending" ?
+          "bi-sort-down" :
+          "bi-sort-up"
+        );
+        column.el.setAttribute('sort', sort);
       }
+      */
 
-      if (col.filter) {
-        const filter_el = col.el.querySelector('.filter-icon');
-        filter_el.classList.remove('bi-filter')
-        filter_el.classList.add('bi-filter-circle-fill')
+      const th_el = this.get_body_element().querySelector(`th[name=${column.name}]`);
+      if (th_el) {
+        const icon_el = th_el.querySelector("i[name=filter-icon]");
+        if (0 < column.condition_list.length) {
+          icon_el.classList.remove('bi-filter')
+          icon_el.classList.add('bi-filter-circle-fill')
+        } else {
+          icon_el.classList.remove('bi-filter-circle-fill')
+          icon_el.classList.add('bi-filter')
+        }
       }
     }
 
@@ -455,18 +511,18 @@ export class CN_action_list extends CN_base_action {
 
     if ("add" == this.#list_mode) {
       // if we have no add button and adding is allowed then create it
-      if (null == btn_el && this.get_model().allow_add()) {
+      if (null == btn_el && model.allow_add()) {
         btn_el = this.constructor.html('<button name="add" type="button" class="btn btn-primary"></button>');
         btn_group_el.append(btn_el);
         (async () => { btn_el.innerHTML = await this.get_text("add"); })();
         btn_el.addEventListener("click", this.on_add.bind(this));
-      } else if (null != btn_el && !this.get_model().allow_add()) {
+      } else if (null != btn_el && !model.allow_add()) {
         // if we have an add button but adding isn't allowed then remove it
         btn_group_el.removeChild(btn_el);
       }
     } else if ("choose" == this.#list_mode) {
       // if choosing is allowed then create the choose button (if needed) and configure it
-      if (this.get_model().allow_choose()) {
+      if (model.allow_choose()) {
         if (null == btn_el) {
           btn_el = this.constructor.html('<button name="choose" type="button" class="btn btn-primary"></button>');
           btn_group_el.append(btn_el);
@@ -514,7 +570,7 @@ export class CN_action_list extends CN_base_action {
         const column = this.#columns[col_name];
 
         // don't show hidden columns
-        if (column.is_hidden(this.get_model())) continue;
+        if (column.is_hidden(model)) continue;
 
         let value = record[col_name];
         if (null === value) {
@@ -542,16 +598,16 @@ export class CN_action_list extends CN_base_action {
         //tr_el.innerHTML += `<td>${value}</td>`;
       }
 
-      if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
+      if ("choose" != this.#list_mode && model.allow_delete()) {
         // add the delete button row, only including a button if deleting is allowed
         tr_el.innerHTML += `
           <td class="col-auto d-flex justify-content-end">
-            <button name="delete" class="btn btn-sm btn-danger"><i class="bi-x-circle-fill"></i></button>
+            <button name="delete" class="btn btn-sm btn-danger"><i class="bi bi-x-circle-fill"></i></button>
           </td>
         `;
 
         // wire up the delete button if there is one
-        if (this.get_model().allow_delete()) {
+        if (model.allow_delete()) {
           tr_el.querySelector("[name=delete]").addEventListener("click", (e) => {
             e.stopPropagation();
             this.on_delete(record);
@@ -563,7 +619,12 @@ export class CN_action_list extends CN_base_action {
     });
 
     const summary_el = this.get_footer_element().querySelector("[name=summary]");
-    summary_el.innerHTML = `${this.#total_records} ${this.get_model().get_plural()} total`;
+    summary_el.innerHTML = [
+      this.#total_records,
+      1 == this.#total_records ? model.get_singular() : model.get_plural(),
+      "total",
+      this.has_column_filters() ? "(filtered)" : "",
+    ].join(" ");
 
     // rebuild the pagination buttons
     const pagination_el = this.get_footer_element().querySelector("ul.pagination");
@@ -574,7 +635,7 @@ export class CN_action_list extends CN_base_action {
     if (1 < pages) {
       // add the previous button
       const prev_el = this.constructor.html(`
-        <li class="page-item"><button class="page-link"><i class="bi-rewind-fill"></i></button></li>
+        <li class="page-item"><button class="page-link"><i class="bi bi-rewind-fill"></i></button></li>
       `);
       if (1 == this.#current_page) prev_el.classList.add("disabled");
       pagination_el.append(prev_el);
@@ -621,7 +682,7 @@ export class CN_action_list extends CN_base_action {
 
       // add the next button
       const next_el = this.constructor.html(`
-        <li class="page-item"><button class="page-link"><i class="bi-fast-forward-fill"></i></button></li>
+        <li class="page-item"><button class="page-link"><i class="bi bi-fast-forward-fill"></i></button></li>
       `);
       if (pages == this.#current_page) next_el.classList.add("disabled");
       pagination_el.append(next_el);
@@ -687,7 +748,7 @@ export class CN_action_list extends CN_base_action {
     }
 
     // Removes right margin from the last column's filter button to align it with the table
-    const last_column_btn = header_tr_el.lastChild.querySelector(".filter-btn");
+    const last_column_btn = header_tr_el.lastChild.querySelector(".filter-button");
     if (last_column_btn) {
       last_column_btn.classList.remove("mx-1");
       last_column_btn.classList.add("ms-1");
@@ -698,92 +759,55 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
-   * Updates the "restrict" query parameter whenever a column filter is saved.
-   * @param {*} col
-   */
-  async on_filter_save(col) {
-    this.update_query_parameters();
-    await this.run();
-  }
-
-  /**
-   *
-   * @param {*} col
-   */
-  async on_filter_clear(col) {
-    const filter_el = col.el.querySelector('.filter-icon');
-    filter_el.classList.remove('bi-filter-circle-fill')
-    filter_el.classList.add('bi-filter');
-
-    this.update_query_parameters();
-    await this.get_records();
-  }
-
-  /**
-   * Updates the query parameters with the most recent state
-   * @returns
-   */
-  update_query_parameters() {
-    let restrict = [];
-    let order = null;
-    let reverse = null;
-
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      if (column.filter) {
-        const filter_data = column.filter.save_to_json(col_name);
-        restrict.push(filter_data);
-      }
-      if (column.order != null) order = col_name;
-      if (column.reverse != null) reverse = column.reverse;
-    }
-
-    this.set_query_parameter("restrict", restrict.length ? JSON.stringify(restrict) : null);
-    this.set_query_parameter("page", this.#current_page);
-    this.set_query_parameter("order", order);
-    this.set_query_parameter("reverse", reverse);
-  }
-
-  /**
    * Creates the table header element and adds listeners to the filter buttons that belong to each header
    * @param {*} column
    * @returns
    */
   create_table_header_element(column) {
-    const header_el = this.constructor.html(
-      `<th name="${column.title}" class="p-0" scope="col">
+    const help = (
+      column.help ?
+      `<i
+        class="bi bi-info-circle-fill"
+        data-bs-toggle="tooltip"
+        data-bs-title="${column.help}"
+      ></i>` :
+      ''
+    );
+    const filter_icon = 0 < column.condition_list.length ? "bi-filter-circle-fill" : "bi-filter";
+    const header_el = this.constructor.html(`
+      <th name="${column.name}" class="p-0" scope="col">
         <div class="d-flex justify-content-between">
           <button
             type="button"
-            class="sort-btn btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold"
+            name="sort-button"
+            class="btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold"
           >
-            ${
-              column.help ?
-                `<i
-                  class="bi-info-circle-fill"
-                  data-bs-toggle="tooltip"
-                  data-bs-title="${column.help}"
-                  style="width:16px;height:16px">
-                </i>` : ''
-            }
+            ${help}
             ${column.title}
-            <i class="sort-icon bi px-1 d-inline-block" style="width:16px;height:16px"></i>
+            <i name="sort-icon" class="bi px-1 d-inline-block"></i>
           </button>
-          <button type="button" class="filter-btn btn btn-secondary rounded-0 mx-1 fw-bold">
-            <i class="filter-icon bi bi-filter px-1" style="cursor: pointer;"></i>
+          <button type="button" name="filter-button" class="btn btn-secondary rounded-0 mx-1 fw-bold">
+            <i name="filter-icon" class="bi ${filter_icon} px-1" style="cursor: pointer;"></i>
           </button>
         </div>
-       </th>`,
-    );
+      </th>
+    `);
 
-    if (column.help)
-      new bootstrap.Tooltip(header_el.querySelector('.bi-info-circle-fill'));
-    header_el.addEventListener("click", (event) => this.on_table_header_click(event, column));
+    if (column.help) new bootstrap.Tooltip(header_el.querySelector('.bi-info-circle-fill'));
+    header_el.addEventListener("click", (event) => this.on_sort_column(event, column));
 
-    const filter_btn = header_el.querySelector(".filter-btn")
-    filter_btn.addEventListener("click", (event) => {
+    const filter_btn = header_el.querySelector("button[name=filter-button]")
+    filter_btn.addEventListener("click", async (event) => {
       event.stopPropagation();
-      this.#filter_modal.open(column);
+      const response = await (new CN_modal_column_filter({
+        table: CN_common.uc_words(this.get_model().get_singular()),
+        column: column,
+      })).open();
+      if (response) {
+        column.condition_list = response;
+        this.update_query_parameters();
+        await this.run();
+      }
     });
 
     return header_el;

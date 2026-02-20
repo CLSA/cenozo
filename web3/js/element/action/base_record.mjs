@@ -399,27 +399,27 @@ export class CN_action_base_record extends CN_base_action {
 
     if (!prop.form_input) {
       // determine the property's UI element based on the type
-      let params = CN_common.clone(prop);
-      delete params.type;
-      if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
-      if (undefined === params.max_length && module_prop && module_prop.max_length) {
-        params.max_length = module_prop.max_length;
+      const input_config = CN_common.clone(prop);
+      delete input_config.type;
+      if (undefined === input_config.required) input_config.required = module_prop ? module_prop.required : false;
+      if (undefined === input_config.max_length && module_prop && module_prop.max_length) {
+        input_config.max_length = module_prop.max_length;
       }
 
       // if the prop doesn't have a custom on_change() function then implement the default behaviour
-      if (!CN_common.is_function(params.on_change)) {
-        params.on_change = async (form_input, valid) => await this.on_property_change(prop.name, valid);
+      if (!CN_common.is_function(input_config.on_change)) {
+        input_config.on_change = async (form_input, valid) => await this.on_property_change(prop.name, valid);
       }
 
-      params.action = this;
-      params.class = "d-flex align-items-center col-sm-9";
+      input_config.action = this;
+      input_config.class = "col-sm-9";
 
       // make errors in the view action go away after 4 seconds
-      params.error_timeout = "view" == this.get_type() ? 4000 : 0;
+      input_config.error_timeout = "view" == this.get_type() ? 4000 : 0;
 
       if ("rank" == prop.type) {
         // define the max rank
-        params.max_rank = async () => {
+        input_config.max_rank = async () => {
           const model = this.get_model();
           const response = await CN_api.get(model.get_base_path("api"), {
             select: { column: {
@@ -435,7 +435,7 @@ export class CN_action_base_record extends CN_base_action {
           );
         };
       }
-      prop.form_input = CN_input.create_input(prop.type, prop_el, params);
+      prop.form_input = CN_input.create_input(prop.type, prop_el, input_config);
       prop_el.append(prop.form_input.get_element());
     }
 

@@ -289,13 +289,12 @@ export default {
           if ("GB" == unit) output *= 1073741824;
           if ("TB" == unit) output *= 1099511627776;
           if ("PB" == unit) output *= 1125899906842624;
-          if ("EB" == unit) output *= 1152921504606846976;
         }
       }
     } else {
       if (this.is_string(output)) output = parseInt(output);
       if (this.is_float(output)) {
-        let unit_list = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"];
+        let unit_list = ["Bytes", "KB", "MB", "GB", "TB", "PB"];
         let unit_index = 0;
         while (output >= 1024) {
           output /= 1024;

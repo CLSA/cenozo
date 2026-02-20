@@ -1126,8 +1126,8 @@ class modifier extends \cenozo\base_object
    *   join or j:
    *   [
    *     {
-   *       table or t:   <table>,
-   *       onleft or ol:  <column>,
+   *       table or t: <table>,
+   *       onleft or ol: <column>,
    *       onright or or: <column>,
    *       type or tp: inner|cross|straight|left|left outer|right|right outer (optional)
    *       alias or a: <string> (optional),
@@ -1142,9 +1142,10 @@ class modifier extends \cenozo\base_object
    *       or: true|false
    *     },
    *     {
-   *       column or c:   <column>
+   *       column or c: <column>
    *       operator or op: =|!=|<|>|LIKE|NOT LIKE|etc
-   *       value or v:    <value>
+   *       value or v: <value>
+   *       or: true|false
    *     }
    *   ],
    *   order or o:

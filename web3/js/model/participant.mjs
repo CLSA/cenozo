@@ -34,6 +34,7 @@ export class CN_participant_model extends CN_base_person_model {
         posessive: "participant's",
       },
       columns: columns,
+      order: { uid: true },
       properties: {
         uid: { title: "UID", is_constant: () => true },
         cohort: {

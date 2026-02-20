@@ -174,7 +174,7 @@ export class CN_modal_datetime extends CN_base_modal {
    * @param {*} event
    */
   #on_empty_clicked(event) {
-    console.log("TODO: implement");
+    // TODO: implement
   }
 
   /**

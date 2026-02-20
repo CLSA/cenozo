@@ -19,7 +19,7 @@ export class CN_report_model extends CN_base_model {
         user: { column: "user.name", title: "User" },
         site: { column: "site.name", title: "Site" },
         role: { column: "role.name", title: "Role" },
-        size: { title: "Size", type: "size" },
+        size: { title: "Size", type: "size", help: "This is help text" },
         stage: { title: "Status" },
         datetime: { title: "Date & Time", type: "datetime" },
       },
