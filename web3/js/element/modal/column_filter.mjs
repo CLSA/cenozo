@@ -7,7 +7,7 @@ import { CN_input_enum } from "../input/enum.mjs"
 import { CN_input_text } from "../input/text.mjs"
 
 export class CN_modal_column_filter extends CN_base_modal {
-  #condition_list;
+  #condition_list = [];
   #operator_list;
   #desc_form_input;
   #description_el;
@@ -32,20 +32,13 @@ export class CN_modal_column_filter extends CN_base_modal {
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
     this.add_resolve_button("success", this.get_config("ok_text"), () => this._resolve(this.#condition_list));
 
-    // create the condition list from the provided column's condition list
-    const column = this.get_config("column");
-    this.#condition_list = (
-      0 < column.condition_list.length ?
-      CN_common.clone(column.condition_list) :
-      [{ operator: "=", value: null, or: false }]
-    );
-
     // determine the operator list based on the type
+    const column = this.get_config("column");
+    const is_datetime = CN_common.is_datetime_type(column.type, "date");
     this.#operator_list = [
       { key: "=", value: "is" },
       { key: "!=", value: "is not" },
     ];
-    const is_datetime = CN_common.is_datetime_type(column.type, "date");
     if (is_datetime || ["number", "size"].includes(column.type)) {
       this.#operator_list = [
         ...this.#operator_list,
@@ -75,66 +68,79 @@ export class CN_modal_column_filter extends CN_base_modal {
         { key: "NOT LIKE", value: "is not like" },
       ];
     }
+
+    // create the condition list from the provided column's condition list
+    column.condition_list.forEach(condition => this.add_condition(condition));
+
+    // if none were provided then create one default condition
+    if (0 == this.#condition_list.length) this.add_condition();
   }
 
-  #update() {
-    // re-create the condition list
-    this.#conditions_el.innerHTML = "";
-    this.#condition_list.forEach((c, index) => {
-      const condition_el = this.constructor.html('<div class="d-flex w-100 py-2"></div>');
+  /**
+   * ADD DOCS
+   */
+  add_condition(condition = { operator: "=", value: null, or: false }) {
+    const index = this.#condition_list.length;
 
-      // add the or dropdown
-      if (0 < index) {
-        CN_input_enum.create_element(condition_el, {
-          required: true,
-          get_default: () => c.or,
-          enum: {
-            values: [
-              { key: false, value: "AND" },
-              { key: true, value: "OR" },
-            ],
-          },
-          on_change: async (form_input) => {
-            c.or = await form_input.get_value_for_record();
-          },
-        });
-      }
+    condition.element = this.constructor.html('<div class="d-flex w-100 py-2"></div>');
 
-      // add the operator dropdown
-      CN_input_enum.create_element(condition_el, {
+    // add the or dropdown
+    if (0 < index) {
+      condition.or_input = new CN_input_enum(condition.element, {
         required: true,
-        get_default: () => c.operator,
-        enum: { values: this.#operator_list },
-        on_change: async (form_input) => {
-          c.operator = await form_input.get_value_for_record();
+        get_default: () => condition.or,
+        enum: {
+          values: [
+            { key: false, value: "AND" },
+            { key: true, value: "OR" },
+          ],
+        },
+        on_change: async (form_input, valid) => {
+          condition.or = await form_input.get_value_for_record();
+          this.#check_form();
         },
       });
+      condition.element.append(condition.or_input.get_element());
+    }
 
-      // add the value input
-      CN_input.create_element(this.get_config("column").type, condition_el, {
-        class: "flex-grow-1",
-        placeholder: "(empty)",
-        required: false,
-        get_default: () => c.value,
-        on_change: async (form_input) => {
-          c.value = await form_input.get_value_for_record();
-        },
-      });
-
-      // add the remove button
-      if (0 < index) {
-        const remove_btn_el = this.constructor.html(
-          '<button class="btn btn-danger"><i class="bi bi-trash"></i></button>'
-        );
-        remove_btn_el.addEventListener("click", () => {
-          this.#condition_list.splice(index, 1);
-          this.#update();
-        });
-        condition_el.append(remove_btn_el);
-      }
-
-      this.#conditions_el.append(condition_el);
+    // add the operator dropdown
+    condition.operator_input = new CN_input_enum(condition.element, {
+      required: true,
+      get_default: () => condition.operator,
+      enum: { values: this.#operator_list },
+      on_change: async (form_input, valid) => {
+        condition.operator = await form_input.get_value_for_record();
+        this.#check_form();
+      },
     });
+    condition.element.append(condition.operator_input.get_element());
+
+    // add the value input
+    condition.value_input = CN_input.create_input(this.get_config("column").type, condition.element, {
+      class: "flex-grow-1",
+      placeholder: "(empty)",
+      required: false,
+      get_default: () => condition.value,
+      on_change: async (form_input, valid) => {
+        condition.value = await form_input.get_value_for_record();
+        this.#check_form();
+      },
+    });
+    condition.element.append(condition.value_input.get_element());
+
+    // add the remove button
+    if (0 < index) {
+      condition.remove_btn_el = this.constructor.html(
+        '<button class="btn btn-danger"><i class="bi bi-trash"></i></button>'
+      );
+      condition.remove_btn_el.addEventListener("click", () => {
+        this.#condition_list.splice(index, 1);
+        this.#update();
+      });
+      condition.element.append(condition.remove_btn_el);
+    }
+
+    this.#condition_list.push(condition);
   }
 
   /**
@@ -152,12 +158,12 @@ export class CN_modal_column_filter extends CN_base_modal {
     this.#update();
 
     // create the add condition button at the bottom
-    const add_btn = body_el.querySelector("button[name=add]");
-    add_btn.addEventListener("click", () => {
+    const add_btn_el = body_el.querySelector("button[name=add]");
+    add_btn_el.addEventListener("click", () => {
       this.#condition_list.push({ operator: "=", value: null, or: false });
       this.#update();
     });
-    body_el.append(add_btn);
+    body_el.append(add_btn_el);
 
     return body_el;
   }
@@ -168,10 +174,35 @@ export class CN_modal_column_filter extends CN_base_modal {
   _create_footer_element() {
     const footer_el = super._create_footer_element();
 
-    const add_btn_el = this.constructor.html('<button class="btn btn-danger">Remove</button>');
-    add_btn_el.addEventListener("click", () => this._resolve([]));
-    footer_el.querySelector("div[name=left-btn-group]").append(add_btn_el);
+    const remove_btn_el = this.constructor.html('<button class="btn btn-danger">Remove</button>');
+    remove_btn_el.addEventListener("click", () => this._resolve([]));
+    footer_el.querySelector("div[name=left-btn-group]").append(remove_btn_el);
 
     return footer_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  #check_form() {
+    // search for any invalid condition
+    const invalid = this.#condition_list.some(condition => {
+      return !condition.value_input.validate();
+    });
+    const ok_btn_el = this.get_resolve_button(this.get_config("ok_text")).element;
+    if (invalid) {
+      ok_btn_el.setAttribute("disabled", true);
+    } else {
+      ok_btn_el.removeAttribute("disabled");
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  #update() {
+    // re-create the condition list
+    this.#conditions_el.innerHTML = "";
+    this.#condition_list.forEach(condition => this.#conditions_el.append(condition.element));
   }
 }
