@@ -29,6 +29,11 @@ export class CN_base_action extends CN_base_element {
    */
   constructor(type, parent_el, model) {
     super(parent_el, { name: type });
+
+    if ("CN_base_action" == this.constructor) {
+      throw new Error("Abstract class CN_base_action can't be instantiated.");
+    }
+
     this.#type = type;
     this.#model = model;
   }

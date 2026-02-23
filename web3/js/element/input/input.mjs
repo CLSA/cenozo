@@ -23,6 +23,13 @@ import { CN_input_timesecond } from "./timesecond.mjs"
 import { CN_input_typeahead } from "./typeahead.mjs"
 
 export class CN_input extends CN_base_object {
+  constructor () {
+    throw new Error("Abstract class CN_input can't be instantiated, use static create_input() method instead.");
+  }
+
+  /**
+   * ADD DOCS
+   */
   static create_input(type, parent_el, config) {
     if ("audio_url" == type) return new CN_input_audio_url(parent_el, config);
     if ("boolean" == type) return new CN_input_boolean(parent_el, config);

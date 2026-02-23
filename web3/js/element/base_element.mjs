@@ -21,6 +21,10 @@ export class CN_base_element extends CN_base_object {
 
     super();
 
+    if ("CN_base_element" == this.constructor) {
+      throw new Error("Abstract class CN_base_element can't be instantiated.");
+    }
+
     // store all properties in the config parameter
     config = {
       ...{

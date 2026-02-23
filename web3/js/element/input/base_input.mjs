@@ -1,4 +1,5 @@
 import CN_common from "../../common.mjs"
+
 import { CN_base_element } from "../base_element.mjs"
 import { CN_state } from "../../state.mjs"
 
@@ -45,6 +46,10 @@ export class CN_base_input extends CN_base_element {
       },
       ...config
     });
+
+    if ("CN_base_input" == this.constructor) {
+      throw new Error("Abstract class CN_base_input can't be instantiated.");
+    }
 
     this.#action = action;
     this.#control_id = id;

@@ -29,6 +29,10 @@ export class CN_base_model extends CN_base_object {
   constructor(params) {
     super();
 
+    if ("CN_base_model" == this.constructor) {
+      throw new Error("Abstract class CN_base_model can't be instantiated.");
+    }
+
     const module_name = this.get_class_name().match(/CN_(.+)_model/)[1];
     this.#module = CN_session.get_module(module_name);
 

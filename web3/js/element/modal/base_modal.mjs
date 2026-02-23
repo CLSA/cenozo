@@ -33,6 +33,10 @@ export class CN_base_modal extends CN_base_element {
       ...config
     });
 
+    if ("CN_base_modal" == this.constructor) {
+      throw new Error("Abstract class CN_base_modal can't be instantiated.");
+    }
+
     // always setup a unique element id if one hasn't already be defined
     if (null == this.get_config("id")) {
       this.set_config("id", [this.get_class_name(), CN_common.get_random_hex_identifier()].join("-"));

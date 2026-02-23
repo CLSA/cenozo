@@ -7,15 +7,19 @@ import { CN_base_modal } from "./base_modal.mjs"
 import { CN_input } from "../input/input.mjs";
 import { CN_element_label } from "../label.mjs";
 
-export class CN_base_modal_form extends CN_base_modal {
+export class CN_modal_base_form extends CN_base_modal {
   #input_list = [];
 
   constructor(config) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_base_modal_form contructor");
+      throw new Error("Non-object config argument passed to CN_modal_base_form contructor");
     }
 
     super(config);
+
+    if ("CN_modal_base_form" == this.constructor) {
+      throw new Error("Abstract class CN_modal_base_form can't be instantiated.");
+    }
 
     // always check the form when opening the form modal
     this.add_modal_event_listener("shown", this._check_form.bind(this));

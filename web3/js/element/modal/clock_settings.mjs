@@ -2,9 +2,9 @@ import CN_common from "../../common.mjs"
 import CN_session from "../../session.mjs"
 import CN_timezones from "../../timezones.mjs"
 
-import { CN_base_modal_form } from "./base_modal_form.mjs"
+import { CN_modal_base_form } from "./base_form.mjs"
 
-export class CN_modal_clock_settings extends CN_base_modal_form {
+export class CN_modal_clock_settings extends CN_modal_base_form {
   constructor(config = { title: "Clock Settings" }) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_modal_clock_settings contructor");

@@ -18,6 +18,10 @@ export class CN_action_base_record extends CN_base_action {
   constructor(type, parent_el, model) {
     super(type, parent_el, model);
 
+    if ("CN_action_base_record" == this.constructor) {
+      throw new Error("Abstract class CN_action_base_record can't be instantiated.");
+    }
+
     // while setting up all property groups keep track of all property names to ensure they are unique
     let existing_properties = {};
 

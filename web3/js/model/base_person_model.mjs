@@ -12,6 +12,14 @@ import { CN_input_string } from "../element/input/string.mjs"
 import { CN_input_text } from "../element/input/text.mjs"
 
 export class CN_base_person_model extends CN_base_model {
+  constructor() {
+    super();
+
+    if ("CN_base_person_model" == this.constructor) {
+      throw new Error("Abstract class CN_base_person_model can't be instantiated.");
+    }
+  }
+
   get_history_url() {
     return [this.get_base_path("url"), "history", this.get_identifier()].join("/");
   }
@@ -21,6 +29,14 @@ export class CN_base_person_model extends CN_base_model {
 }
 
 export class CN_base_person_view extends CN_action_view {
+  constructor() {
+    super();
+
+    if ("CN_base_person_view" == this.constructor) {
+      throw new Error("Abstract class CN_base_person_view can't be instantiated.");
+    }
+  }
+
   /**
    * Add operation to the footer element
    */
@@ -72,6 +88,11 @@ export class CN_base_person_history extends CN_base_action {
    */
   constructor(parent_el, model) {
     super("history", parent_el, model);
+
+    if ("CN_base_person_history" == this.constructor) {
+      throw new Error("Abstract class CN_base_person_history can't be instantiated.");
+    }
+
     this.set_footer_at_top(true);
 
     const base_path = this.get_model().get_view_url(null, "api");
@@ -605,6 +626,11 @@ export class CN_base_person_notes extends CN_base_action {
    */
   constructor(parent_el, model) {
     super("notes", parent_el, model);
+
+    if ("CN_base_person_notes" == this.constructor) {
+      throw new Error("Abstract class CN_base_person_notes can't be instantiated.");
+    }
+
     this.set_footer_at_top(true);
   }
 
