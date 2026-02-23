@@ -207,9 +207,9 @@ export class CN_action_list extends CN_base_action {
         // no table prefix means just add the column name
         params.select.column.push(col_name);
       }
-      
+
       if (column.is_hidden(this.get_model())) continue;
-      
+
       if (column.order) {
         params.modifier.order.push({ [col_name]: column.reverse });
       }
@@ -471,7 +471,7 @@ export class CN_action_list extends CN_base_action {
 
     this.set_query_parameter("tables", null == tables ? null : JSON.stringify(tables));
   }
-  
+
   /**
    * Extends parent method
    */
