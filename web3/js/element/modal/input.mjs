@@ -42,8 +42,8 @@ export class CN_modal_input extends CN_base_modal_form {
   /**
    * Extend parent method
    */
-  check_form() {
-    const check = super.check_form();
+  _check_form() {
+    const check = super._check_form();
     const ok_btn_el = this.get_resolve_button(this.get_config("ok_text")).element;
     if (check) {
       ok_btn_el.removeAttribute("disabled");

@@ -16,13 +16,13 @@ export class CN_modal_password extends CN_base_modal_form {
       "password",
       "new_password",
       "New Password",
-      { min_length: 8, on_input: () => this.check_form() },
+      { min_length: 8, on_input: () => this._check_form() },
     );
     this.add_input(
       "password",
       "new_password_check",
       "Repeat New Password",
-      { on_input: () => this.check_form() }
+      { on_input: () => this._check_form() }
     );
 
     // add the resolve buttons
@@ -60,18 +60,18 @@ export class CN_modal_password extends CN_base_modal_form {
   /**
    * Extend parent method
    */
-  check_form() {
+  _check_form() {
     const pw_form_input = this.get_input("new_password").form_input;
-    const pw_check_form_input = this.get_input("new_password_check").form_input;
+    const pw__check_form_input = this.get_input("new_password_check").form_input;
 
     const ok_btn_el = this.get_resolve_button("OK").element;
-    if (pw_form_input.get_value() != pw_check_form_input.get_value()) {
-      pw_check_form_input.show_error("Does not match new password", 0);
+    if (pw_form_input.get_value() != pw__check_form_input.get_value()) {
+      pw__check_form_input.show_error("Does not match new password", 0);
       ok_btn_el.setAttribute("disabled", true);
       return false;
     }
 
-    const check = super.check_form();
+    const check = super._check_form();
     if (check) {
       ok_btn_el.removeAttribute("disabled");
     } else {

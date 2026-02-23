@@ -18,7 +18,7 @@ export class CN_base_modal_form extends CN_base_modal {
     super(config);
 
     // always check the form when opening the form modal
-    this.add_modal_event_listener("shown", this.check_form.bind(this));
+    this.add_modal_event_listener("shown", this._check_form.bind(this));
   }
 
   /**
@@ -46,7 +46,7 @@ export class CN_base_modal_form extends CN_base_modal {
   /**
    * ADD DOCS
    */
-  check_form() {
+  _check_form() {
     return !this.#input_list.some(e => !e.form_input.validate());
   }
 
@@ -79,7 +79,7 @@ export class CN_base_modal_form extends CN_base_modal {
           name: input.name,
           required: true,
           class: "col-sm-9",
-          on_change: (form_input, valid) => this.check_form(),
+          on_change: (form_input, valid) => this._check_form(),
         },
         ...input.config,
       };
