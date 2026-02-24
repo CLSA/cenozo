@@ -12,8 +12,8 @@ import { CN_input_string } from "../element/input/string.mjs"
 import { CN_input_text } from "../element/input/text.mjs"
 
 export class CN_base_person_model extends CN_base_model {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
 
     if ("CN_base_person_model" == this.constructor) {
       throw new Error("Abstract class CN_base_person_model can't be instantiated.");
@@ -29,8 +29,8 @@ export class CN_base_person_model extends CN_base_model {
 }
 
 export class CN_base_person_view extends CN_action_view {
-  constructor() {
-    super();
+  constructor(type, parent_el, model) {
+    super(type, parent_el, model);
 
     if ("CN_base_person_view" == this.constructor) {
       throw new Error("Abstract class CN_base_person_view can't be instantiated.");

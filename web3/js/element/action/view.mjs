@@ -102,18 +102,20 @@ export class CN_action_view extends CN_action_base_record {
 
     // fill in the property values (if the form_inputs have been created)
     this.get_all_properties().filter(prop => prop.form_input).forEach(prop => {
-      // check for the formatted value for this property
+      prop.form_input.clear_value();
+
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
         // put the ID in the typeahead list
         prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
-        prop.form_input.clear_value();
         prop.form_input.set_value(record[`formatted_${prop.name}`]);
-        prop.form_input.commit_value();
+      } else if (CN_common.is_datetime_type(prop.type, "date")) {
+        // convert string value to object
+        prop.form_input.set_value(record[prop.name] ? new Date(record[prop.name]) : null);
       } else if (record.hasOwnProperty(prop.name)) {
-        prop.form_input.clear_value();
         prop.form_input.set_value(record[prop.name]);
-        prop.form_input.commit_value();
       }
+
+      prop.form_input.commit_value();
     });
 
     // with the record loaded we can now run the parent's method

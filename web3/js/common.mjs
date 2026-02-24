@@ -54,6 +54,13 @@ export default {
   is_blob: function (x) { return this.is_type(x, "blob"); },
 
   /**
+   * Returns whether a variable is a date
+   * @param (dynamic) x: the variable to test
+   * @return boolean
+   */
+  is_date: function (x) { return this.is_type(x, "date"); },
+
+  /**
    * Returns whether a variable is an element
    * @param (dynamic) x: the variable to test
    * @return boolean
@@ -115,7 +122,7 @@ export default {
 
   /**
    * Returns a promise that resolves after the given delay
-   * @param integer ms: The number of miliseconds to sleep for
+   * @param integer ms: The number of milliseconds to sleep for
    */
   sleep: function (ms) { return new Promise(res => setTimeout(res, ms)); },
 
@@ -162,7 +169,7 @@ export default {
   /**
    * ADD DOCS
    */
-  get_weekday: function (index = null, loc = "en") {
+  get_weekday: function (index = null, loc = "en", type = "long") {
     if (null != index) {
       const w = Number(index);
       if (!this.is_integer(w) || 0 > w || 6 < w) throw new Error("Tried to get weekday with invalid index.");
@@ -171,11 +178,11 @@ export default {
       date.setUTCMonth(5);
       date.setUTCDate(w);
       date.setUTCHours(12);
-      return date.toLocaleString(loc, { weekday: "long" });
+      return date.toLocaleString(loc, { weekday: type });
     }
 
     // return the full list
-    return new Array(7).fill(0).map((zero, i) => this.get_weekday(i, loc));
+    return new Array(7).fill(0).map((zero, i) => this.get_weekday(i, loc, type));
   },
 
   /**
@@ -187,7 +194,7 @@ export default {
   is_datetime_type: function (type, subtype) {
     let type_list = [];
     if ("date" == subtype) {
-      type_list = ["datetimesecond", "datetime", "date", "yearmonth", "dob", "dod"];
+      type_list = ["datetimesecond", "datetime", "date", "dob", "dod"];
     } else if ("time" == subtype) {
       type_list = ["timesecond", "time"];
     } else if ("second" == subtype) {
@@ -197,7 +204,6 @@ export default {
         "datetimesecond",
         "datetime",
         "date",
-        "yearmonth",
         "dob",
         "dod",
         "timesecond",
@@ -215,11 +221,7 @@ export default {
    * @param boolean seconds: Whether to include seconds
    * @return string
    */
-  format_time: function (
-    value,
-    am_pm = CN_session.data.user.am_pm,
-    seconds = false
-  ) {
+  format_time: function (value, seconds = false, am_pm = CN_session.data.user.am_pm) {
     let options = { hour12: am_pm, hour: am_pm ? "numeric" : "2-digit", minute: "2-digit" };
     if (seconds) options.second = "2-digit";
     return new Intl.DateTimeFormat('en-CA', options).format(new Date(value));
@@ -228,23 +230,16 @@ export default {
   /**
    * Returns a datetime string representation of a datetime
    * @param string|Date value: The datetime to format
-   * @param string format: Which format to use (yearmonth, dob, dod, date, datetime, datetimesecond, etc)
+   * @param string format: Which format to use (dob, dod, date, datetime, datetimesecond, etc)
    * @param boolean am_pm: Whether to format using am_pm or 24-hour time
    * @param boolean long_form: Whether to format in long or short form
    * @return string
    */
-  format_datetime: function (
-    value,
-    format,
-    am_pm = CN_session.data.user.am_pm,
-    long_form = false
-  ) {
+  format_datetime: function (value, format, long_form = false, am_pm = CN_session.data.user.am_pm) {
     let options = {};
     let include_date = true;
     let include_time = false;
-    if ("yearmonth" == format) {
-      options = { ...options, year: "numeric", month: "long" };
-    } else if ("dob" == format || "dod" == format) {
+    if ("dob" == format || "dod" == format) {
       options = { ...options, year: "numeric", month: "short", day: "numeric" };
     } else if (this.is_datetime_type(format, "date")) {
       options = { ...options, year: "numeric", month: long_form ? "long" : "short", day: "numeric" };

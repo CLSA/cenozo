@@ -18,6 +18,14 @@ export class CN_input_base_number extends CN_input_base_string {
   /**
    * Extends parent method
    */
+  async get_value_for_record() {
+    const value = await super.get_value_for_record();
+    return null == value ? null : Number(value);
+  }
+
+  /**
+   * Extends parent method
+   */
   validate() {
     const value = this.get_value();
 

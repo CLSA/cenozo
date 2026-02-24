@@ -1,148 +1,131 @@
-import { CN_base_element } from "../element/base_element.mjs";
+import CN_common from "../common.mjs"
+import CN_session from "../session.mjs"
 
-export class CN_time_picker extends CN_base_element {
-  #parent_el;
-  #options;
+import { CN_base_element } from "./base_element.mjs";
+import { CN_element_label } from "./label.mjs";
+import { CN_input_range } from "./input/range.mjs";
 
-  #el;
+export class CN_element_time_picker extends CN_base_element {
   #time_el;
+  #hour_input;
+  #minute_input;
+  #second_input;
 
-  #hour = 0;
-  #minute = 0;
-  #second = 0;
+  constructor(parent_el, config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_element_time_picker contructor");
+    }
 
-  #hour_el;
-  #minute_el;
-  #second_el;
+    super(parent_el, {
+      ...{
+        // default config
+        show_seconds: true,
+      },
+      ...config,
+    });
+  }
 
   /**
-   *
-   * @param {*} parent_el
-   * @param {*} date
-   * @param {*} options
+   * ADD DOCS
    */
-  constructor(parent_el, hour, minute, second, options = { show_seconds: true }) {
-    super();
-
-    this.#parent_el = parent_el;
-    this.#options = options;
-
-    this.#hour = hour;
-    this.#minute = minute;
-    this.#second = second;
-
-    this.render();
-  }
-
-  // getters/setters
-  get_hour() { return this.#hour; }
-  set_hour(hour) {
-    this.#hour = hour;
-    this.#update_display();
-  }
-  get_minute() { return this.#minute; }
-  set_minute(minute) {
-    if (minute < 0 || minute > 59) throw new Error("Invalid minute set");
-    this.#minute = minute;
-    this.#update_display();
-  }
-  get_second() { return this.#second; }
-  set_second(second) {
-    if (second < 0 || second > 59) throw new Error("Invalid second set");
-    this.#second = second;
-    this.#update_display();
-  }
-
-  #update_display() {
-    this.#time_el.innerText = this.#get_display_time();
-  }
-
-  #get_display_time() {
-    let am = this.#hour < 12;
-    let hr12 = this.#hour > 12 ? this.#hour - 12 : this.#hour;
-
-    const hour = hr12 < 10 ? '0' + hr12: hr12;
-    const min = this.#minute < 10 ? '0' + this.#minute : this.#minute;
-    const sec = this.#second < 10 ? '0' + this.#second : this.#second;
-
-    if (this.#options.show_seconds) {
-      return `${hour}:${min}:${sec} ${am ? "a.m." : "p.m."}`;
+  get_time() {
+    const date = new Date();
+    date.setHours(this.#hour_input.get_value());
+    date.setMinutes(this.#minute_input.get_value());
+    if (this.get_config("show_seconds")) {
+      date.setSeconds(this.#minute_input.get_value());
     } else {
-      return `${hour}:${min} ${am ? "a.m." : "p.m."}`;
+      date.setSeconds(0);
     }
+    date.setMilliseconds(0);
+
+    return date
+  }
+  /**
+   * ADD DOCS
+   */
+  set_time(date) {
+    this.#hour_input.set_value(date.getHours());
+    this.#minute_input.set_value(date.getMinutes());
+    if (this.get_config("show_seconds")) this.#second_input.set_value(date.getSeconds());
+  }
+ 
+  /**
+   * ADD DOCS
+   */
+  set_to_now() {
+    this.set_time(new Date());
+    this.update_element();
   }
 
-  render() {
-    this.#parent_el.innerHTML = "";
-    this.#el = this.constructor.html(`
-      <div class="container">
-        <div class="row">
-          <label for="time" class="form-label text-end fw-bold col-2">Time:</label>
-          <div class="col-10" id="time">${this.#get_display_time()}</div>
-        </div>
-        <div class="row">
-          <label for="hour" class="form-label text-end fw-bold col-2">Hour:</label>
-          <div class="col-10">
-            <input
-              type="range"
-              value=${this.#hour}
-              class="form-range"
-              id="hour"
-              min="0"
-              max="23"
-            ></input>
-          </div>
-        </div>
-        <div class="row">
-          <label for="minute" class="form-label text-end fw-bold col-2">Minute:</label>
-          <div class="col-10">
-            <input
-              type="range"
-              value=${this.#minute}
-              class="form-range"
-              id="minute"
-              min="0"
-              max="59"
-            ></input>
-          </div>
-        </div>
-      </div>
-    `);
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
 
-    this.#time_el = this.#el.querySelector("#time");
-    this.#hour_el = this.#el.querySelector("#hour");
-    this.#minute_el = this.#el.querySelector("#minute");
+    const date = new Date();
+    date.setHours(Number(this.#hour_input.get_value()));
+    date.setMinutes(Number(this.#minute_input.get_value()));
+    if (this.get_config("show_seconds")) date.setSeconds(Number(this.#second_input.get_value()));
+    date.setMilliseconds(0);
+    this.#time_el.innerHTML =
+      CN_common.format_time(date, this.get_config("show_seconds")) + ` (${CN_session.data.user.timezone})`;
+  }
 
-    this.#hour_el.addEventListener("input", (event) => {
-      this.set_hour(parseInt(event.target.value, 10));
+  /**
+   * Extend parent method
+   */
+  _create_element() {
+    const el = this.constructor.html('<div class="container-fluid"></div>');
+
+    const time_div_el = this.constructor.html('<div class="row"></div>');
+    el.append(time_div_el);
+    CN_element_label.create_element(time_div_el, { class: "col-3", value: "Time" });
+    this.#time_el = this.constructor.html('<div name="time" class="col-form-label col-9"></div>');
+    time_div_el.append(this.#time_el);
+
+    const hour_div_el = this.constructor.html('<div class="row"></div>');
+    el.append(hour_div_el);
+    CN_element_label.create_element(hour_div_el, { for: "hour", class: "col-3", value: "Hour" });
+    this.#hour_input = new CN_input_range(hour_div_el, {
+      id: "hour",
+      class: "col-9",
+      min: 0,
+      max: 23,
+      get_default: () => 12,
+      on_input: (form_input, valid) => this.update_element(),
     });
+    hour_div_el.append(this.#hour_input.get_element());
 
-    this.#minute_el.addEventListener("input", (event) => {
-      this.set_minute(parseInt(event.target.value, 10));
+    const minute_div_el = this.constructor.html('<div class="row"></div>');
+    el.append(minute_div_el);
+    CN_element_label.create_element(minute_div_el, { for: "minute", class: "col-3", value: "Minute" });
+    this.#minute_input = new CN_input_range(minute_div_el, {
+      id: "minute",
+      class: "col-9",
+      min: 0,
+      max: 59,
+      get_default: () => 0,
+      on_input: (form_input, valid) => this.update_element(),
     });
+    minute_div_el.append(this.#minute_input.get_element());
 
-    if (this.#options.show_seconds) {
-      this.#second_el = this.constructor.html(`
-        <div class="row">
-          <label for="second" class="form-label text-end fw-bold col-2">Second:</label>
-          <div class="col-10">
-            <input
-              type="range"
-              value=${this.#second}
-              class="form-range"
-              id="second"
-              min="0"
-              max="59"
-            ></input>
-          </div>
-        </div>`
-      )
-      this.#second_el.addEventListener("input", (event) => {
-        this.set_second(parseInt(event.target.value, 10));
+    if (this.get_config("show_seconds")) {
+      const second_div_el = this.constructor.html('<div class="row"></div>');
+      el.append(second_div_el);
+      CN_element_label.create_element(second_div_el, { for: "second", class: "col-3", value: "Second" });
+      this.#second_input = new CN_input_range(second_div_el, {
+        id: "second",
+        class: "col-9",
+        min: 0,
+        max: 59,
+        get_default: () => 0,
+        on_input: (form_input, valid) => this.update_element(),
       });
-      this.#el.appendChild(this.#second_el);
+      second_div_el.append(this.#second_input.get_element());
     }
 
-    this.#parent_el.appendChild(this.#el);
+    return el;
   }
 }

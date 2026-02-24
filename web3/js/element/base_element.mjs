@@ -121,6 +121,11 @@ export class CN_base_element extends CN_base_object {
   /**
    * ADD DOCS
    */
+  update_element() {}
+
+  /**
+   * ADD DOCS
+   */
   async on_dom_add() {}
 
   /**
@@ -132,7 +137,10 @@ export class CN_base_element extends CN_base_object {
    * ADD DOCS
    */
   render(force = false) {
-    if (force || undefined === this.#el) this.#el = this._create_element();
+    if (force || undefined === this.#el) {
+      this.#el = this._create_element();
+      this.update_element();
+    }
   }
 
   /**

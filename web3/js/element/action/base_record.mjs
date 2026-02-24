@@ -270,28 +270,31 @@ export class CN_action_base_record extends CN_base_action {
       const group = this.#property_groups[group_name];
       if ("$main" != group_name) {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
-        if (group.is_hidden(this.get_model())) {
-          group_el.style.display = "none";
-        } else {
-          group_el.style.removeProperty("display");
+        if (group_el) {
+          if (group.is_hidden(this.get_model())) {
+            group_el.style.display = "none";
+          } else {
+            group_el.style.removeProperty("display");
+          }
         }
       }
       for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
+        if (prop_el) {
+          // remove any properties that evaluate to hidden
+          if (prop.is_hidden(this.get_model())) {
+            prop_el.style.display = "none";
+          } else {
+            prop_el.style.removeProperty("display");
+          }
 
-        // remove any properties that evaluate to hidden
-        if (prop.is_hidden(this.get_model())) {
-          prop_el.style.display = "none";
-        } else {
-          prop_el.style.removeProperty("display");
+          // disable any properties that evaluate to constant
+          prop.form_input.set_disabled(prop.is_constant(this.get_model()));
+
+          // now update the property element (this varies in the child action_add and action_view classes)
+          this.update_property_element(prop.name);
         }
-
-        // disable any properties that evaluate to constant
-        prop.form_input.set_disabled(prop.is_constant(this.get_model()));
-
-        // now update the property element (this varies in the child action_add and action_view classes)
-        this.update_property_element(prop.name);
       }
     }
   }

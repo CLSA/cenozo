@@ -204,12 +204,6 @@ export class CN_base_action extends CN_base_element {
   }
 
   /**
-   * Updates the action's element
-   */
-  update_element() {
-  }
-
-  /**
    * Creates the action's element's header element
    * @return Element
    */

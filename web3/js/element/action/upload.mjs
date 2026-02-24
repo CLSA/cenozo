@@ -73,6 +73,8 @@ export class CN_action_upload extends CN_base_action {
    * Extend parent method
    */
   update_element() {
+    super.update_element();
+
     const summary_el = this.get_body_element().querySelector("[name=summary]");
 
     summary_el.innerHTML = "";

@@ -135,7 +135,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       );
       condition.remove_btn_el.addEventListener("click", () => {
         this.#condition_list.splice(index, 1);
-        this.#update();
+        this.update_element();
       });
       condition.element.append(condition.remove_btn_el);
     }
@@ -155,13 +155,11 @@ export class CN_modal_column_filter extends CN_base_modal {
     `);
     this.#conditions_el = body_el.querySelector("div[name=conditions]");
 
-    this.#update();
-
     // create the add condition button at the bottom
     const add_btn_el = body_el.querySelector("button[name=add]");
     add_btn_el.addEventListener("click", () => {
       this.#condition_list.push({ operator: "=", value: null, or: false });
-      this.#update();
+      this.update_element();
     });
     body_el.append(add_btn_el);
 
@@ -200,7 +198,9 @@ export class CN_modal_column_filter extends CN_base_modal {
   /**
    * ADD DOCS
    */
-  #update() {
+  update_element() {
+    super.update_element();
+
     // re-create the condition list
     this.#conditions_el.innerHTML = "";
     this.#condition_list.forEach(condition => this.#conditions_el.append(condition.element));
