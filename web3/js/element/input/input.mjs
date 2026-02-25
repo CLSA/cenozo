@@ -18,8 +18,6 @@ import { CN_input_rank } from "./rank.mjs"
 import { CN_input_size } from "./size.mjs"
 import { CN_input_string } from "./string.mjs"
 import { CN_input_text } from "./text.mjs"
-import { CN_input_time } from "./time.mjs"
-import { CN_input_timesecond } from "./timesecond.mjs"
 import { CN_input_typeahead } from "./typeahead.mjs"
 
 export class CN_input extends CN_base_object {
@@ -49,8 +47,6 @@ export class CN_input extends CN_base_object {
     if ("size" == type) return new CN_input_size(parent_el, config);
     if ("string" == type) return new CN_input_string(parent_el, config);
     if ("text" == type) return new CN_input_text(parent_el, config);
-    if ("time" == type) return new CN_input_time(parent_el, config);
-    if ("timesecond" == type) return new CN_input_timesecond(parent_el, config);
     if ("typeahead" == type) return new CN_input_typeahead(parent_el, config);
 
     throw new Error(`Tried to create invalid input type "${type}"`);

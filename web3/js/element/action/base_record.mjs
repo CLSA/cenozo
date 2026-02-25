@@ -424,7 +424,46 @@ export class CN_action_base_record extends CN_base_action {
       // make errors in the view action go away after 4 seconds
       input_config.error_timeout = "view" == this.get_type() ? 4000 : 0;
 
-      if ("rank" == prop.type) {
+      if (CN_common.is_datetime_type(prop.type, "date")) {
+        // convert min/max values to get_min() and get_max() functions
+        if (input_config.min) {
+          if (["now", "today"].includes(input_config.min)) {
+            input_config.get_min = () => new Date();
+          } else if (
+            CN_common.is_string(input_config.min) &&
+            this.get_all_properties().some(prop => prop.name == input_config.min)
+          ) {
+            // if the min value is the name of an input then use the input's value as the min
+            input_config.get_min = () => {
+              const min_prop = this.get_property(input_config.min);
+              return (
+                CN_common.is_datetime_type(min_prop.type, "date") ?
+                min_prop.form_input.get_date() :
+                this.get_property_value(input_config.min)
+              );
+            };
+          }
+        }
+
+        if (input_config.max) {
+          if (["now", "today"].includes(input_config.max)) {
+            input_config.get_max = () => new Date();
+          } else if (
+            CN_common.is_string(input_config.max) &&
+            this.get_all_properties().find(prop => prop.name == input_config.max)
+          ) {
+            // if the max value is the name of an input then use the input's value as the max
+            input_config.get_max = () => {
+              const max_prop = this.get_property(input_config.max);
+              return (
+                CN_common.is_datetime_type(max_prop.type, "date") ?
+                max_prop.form_input.get_date() :
+                this.get_property_value(input_config.max)
+              );
+            };
+          }
+        }
+      } else if ("rank" == prop.type) {
         // define the max rank
         input_config.max_rank = async () => {
           const model = this.get_model();

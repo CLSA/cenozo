@@ -134,6 +134,14 @@ export default {
   clone: function (x) {
     if (this.is_array(x)) {
       return x.map(item => this.clone(item));
+    } else if (this.is_blob(x)) {
+      return x.slice();
+    } else if (this.is_date(x)) {
+      return new Date(x.getTime());
+    } else if (this.is_element(x)) {
+      return x.cloneNode(true);
+    } else if (this.is_filelist(x)) {
+      throw new Error("Cannot clone file lists.");
     } else if (!this.is_object(x)) {
       return x;
     }
@@ -200,15 +208,7 @@ export default {
     } else if ("second" == subtype) {
       type_list = ["datetimesecond", "timesecond"];
     } else {
-      type_list = [
-        "datetimesecond",
-        "datetime",
-        "date",
-        "dob",
-        "dod",
-        "timesecond",
-        "time",
-      ];
+      type_list = ["datetimesecond", "datetime", "date", "dob", "dod", "timesecond", "time"];
     }
 
     return type_list.includes(type);
@@ -230,12 +230,18 @@ export default {
   /**
    * Returns a datetime string representation of a datetime
    * @param string|Date value: The datetime to format
-   * @param string format: Which format to use (dob, dod, date, datetime, datetimesecond, etc)
+   * @param string format: Which format to use (record, dob, dod, date, datetime, datetimesecond, etc)
    * @param boolean am_pm: Whether to format using am_pm or 24-hour time
    * @param boolean long_form: Whether to format in long or short form
    * @return string
    */
   format_datetime: function (value, format, long_form = false, am_pm = CN_session.data.user.am_pm) {
+    if (null == value) {
+      return null;
+    } else if ("record" == format) {
+      return value.toISOString().substr(0, 10) + " " + value.toTimeString().substr(0, 8);
+    }
+
     let options = {};
     let include_date = true;
     let include_time = false;

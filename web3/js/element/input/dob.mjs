@@ -1,6 +1,6 @@
-import { CN_input_base_datetime } from "./base_datetime.mjs"
+import { CN_input_date } from "./date.mjs"
 
-export class CN_input_dob extends CN_input_base_datetime {
+export class CN_input_dob extends CN_input_date {
   /**
    * Convenience method to create and render the element (without needing access to the created object)
    * @param object params: The parameters sent to the class constructor

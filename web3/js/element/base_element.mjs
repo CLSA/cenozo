@@ -68,7 +68,10 @@ export class CN_base_element extends CN_base_object {
    * ADD DOCS
    */
   get_element() {
-    if (undefined === this.#el) this.render();
+    if (undefined === this.#el) {
+      this.#el = this._create_element();
+      this.update_element();
+    }
     return this.#el;
   }
 
@@ -132,16 +135,6 @@ export class CN_base_element extends CN_base_object {
    * ADD DOCS
    */
   async on_dom_remove() {}
-
-  /**
-   * ADD DOCS
-   */
-  render(force = false) {
-    if (force || undefined === this.#el) {
-      this.#el = this._create_element();
-      this.update_element();
-    }
-  }
 
   /**
    * Creates a "please wait" blocking modal
@@ -265,11 +258,5 @@ export class CN_base_element extends CN_base_object {
     }
 
     return CN_base_element.#dom_parser.parseFromString(html, "text/html").body.firstChild;
-  }
-
-  static html_fragment(html) {
-    const template = document.createElement('template');
-    template.innerHTML = html;
-    return template.content.firstElementChild;
   }
 }

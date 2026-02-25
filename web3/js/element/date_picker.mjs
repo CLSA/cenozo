@@ -25,6 +25,8 @@ export class CN_element_date_picker extends CN_base_element {
       ...{
         // default config
         is_restricted: (date) => false,
+        date: null,
+        on_date_selected: (date) => {},
       },
       ...config
     });
@@ -68,7 +70,8 @@ export class CN_element_date_picker extends CN_base_element {
       },
     };
 
-    this.set_date(new Date());
+    const date = this.get_config("date");
+    this.set_date(CN_common.is_date(date) ? date : new Date());
   }
 
   /**
@@ -187,8 +190,9 @@ export class CN_element_date_picker extends CN_base_element {
     }
 
     // get the starting days of the first week from the previous month
-    // if the first day doesn't start on a Sunday
-    const days_prev = day_list[0].getDay();
+    let days_prev = day_list[0].getDay();
+    // if the first day starts on a Sunday then add the whole week
+    if (0 == days_prev) days_prev = 7;
     for (let i = 0; i < days_prev; i++) {
       day_list.unshift(new Date(this.#year, this.#month, -i));
     }
@@ -208,14 +212,15 @@ export class CN_element_date_picker extends CN_base_element {
       const year = date.getFullYear();
       const month = date.getMonth();
       const day = date.getDate();
-      const disabled = month != this.#month || this.get_config("is_restricted")(date);
-      const date_btn = this.constructor.html(`
-        <td class="text-center p-0">
-          <button class="btn btn-light w-100 rounded-0 ${disabled ? "disabled" : ""}">${day}</button>
-        </td>
+      const restricted = this.get_config("is_restricted")(date);
+      const date_td_el = this.constructor.html('<td class="text-center p-0"></td>');
+      const date_btn_el = this.constructor.html(`
+        <button
+          class="btn btn-light w-100 rounded-0 ${month != this.#month || restricted ? "disabled" : ""}"
+        >${day}</button>
       `);
-
-      date_btn.setAttribute("disabled", disabled);
+      date_td_el.append(date_btn_el);
+      if (restricted) date_btn_el.setAttribute("disabled", true);
 
       // highlight if the calendar date matches the date selected by the user
       if (
@@ -223,23 +228,24 @@ export class CN_element_date_picker extends CN_base_element {
         this.#date.getMonth() === month &&
         this.#date.getDate() === day
       ) {
-        date_btn.querySelector("button").classList.remove("btn-light");
-        date_btn.querySelector("button").classList.add("btn-primary");
+        date_btn_el.classList.remove("btn-light");
+        date_btn_el.classList.add("btn-primary");
       }
 
-      date_btn.addEventListener("click", (event) => {
-        if (event.target.getAttribute("disabled")) {
-          // do nothing
-        } else if (year < this.#year || month < this.#month) {
+      date_td_el.addEventListener("click", (event) => {
+        if (year < this.#year || month < this.#month) {
           this.#previous_listeners.day();
         } else if (year > this.#year || month > this.#month) {
           this.#next_listeners.day();
         }
-        this.set_date(date);
+        if (!restricted) this.set_date(date);
         this.update_element();
+
+        // call the date selected listener
+        if (!restricted) this.get_config("on_date_selected")(this.#date);
       });
 
-      tr_el.append(date_btn);
+      tr_el.append(date_td_el);
     });
   }
 

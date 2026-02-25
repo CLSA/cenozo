@@ -831,7 +831,7 @@ export class CN_base_person_notes extends CN_base_action {
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
       await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
         user_id: CN_session.data.user.id,
-        datetime: (new Date()).toISOString(),
+        datetime: CN_common.format_datetime(new Date(), "record"),
         note: new_note_input.get_value(),
       });
       new_note_input.set_value("");

@@ -158,7 +158,7 @@ export class CN_modal_column_filter extends CN_base_modal {
     // create the add condition button at the bottom
     const add_btn_el = body_el.querySelector("button[name=add]");
     add_btn_el.addEventListener("click", () => {
-      this.#condition_list.push({ operator: "=", value: null, or: false });
+      this.add_condition();
       this.update_element();
     });
     body_el.append(add_btn_el);

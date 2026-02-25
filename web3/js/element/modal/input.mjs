@@ -19,18 +19,11 @@ export class CN_modal_input extends CN_modal_base_form {
       ...config
     });
 
-    super(config);
-
     const input_config = {};
     if (this.has_config("value")) input_config.get_default = () => this.get_config("value");
     if (this.has_config("required")) input_config.required = this.get_config("required");
 
-    this.add_input(
-      this.get_config("input"),
-      "input",
-      this.get_config("message"),
-      input_config,
-    );
+    this.add_input(this.get_config("input"), "input", this.get_config("message"), input_config);
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
@@ -60,8 +53,10 @@ export class CN_modal_input extends CN_modal_base_form {
   _create_body_element() {
     const body_el = super._create_body_element();
 
+    // restructure the form's layout so the label is left-aligned and over the input box
     body_el.querySelector("hr").remove();
     body_el.querySelector("label").classList = "col-form-label";
+    this.get_input("input").form_input.get_element().classList.remove("col-sm-9");
 
     return body_el;
   }

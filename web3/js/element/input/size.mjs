@@ -35,7 +35,7 @@ export class CN_input_size extends CN_input_float {
     };
 
     this.#size_form_input = new CN_input_enum(null, size_config);
-    this.#size_form_input.render();
+    this.#size_form_input.get_element(); // we must create the input now
   }
 
   /**

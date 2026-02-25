@@ -240,7 +240,7 @@ export class CN_action_list extends CN_base_action {
               if (0 == where.value.length) {
                 // LIKE "" is meaningless, so search for <=> "" instead
                 where.operator = "<=>";
-              } else if (!where.operator.includes("%")) {
+              } else if (!where.value.includes("%")) {
                 // LIKE without % is meaningless, so enclose the value in %
                 where.value = `%${where.value}%`;
               }
