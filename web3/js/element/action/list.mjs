@@ -32,15 +32,6 @@ export class CN_action_list extends CN_base_action {
       "add"
     );
 
-    // Get any table configurations from from URL query parameters
-    const tables = JSON.parse(this.get_query_parameter("tables"));
-
-    const table_config = (
-      CN_common.is_object(tables) && tables[model.get_name()] ?
-      tables[model.get_name()] :
-      { order: model.get_default_order(), columns: {} }
-    );
-
     this.#columns = model.clone_columns();
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
@@ -61,14 +52,10 @@ export class CN_action_list extends CN_base_action {
           return null != parent_model && column.column.match(`${parent_model.get_name()}\.`);
         };
       }
-
-      // define this column's initial condition_list based on the table config
-      column.condition_list = (
-        table_config.columns[col_name] ?
-        CN_api.lengthen_modifier(table_config.columns[col_name]) :
-        []
-      );
     }
+
+    // now read the query parameters
+    this.read_query_parameters();
   }
 
   // access methods
@@ -95,6 +82,110 @@ export class CN_action_list extends CN_base_action {
     }
 
     return await super.get_text(type);
+  }
+
+  /**
+   * Updates the query parameters with the current table configuration
+   * The tables parameter has the following form: {
+   *   <table_name>: {
+   *     order: null or [{}] or { column }
+   *     columns: {
+   *       <column_name>: [{
+   *         operator: =|!=|<|>|LIKE|NOT LIKE|etc,
+   *         value: the value to compare to,
+   *         or: true when logically ORing the comparison (optional)
+   *       )],
+   *     }
+   *   }
+   * }
+   */
+  read_query_parameters() {
+    // Get any table configurations from from URL query parameters
+    const model = this.get_model();
+    const name = model.get_name();
+    const tables = JSON.parse(this.get_query_parameter("tables"));
+    const table = CN_common.is_object(tables) ? tables[name] : {};
+    if (!table.order) table.order = model.get_default_order();
+
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+
+      column.order = (
+        table.order && col_name == table.order.column ?
+        table.order.desc :
+        null
+      );
+
+      // define this column's initial condition_list based on the table config
+      column.condition_list = (
+        table.columns && table.columns[col_name] ?
+        CN_api.lengthen_modifier(table.columns[col_name]) :
+        []
+      );
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  write_query_parameters() {
+    const name = this.get_model().get_name();
+    let tables = JSON.parse(this.get_query_parameter("tables"));
+    let table = CN_common.is_object(tables) && tables[name] ? tables[name] : {};
+
+    let order = null;
+    const columns = {};
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (null != column.order) {
+        order = {
+          column: column.name,
+          desc: column.order,
+        };
+      }
+      if (0 < column.condition_list.length) {
+        columns[col_name] = column.condition_list;
+      }
+    }
+
+    // setup the order argument
+    if (null == order) {
+      // remove the order property if it exists
+      if (table.order) delete table.order;
+    } else {
+      table.order = order;
+
+      // add the table if it doesn't exist
+      if (!CN_common.is_object(tables)) {
+        tables = {};
+        tables[name] = table;
+      }
+    }
+
+    // setup the columns argument
+    if (0 == Object.keys(columns).length) {
+      // remove the order property if it exists
+      if (null != table && table.columns) delete table.columns;
+    } else {
+      table.columns = columns;
+
+      // add the table if it doesn't exist
+      if (!CN_common.is_object(tables)) {
+        tables = {};
+        tables[name] = table;
+      }
+    }
+
+    // if empty, remove the table from the tables parameter
+    if (CN_common.is_object(tables)) {
+      if (0 == Object.keys(table)) delete tables[name];
+
+      // if empty, remove the tables parameter
+      if (0 == Object.keys(tables)) tables = null;
+    }
+
+
+    this.set_query_parameter("tables", null == tables ? null : JSON.stringify(tables));
   }
 
   /**
@@ -181,11 +272,12 @@ export class CN_action_list extends CN_base_action {
    * Extend the parent method
    */
   get_on_load_parameters() {
+    const model = this.get_model();
+
     let params = {
       modifier: {
         limit: CN_session.data.application.list_row_size,
         offset: (this.#current_page - 1) * 20,
-        order: [],
         where: []
       },
       select: { column: [] },
@@ -196,7 +288,7 @@ export class CN_action_list extends CN_base_action {
 
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
-      let table_name = this.get_model().get_name();
+      let table_name = model.get_name();
       let effective_col_name = col_name;
       if (column.table_prefix) {
         if (column.column) [table_name, effective_col_name] = column.column.split(".");
@@ -208,50 +300,48 @@ export class CN_action_list extends CN_base_action {
         params.select.column.push(col_name);
       }
 
-      if (column.is_hidden(this.get_model())) continue;
+      const full_column_name = column.table_prefix ? `${table_name}.${effective_col_name}` : effective_col_name;
 
-      if (column.order) {
-        params.modifier.order.push({ [col_name]: column.reverse });
+      // apply the order
+      if (null != column.order) {
+        if (true === column.order) {
+          params.modifier.order = {};
+          params.modifier.order[full_column_name] = true;
+        } else {
+          params.modifier.order = full_column_name;
+        }
       }
 
       // convert the column's condition list into where statements
-      if (!column.is_hidden(this.get_model())) {
-        if (1 < column.condition_list.length) params.modifier.where.push({ bracket: true, open: true });
+      if (1 < column.condition_list.length) params.modifier.where.push({ bracket: true, open: true });
 
-        params.modifier.where = [
-          ...params.modifier.where,
-          ...column.condition_list.map(condition => {
-            const where = {
-              ...{
-                column: (
-                  column.table_prefix ?
-                  `${table_name}.${effective_col_name}` :
-                  effective_col_name
-                ),
-              },
-              ...condition
-            };
+      params.modifier.where = [
+        ...params.modifier.where,
+        ...column.condition_list.map(condition => {
+          const where = {
+            ...{ column: full_column_name },
+            ...condition
+          };
 
-            // use the column definition if there is one
-            if (column.column) where.column = column.column;
+          // use the column definition if there is one
+          if (column.column) where.column = column.column;
 
-            // setup LIKE operations
-            if (["LIKE", "NOT LIKE"].includes(where.operator)) {
-              if (0 == where.value.length) {
-                // LIKE "" is meaningless, so search for <=> "" instead
-                where.operator = "<=>";
-              } else if (!where.value.includes("%")) {
-                // LIKE without % is meaningless, so enclose the value in %
-                where.value = `%${where.value}%`;
-              }
+          // setup LIKE operations
+          if (["LIKE", "NOT LIKE"].includes(where.operator)) {
+            if (0 == where.value.length) {
+              // LIKE "" is meaningless, so search for <=> "" instead
+              where.operator = "<=>";
+            } else if (!where.value.includes("%")) {
+              // LIKE without % is meaningless, so enclose the value in %
+              where.value = `%${where.value}%`;
             }
+          }
 
-            return where;
-          }),
-        ];
+          return where;
+        }),
+      ];
 
-        if (1 < column.condition_list.length) params.modifier.where.push({ bracket: true, open: false });
-      }
+      if (1 < column.condition_list.length) params.modifier.where.push({ bracket: true, open: false });
     }
 
     return params;
@@ -265,9 +355,9 @@ export class CN_action_list extends CN_base_action {
     const parent_model = model.get_parent_model();
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
 
-    this.#limit = response.headers.get('X-Limit');
-    this.#offset = response.headers.get('X-Offset');
-    this.#total_records = response.headers.get('X-Total');
+    this.#limit = response.headers.get("X-Limit");
+    this.#offset = response.headers.get("X-Offset");
+    this.#total_records = response.headers.get("X-Total");
     const filters = this.has_column_filters();
 
     // update the parent's child list record count
@@ -297,28 +387,6 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
-   * Extends parent method
-   */
-  show_placeholder() {
-    super.show_placeholder();
-
-    const body_el = this.get_element().querySelector("table [name=body]");
-    body_el.innerHTML = "";
-    for (let row = 0; row < 20; row++) {
-      let tr_el = document.createElement("tr");
-      for (const col_name in this.#columns) {
-        let col = Math.ceil(Math.random() * 5) + 5;
-        tr_el.innerHTML += `
-          <td class="placeholder-glow">
-            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${col}"></span>
-          </td>
-        `;
-      }
-      body_el.append(tr_el);
-    }
-  }
-
-  /**
    * Determines whether a record cannot be selected when in choose mode
    * @param object record: One of the records from the #records array
    * @return boolean
@@ -331,73 +399,27 @@ export class CN_action_list extends CN_base_action {
    * Updates the sort that is applied to a column and updates the table.
    * Iterates through No sort -> ascending -> descending
    * and updates the query parameters and column state.
-   * @param {*} event
    * @param {*} column
    */
-  async on_sort_column(event, column) {
-    /*
-    this.remove_table_header_sorts(column);
-    const previous_sort = column.el.hasAttribute("sort") ? column.el.getAttribute("sort") : "";
-
-    let next_sort;
-    if (previous_sort === "") {
-      next_sort = "ascending";
-    } else if (previous_sort === "ascending") {
-      next_sort = "descending";
-    } else if (previous_sort === "descending") {
-      next_sort = "";
-    } else {
-      throw new Error("Unknown sort");
-    }
-
-    const sort_icon = column.el.querySelector("[name=sort-icon]");
-
-    if (next_sort === "") {
-      delete column.order;
-      delete column.reverse;
-
-      column.el.setAttribute("sort", "");
-      sort_icon.classList.remove('bi-sort-up');
-    } else if (next_sort === "ascending") {
-      column.order = true;
-      column.reverse = false;
-
-      sort_icon.classList.add('bi-sort-down');
-    } else if (next_sort === "descending") {
-      column.order = true;
-      column.reverse = true;
-
-      sort_icon.classList.remove('bi-sort-down');
-      sort_icon.classList.add('bi-sort-up');
-    }
-
-    column.el.setAttribute("sort", next_sort);
-
-    this.update_query_parameters()
-    this.get_records();
-    */
-  }
-
-  /**
-   * Removes all sorts applied to the column, excluding exclude_col.
-   * @param {*} exclude_col
-   */
-  remove_table_header_sorts(exclude_col) {
+  async on_sort_column(column) {
     for (const col_name in this.#columns) {
-      let column = this.#columns[col_name];
-      if (column == exclude_col) continue;
-
-      delete column.order;
-      delete column.reverse;
-
-      /*
-      if (column.el.hasAttribute("sort")) {
-        column.el.removeAttribute('sort');
-        column.el.querySelector('[name=sort-icon]').classList.remove('bi-sort-up');
-        column.el.querySelector('[name=sort-icon]').classList.remove('bi-sort-down');
+      if (col_name == column.name) {
+        const order = this.#columns[col_name].order;
+        this.#columns[col_name].order = (
+          null === order ?
+          false :
+          false === order ?
+          true :
+          null
+        );
+      } else {
+        // do not sort any other column
+        this.#columns[col_name].order = null;
       }
-      */
     }
+
+    this.write_query_parameters();
+    await this.run();
   }
 
   /**
@@ -435,73 +457,33 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
-   * Updates the query parameters with the current table configuration
-   * The tables parameter has the following form: {
-   *   <table_name>: {
-   *     order: null or [{}] or { column }
-   *     columns: {
-   *       <column_name>: [{
-   *         operator: =|!=|<|>|LIKE|NOT LIKE|etc,
-   *         value: the value to compare to,
-   *         or: true when logically ORing the comparison (optional)
-   *       )],
-   *     }
-   *   }
-   * }
-   */
-  update_query_parameters() {
-    const columns = {};
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      if (0 < column.condition_list.length) {
-        columns[col_name] = column.condition_list;
-      }
-    }
-
-    const name = this.get_model().get_name();
-    let tables = JSON.parse(this.get_query_parameter("tables"));
-    if (0 == Object.keys(columns).length) {
-      if (CN_common.is_object(tables) && tables[name]) delete tables[name];
-      if (!CN_common.is_object(tables) || 0 == Object.keys(tables)) tables = null;
-    } else {
-      if (!CN_common.is_object(tables)) tables = {};
-      if (!tables[name]) tables[name] = {};
-      tables[name].columns = columns;
-    }
-
-    this.set_query_parameter("tables", null == tables ? null : JSON.stringify(tables));
-  }
-
-  /**
    * Extends parent method
    */
   update_element() {
     super.update_element();
 
     const model = this.get_model();
+
+    // set the column sort and filter icons
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
-      /*
-      if ("order" in column && "reverse" in column) {
-        const sort = column.reverse ? "descending" : "ascending";
-        column.el.querySelector('[name=sort-icon]').classList.add(
-          sort === "ascending" ?
-          "bi-sort-down" :
-          "bi-sort-up"
-        );
-        column.el.setAttribute('sort', sort);
-      }
-      */
-
       const th_el = this.get_body_element().querySelector(`th[name=${column.name}]`);
+
       if (th_el) {
-        const icon_el = th_el.querySelector("i[name=filter-icon]");
+        const sort_icon_el = th_el.querySelector("i[name=sort-icon]");
+        sort_icon_el.classList.remove("bi-sort-up");
+        sort_icon_el.classList.remove("bi-sort-down");
+        if (null != column.order) {
+          sort_icon_el.classList.add(column.order ? "bi-sort-up" : "bi-sort-down");
+        }
+
+        const filter_icon_el = th_el.querySelector("i[name=filter-icon]");
         if (0 < column.condition_list.length) {
-          icon_el.classList.remove('bi-filter')
-          icon_el.classList.add('bi-filter-circle-fill')
+          filter_icon_el.classList.remove("bi-filter")
+          filter_icon_el.classList.add("bi-filter-circle-fill")
         } else {
-          icon_el.classList.remove('bi-filter-circle-fill')
-          icon_el.classList.add('bi-filter')
+          filter_icon_el.classList.remove("bi-filter-circle-fill")
+          filter_icon_el.classList.add("bi-filter")
         }
       }
     }
@@ -529,7 +511,7 @@ export class CN_action_list extends CN_base_action {
           btn_el.addEventListener("click", this.on_choose.bind(this));
         }
 
-        let cancel_btn_el = this.get_footer_element().querySelector("[name=cancel_choose]");
+        let cancel_btn_el = this.get_footer_element().querySelector("button[name=cancel-choose]");
         if (this.#is_choosing) {
           // we're currently choosing records
           btn_el.innerHTML = "Apply";
@@ -537,7 +519,7 @@ export class CN_action_list extends CN_base_action {
           // create the cancel button if it doesn't exist
           if (null == cancel_btn_el) {
             cancel_btn_el = this.constructor.html(
-              '<button name="cancel_choose" type="button" class="btn btn-outline-primary">Cancel</button>'
+              '<button name="cancel-choose" type="button" class="btn btn-outline-primary">Cancel</button>'
             );
             cancel_btn_el.addEventListener("click", this.on_cancel_choose.bind(this));
             btn_el.parentElement.prepend(cancel_btn_el);
@@ -555,48 +537,59 @@ export class CN_action_list extends CN_base_action {
       }
     }
 
-    const table_el = this.get_body_element().querySelector("table [name=body]");
-    table_el.innerHTML = "";
+    const tbody_el = this.get_body_element().querySelector("tbody");
+    tbody_el.innerHTML = "";
 
     const start_index = (this.#current_page - 1) * 20;
     this.#records.map(record => {
-      let tr_el = document.createElement("tr");
+      let tr_el = this.constructor.html("<tr></tr>");
       if (this.#is_choosing) {
         if (record.chosen) tr_el.classList.add("table-primary");
         if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
       }
       tr_el.addEventListener("click", this.on_row_click.bind(this, record));
       for (const col_name in this.#columns) {
-        const column = this.#columns[col_name];
-
         // don't show hidden columns
-        if (column.is_hidden(model)) continue;
-
-        let value = record[col_name];
-        if (null === value) {
-          value = "(empty)";
-        } else if ("boolean" == column.type) {
-          value = value ? "Yes" : "No";
-        } else if ("html" == column.type) {
-          // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
-          value = (new Option(value)).innerHTML
-        } else if ("size" == column.type) {
-          value = CN_common.format_filesize(value);
-        } else if (CN_common.is_datetime_type(column.type, "date")) {
-          value = CN_common.format_datetime(value, column.type);
-        } else if ("rank" == column.type) {
-          value = CN_common.ordinal_suffix(value);
-        } else if (CN_common.is_datetime_type(column.type, "time")) {
-          value = CN_common.format_time(value);
-        } else if (CN_common.is_string(value) && 0 < column.limit) {
-          if (value.length > column.limit) {
-            value = value.substring(0, column.limit) + " ...";
+        const column = this.#columns[col_name];
+        if (!column.is_hidden(model)) {
+          let value = record[col_name];
+          if (null === value) {
+            value = "(empty)";
+          } else if ("boolean" == column.type) {
+            value = value ? "Yes" : "No";
+          } else if ("html" == column.type) {
+            // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
+            value = (new Option(value)).innerHTML
+          } else if ("size" == column.type) {
+            value = CN_common.format_filesize(value);
+          } else if (CN_common.is_datetime_type(column.type, "date")) {
+            value = CN_common.format_datetime(value, column.type);
+          } else if ("rank" == column.type) {
+            value = CN_common.ordinal_suffix(value);
+          } else if (CN_common.is_datetime_type(column.type, "time")) {
+            value = CN_common.format_time(value);
+          } else if (CN_common.is_string(value) && 0 < column.limit) {
+            if (value.length > column.limit) {
+              value = value.substring(0, column.limit) + " ...";
+            }
           }
-        }
 
-        tr_el.innerHTML += `<td class="text-${column.align} text-truncate">${value}</td>`;
-        //tr_el.innerHTML += `<td>${value}</td>`;
+          tr_el.innerHTML += `
+            <td
+              class="text-${column.align} text-truncate border border-light border-2"
+            >${value}</td>
+          `;
+        }
       }
+
+      // remove the outer most white borders
+      const td_el_list = tr_el.querySelectorAll("td");
+      const len = td_el_list.length;
+      if (0 < len) {
+        td_el_list[0].classList.add("border-start-0");
+        td_el_list[len-1].classList.add("border-end-0");
+      }
+
 
       if ("choose" != this.#list_mode && model.allow_delete()) {
         // add the delete button row, only including a button if deleting is allowed
@@ -608,17 +601,17 @@ export class CN_action_list extends CN_base_action {
 
         // wire up the delete button if there is one
         if (model.allow_delete()) {
-          tr_el.querySelector("[name=delete]").addEventListener("click", (e) => {
+          tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
             e.stopPropagation();
             this.on_delete(record);
           });
         }
       }
 
-      table_el.append(tr_el);
+      tbody_el.append(tr_el);
     });
 
-    const summary_el = this.get_footer_element().querySelector("[name=summary]");
+    const summary_el = this.get_footer_element().querySelector("div[name=summary]");
     summary_el.innerHTML = [
       this.#total_records,
       1 == this.#total_records ? model.get_singular() : model.get_plural(),
@@ -695,75 +688,12 @@ export class CN_action_list extends CN_base_action {
     }
   }
 
-
-  /**
-   * Extends parent method
-   */
-  create_body_element() {
-    if (this.#columns.length <= 0)
-      throw new Error("Number of table columns must be > 0");
-
-    let columns = 0;
-    Object.values(this.#columns).forEach(column => {
-      columns += column.is_hidden(this.get_model()) ? 0 : 1;
-    });
-    const width = 100 / columns;
-
-    const table_el = this.constructor.html(`
-      <div class="table-responsive">
-        <table class="table table-striped table-hover" style="table-layout: fixed">
-          <colgroup>
-            ${
-              Object.values(this.#columns).map(
-                column => !column.is_hidden(this.get_model()) ? `<col style="width: ${width}%;">` : ""
-              ).join("")
-            }
-            ${("choose" != this.#list_mode && this.get_model().allow_delete()) ? "<col style='width: 50px'>" : ''}
-          </colgroup>
-          <thead name="header"></thead>
-          <tbody name="body"></tbody>
-          <tfoot name="footer"></tfooter>
-        </table>
-      </div>
-    `);
-
-    // build the header row
-    let header_tr_el = document.createElement("tr");
-
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-
-      // don't show hidden columns
-      if (column.is_hidden(this.get_model())) continue;
-
-      const table_header_el = this.create_table_header_element(column);
-      header_tr_el.appendChild(table_header_el);
-      this.#columns[col_name]["el"] = table_header_el;
-    }
-
-    if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
-      //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-      const delete_header = this.constructor.html('<th name="delete" class="p-0" scope="col"></th>');
-      header_tr_el.appendChild(delete_header);
-    }
-
-    // Removes right margin from the last column's filter button to align it with the table
-    const last_column_btn = header_tr_el.lastChild.querySelector(".filter-button");
-    if (last_column_btn) {
-      last_column_btn.classList.remove("mx-1");
-      last_column_btn.classList.add("ms-1");
-    }
-
-    table_el.querySelector("thead[name=header]").append(header_tr_el);
-    return table_el;
-  }
-
   /**
    * Creates the table header element and adds listeners to the filter buttons that belong to each header
    * @param {*} column
    * @returns
    */
-  create_table_header_element(column) {
+  create_table_header_element(column, placeholder = false) {
     const help = (
       column.help ?
       `<i
@@ -771,12 +701,12 @@ export class CN_action_list extends CN_base_action {
         data-bs-toggle="tooltip"
         data-bs-title="${column.help}"
       ></i>` :
-      ''
+      ""
     );
     const filter_icon = 0 < column.condition_list.length ? "bi-filter-circle-fill" : "bi-filter";
     const header_el = this.constructor.html(`
-      <th name="${column.name}" class="p-0" scope="col">
-        <div class="d-flex justify-content-between">
+      <th name="${column.name}" class="border border-light border-2 border-top-0 p-0" scope="col">
+        <div class="d-flex">
           <button
             type="button"
             name="sort-button"
@@ -784,31 +714,33 @@ export class CN_action_list extends CN_base_action {
           >
             ${help}
             ${column.title}
-            <i name="sort-icon" class="bi px-1 d-inline-block"></i>
+            <i name="sort-icon" class="bi d-inline-block"></i>
           </button>
-          <button type="button" name="filter-button" class="btn btn-secondary rounded-0 mx-1 fw-bold">
-            <i name="filter-icon" class="bi ${filter_icon} px-1" style="cursor: pointer;"></i>
+          <button type="button" name="filter-button" class="btn btn-secondary rounded-0 fw-bold">
+            <i name="filter-icon" class="bi ${filter_icon}"></i>
           </button>
         </div>
       </th>
     `);
-
-    if (column.help) new bootstrap.Tooltip(header_el.querySelector('.bi-info-circle-fill'));
-    header_el.addEventListener("click", (event) => this.on_sort_column(event, column));
-
     const filter_btn = header_el.querySelector("button[name=filter-button]")
-    filter_btn.addEventListener("click", async (event) => {
-      event.stopPropagation();
-      const response = await (new CN_modal_column_filter({
-        table: CN_common.uc_words(this.get_model().get_singular()),
-        column: column,
-      })).open();
-      if (response) {
-        column.condition_list = response;
-        this.update_query_parameters();
-        await this.run();
-      }
-    });
+
+    if (column.help) new bootstrap.Tooltip(header_el.querySelector(".bi-info-circle-fill"));
+
+    if (!placeholder) {
+      header_el.addEventListener("click", this.on_sort_column.bind(this, column));
+      filter_btn.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        const response = await (new CN_modal_column_filter({
+          table: CN_common.uc_words(this.get_model().get_singular()),
+          column: column,
+        })).open();
+        if (response) {
+          column.condition_list = response;
+          this.write_query_parameters();
+          await this.run();
+        }
+      });
+    }
 
     return header_el;
   }
@@ -816,22 +748,91 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_placeholder_element() {
-    const table_el = this.constructor.html(
-      `<table class="table table-striped"><tbody name="body"></tbody></table>`
-    );
+  create_body_element() {
+    if (this.#columns.length <= 0) throw new Error("Number of table columns must be > 0");
 
-    for (let row = 0; row < 20; row++) {
-      let tr_el = document.createElement("tr");
-      for (let col = 0; col < 4; col++) {
-        let width = Math.ceil(Math.random() * 6) + 6;
-        tr_el.innerHTML += `
-          <td class="text-left" placeholder-glow">
-            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${width}"></span>
-          </td>
-        `;
+    const table_el = this.constructor.html(`
+      <div class="table-responsive">
+        <table class="table table-striped table-hover m-0">
+          <thead name="header"></thead>
+          <tbody name="body"></tbody>
+        </table>
+      </div>
+    `);
+
+    // build the header row
+    let header_tr_el = this.constructor.html("<tr></tr>");
+
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (!column.is_hidden(this.get_model())) {
+        header_tr_el.append(this.create_table_header_element(column));
       }
-      table_el.querySelector("tbody").append(tr_el);
+    }
+
+    // remove the outer most white borders
+    const th_el_list = header_tr_el.querySelectorAll("th");
+    const len = th_el_list.length;
+    if (0 < len) {
+      th_el_list[0].classList.add("border-start-0");
+      th_el_list[len-1].classList.add("border-end-0");
+    }
+
+    if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
+      //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
+      const delete_header = this.constructor.html('<th name="delete" class="p-0" scope="col"></th>');
+      header_tr_el.append(delete_header);
+    }
+
+    table_el.querySelector("thead").append(header_tr_el);
+    return table_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_placeholder_element() {
+    const table_el = this.constructor.html(`
+      <div class="table-responsive">
+        <table class="table table-striped m-0">
+          <thead name="header"></thead>
+          <tbody name="body"></tbody>
+        </table>
+      </div>
+    `);
+
+    // build the header row
+    let header_tr_el = this.constructor.html("<tr></tr>");
+
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (!column.is_hidden(this.get_model())) {
+        header_tr_el.append(this.create_table_header_element(column, true));
+      }
+    }
+
+    // remove the outer most white borders
+    const th_el_list = header_tr_el.querySelectorAll("th");
+    const len = th_el_list.length;
+    if (0 < len) {
+      th_el_list[0].classList.add("border-start-0");
+      th_el_list[len-1].classList.add("border-end-0");
+    }
+
+    table_el.querySelector("thead").append(header_tr_el);
+
+    const tbody_el = table_el.querySelector("tbody");
+    for (let row = 0; row < 20; row++) {
+      const td_list = [];
+      for (const col_name in this.#columns) {
+        let col = Math.ceil(Math.random() * 5) + 5;
+        td_list.push(`
+          <td class="placeholder-glow">
+            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${col}"></span>
+          </td>
+        `);
+      }
+      tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
     }
 
     return table_el;
@@ -848,8 +849,8 @@ export class CN_action_list extends CN_base_action {
     const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
     footer_el.append(btn_group_el);
 
-    const summary_el = this.constructor.html('<div name="summary" class="text-center fs-6">Loading...</div>');
-    footer_el.append(summary_el);
+    footer_el.append(this.constructor.html('<div name="summary" class="text-center fs-6">Loading...</div>'));
+
 
     footer_el.append(this.constructor.html(`
       <nav aria-label="${CN_common.uc_words(this.get_model().get_singular())} List navigation">
@@ -857,6 +858,16 @@ export class CN_action_list extends CN_base_action {
       </nav>
     `));
 
+
     return footer_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  _create_element() {
+    const el = super._create_element();
+    el.querySelector("div.card-body").classList.add("p-0");
+    return el;
   }
 }

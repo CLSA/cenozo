@@ -45,11 +45,30 @@ export class CN_base_model extends CN_base_object {
     this.#unique_id = [this.get_name(), CN_common.get_random_hex_identifier()].join("-");
     this.#wording = params.wording;
 
-    this.#default_order = params.order ? params.order : null;
-
     // Note that the properties and columns props are only used when configuring the model.
     this.#properties_template = params.properties;
     this.#columns_template = params.columns;
+
+    this.#default_order = { column: null, desc: false };
+    if (params.default_order) {
+      if (CN_common.is_string(params.default_order)) {
+        this.#default_order.column = params.default_order;
+      } else if (CN_common.is_object(params.default_order)) {
+        this.#default_order.column = params.default_order.column;
+        this.#default_order.desc = params.default_order.desc;
+      }
+    } else {
+      if (CN_common.is_object(this.#columns_template)) {
+        // by default sort by start_datetime, datetime, name or the first column
+        this.#default_order.column = (
+          this.#columns_template.rank ? "rank" :
+          this.#columns_template.start_datetime ? "start_datetime" :
+          this.#columns_template.datetime ? "datetime" :
+          this.#columns_template.name ? "name" :
+          Object.keys(this.#columns_template)[0]
+        );
+      }
+    }
   }
 
   // access methods

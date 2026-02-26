@@ -109,7 +109,8 @@ export class CN_base_element extends CN_base_object {
    * ADD DOCS
    */
   _create_element() {
-    const el = document.createElement(this.get_config("type"));
+    const type = this.get_config("type");
+    const el = this.constructor.html(`<${type}></${type}>`);
 
     const id = this.get_config("id");
     if (null != id) el.setAttribute("id", id);
@@ -251,7 +252,7 @@ export class CN_base_element extends CN_base_object {
     if (0 == html.length) throw new Error("element.create: argument cannot be empty");
 
     // some elements can't be created with the dom parser, so create it using createElement() instead
-    if (html.match(/^<t[drh]/)) {
+    if (html.match(/^<t[drbhf]/)) {
       const template = document.createElement('template');
       template.innerHTML = html;
       return template.content.firstElementChild;

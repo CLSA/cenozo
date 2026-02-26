@@ -35,11 +35,12 @@ export class CN_input_base_datetime extends CN_base_input {
    * Extend parent method
    */
   set_value(value) {
-    const input_type = this.get_class_name().replace(/^CN_input_/, "");
 
+    if (CN_common.is_string(value)) value = new Date(value);
     this.#date = value;
 
     // convert date object to string
+    const input_type = this.get_class_name().replace(/^CN_input_/, "");
     super.set_value(value ? CN_common.format_datetime(value, input_type, true) : null);
   }
 

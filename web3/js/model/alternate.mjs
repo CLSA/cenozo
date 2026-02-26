@@ -21,6 +21,7 @@ export class CN_alternate_model extends CN_base_person_model {
         alternate_type_list: { title: "Types", table_prefix: false },
         global_note: { title: "Special Note", type: "text", limit: 100 },
       },
+      default_order: "last_name",
       properties: {
         participant_id: {
           title: "Participant",

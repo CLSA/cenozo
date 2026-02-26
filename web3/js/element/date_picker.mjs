@@ -87,8 +87,7 @@ export class CN_element_date_picker extends CN_base_element {
    */
   set_date(date) {
     this.#mode = "day";
-    this.#date = date;
-
+    this.#date = CN_common.clone(date);
     this.#month = this.#date.getMonth();
     this.#year = this.#date.getFullYear();
     this.#start_year = Math.floor(this.#year / this.#year_range) * this.#year_range;

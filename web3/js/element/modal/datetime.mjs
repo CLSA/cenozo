@@ -59,20 +59,26 @@ export class CN_modal_datetime extends CN_base_modal {
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
-    this.add_resolve_button("success", this.get_config("ok_text"), async () => this._resolve(this.#get_date()));
+    this.add_resolve_button("success", this.get_config("ok_text"), async () => this._resolve(this.get_date()));
   }
 
   /**
    * ADD DOCS
    */
-  #get_date() {
+  get_date() {
     const date = this.#date_picker.get_date();
     if (this.#time_picker) {
       const time = this.#time_picker.get_time();
       date.setHours(time.hours);
       date.setMinutes(time.minutes);
       date.setSeconds(time.seconds);
+    } else {
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
     }
+    date.setMilliseconds(0);
+
     return date;
   }
 
@@ -153,11 +159,11 @@ export class CN_modal_datetime extends CN_base_modal {
         show_seconds: "second" == mode.substr(-6),
         get_min: () => {
           const min = this.get_config("min");
-          return CN_common.is_date(min) && min > this.#get_date() ? min : null;
+          return CN_common.is_date(min) && min > this.get_date() ? min : null;
         },
         get_max: () => {
           const max = this.get_config("max");
-          return CN_common.is_date(max) && max < this.#get_date() ? max : null;
+          return CN_common.is_date(max) && max < this.get_date() ? max : null;
         },
       });
       time_picker_el.append(this.#time_picker.get_element());
