@@ -618,6 +618,7 @@ export class CN_base_person_history extends CN_base_action {
 }
 
 export class CN_base_person_notes extends CN_base_action {
+  #search_input = null;
   #note_list = [];
 
   /**
@@ -697,7 +698,10 @@ export class CN_base_person_notes extends CN_base_action {
     const allow_delete = note_module.action_allowed("delete");
     const allow_edit = note_module.action_allowed("edit");
 
-    const search = document.getElementById("note_search").value;
+    // only proceed if the note search input has been created
+    if (null == this.#search_input) return;
+
+    const search = this.#search_input.get_value();
     const note_list_el = this.get_element().querySelector("[name=note_list]");
     note_list_el.innerHTML = "";
     this.#note_list.filter(note => 0 <= note.note.search(search)).forEach(note => {
@@ -818,8 +822,7 @@ export class CN_base_person_notes extends CN_base_action {
             </div>
           </div>
         </div>
-        <hr></hr>
-        <div class="row pb-3"></div>
+        <div name="search" class="row my-3"></div>
         <div name="note_list" class="container-fluid px-0"></div>
       </div>
     `);
@@ -839,16 +842,17 @@ export class CN_base_person_notes extends CN_base_action {
     });
 
     // add the search field
-    CN_element_label.create_element(body_el, { for: "note_search", value: "Search", class: "col-sm-3" });
-
-    CN_input_string.create_element(body_el.querySelector("div.row"), {
-      id: "note_search",
-      class: "col-sm-9",
-      on_change: async (form_input, valid) => {
+    const search_div_el = body_el.querySelector("div[name=search]");
+    CN_element_label.create_element(search_div_el, { for: "search", value: "Search", class: "col-sm-2" });
+    this.#search_input = new CN_input_string(search_div_el, {
+      id: "search",
+      class: "col-sm-10",
+      on_input: async (form_input, valid) => {
         if (valid) this.set_query_parameter("search", form_input.get_value());
         this.update_element();
       },
     });
+    search_div_el.append(this.#search_input.get_element());
 
     return body_el;
   }

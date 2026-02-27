@@ -49,6 +49,11 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
+    // since activity is an archived table we must convert full column names in the modifier's order
+    $modifier->replace_order( 'user.name', 'user' );
+    $modifier->replace_order( 'site.name', 'site' );
+    $modifier->replace_order( 'role.name', 'role' );
+
     $db_application = lib::create( 'business\session' )->get_application();
 
     // only include sites which belong to this application

@@ -418,23 +418,11 @@ export class CN_participant_multiedit extends CN_base_action {
       await mod.module.load_classes();
       const model = mod.module.create_model();
 
-      if ("note" == module_name) {
-      } else if (mod.enum) {
-        /* TODO: is this done in element/input/enum.mjs now or do we need to redesign?
-        // load dynamic enums
-        promise_list.push((async () => {
-          mod.enum.values = await model.get_enum_values(module_name, {
-            type: "enum",
-            enum: mod.enum
-          });
-        })());
-        */
-      } else if (mod.hasOwnProperty("properties")) {
+      if (mod.hasOwnProperty("properties")) {
         const properties = model.clone_properties();
 
         // find each property (some may be in sub-groups) and populate any enum values
         for (const prop_name in mod.properties) {
-          const module_prop = mod.module.get_property(prop_name);
           let prop = null;
 
           if (Object.keys(properties).includes(prop_name)) {
@@ -454,19 +442,9 @@ export class CN_participant_multiedit extends CN_base_action {
           // if we didn't find the prop then ignore it
           if (null == prop) {
             delete mod.properties[prop_name];
-            continue;
+          } else {
+            mod.properties[prop_name] = prop;
           }
-
-          // load dynamic enums
-          promise_list.push((async () => {
-            const values = await model.get_enum_values(prop_name, prop);
-            if (null != values) {
-              if (!CN_common.is_object(prop.enum)) prop.enum = {};
-              prop.enum.values = values;
-            }
-          })());
-
-          mod.properties[prop_name] = prop;
         }
       }
     }
@@ -478,6 +456,9 @@ export class CN_participant_multiedit extends CN_base_action {
    * Extend parent method
    */
   update_element() {
+    // do nothing if the modules haven't been loaded yet
+    if (null == this.#module_list.participant.module) return;
+
     // implement the content in each tab
     for (const module_name in this.#module_list) {
       const mod = this.#module_list[module_name];
@@ -505,8 +486,9 @@ export class CN_participant_multiedit extends CN_base_action {
           // determine the property's UI element based on the type
           let params = CN_common.clone(prop);
           params.id = prop_id;
+          params.action = this;
           params.class = "d-flex align-items-center col-sm-9";
-          params.name = "element";
+          params.name = prop_name;
           if (!params.type) params.type = "string";
           if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
           if (undefined === params.placeholder) params.placeholder = "(empty)";
@@ -537,7 +519,7 @@ export class CN_participant_multiedit extends CN_base_action {
             el.append(btn_el);
           };
 
-          CN_input.create_element(row_el, params.type, params);
+          CN_input.create_element(params.type, row_el, params);
           fields_el.append(row_el);
         });
 
@@ -576,8 +558,9 @@ export class CN_participant_multiedit extends CN_base_action {
 
           CN_input.create_element( "boolean", sticky_row_el, {
             id: sticky_prop_id,
+            action: this,
             required: true,
-            name: "element",
+            name: "sticky",
             class: "col-sm-9",
           });
           fields_el.append(sticky_row_el);
@@ -594,8 +577,9 @@ export class CN_participant_multiedit extends CN_base_action {
 
           CN_input.create_element( "text", note_row_el, {
             id: note_prop_id,
+            action: this,
             required: true,
-            name: "element",
+            name: "note",
             class: "col-sm-9",
           });
           fields_el.append(note_row_el);
@@ -614,13 +598,16 @@ export class CN_participant_multiedit extends CN_base_action {
 
           CN_input.create_element( "enum", op_row_el, {
             id: op_prop_id,
+            action: this,
             required: true,
-            name: "element",
+            name: "operation",
             class: "d-flex align-items-center col-sm-9",
-            enum: [
-              { key: "add", value: `Add to ${pretty_module_name}` },
-              { key: "remove", value: `Remove from ${pretty_module_name}` },
-            ],
+            enum: {
+              values: [
+                { key: "add", value: `Add to ${pretty_module_name}` },
+                { key: "remove", value: `Remove from ${pretty_module_name}` },
+              ],
+            },
           });
           fields_el.append(op_row_el);
 
@@ -636,8 +623,9 @@ export class CN_participant_multiedit extends CN_base_action {
 
           CN_input.create_element( "enum", item_row_el, {
             id: item_prop_id,
+            action: this,
             required: true,
-            name: "element",
+            name: "item",
             class: "d-flex align-items-center col-sm-9",
             enum: mod.enum,
           });
@@ -658,8 +646,9 @@ export class CN_participant_multiedit extends CN_base_action {
             // determine the property's UI element based on the type
             let params = CN_common.clone(prop);
             params.id = prop_id;
+            params.action = this;
             params.class = "d-flex align-items-center col-sm-9";
-            params.name = "element";
+            params.name = prop_name;
 
             if (!params.type) params.type = "string";
             if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
