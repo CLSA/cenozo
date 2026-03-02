@@ -220,6 +220,33 @@ export class CN_participant_model extends CN_base_person_model {
   }
 
   /**
+   * Extend parent method
+   */
+  clone_columns() {
+    const columns = super.clone_columns();
+
+    const parent_model = this.get_parent_model();
+    if (parent_model) {
+      if ("consent_type" == parent_model.get_name()) {
+        // Add accept and datetime columns when the parent model is consent_type
+        columns.accept = { column: "consent.accept", title: "Accept", type: "boolean" };
+        columns.datetime = { column: "consent.datetime", title: "Date & Time", type: "datetime" }
+      } else if ("event_type" == parent_model.get_name()) {
+        // Add datetime column when the parent model is event_type
+        columns.datetime = { column: "event.datetime", title: "Date & Time", type: "datetime" }
+      } else if ("hold_type" == parent_model.get_name()) {
+        // Add datetime column when the parent model is hold_type
+        columns.datetime = { column: "hold.datetime", title: "Date & Time", type: "datetime" }
+      } else if ("proxy_type" == parent_model.get_name()) {
+        // Add datetime column when the parent model is proxy_type
+        columns.datetime = { column: "proxy.datetime", title: "Date & Time", type: "datetime" }
+      }
+    }
+
+    return columns;
+  }
+
+  /**
    * Returns a typeahead object for models that have a typeahead property referencing this model
    * @return object
    * @static
