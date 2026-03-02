@@ -36,24 +36,63 @@ class query extends \cenozo\service\query
 
       $this->select = lib::create( 'database\select' );
       $this->select->add_column( 'uid' );
+      $this->select->add_column( $participant_class_name::get_status_column_sql(), 'status', false );
+      $this->select->add_column(
+        'IF( exclusion.name IS NOT NULL, NULL, '.
+        'IF( hold_type.type = "final", hold.datetime, '.
+        'IF( trace_type.name IS NOT NULL, trace.datetime, '.
+        'IF( hold_type.type IS NOT NULL, hold.datetime, '.
+        'IF( proxy_type.name IS NOT NULL, proxy.datetime, NULL )))))',
+        'status_datetime',
+        false
+      );
       $this->select->add_table_column( 'region', 'name', 'region' );
       $this->select->add_table_column(
-        'hold', 'IFNULL( CONCAT( hold_type.type, ": ", hold_type.name ), "" )', 'hold', false );
-      $this->select->add_table_column(
-        'proxy', 'IFNULL( proxy_type.name, "" )', 'proxy', false );
+        'hold',
+        'IFNULL( CONCAT( hold_type.type, ": ", hold_type.name ), "" )',
+        'hold',
+        false
+      );
+      $this->select->add_table_column( 'hold', 'IFNULL( hold.datetime, "" )', 'hold_datetime', false );
+
+      $this->select->add_table_column( 'trace', 'IFNULL( trace_type.name, "" )', 'trace', false );
+      $this->select->add_table_column( 'trace', 'IFNULL( trace.datetime, "" )', 'trace_datetime', false );
+
+      $this->select->add_table_column( 'proxy', 'IFNULL( proxy_type.name, "" )', 'proxy', false );
+      $this->select->add_table_column( 'proxy', 'IFNULL( proxy.datetime, "" )', 'proxy_datetime', false );
 
       $this->select->add_table_column(
-        'last_consent', 'IFNULL( last_consent.accept, "" )', 'last_consent', false );
+        'last_consent',
+        'IFNULL( last_consent.accept, "" )',
+        'last_consent',
+        false
+      );
       $this->select->add_table_column(
-        'last_consent', 'IFNULL( last_consent.datetime, "" )', 'last_consent_date', false );
+        'last_consent',
+        'IFNULL( last_consent.datetime, "" )',
+        'last_consent_datetime',
+        false
+      );
 
       $this->select->add_table_column(
-        'written_consent', 'IFNULL( written_consent.accept, "" )', 'written_consent', false );
+        'written_consent',
+        'IFNULL( written_consent.accept, "" )',
+        'written_consent',
+        false
+      );
       $this->select->add_table_column(
-        'written_consent', 'IFNULL( written_consent.datetime, "" )', 'written_consent_date', false );
+        'written_consent',
+        'IFNULL( written_consent.datetime, "" )',
+        'written_consent_datetime',
+        false
+      );
 
       $this->select->add_table_column(
-        'collection', 'IFNULL( GROUP_CONCAT( collection.name ), "" )', 'collections', false );
+        'collection',
+        'IFNULL( GROUP_CONCAT( collection.name ), "" )',
+        'collections',
+        false
+      );
 
       $this->select->add_table_column( 'participant', 'date_of_birth' );
       $this->select->add_table_column( 'participant', 'date_of_death_accuracy' );
@@ -63,12 +102,19 @@ class query extends \cenozo\service\query
       $this->modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
       $this->modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
 
+      $this->modifier->join( 'participant_last_trace', 'participant.id', 'participant_last_trace.participant_id' );
+      $this->modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+      $this->modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
+
       $this->modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
       $this->modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
       $this->modifier->left_join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
 
       $this->modifier->join(
-        'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
+        'participant_primary_address',
+        'participant.id',
+        'participant_primary_address.participant_id'
+      );
       $this->modifier->left_join( 'address', 'participant_primary_address.address_id', 'address.id' );
       $this->modifier->left_join( 'region', 'address.region_id', 'region.id' );
 
@@ -77,17 +123,28 @@ class query extends \cenozo\service\query
       $join_mod->where( 'participant_last_consent.consent_type_id', '=', $db_consent->id );
       $this->modifier->join_modifier( 'participant_last_consent', $join_mod );
       $this->modifier->left_join(
-        'consent', 'participant_last_consent.consent_id', 'last_consent.id', 'last_consent' );
+        'consent',
+        'participant_last_consent.consent_id',
+        'last_consent.id',
+        'last_consent'
+      );
 
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'participant_last_written_consent.participant_id', '=', 'participant.id', false );
       $join_mod->where( 'participant_last_written_consent.consent_type_id', '=', $db_consent->id );
       $this->modifier->join_modifier( 'participant_last_written_consent', $join_mod );
       $this->modifier->left_join(
-        'consent', 'participant_last_written_consent.consent_id', 'written_consent.id', 'written_consent' );
+        'consent',
+        'participant_last_written_consent.consent_id',
+        'written_consent.id',
+        'written_consent'
+      );
 
       $this->modifier->left_join(
-        'collection_has_participant', 'participant.id', 'collection_has_participant.participant_id' );
+        'collection_has_participant',
+        'participant.id',
+        'collection_has_participant.participant_id'
+      );
       $this->modifier->left_join( 'collection', 'collection_has_participant.collection_id', 'collection.id' );
       $this->modifier->group( 'participant.id' );
 
@@ -96,10 +153,7 @@ class query extends \cenozo\service\query
       $release_sel->add_table_column( 'event', 'participant_id' );
       $release_sel->add_column( 'REPLACE( event_type.name, "released to ", "" )', 'name', false );
       $release_sel->add_column(
-        sprintf(
-          'DATE( CONVERT_TZ( event.datetime, "%s", "UTC" ) )',
-          $timezone
-        ),
+        sprintf( 'DATE( CONVERT_TZ( event.datetime, "%s", "UTC" ) )', $timezone ),
         'date',
         false
       );

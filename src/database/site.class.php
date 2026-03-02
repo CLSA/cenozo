@@ -165,7 +165,7 @@ class site extends record
   {
     $valid = true;
 
-    if( !is_null( $this->postcode ) )
+    if( !in_array( $this->postcode, [NULL, ''] ) )
     {
       // make sure postcode is in A0A 0A0 or 00000 format
       if( 0 == preg_match( '/([A-Za-z][0-9][A-Za-z]) ([0-9][A-Za-z][0-9])/', $this->postcode ) &&
@@ -189,7 +189,11 @@ class site extends record
   public function source_postcode()
   {
     $postcode_class_name = lib::get_class_name( 'database\postcode' );
-    if( !is_null( $this->postcode ) )
+    if( in_array( $this->postcode, [NULL, ''] ) )
+    {
+      $this->region_id = NULL;
+    }
+    else
     {
       $db_postcode = $postcode_class_name::get_match( $this->postcode );
       if( !is_null( $db_postcode ) ) $this->region_id = $db_postcode->region_id;
