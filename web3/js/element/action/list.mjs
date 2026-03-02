@@ -88,6 +88,7 @@ export class CN_action_list extends CN_base_action {
    * Updates the query parameters with the current table configuration
    * The tables parameter has the following form: {
    *   <table_name>: {
+   *     page: the current page number
    *     order: null or [{}] or { column }
    *     columns: {
    *       <column_name>: [{
@@ -104,7 +105,8 @@ export class CN_action_list extends CN_base_action {
     const model = this.get_model();
     const name = model.get_name();
     const tables = JSON.parse(this.get_query_parameter("tables"));
-    const table = CN_common.is_object(tables) ? tables[name] : {};
+    const table = CN_common.is_object(tables) && CN_common.is_object(tables[name]) ? tables[name] : {};
+    this.#current_page = table.page ? table.page : 1;
     if (!table.order) table.order = model.get_default_order();
 
     for (const col_name in this.#columns) {
@@ -129,9 +131,22 @@ export class CN_action_list extends CN_base_action {
    * ADD DOCS
    */
   write_query_parameters() {
-    const name = this.get_model().get_name();
+    const model = this.get_model();
+    const name = model.get_name();
+    const default_order = model.get_default_order();
     let tables = JSON.parse(this.get_query_parameter("tables"));
     let table = CN_common.is_object(tables) && tables[name] ? tables[name] : {};
+
+    // set the page argument
+    if (1 == this.#current_page) {
+      if (table.page) delete table.page;
+    } else {
+      table.page = this.#current_page;
+
+      // add the table if it doesn't exist
+      if (!CN_common.is_object(tables)) tables = {};
+      if (!CN_common.is_object(tables[name])) tables[name] = table;
+    }
 
     let order = null;
     const columns = {};
@@ -148,6 +163,9 @@ export class CN_action_list extends CN_base_action {
       }
     }
 
+    // don't write the order if it is the same as the default
+    if (null != order && default_order.column == order.column && default_order.desc == order.desc) order = null;
+
     // setup the order argument
     if (null == order) {
       // remove the order property if it exists
@@ -156,10 +174,8 @@ export class CN_action_list extends CN_base_action {
       table.order = order;
 
       // add the table if it doesn't exist
-      if (!CN_common.is_object(tables)) {
-        tables = {};
-        tables[name] = table;
-      }
+      if (!CN_common.is_object(tables)) tables = {};
+      if (!CN_common.is_object(tables[name])) tables[name] = table;
     }
 
     // setup the columns argument
@@ -170,10 +186,8 @@ export class CN_action_list extends CN_base_action {
       table.columns = columns;
 
       // add the table if it doesn't exist
-      if (!CN_common.is_object(tables)) {
-        tables = {};
-        tables[name] = table;
-      }
+      if (!CN_common.is_object(tables)) tables = {};
+      if (!CN_common.is_object(tables[name])) tables[name] = table;
     }
 
     // if empty, remove the table from the tables parameter
@@ -393,6 +407,16 @@ export class CN_action_list extends CN_base_action {
    */
   is_choose_disabled(record) {
     return false;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async set_page(page) {
+    this.#current_page = page;
+
+    this.write_query_parameters();
+    await this.run();
   }
 
   /**
@@ -632,11 +656,8 @@ export class CN_action_list extends CN_base_action {
       `);
       if (1 == this.#current_page) prev_el.classList.add("disabled");
       pagination_el.append(prev_el);
-      prev_el.querySelector("button").addEventListener("click", () => {
-        if (1 != this.#current_page) {
-          this.#current_page = 1;
-          this.run();
-        }
+      prev_el.querySelector("button").addEventListener("click", async () => {
+        if (1 != this.#current_page) await this.set_page(1);
       });
 
       // add pages by number
@@ -665,11 +686,8 @@ export class CN_action_list extends CN_base_action {
         `);
         if (page == this.#current_page) page_el.classList.add("active");
         pagination_el.append(page_el);
-        page_el.querySelector("button").addEventListener("click", () => {
-          if (page != this.#current_page) {
-            this.#current_page = page;
-            this.run();
-          }
+        page_el.querySelector("button").addEventListener("click", async () => {
+          if (page != this.#current_page) await this.set_page(page);
         });
       }
 
@@ -679,11 +697,8 @@ export class CN_action_list extends CN_base_action {
       `);
       if (pages == this.#current_page) next_el.classList.add("disabled");
       pagination_el.append(next_el);
-      next_el.querySelector("button").addEventListener("click", () => {
-        if (pages != this.#current_page) {
-          this.#current_page = pages;
-          this.run();
-        }
+      next_el.querySelector("button").addEventListener("click", async () => {
+        if (pages != this.#current_page) await this.set_page(pages);
       });
     }
   }

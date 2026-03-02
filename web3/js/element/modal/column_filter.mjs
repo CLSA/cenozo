@@ -30,7 +30,11 @@ export class CN_modal_column_filter extends CN_base_modal {
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
-    this.add_resolve_button("success", this.get_config("ok_text"), () => this._resolve(this.#condition_list));
+    this.add_resolve_button(
+      "success",
+      this.get_config("ok_text"),
+      () => this._resolve(this.#condition_list.map(c => ({ operator: c.operator, value: c.value, or: c.or })))
+    );
 
     // determine the operator list based on the type
     const column = this.get_config("column");
