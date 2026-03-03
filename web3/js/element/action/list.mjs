@@ -582,6 +582,7 @@ export class CN_action_list extends CN_base_action {
         if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
       }
       tr_el.addEventListener("click", this.on_row_click.bind(this, record));
+      const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
       for (const col_name in this.#columns) {
         // don't show hidden columns
         const column = this.#columns[col_name];
@@ -608,11 +609,30 @@ export class CN_action_list extends CN_base_action {
             }
           }
 
-          tr_el.innerHTML += `
-            <td
-              class="text-${column.align} text-truncate border border-light border-2"
-            >${value}</td>
-          `;
+          /*
+          delete_btn_el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.on_delete(record);
+          });
+          */
+
+          let content = (
+            last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete() ?
+            `
+              <div class="d-flex">
+                <div class="w-100">${value}</div>
+                <div class="flex-shrink-1">
+                  <button name="delete" class="btn btn-sm btn-danger">
+                    <i class="bi bi-x-circle-fill"></i>
+                  </button>
+                </div>
+              </div>
+            ` :
+            value
+          );
+
+          tr_el.innerHTML +=
+            `<td class="text-${column.align} text-truncate border border-light border-2">${content}</td>`;
         }
       }
 
@@ -622,24 +642,6 @@ export class CN_action_list extends CN_base_action {
       if (0 < len) {
         td_el_list[0].classList.add("border-start-0");
         td_el_list[len-1].classList.add("border-end-0");
-      }
-
-
-      if ("choose" != this.#list_mode && model.allow_delete()) {
-        // add the delete button row, only including a button if deleting is allowed
-        tr_el.innerHTML += `
-          <td class="col-auto d-flex justify-content-end">
-            <button name="delete" class="btn btn-sm btn-danger"><i class="bi bi-x-circle-fill"></i></button>
-          </td>
-        `;
-
-        // wire up the delete button if there is one
-        if (model.allow_delete()) {
-          tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.on_delete(record);
-          });
-        }
       }
 
       tbody_el.append(tr_el);
@@ -776,6 +778,8 @@ export class CN_action_list extends CN_base_action {
   create_body_element() {
     if (this.#columns.length <= 0) throw new Error("Number of table columns must be > 0");
 
+    const model = this.get_model();
+
     const table_el = this.constructor.html(`
       <div class="table-responsive">
         <table class="table table-striped table-hover m-0">
@@ -788,10 +792,15 @@ export class CN_action_list extends CN_base_action {
     // build the header row
     let header_tr_el = this.constructor.html("<tr></tr>");
 
+    const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
-      if (!column.is_hidden(this.get_model())) {
-        header_tr_el.append(this.create_table_header_element(column));
+      if (!column.is_hidden(model)) {
+        const th_el = this.create_table_header_element(column);
+        if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
+          th_el.querySelector("div.d-flex").append(this.constructor.html('<div class="px-4"></div>'));
+        }
+        header_tr_el.append(th_el);
       }
     }
 
@@ -801,12 +810,6 @@ export class CN_action_list extends CN_base_action {
     if (0 < len) {
       th_el_list[0].classList.add("border-start-0");
       th_el_list[len-1].classList.add("border-end-0");
-    }
-
-    if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
-      //add an empty header for deleting records (width 0 so it isn't shown if deleting isn't allowed)
-      const delete_header = this.constructor.html('<th name="delete" class="p-0" scope="col"></th>');
-      header_tr_el.append(delete_header);
     }
 
     table_el.querySelector("thead").append(header_tr_el);
