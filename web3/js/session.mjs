@@ -305,7 +305,14 @@ export default {
 
         // validate the module
         module = this.get_module(module_name);
-        if (!module) throw new Error(`Error loading session: module "${module_name}" does not exist`);
+        if (!module) {
+          // this is usually because the user does not have access to the module
+          let error = new URIError();
+          error.error_code = null;
+          error.name = "Invalid URL";
+          error.message = `Error loading session: module "${module_name}" does not exist`;
+          throw error;
+        }
 
         if (CN_common.is_object(model_data)) {
           // gather the promise from loading the module's classes

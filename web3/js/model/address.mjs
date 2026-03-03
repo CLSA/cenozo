@@ -4,7 +4,7 @@ import CN_session from "../session.mjs"
 
 import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
 import { CN_country_model } from "./country.mjs"
-const { CN_base_element } = await import(`${CENOZO_URL}/js/element/base_element.mjs`);
+import { CN_base_element } from "../element/base_element.mjs"
 
 export class CN_address_model extends CN_traceable_model {
   constructor() {

@@ -29,12 +29,14 @@ export class CN_input_text extends CN_base_input {
    */
   flash_border() {
     const control_el = this.get_control_element();
-    const old_style = control_el.style;
-    control_el.style["border-color"] = "green";
-    setTimeout(() => {
-      control_el.style = old_style;
-      this.update_element();
-    }, 500);
+    if (control_el) {
+      const old_style = control_el.style;
+      control_el.style["border-color"] = "green";
+      setTimeout(() => {
+        control_el.style = old_style;
+        this.update_element();
+      }, 500);
+    }
   }
 
   /**
@@ -44,8 +46,10 @@ export class CN_input_text extends CN_base_input {
     super.update_element();
 
     const control_el = this.get_control_element();
-    control_el.style.height = "";
-    control_el.style.height = control_el.scrollHeight + "px";
+    if (control_el) {
+      control_el.style.height = "";
+      control_el.style.height = control_el.scrollHeight + "px";
+    }
   }
 
   /**

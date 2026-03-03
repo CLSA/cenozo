@@ -32,13 +32,7 @@ export class CN_trace_model extends CN_base_model {
         trace_type_id: {
           title: "Trace Type",
           type: "enum",
-          enum: {
-            path: "trace_type",
-            select: { column: [
-              "name",
-
-            ] },
-          },
+          enum: { path: "trace_type" },
         },
         note: { title: "Note", type: "text" },
       },

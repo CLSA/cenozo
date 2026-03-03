@@ -194,16 +194,14 @@ export class CN_base_input extends CN_base_element {
     await super.on_dom_add();
 
     // bind the control to the state
-    if (this.#state && !this.#state.is_bound()) {
-      this.#state.bind_element(this.#control_el);
-    }
+    if (!this.#state.is_bound()) this.#state.bind_element(this.#control_el);
   }
 
   /**
    * ADD DOCS
    */
   get_value() {
-    return this.#state.is_bound() ? this.#state.get() : this.#control_el.value;
+    return this.#state.get();
   }
 
   /**
@@ -218,11 +216,7 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   set_value(value) {
-    if (this.#state.is_bound()) {
-      this.#state.set(value);
-    } else {
-      this.#control_el.value = value;
-    }
+    this.#state.set(value);
   }
 
   /**

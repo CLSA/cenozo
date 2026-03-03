@@ -2,6 +2,14 @@ import CN_api from "../../api.mjs"
 import CN_common from "../../common.mjs"
 import { CN_base_input } from "./base_input.mjs"
 
+function test_option(option, value) {
+  return (
+    (1 === option.key && true === value) ||
+    (0 === option.key && false === value) ||
+    (null !== value && option.key === value)
+  );
+}
+
 export class CN_input_enum extends CN_base_input {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
@@ -23,13 +31,6 @@ export class CN_input_enum extends CN_base_input {
   }
 
   /**
-   * Extends the parent method
-   */
-  _create_control_element() {
-    return this.constructor.html('<select class="form-select"></select>');
-  }
-
-  /**
    * Extend parent method
    */
   get_value() {
@@ -42,17 +43,20 @@ export class CN_input_enum extends CN_base_input {
    * Extend parent method
    */
   set_value(value) {
+    if (null === value) value = "";
     super.set_value(value);
 
-    const el = this.get_control_element();
-    this.get_config("enum").values.forEach(option => {
-      const option_el = el.querySelector(`option[value="${option.key}"]`);
-      if (value == option.key) {
-        option_el.selected = true;
-      } else {
-        option_el.removeAttribute("selected");
-      }
-    });
+    const control_el = this.get_control_element();
+    if (control_el) {
+      this.get_config("enum").values.forEach(option => {
+        const option_el = control_el.querySelector(`option[value="${option.key}"]`);
+        if (test_option(option, value)) {
+          option_el.selected = true;
+        } else {
+          option_el.removeAttribute("selected");
+        }
+      });
+    }
   }
 
   /**
@@ -93,7 +97,7 @@ export class CN_input_enum extends CN_base_input {
         return list;
       }, []);
     } else {
-      // check for enums in the column definition (for inputs linked to an action only)
+      // check for enums in the column definition (only for inputs linked to an action)
       const action = this.get_action();
       if (action) {
         const module_prop = action.get_model().get_module().get_property(control_el.getAttribute("name"));
@@ -121,30 +125,26 @@ export class CN_input_enum extends CN_base_input {
         this.get_config("get_default")(this.get_action() ? this.get_action().get_model() : null) :
         null
       );
+      const value = this.get_value();
 
       // add a placeholder option
       if (!required || null == default_value) {
-        control_el.prepend(this.constructor.html(`
-          <option value="">${
-            this.has_config("placeholder") ?
-            this.get_config("placeholder") : // use the placeholder in the config if one exists
-            (required ? "(Select an option...)" : "(empty)")
-          }</option>
-        `));
+        const option_el = this.constructor.html('<option value=""></option>');
+        option_el.innerHTML = (
+          this.has_config("placeholder") ?
+          this.get_config("placeholder") : // use the placeholder in the config if one exists
+          (required ? "(Select an option...)" : "(empty)")
+        );
+        if ("" === value) option_el.selected = true;
+        control_el.prepend(option_el);
       }
 
-      const value = this.get_value();
       enum_obj.values.forEach(option => {
         const option_el = this.constructor.html(`<option value="${option.key}">${option.value}</option>`);
         if (option.disabled) option_el.setAttribute("disabled", true);
 
         // determine which option is selected
-        if (
-          ("" == option.key && null === value) ||
-          (1 == option.key && true === value) ||
-          (0 == option.key && false === value) ||
-          (null != value && option.key === value)
-        ) {
+        if (test_option(option, value)) {
           option_el.selected = true;
         } else {
           option_el.removeAttribute("selected");
@@ -153,6 +153,13 @@ export class CN_input_enum extends CN_base_input {
         control_el.append(option_el);
       });
     }
+  }
+
+  /**
+   * Extends the parent method
+   */
+  _create_control_element() {
+    return this.constructor.html('<select class="form-select"></select>');
   }
 
   /**

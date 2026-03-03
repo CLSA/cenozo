@@ -49,7 +49,6 @@ export class CN_action_base_record extends CN_base_action {
 
         this.add_property(group_name, prop_name, CN_common.clone(entry));
       }
-      const prop = CN_common.clone(properties[key]);
     }
   }
 
@@ -156,7 +155,6 @@ export class CN_action_base_record extends CN_base_action {
     }
 
     const module = this.get_model().get_module();
-    const module_prop = module.get_property(prop_name);
     prop.id = [this.get_model().get_unique_id(), prop_name].join("-");
     prop.name = prop_name;
     if (!prop.type) prop.type = "string";
@@ -188,6 +186,7 @@ export class CN_action_base_record extends CN_base_action {
     if (!CN_common.is_function(prop.get_default)) {
       // if the column is a reference to the parent then use the parent's id
       prop.get_default = (model) => {
+        const module_prop = module.get_property(prop_name);
         const parent_model = model.get_parent_model();
         return (
           parent_model && prop.name.match(`${parent_model.get_name()}_id`) ?
@@ -196,6 +195,9 @@ export class CN_action_base_record extends CN_base_action {
         );
       };
     }
+
+    // now create the form_input associated with this property
+    this.create_property_form_input(prop);
 
     // finally, add the property to the appropriate group ($main being the default group)
     this.#property_groups[!group_name ? "$main" : group_name].properties[prop_name] = prop;
@@ -255,157 +257,13 @@ export class CN_action_base_record extends CN_base_action {
   }
 
   /**
-   * Extends parent method
+   * Creates a property's form input
+   * @param {}: prop
    */
-  update_element() {
-    super.update_element();
-
-    // update whether the record can be edited
-    const fieldset_el = this.get_body_element().querySelector('fieldset');
-    if (fieldset_el) {
-      fieldset_el.disabled = "view" == this.get_type() && !this.get_model().allow_edit();
-    }
-
-    for (const group_name in this.#property_groups) {
-      const group = this.#property_groups[group_name];
-      if ("$main" != group_name) {
-        const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
-        if (group_el) {
-          if (group.is_hidden(this.get_model())) {
-            group_el.style.display = "none";
-          } else {
-            group_el.style.removeProperty("display");
-          }
-        }
-      }
-      for (const prop_name in group.properties) {
-        const prop = group.properties[prop_name];
-        const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
-        if (prop_el) {
-          // remove any properties that evaluate to hidden
-          if (prop.is_hidden(this.get_model())) {
-            prop_el.style.display = "none";
-          } else {
-            prop_el.style.removeProperty("display");
-          }
-
-          // disable any properties that evaluate to constant
-          prop.form_input.set_disabled(prop.is_constant(this.get_model()));
-
-          // now update the property element (this varies in the child action_add and action_view classes)
-          this.update_property_element(prop.name);
-        }
-      }
-    }
-  }
-
-  /**
-   * Extends parent method
-   */
-  create_body_element() {
-    const form_el = this.constructor.html("<form><fieldset></fieldset></form>");
-
-    // create the main group above all others
-    if (this.#property_groups.hasOwnProperty("$main")) {
-      const parent_el = this.constructor.html('<div class="px-3"></div>');
-      form_el.querySelector("fieldset").append(parent_el);
-      for (const prop_name in this.#property_groups.$main.properties) {
-        const prop = this.#property_groups.$main.properties[prop_name];
-        prop.element = this.create_property_element(prop_name);
-        parent_el.append(prop.element);
-      }
-    }
-
-    // now create all other groups
-    let accordion_el = null;
-
-    for (const group_name in this.#property_groups) {
-      if ("$main" != group_name) {
-        if (null == accordion_el) {
-          accordion_el = this.constructor.html(`<div class="accordion accordion-flush"></div>`);
-        }
-
-        const group_el = this.create_property_group_element(group_name);
-        accordion_el.append(group_el);
-        const group_body_el = group_el.querySelector("div.accordion-body");
-        for (const prop_name in this.#property_groups[group_name].properties) {
-          const prop = this.#property_groups[group_name].properties[prop_name];
-          prop.element = this.create_property_element(prop_name);
-          group_body_el.append(prop.element);
-        }
-      }
-    }
-
-    if (null != accordion_el) form_el.querySelector("fieldset").append(accordion_el);
-
-    return form_el;
-  }
-
-  /**
-   * Extends parent method
-   */
-  create_placeholder_element() {
-    const el_list = Array.from(Array(7).keys()).map((e,index) => `
-      <div class="row mb-3">
-        <label class="col-sm-3 col-form-label text-end placeholder-glow">
-          <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
-        </label>
-        <div class="col-sm-9 placeholder-glow h-100">
-          <input class="form-control placeholder" disabled></input>
-        </div>
-      </div>
-    `);
-
-    return this.constructor.html(`<div class="px-3">${el_list.join("")}</div>`);
-  }
-
-  /**
-   * Creates a property group's element
-   * @param string group_name
-   * @return Element
-   */
-  create_property_group_element(group_name) {
-    const group = this.#property_groups[group_name];
-    const group_id = [this.get_model().get_unique_id(), group_name].join("-");
-    return this.constructor.html(`
-      <div name="${group_name}" class="accordion-item px-0">
-        <div class="accordion-header">
-          <button
-            class="accordion-button ${group.open ? "" : "collapsed"} fw-bold py-2"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#${group_id}"
-            aria-expanded="${group.open ? "true" : "false"}"
-            aria-controls="${group_id}"
-          >${group.title}</button>
-        </div>
-        <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
-          <div class="accordion-body"></div>
-        </div>
-      </div>
-    `);
-  }
-
-  /**
-   * Creates a property's element
-   * @param string prop_name
-   * @return Element
-   */
-  create_property_element(prop_name) {
-    const module_prop = this.get_model().get_module().get_property(prop_name);
-    const prop = this.get_property(prop_name);
-    const prop_el = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
-
-    // add the label to the property
-    const label_el = CN_element_label.create_element( prop_el, {
-      for: prop.id,
-      value: prop.title,
-      help: prop.help
-    });
-    label_el.classList.add("col-sm-3");
-
+  create_property_form_input(prop) {
     if (!prop.form_input) {
       // determine the property's UI element based on the type
+      const module_prop = this.get_model().get_module().get_property(prop.name);
       const input_config = CN_common.clone(prop);
       delete input_config.type;
       if (undefined === input_config.required) input_config.required = module_prop ? module_prop.required : false;
@@ -481,11 +339,159 @@ export class CN_action_base_record extends CN_base_action {
           );
         };
       }
-      prop.form_input = CN_input.create_input(prop.type, prop_el, input_config);
-      prop_el.append(prop.form_input.get_element());
+      prop.form_input = CN_input.create_input(prop.type, null, input_config);
+    }
+  }
+
+  /**
+   * Extends parent method
+   */
+  update_element() {
+    super.update_element();
+
+    // update whether the record can be edited
+    const fieldset_el = this.get_body_element().querySelector('fieldset');
+    if (fieldset_el) {
+      fieldset_el.disabled = "view" == this.get_type() && !this.get_model().allow_edit();
     }
 
-    return prop_el;
+    for (const group_name in this.#property_groups) {
+      const group = this.#property_groups[group_name];
+      if ("$main" != group_name) {
+        const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
+        if (group_el) {
+          if (group.is_hidden(this.get_model())) {
+            group_el.style.display = "none";
+          } else {
+            group_el.style.removeProperty("display");
+          }
+        }
+      }
+      for (const prop_name in group.properties) {
+        const prop = group.properties[prop_name];
+        const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
+        if (prop_el) {
+          // remove any properties that evaluate to hidden
+          if (prop.is_hidden(this.get_model())) {
+            prop_el.style.display = "none";
+          } else {
+            prop_el.style.removeProperty("display");
+          }
+
+          // disable any properties that evaluate to constant
+          prop.form_input.set_disabled(prop.is_constant(this.get_model()));
+
+          // now update the property element (this varies in the child action_add and action_view classes)
+          this.update_property_element(prop.name);
+        }
+      }
+    }
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_body_element() {
+    const form_el = this.constructor.html("<form><fieldset></fieldset></form>");
+
+    // create the main group above all others
+    if (this.#property_groups.hasOwnProperty("$main")) {
+      const parent_el = this.constructor.html('<div class="px-3"></div>');
+      form_el.querySelector("fieldset").append(parent_el);
+      for (const prop_name in this.#property_groups.$main.properties) {
+        const prop = this.#property_groups.$main.properties[prop_name];
+        this.create_property_element(prop);
+        parent_el.append(prop.element);
+      }
+    }
+
+    // now create all other groups
+    let accordion_el = null;
+
+    for (const group_name in this.#property_groups) {
+      if ("$main" != group_name) {
+        if (null == accordion_el) {
+          accordion_el = this.constructor.html(`<div class="accordion accordion-flush"></div>`);
+        }
+
+        const group_el = this.create_property_group_element(group_name);
+        accordion_el.append(group_el);
+        const group_body_el = group_el.querySelector("div.accordion-body");
+        for (const prop_name in this.#property_groups[group_name].properties) {
+          const prop = this.#property_groups[group_name].properties[prop_name];
+          this.create_property_element(prop);
+          group_body_el.append(prop.element);
+        }
+      }
+    }
+
+    if (null != accordion_el) form_el.querySelector("fieldset").append(accordion_el);
+
+    return form_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_placeholder_element() {
+    const el_list = Array.from(Array(7).keys()).map((e,index) => `
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label text-end placeholder-glow">
+          <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
+        </label>
+        <div class="col-sm-9 placeholder-glow h-100">
+          <input class="form-control placeholder" disabled></input>
+        </div>
+      </div>
+    `);
+
+    return this.constructor.html(`<div class="px-3">${el_list.join("")}</div>`);
+  }
+
+  /**
+   * Creates a property group's element
+   * @param string group_name
+   * @return Element
+   */
+  create_property_group_element(group_name) {
+    const group = this.#property_groups[group_name];
+    const group_id = [this.get_model().get_unique_id(), group_name].join("-");
+    return this.constructor.html(`
+      <div name="${group_name}" class="accordion-item px-0">
+        <div class="accordion-header">
+          <button
+            class="accordion-button ${group.open ? "" : "collapsed"} fw-bold py-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#${group_id}"
+            aria-expanded="${group.open ? "true" : "false"}"
+            aria-controls="${group_id}"
+          >${group.title}</button>
+        </div>
+        <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+    `);
+  }
+
+  /**
+   * Creates a property's element, storing it in the prop parameter as a new "element" property
+   * @param {}: prop
+   */
+  create_property_element(prop) {
+    prop.element = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
+
+    // add the label to the property
+    const label_el = CN_element_label.create_element(prop.element, {
+      for: prop.id,
+      value: prop.title,
+      help: prop.help
+    });
+    label_el.classList.add("col-sm-3");
+
+    prop.form_input.set_parent_element(prop.element);
+    prop.element.append(prop.form_input.get_element());
   }
 
   /**

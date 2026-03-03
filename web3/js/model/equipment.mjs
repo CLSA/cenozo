@@ -1,4 +1,5 @@
 import CN_api from "../api.mjs"
+import CN_session from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
 import { CN_participant_model } from "./participant.mjs"
@@ -15,19 +16,18 @@ export class CN_equipment_model extends CN_base_model {
         equipment_type: { column: "equipment_type.name", title: "Type" },
         active: { title: "Active", type: "boolean" },
         site: { column: "site.name", title: "Site" },
-        serial_number: { title: "SN" },
+        serial_number: { title: "Serial Number" },
         status: { title: "Status" },
         uid: { column: "participant.uid", title: "On Loan" },
         note: { column: "equipment.note", title: "Note", type: "text" },
       },
+      default_order: "serial_number",
       properties: {
         equipment_type_id: {
           title: "Equipment Type",
           type: "enum",
           enum: { path: "equipment_type" },
           is_constant: (model) => "view" == model.get_action_name(),
-          // TODO: reimplement
-          //isExcluded: function ($state, model) { return "equipment_type" == model.getSubjectFromState(); },
         },
         active: {
           title: "Active",
@@ -38,8 +38,7 @@ export class CN_equipment_model extends CN_base_model {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
-          // TODO: reimplement
-          //isExcluded: function ($state, model) { return !model.showSite(); },
+          is_hidden: (model) => !CN_session.data.role.all_sites || "site" == model.get_parent_model().get_name(),
         },
         serial_number: { title: "Serial Number", format: "identifier" },
         status: {

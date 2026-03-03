@@ -42,14 +42,27 @@ export class CN_action_list extends CN_base_action {
       if (undefined === column.table_prefix) column.table_prefix = true;
       if (undefined === column.align) column.align = "left";
 
+      // determine the column's full name
+      column.table_name = model.get_name();
+      column.column_name = col_name;
+      if (column.column) {
+        // make sure column is table_name.column_name
+        if (null == column.column.match(/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/)) {
+          throw new Error(`
+            Column "${col_name}" in model ${model.get_name()}
+            has invalid column property "${column.column}",
+            must be in the form "table.column"
+          `);
+        }
+        [column.table_name, column.column_name] = column.column.split(".");
+      }
+
       // define the is_hidden function if it hasn't been defined
       if (!CN_common.is_function(column.is_hidden)) {
         column.is_hidden = (model) => {
-          if (!column.column) return false;
-
           // if there's a parent then don't show columns belonging to the parent's name
           const parent_model = model.get_parent_model();
-          return null != parent_model && column.column.match(`${parent_model.get_name()}\.`);
+          return null != parent_model && parent_model.get_name() == column.table_name;
         };
       }
     }
@@ -302,19 +315,18 @@ export class CN_action_list extends CN_base_action {
 
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
-      let table_name = model.get_name();
-      let effective_col_name = col_name;
-      if (column.table_prefix) {
-        if (column.column) [table_name, effective_col_name] = column.column.split(".");
-        params.select.column.push({ table: table_name, column: effective_col_name, alias: col_name });
-      } else if (column.column) {
-        params.select.column.push({ column: column.column, alias: col_name, table_prefix: false });
+      if (column.column || column.table_prefix) {
+        params.select.column.push({ table: column.table_name, column: column.column_name, alias: col_name });
       } else {
         // no table prefix means just add the column name
-        params.select.column.push(col_name);
+        params.select.column.push(column.column_name);
       }
 
-      const full_column_name = column.table_prefix ? `${table_name}.${effective_col_name}` : effective_col_name;
+      const full_column_name = (
+        column.table_prefix ?
+        [column.table_name, column.column_name].join(".") :
+        column.column_name
+      );
 
       // apply the order
       if (null != column.order) {
@@ -333,12 +345,10 @@ export class CN_action_list extends CN_base_action {
         ...params.modifier.where,
         ...column.condition_list.map(condition => {
           const where = {
-            ...{ column: full_column_name },
+            // use the column definition if there is one
+            ...{ column: column.column ? column.column : full_column_name },
             ...condition
           };
-
-          // use the column definition if there is one
-          if (column.column) where.column = column.column;
 
           // setup LIKE operations
           if (["LIKE", "NOT LIKE"].includes(where.operator)) {

@@ -18,19 +18,21 @@ export class CN_state extends CN_base_object {
    * @param Element el: The element to bind, usually a form element
    */
   bind_element(el) {
-    const set = () => this.set(
-      // getting the element's value varries depending on the type
-      "file" == this.#element.type ? this.#element.files :
-      "audio" == this.#element.localName ? this.#element.src :
-      this.#element.value
-    );
-
-    // set the state's value now and anytime the element changes
+    // set the element's value to the state's current value
     this.#element = el;
-    set();
+    this.update_element();
 
     // the last argument is true so that this listener is fired before any other
-    this.#element.addEventListener("input", set, true);
+    this.#element.addEventListener(
+      "input",
+      () => this.set(
+        // getting the element's value varies depending on the type
+        "file" == this.#element.type ? this.#element.files :
+        "audio" == this.#element.localName ? this.#element.src :
+        this.#element.value
+      ),
+      true
+    );
   }
 
   /**
