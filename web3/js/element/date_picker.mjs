@@ -314,10 +314,10 @@ export class CN_element_date_picker extends CN_base_element {
 
     // loop through all year ranges
     for (let row = this.#start_year; row < this.#start_year + this.#year_range; row += 5) {
-      const tr_el = CN_base_element.html("<tr></tr>");
+      const tr_el = this.constructor.html("<tr></tr>");
       for (let col = 0; col < 5; col++) {
-        const td_el = CN_base_element.html(`<td class="text-center p-0"></td>`);
-        const btn_el = CN_base_element.html(
+        const td_el = this.constructor.html(`<td class="text-center p-0"></td>`);
+        const btn_el = this.constructor.html(
           `<button class="btn btn-light col-12 rounded-0" value="${row + col}">${row + col}</button>`
         );
         btn_el.addEventListener("click", () => {

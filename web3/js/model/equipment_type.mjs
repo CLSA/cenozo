@@ -2,7 +2,6 @@ import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
-import { CN_base_element } from "../element/base_element.mjs"
 import { CN_action_upload } from "../element/action/upload.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 
@@ -40,7 +39,7 @@ export class CN_equipment_type_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     if (this.get_model().get_module().action_allowed("upload")) {
-      const upload_btn_el = CN_base_element.html(`
+      const upload_btn_el = this.constructor.html(`
         <button name="upload" type="button" class="btn btn-light btn-outline-primary">
           Import Equipment Data
         </button>
@@ -79,13 +78,13 @@ export class CN_equipment_type_upload extends CN_action_upload {
     if (CN_common.is_object(summary_data)) {
       const summary_card_el = this.get_body_element().querySelector("[name=summary] div.card-body");
 
-      summary_card_el.append(CN_base_element.html(`
+      summary_card_el.append(this.constructor.html(`
         <div class="container">
           <span class="fs-5 fw-bold">Equipment Data:</span>
           ${summary_data.equipment.new} new, ${summary_data.equipment.update} existing
         </div>
       `));
-      summary_card_el.append(CN_base_element.html(`
+      summary_card_el.append(this.constructor.html(`
         <div class="container">
           <span class="fs-5 fw-bold">Loan Data:</span>
           ${summary_data.loan.new} new, ${summary_data.loan.update} existing
@@ -93,13 +92,13 @@ export class CN_equipment_type_upload extends CN_action_upload {
       `));
 
       if (0 < summary_data.invalid.length) {
-        const invalid_el = CN_base_element.html(`
+        const invalid_el = this.constructor.html(`
           <div class="container">
             <div class="fs-5 fw-bold">Equipment Data:</div>
           </div>
         `);
-        const ul_el = CN_base_element.html('<ul class="text-danger"></ul>');
-        summary_data.invalid.forEach(message => ul_el.append(CN_base_element.html(`<li>${message}</li>`)));
+        const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
+        summary_data.invalid.forEach(message => ul_el.append(this.constructor.html(`<li>${message}</li>`)));
         invalid_el.append(ul_el);
         summary_card_el.append(invalid_el);
       }
@@ -112,7 +111,7 @@ export class CN_equipment_type_upload extends CN_action_upload {
   create_body_element() {
     const body_el = super.create_body_element();
 
-    body_el.prepend(CN_base_element.html(`
+    body_el.prepend(this.constructor.html(`
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
           This utility allows you to upload equipment data from a CSV file.

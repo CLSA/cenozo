@@ -3,7 +3,6 @@ import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
 import { CN_base_action } from "../element/action/base_action.mjs"
-import { CN_base_element } from "../element/base_element.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
@@ -44,7 +43,7 @@ export class CN_base_person_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     // add the notes action
-    const notes_btn_el = CN_base_element.html(
+    const notes_btn_el = this.constructor.html(
       '<button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>'
     );
     notes_btn_el.addEventListener(
@@ -54,7 +53,7 @@ export class CN_base_person_view extends CN_action_view {
     footer_el.append(notes_btn_el);
 
     // add the history action
-    const history_btn_el = CN_base_element.html(
+    const history_btn_el = this.constructor.html(
       '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'
     );
     history_btn_el.addEventListener(
@@ -64,7 +63,7 @@ export class CN_base_person_view extends CN_action_view {
     footer_el.append(history_btn_el);
 
     // add the timezone action
-    const timezone_btn_el = CN_base_element.html(
+    const timezone_btn_el = this.constructor.html(
       '<button name="timezone" type="button" class="btn btn-light btn-outline-primary">Use Timezone</button>'
     );
     timezone_btn_el.addEventListener("click", async () => {
@@ -463,7 +462,7 @@ export class CN_base_person_history extends CN_base_action {
     const data_list_el = this.get_element().querySelector("[name=data_list]");
     data_list_el.innerHTML = "";
     this.#data_list.filter(data => null === this.get_query_parameter(data.category.subject)).forEach(data => {
-      data_list_el.append(CN_base_element.html(`
+      data_list_el.append(this.constructor.html(`
         <div class="card">
           <div class="card-body row p-2">
             <div class="col-4">
@@ -500,14 +499,14 @@ export class CN_base_person_history extends CN_base_action {
       </div>
     `);
 
-    return CN_base_element.html(`<div name="data_list" class="container-fluid">${card_list.join("")}</div>`);
+    return this.constructor.html(`<div name="data_list" class="container-fluid">${card_list.join("")}</div>`);
   }
 
   /**
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_base_element.html(`
+    const body_el = this.constructor.html(`
       <div>
         <div name="button_list" class="container-fluid"></div>
         <hr></hr>
@@ -518,7 +517,7 @@ export class CN_base_person_history extends CN_base_action {
     // add the visibility toggles
     const button_list_el = body_el.querySelector("[name=button_list]");
 
-    button_list_el.append(CN_base_element.html(`
+    button_list_el.append(this.constructor.html(`
       <div class="row">
         <button name="select_all" class="col btn btn-primary">Select All</button>
         <button name="select_none" class="col btn btn-primary">Select None</button>
@@ -547,11 +546,11 @@ export class CN_base_person_history extends CN_base_action {
       this.update_element();
     });
 
-    const select_group_el = CN_base_element.html('<div name="select_group" class="row"></div>');
+    const select_group_el = this.constructor.html('<div name="select_group" class="row"></div>');
     button_list_el.append(select_group_el);
 
     this.#category_list.forEach(category => {
-      const btn_el = CN_base_element.html(`
+      const btn_el = this.constructor.html(`
         <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
           ${CN_common.uc_words(category.subject)}
           <i class="bi-${null === this.get_query_parameter(category.subject) ? "check" : "x"}-circle"></i>
@@ -594,7 +593,7 @@ export class CN_base_person_history extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_base_element.html(`
+    const footer_el = this.constructor.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">
           View ${CN_common.uc_words(this.get_model().get_singular())}
@@ -729,7 +728,7 @@ export class CN_base_person_notes extends CN_base_action {
       }
       details += `${CN_common.format_datetime(note.datetime, "datetimesecond")}`;
 
-      const note_el = CN_base_element.html(`
+      const note_el = this.constructor.html(`
         <div class="card">
           <div class="card-body row p-2">
             <div class="col-4 ${note.sticky ? "text-primary fw-bold" : ""}">${details}</div>
@@ -804,14 +803,14 @@ export class CN_base_person_notes extends CN_base_action {
       </div>
     `);
 
-    return CN_base_element.html(`<div name="note_list" class="container-fluid">${card_list.join("")}</div>`);
+    return this.constructor.html(`<div name="note_list" class="container-fluid">${card_list.join("")}</div>`);
   }
 
   /**
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_base_element.html(`
+    const body_el = this.constructor.html(`
       <div>
         <div name="note_add" class="container-fluid px-0">
           <div class="card">
@@ -877,7 +876,7 @@ export class CN_base_person_notes extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_base_element.html(`
+    const footer_el = this.constructor.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">
           View ${CN_common.uc_words(this.get_model().get_singular())}

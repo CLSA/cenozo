@@ -2,6 +2,7 @@ import { CN_api } from "../api.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_country_model } from "./country.mjs"
 
@@ -125,6 +126,14 @@ export class CN_application_model extends CN_base_model {
       },
     });
   }
+
+  /**
+   * Extend parent method
+   */
+  allow_view() {
+    const parent_model = this.get_parent_model();
+    return parent_model && "participant" == parent_model.get_name() ? false : super.allow_view();
+  }
 }
 
 export class CN_application_view extends CN_action_view {
@@ -138,5 +147,32 @@ export class CN_application_view extends CN_action_view {
       super.get_selector_child_list() :
       super.get_selector_child_list().filter(child => !["collection", "role"].includes(child.model.get_name()))
     );
+  }
+}
+
+export class CN_application_list extends CN_action_list {
+  /**
+   * Extend the parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    // add the manage applications action view when participant is the parent model
+    const parent_model = this.get_model().get_parent_model();
+    if (parent_model && "participant" == parent_model.get_name()) {
+      const manage_btn_el = this.constructor.html(`
+        <button
+          name="manage"
+          type="button"
+          class="btn btn-light btn-outline-primary"
+        >Manage Applications</button>
+      `);
+      manage_btn_el.addEventListener("click", async () => {
+        CN_session.navigate_to(`participant/release/${parent_model.get_identifier()}`);
+      });
+      footer_el.querySelector("div.btn-group").append(manage_btn_el);
+    }
+
+    return footer_el;
   }
 }

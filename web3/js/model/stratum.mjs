@@ -6,7 +6,6 @@ import { CN_participant_selection } from "./participant.mjs"
 import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
-import { CN_base_element } from "../element/base_element.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input_enum } from "../element/input/enum.mjs"
@@ -105,7 +104,7 @@ export class CN_stratum_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     if (this.get_model().get_module().action_allowed("mass_participant")) {
-      const mass_participant_btn_el = CN_base_element.html(`
+      const mass_participant_btn_el = this.constructor.html(`
         <button name="mass_participant" type="button" class="btn btn-light btn-outline-primary">
           Manage Stratum Participants
         </button>
@@ -205,7 +204,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_base_element.html(`
+    const body_el = this.constructor.html(`
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
           This utility allows you to add or remove lists of participants to or from the
@@ -259,11 +258,11 @@ export class CN_stratum_mass_participant extends CN_base_action {
       this.update_element();
     });
 
-    const summary_el = CN_base_element.html('<div class="container-fluid"></div>');
+    const summary_el = this.constructor.html('<div class="container-fluid"></div>');
     body_el.append(summary_el);
 
     // create the confirm button
-    const confirm_btn_el = CN_base_element.html(
+    const confirm_btn_el = this.constructor.html(
       '<button name="confirm" type="button" class="btn btn-primary"></button>'
     );
     confirm_btn_el.addEventListener("click", async () => {
@@ -299,7 +298,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_base_element.html(`
+    const footer_el = this.constructor.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">View Stratum</button>
       </div>

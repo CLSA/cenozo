@@ -3,7 +3,6 @@ import { CN_session } from "../session.mjs"
 
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
-import { CN_base_element } from "../element/base_element.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
 
 export class CN_mail_model extends CN_base_model {
@@ -149,7 +148,7 @@ export class CN_mail_view extends CN_action_view {
   create_footer_element() {
     const footer_el = super.create_footer_element();
 
-    const preview_btn_el = CN_base_element.html(
+    const preview_btn_el = this.constructor.html(
       '<button name="preview" type="button" class="btn btn-light btn-outline-primary">Preview</button>'
     );
     preview_btn_el.addEventListener("click", async () => {

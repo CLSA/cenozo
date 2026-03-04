@@ -67,7 +67,7 @@ export class CN_custom_report_view extends CN_action_view {
     const footer_el = super.create_footer_element();
 
     // add the download action
-    const download_btn_el = CN_base_element.html(
+    const download_btn_el = this.constructor.html(
       '<button name="download" type="button" class="btn btn-light btn-outline-primary">Run Report</button>'
     );
     download_btn_el.addEventListener(

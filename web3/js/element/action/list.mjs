@@ -574,9 +574,10 @@ export class CN_action_list extends CN_base_action {
     const tbody_el = this.get_body_element().querySelector("tbody");
     tbody_el.innerHTML = "";
 
+    const cursor = model.allow_view() ? 'style="cursor: grab"' : "";
     const start_index = (this.#current_page - 1) * 20;
     this.#records.map(record => {
-      let tr_el = this.constructor.html("<tr></tr>");
+      let tr_el = this.constructor.html(`<tr ${cursor}></tr>`);
       if (this.#is_choosing) {
         if (record.chosen) tr_el.classList.add("table-primary");
         if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
@@ -632,7 +633,7 @@ export class CN_action_list extends CN_base_action {
           );
 
           tr_el.innerHTML +=
-            `<td class="text-${column.align} text-truncate border border-light border-2">${content}</td>`;
+            `<td class="text-${column.align} text-truncate border border-light border-2 px-3">${content}</td>`;
         }
       }
 
@@ -737,7 +738,7 @@ export class CN_action_list extends CN_base_action {
           <button
             type="button"
             name="sort-button"
-            class="btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold"
+            class="btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold px-3"
           >
             ${help}
             ${column.title}
@@ -782,9 +783,9 @@ export class CN_action_list extends CN_base_action {
 
     const table_el = this.constructor.html(`
       <div class="table-responsive">
-        <table class="table table-striped table-hover m-0">
-          <thead name="header"></thead>
-          <tbody name="body"></tbody>
+        <table class="table table-striped ${model.allow_view() ? "table-hover" : ""} m-0">
+          <thead></thead>
+          <tbody></tbody>
         </table>
       </div>
     `);

@@ -1,6 +1,5 @@
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
-import { CN_base_element } from "../element/base_element.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input_string } from "../element/input/string.mjs"
 
@@ -44,7 +43,7 @@ export class CN_search_result_list extends CN_action_list {
 
     // add a search box below the header
     const id = [this.get_model().get_unique_id(), "query"].join("-");
-    const query_el = CN_base_element.html(
+    const query_el = this.constructor.html(
       '<div class="container-fluid bg-secondary p-2"><div class="row"></div></div>'
     );
     CN_element_label.create_element(query_el.querySelector("div.row"), {

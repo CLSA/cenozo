@@ -3,7 +3,6 @@ import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
-import { CN_base_element } from "../element/base_element.mjs"
 import { CN_modal_input } from "../element/modal/input.mjs"
 
 export class CN_user_model extends CN_base_model {
@@ -116,7 +115,7 @@ export class CN_user_list extends CN_action_list {
 
     // add the find action when viewing the base user list
     if (null == this.get_model().get_parent_model()) {
-      const find_btn_el = CN_base_element.html(
+      const find_btn_el = this.constructor.html(
         '<button name="find" type="button" class="btn btn-light btn-outline-primary">Find User</button>'
       );
       find_btn_el.addEventListener("click", async () => {

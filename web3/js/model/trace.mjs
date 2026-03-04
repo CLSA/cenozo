@@ -45,8 +45,8 @@ export class CN_trace_add extends CN_action_add {
     await super.on_load();
 
     // only allow all-site roles to use the "unreachable" trace type
-    const prop = this.get_property("trace_type_id");
-    let trace_type = prop.enum.values.find(e => "unreachable" == e.name);
+    const enum_values = this.get_property("trace_type_id").form_input.get_config("enum").values;
+    let trace_type = enum_values.find(e => "unreachable" == e.name);
     if (trace_type) trace_type.disabled = true;
 
     // get the participant's current trace type
@@ -57,7 +57,7 @@ export class CN_trace_add extends CN_action_add {
 
     // disable that trace type from the available enum list to prevent duplicates
     if (0 < trace_list.length) {
-      trace_type = prop.enum.values.find(e => e.id == trace_list[0].trace_type_id);
+      trace_type = enum_values.find(e => e.id == trace_list[0].trace_type_id);
       if (trace_type) trace_type.disabled = true;
     }
   }
