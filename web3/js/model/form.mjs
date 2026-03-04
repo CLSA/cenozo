@@ -1,4 +1,4 @@
-import CN_session from "../session.mjs"
+import { CN_session } from "../session.mjs"
 
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"

@@ -1,5 +1,5 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
+import { CN_api } from "./api.mjs"
+import { CN_common } from "./common.mjs"
 import { CN_base_element } from "./element/base_element.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
 import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
@@ -10,6 +10,7 @@ import { CN_modal_site_role } from "./element/modal/site_role.mjs"
 import { CN_error_model } from "./model/error.mjs"
 import { CN_home_model } from "./model/home.mjs"
 import { CN_module } from "./module.mjs"
+import { CN_base_object } from "./base_object.mjs"
 
 /**
  * A private list of all modules used by the session
@@ -24,54 +25,58 @@ let PATH_MODEL_LIST = [];
 /**
  * The session class which handles the application
  */
-export default {
-  data: null,
-  system_message_list: [],
+export class CN_session extends CN_base_object {
+  static data = null;
+  static system_message_list = [];
 
-  home_model: null,
-  error_model: null,
+  static home_model = null;
+  static error_model = null;
+
+  constructor() {
+    throw new Error("Abstract class CN_session can't be instantiated.");
+  }
 
   /**
    * Gets a module by name
    * @param string name: The module's name
    */
-  get_module: name => MODULE_MAP.get(name),
+  static get_module(name) { return MODULE_MAP.get(name); }
 
   /**
    * Returns the last model in the path (model currently showing on screen)
    * @return model
    */
-  get_leaf_model: function () {
+  static get_leaf_model() {
     return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[PATH_MODEL_LIST.length-1];
-  },
+  }
 
   /**
    * Returns the first model in the path
    * @return model
    */
-  get_root_model: function () {
+  static get_root_model() {
     return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
-  },
+  }
 
   /**
    * Returns the name.action of the root module (or null if there is no root module)
    * @return string
    */
-  get_root_action_name: function () {
+  static get_root_action_name() {
     const model = 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
     return model ? `${model.get_name()}.${model.get_action_name()}` : null;
-  },
+  }
 
   /**
    * Returns the name.action of the leaf module (or null if there is no leaf module)
    * @return string
    */
-  get_leaf_action_name: function () {
+  static get_leaf_action_name() {
     const model = this.get_leaf_model();
     return model ? `${model.get_name()}.${model.get_action_name()}` : null;
-  },
+  }
 
-  set_loading_state: function (loading) {
+  static set_loading_state(loading) {
     if (loading) {
       document.querySelector("div[name=app_bg]").classList.add("loading");
       document.querySelector("nav.navbar").classList.add("bg-loading");
@@ -79,13 +84,13 @@ export default {
       document.querySelector("div[name=app_bg]").classList.remove("loading");
       document.querySelector("nav.navbar").classList.remove("bg-loading");
     }
-  },
+  }
 
   /**
    * Reloads the page at a particular path
    * @param boolean root: Wether to return to the application root
    */
-  reload: function (root = false) {
+  static reload(root = false) {
     this.update_breadcrumbs(true);
     const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
     menu_btn_group.innerHTML = "";
@@ -101,22 +106,22 @@ export default {
     } else {
       window.location.reload();
     }
-  },
+  }
 
   /**
    * Logs the user out of the application
    */
-  logout: async function () {
+  static async logout() {
     await CN_base_element.wait_for(async () => {
       await CN_api.delete("self/0");
       this.reload(true);
     });
-  },
+  }
 
   /**
    * Reads the user's session data from the server
    */
-  update_data: async function () {
+  static async update_data() {
     this.data = await CN_api.get("self/0");
 
     // convert use_12hour_clock to am_pm
@@ -165,12 +170,12 @@ export default {
     }
 
     MODULE_MAP.forEach(module => module.resolve_children());
-  },
+  }
 
   /**
    * Updates the system message list
    */
-  update_system_messages: async function () {
+  static async update_system_messages() {
     this.system_message_list = await CN_api.get(
       "self/0/system_message",
       {
@@ -179,12 +184,12 @@ export default {
         modifier: { order: { unread: true, id: false } },
       },
     );
-  },
+  }
 
   /**
    * Updates the breadcrumb trail based on the current URL
    */
-  update_breadcrumbs: function (loading = false) {
+  static update_breadcrumbs(loading = false) {
     // add the breadcrumbs
     const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
     breadcrumbs_el.innerHTML = "";
@@ -197,34 +202,34 @@ export default {
         )
       );
     })();
-  },
+  }
 
   /**
    * Gets the current time formatted by the user's preferences
    * @return string
    */
-  get_time: function () {
+  static get_time() {
     const datetime = CN_common.format_time(new Date());
     const tz = Intl.DateTimeFormat(
       'en-CA',
       { timeZone: this.data.user.timezone, timeZoneName: "short" }
     ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
     return `${datetime} ${tz}`;
-  },
+  }
 
-  get_timezone: function() {
+  static get_timezone() {
     return this.data.user.timezone;
-  },
+  }
 
-  get_am_pm: function() {
+  static get_am_pm() {
     return this.data.user.am_pm;
-  },
+  }
 
-  get_tz_offset: function() {
+  static get_tz_offset() {
     return this.data.user.tz_offset;
-  },
+  }
 
-  set_timezone: async function (timezone, am_pm) {
+  static async set_timezone(timezone, am_pm) {
     if (this.data.user.timezone != timezone || this.data.user.am_pm != am_pm) {
       this.update_breadcrumbs(true);
       const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
@@ -270,12 +275,12 @@ export default {
         window.location.reload(); // do not use the session's reload function
       }
     }
-  },
+  }
 
   /**
    * Loads all modules and creates all models based on the current URL
    */
-  load: async function () {
+  static async load() {
     const main_content_el = document.getElementById("main-content");
     const menu_el = document.getElementById("main-menu-offcanvas").querySelector("div[name=menu]");
 
@@ -379,12 +384,12 @@ export default {
         if (menu_btn_el) menu_btn_el.classList.add("fw-bold");
       }
     }
-  },
+  }
 
   /**
    * Renders the current state to the UI based on the loaded modules/models
    */
-  render: async function () {
+  static async render() {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
 
@@ -399,12 +404,12 @@ export default {
     main_content_el.append(leaf_model.render());
     await leaf_model.run();
     await this.update_breadcrumbs();
-  },
+  }
 
   /**
    * Renders an error to the UI
    */
-  render_error: function (error) {
+  static render_error(error) {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
 
@@ -413,12 +418,12 @@ export default {
     if (error instanceof URIError) model.status = 404;
     const error_module_el = model.render();
     main_content_el.append(error_module_el);
-  },
+  }
 
   /**
    * Navigates the browser to the given path
    */
-  navigate_to: async function (path) {
+  static async navigate_to(path) {
     if (this.data.application.development_mode) console.info(`navigating to /${path}`);
     window.history.pushState({}, "", `${ROOT_URL}/${path}`);
 
@@ -428,12 +433,12 @@ export default {
     } catch (error) {
       this.render_error(error);
     }
-  },
+  }
 
   /**
    * Creates the main UI body
    */
-  create_body: function () {
+  static create_body() {
     document.querySelector("div[name=app_body]").innerHTML = `
       <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
         <div class="container-fluid">
@@ -449,8 +454,8 @@ export default {
           <div name="breadcrumbs" class="collapse navbar-collapse ms-2">
           </div>
           <div name="menu-btn-group" class="d-flex">
-            <button name="access" class="btn btn-primary"></button>
-            <button name="clock" class="btn btn-primary">
+            <button name="access" class="btn btn-outline-light mx-1"></button>
+            <button name="clock" class="btn btn-outline-light">
               <i class="bi-clock-fill"></i>
               <span name="time" class="nav-item"></span>
             </button>
@@ -486,12 +491,12 @@ export default {
       </div>
       <div id="main-content" class="container-fluid my-2"></div>
     `;
-  },
+  }
 
   /**
    * Starts the application
    */
-  start: async function () {
+  static async start() {
     await this.update_data();
     if (this.data.application.development_mode) console.info("Development mode");
     this.create_body();
@@ -668,5 +673,5 @@ export default {
     } finally {
       this.set_loading_state(false);
     }
-  },
+  }
 }

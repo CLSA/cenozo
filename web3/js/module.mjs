@@ -1,6 +1,6 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_session from "./session.mjs"
+import { CN_api } from "./api.mjs"
+import { CN_common } from "./common.mjs"
+import { CN_session } from "./session.mjs"
 
 import { CN_action_add } from "./element/action/add.mjs"
 import { CN_action_list } from "./element/action/list.mjs"

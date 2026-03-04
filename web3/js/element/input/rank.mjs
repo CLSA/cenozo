@@ -1,4 +1,4 @@
-import CN_common from "../../common.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_input_enum } from "./enum.mjs"
 
 export class CN_input_rank extends CN_input_enum {

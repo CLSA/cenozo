@@ -1,7 +1,8 @@
-import CN_common from "./common.mjs"
-import CN_session from "./session.mjs"
+import { CN_common } from "./common.mjs"
+import { CN_session } from "./session.mjs"
 
 import { CN_modal_message } from "./element/modal/message.mjs"
+import { CN_base_object } from "./base_object.mjs"
 
 const SELECT_SHORT_NAMES = {
   alias: 'a',
@@ -43,7 +44,11 @@ for (const long in MODIFIER_SHORT_NAMES) MODIFIER_LONG_NAMES[MODIFIER_SHORT_NAME
  * be provided.  These methods also automatically format select and modifier objects and handle various
  * response codes returned by the API.
  */
-export default {
+export class CN_api extends CN_base_object {
+  constructor() {
+    throw new Error("Abstract class CN_api can't be instantiated.");
+  }
+
   /**
    * Fetch method used for all API calls, returns the result from calling the native fetch() function
    * @param strign path: The relative API path
@@ -51,7 +56,7 @@ export default {
    * @param object options: Fetch options passed directly to the native fetch() function
    * @return Response
    */
-  fetch: async function (path, params, options) {
+  static async fetch(path, params, options) {
     let url = `${ROOT_URL}/api/${path}`;
 
     if (CN_common.is_object(params)) {
@@ -154,7 +159,7 @@ export default {
     }
 
     return response;
-  },
+  }
 
   /**
    * Convenience method for all GET API calls
@@ -163,7 +168,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  get: async function (path, params, return_response = false) {
+  static async get(path, params, return_response = false) {
     const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
     const response = await this.fetch(
       path,
@@ -181,7 +186,7 @@ export default {
     } catch (error) {
       return body;
     }
-  },
+  }
 
   /**
    * Convenience method for getting the total number of records available at a query-based path
@@ -189,7 +194,7 @@ export default {
    * @param object params: Query URI parameters
    * @return integer
    */
-  count: async function (path, params) {
+  static async count(path, params) {
     if (CN_common.is_object(params)) {
       params.count = true;
     } else if (CN_common.is_string(params) && 0 < params.length) {
@@ -200,7 +205,7 @@ export default {
 
     const response = await this.get(path, params, true);
     return response.headers.get('X-Total');
-  },
+  }
 
   /**
    * Convenience method for all PATCH API calls
@@ -210,7 +215,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  patch: async function (path, data, raw = false, return_response = false) {
+  static async patch(path, data, raw = false, return_response = false) {
     const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
     const response = await this.fetch(
       path,
@@ -232,7 +237,7 @@ export default {
     } catch (error) {
       return body;
     }
-  },
+  }
 
   /**
    * Convenience method for all POST API calls
@@ -242,7 +247,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's json data
    * @return Response or object or string
    */
-  post: async function (path, data, raw = false, return_response = false) {
+  static async post(path, data, raw = false, return_response = false) {
     const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
     const response = await this.fetch(
       path,
@@ -264,16 +269,16 @@ export default {
     } catch (error) {
       return body;
     }
-  },
+  }
 
   /**
    * Convenience method for all DELETE API calls
    * @param strign path: The relative API path
    * @return Response
    */
-  delete: async function (path) {
+  static async delete(path) {
     return await this.fetch(path, null, { method: "DELETE" });
-  },
+  }
 
   /**
    * Convenience method for getting files from the API
@@ -283,7 +288,7 @@ export default {
    * @param boolean return_response: Whether to return the fetch response instead of the response's blob data
    * @return Response or object or string
    */
-  file: async function (path, mime_type = null, params = {}, return_response = false) {
+  static async file(path, mime_type = null, params = {}, return_response = false) {
     const headers = { "X-No-Activity": true };
     if (mime_type) {
       if ("csv" == mime_type) mime_type = "text/csv;charset=utf-8";
@@ -304,7 +309,7 @@ export default {
     const response = await this.fetch(path, params, { headers: headers });
 
     return return_response ? response : await response.blob();
-  },
+  }
 
   /**
    * Converts a select parameter into a stringified query parameter
@@ -334,9 +339,9 @@ export default {
    * @param object select
    * @return string
    */
-  select: function (select) {
+  static select(select) {
     return JSON.stringify(this.shorten_select(select));
-  },
+  }
 
   /**
    * Converts a modifier parameter into a stringified query parameter
@@ -379,16 +384,16 @@ export default {
    * @param object modifier
    * @return string
    */
-  modifier: function (modifier) {
+  static modifier(modifier) {
     return JSON.stringify(this.shorten_modifier(modifier));
-  },
+  }
 
   /**
    * Shortens all select properties
    * @param object select
    * @return object
    */
-  shorten_select: function (select) {
+  static shorten_select(select) {
     if (Array.isArray(select)) {
       return select.map(item => this.shorten_select(item));
     } else if (CN_common.is_object(select)) {
@@ -407,14 +412,14 @@ export default {
 
     // return non array/objects unchanged
     return select;
-  },
+  }
 
   /**
    * Lengthens all select properties
    * @param object select
    * @return object
    */
-  lengthen_select: function (select) {
+  static lengthen_select(select) {
     if (Array.isArray(select)) {
       return select.map(item => this.lengthen_select(item));
     } else if (CN_common.is_object(select)) {
@@ -433,14 +438,14 @@ export default {
 
     // return non array/objects unchanged
     return select;
-  },
+  }
 
   /**
    * Shortens all modifier properties
    * @param object modifier
    * @return object
    */
-  shorten_modifier: function (modifier) {
+  static shorten_modifier(modifier) {
     if (Array.isArray(modifier)) {
       return modifier.map(item => this.shorten_modifier(item));
     } else if (CN_common.is_object(modifier)) {
@@ -459,14 +464,14 @@ export default {
 
     // return non array/objects unchanged
     return modifier;
-  },
+  }
 
   /**
    * Lengthens all modifier properties
    * @param object modifier
    * @return object
    */
-  lengthen_modifier: function (modifier) {
+  static lengthen_modifier(modifier) {
     if (Array.isArray(modifier)) {
       return modifier.map(item => this.lengthen_modifier(item));
     } else if (CN_common.is_object(modifier)) {
@@ -485,5 +490,5 @@ export default {
 
     // return non array/objects unchanged
     return modifier;
-  },
+  }
 }

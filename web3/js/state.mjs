@@ -1,4 +1,4 @@
-import CN_common from "./common.mjs"
+import { CN_common } from "./common.mjs"
 
 import { CN_base_object } from "./base_object.mjs"
 

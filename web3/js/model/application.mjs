@@ -1,7 +1,6 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
-import CN_timezones from "../timezones.mjs"
-
+import { CN_api } from "../api.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_session } from "../session.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
 import { CN_country_model } from "./country.mjs"
@@ -120,7 +119,7 @@ export class CN_application_model extends CN_base_model {
           help: "A footer which is added to all emails sent out by the application.  This text may contain HTML markup.",
         },
         country_id: { title: "Country", type: "typeahead", typeahead: CN_country_model.get_typeahead() },
-        timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
+        timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },
         participant_count: { title: "Participants", meta: {}, is_constant: () => true },
         site_count: { title: "Sites", meta: {}, is_constant: () => true },
       },

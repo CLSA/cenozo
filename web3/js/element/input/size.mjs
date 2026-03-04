@@ -1,4 +1,4 @@
-import CN_common from "../../common.mjs"
+import { CN_common } from "../../common.mjs"
 
 import { CN_input_enum } from "./enum.mjs"
 import { CN_input_float } from "./float.mjs"

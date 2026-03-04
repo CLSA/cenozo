@@ -1,4 +1,4 @@
-import CN_common from "../../common.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_modal_base_form } from "./base_form.mjs"
 
 export class CN_modal_input extends CN_modal_base_form {

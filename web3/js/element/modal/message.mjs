@@ -1,4 +1,4 @@
-import CN_common from "../../common.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_base_modal } from "./base_modal.mjs"
 
 export class CN_modal_message extends CN_base_modal {

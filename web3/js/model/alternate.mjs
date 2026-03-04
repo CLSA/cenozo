@@ -1,4 +1,4 @@
-import CN_api from "../api.mjs"
+import { CN_api } from "../api.mjs"
 
 import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
   from "./base_person_model.mjs"

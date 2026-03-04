@@ -1,5 +1,5 @@
-import CN_api from "../../api.mjs"
-import CN_common from "../../common.mjs"
+import { CN_api } from "../../api.mjs"
+import { CN_common } from "../../common.mjs"
 
 import { CN_action_view } from "./view.mjs"
 

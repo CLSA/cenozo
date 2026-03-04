@@ -6,8 +6,8 @@
    * Also handles all unhandled exceptions and handles browser navigation events.
    */
   window.addEventListener("load", async () => {
-    const CN_common = (await import("./common.mjs")).default;
-    const CN_session = (await import("./session.mjs")).default;
+    const { CN_common } = await import("./common.mjs");
+    const { CN_session } = await import("./session.mjs");
     const { CN_modal_message } = (await import("./element/modal/message.mjs"));
 
     // catch all unhandled exceptions

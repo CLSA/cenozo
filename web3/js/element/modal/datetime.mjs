@@ -1,5 +1,5 @@
-import CN_common from "../../common.mjs";
-import CN_session from "../../session.mjs";
+import { CN_common } from "../../common.mjs";
+import { CN_session } from "../../session.mjs";
 
 import { CN_base_modal } from "./base_modal.mjs";
 import { CN_element_date_picker } from "../date_picker.mjs";

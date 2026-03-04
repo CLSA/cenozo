@@ -1,4 +1,4 @@
-import CN_common from "../../common.mjs"
+import { CN_common } from "../../common.mjs"
 
 import { CN_input_base_string } from "./base_string.mjs"
 

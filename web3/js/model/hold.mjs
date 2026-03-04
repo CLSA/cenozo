@@ -1,5 +1,5 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_session } from "../session.mjs"
 
 import { CN_action_add } from "../element/action/add.mjs"
 import { CN_base_model } from "./base_model.mjs"
@@ -15,8 +15,7 @@ export class CN_hold_model extends CN_base_model {
         posessive: "hold's",
       },
       columns: {
-        hold_type: {
-          column: 'CONCAT(hold_type.type, ": ", hold_type.name)',
+        hold_type_full_name: {
           title: "Type",
           table_prefix: false,
         },
@@ -124,7 +123,7 @@ export class CN_hold_view extends CN_action_view {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      const hold_type = this.get_property("hold_type_id").get_config("enum").values.find(
+      const hold_type = this.get_property("hold_type_id").form_input.get_config("enum").values.find(
         e => e.key == this.get_property_value("hold_type_id")
       );
       return null == hold_type ? "Removed" : hold_type.value;

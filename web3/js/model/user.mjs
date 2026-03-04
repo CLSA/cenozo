@@ -1,7 +1,6 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
-import CN_timezones from "../timezones.mjs"
-
+import { CN_api } from "../api.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_session } from "../session.mjs"
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
@@ -28,7 +27,7 @@ export class CN_user_model extends CN_base_model {
         first_name: { title: "First Name", },
         last_name: { title: "Last Name", },
         email: { title: "Email", },
-        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
+        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },
         use_12hour_clock: { title: "Use 12-hour Clock", type: "boolean" },
         login_failures: { title: "Login Failures", is_hidden: (model) => "add" == model.get_action_name() },
       },
