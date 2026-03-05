@@ -1,5 +1,5 @@
-import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_export_model } from "./export.mjs"
 
 export class CN_export_restriction_model extends CN_base_model {

@@ -1,5 +1,5 @@
-import { CN_base_object } from "../base_object.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
+import { CN_base_object } from "../base_object.mjs"
 import { CN_element_card } from "../element/card.mjs"
 
 export class CN_error_model extends CN_base_object {

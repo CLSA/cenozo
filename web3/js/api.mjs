@@ -1,8 +1,7 @@
-import { CN_common } from "./common.mjs"
-import { CN_session } from "./session.mjs"
-
-import { CN_modal_message } from "./element/modal/message.mjs"
 import { CN_base_object } from "./base_object.mjs"
+import { CN_common } from "./common.mjs"
+import { CN_modal_message } from "./element/modal/message.mjs"
+import { CN_session } from "./session.mjs"
 
 const SELECT_SHORT_NAMES = {
   alias: 'a',

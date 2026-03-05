@@ -1,7 +1,6 @@
+import { CN_action_base_record } from "./base_record.mjs"
 import { CN_api } from "../../api.mjs"
 import { CN_common } from "../../common.mjs"
-
-import { CN_action_base_record } from "./base_record.mjs"
 import { CN_element_card } from "../card.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
 

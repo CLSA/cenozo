@@ -1,6 +1,6 @@
+import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
-import { CN_base_object } from "../base_object.mjs"
 
 export class CN_base_element extends CN_base_object {
   // The DOMParser used by create() when creating elements from HTML strings

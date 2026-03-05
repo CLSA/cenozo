@@ -1,16 +1,15 @@
 import { CN_api } from "./api.mjs"
-import { CN_common } from "./common.mjs"
 import { CN_base_element } from "./element/base_element.mjs"
+import { CN_base_object } from "./base_object.mjs"
+import { CN_common } from "./common.mjs"
+import { CN_error_model } from "./model/error.mjs"
+import { CN_home_model } from "./model/home.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
 import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
 import { CN_modal_message } from "./element/modal/message.mjs"
 import { CN_modal_password } from "./element/modal/password.mjs"
 import { CN_modal_site_role } from "./element/modal/site_role.mjs"
-
-import { CN_error_model } from "./model/error.mjs"
-import { CN_home_model } from "./model/home.mjs"
 import { CN_module } from "./module.mjs"
-import { CN_base_object } from "./base_object.mjs"
 
 /**
  * A private list of all modules used by the session

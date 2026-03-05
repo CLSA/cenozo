@@ -1,15 +1,14 @@
+import { CN_action_view } from "../element/action/view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_common } from "../common.mjs"
-import { CN_session } from "../session.mjs"
-import { CN_participant_selection } from "./participant.mjs"
-
 import { CN_base_action } from "../element/action/base_action.mjs"
 import { CN_base_model } from "./base_model.mjs"
-import { CN_action_view } from "../element/action/view.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input_enum } from "../element/input/enum.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
+import { CN_participant_selection } from "./participant.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_stratum_model extends CN_base_model {
   constructor() {

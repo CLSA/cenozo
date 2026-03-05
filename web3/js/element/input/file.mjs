@@ -1,5 +1,5 @@
-import { CN_common } from "../../common.mjs"
 import { CN_base_input } from "./base_input.mjs"
+import { CN_common } from "../../common.mjs"
 
 export class CN_input_file extends CN_base_input {
   /**

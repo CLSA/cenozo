@@ -1,5 +1,5 @@
-import { CN_session } from "./session.mjs"
 import { CN_base_object } from "./base_object.mjs"
+import { CN_session } from "./session.mjs"
 
 /**
  * A object containing a number of helpful functions

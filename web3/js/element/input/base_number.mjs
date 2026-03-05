@@ -1,5 +1,4 @@
 import { CN_common } from "../../common.mjs"
-
 import { CN_input_base_string } from "./base_string.mjs"
 
 export class CN_input_base_number extends CN_input_base_string {

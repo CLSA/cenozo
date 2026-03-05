@@ -1,6 +1,6 @@
 import { CN_common } from "../../common.mjs"
-import { CN_session } from "../../session.mjs"
 import { CN_modal_base_form } from "./base_form.mjs"
+import { CN_session } from "../../session.mjs"
 
 export class CN_modal_clock_settings extends CN_modal_base_form {
   constructor(config = { title: "Clock Settings" }) {

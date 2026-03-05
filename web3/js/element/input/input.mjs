@@ -1,5 +1,4 @@
 import { CN_base_object } from "../../base_object.mjs"
-
 import { CN_input_audio_url } from "./audio_url.mjs"
 import { CN_input_boolean } from "./boolean.mjs"
 import { CN_input_color } from "./color.mjs"

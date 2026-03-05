@@ -1,8 +1,7 @@
 import { CN_api } from "../../api.mjs"
 import { CN_common } from "../../common.mjs"
-import { CN_session } from "../../session.mjs"
-
 import { CN_modal_base_form } from "./base_form.mjs"
+import { CN_session } from "../../session.mjs"
 
 export class CN_modal_site_role extends CN_modal_base_form {
   constructor(config = { title: "Select Site & Role" }) {

@@ -1,5 +1,5 @@
-import { CN_common } from "../common.mjs"
 import { CN_base_element } from "./base_element.mjs"
+import { CN_common } from "../common.mjs"
 
 export class CN_element_loading_box extends CN_base_element {
   constructor(parent_el, config = {}) {

@@ -1,6 +1,5 @@
-import { CN_common } from "./common.mjs"
-
 import { CN_base_object } from "./base_object.mjs"
+import { CN_common } from "./common.mjs"
 
 export class CN_state extends CN_base_object {
   #stack = [];

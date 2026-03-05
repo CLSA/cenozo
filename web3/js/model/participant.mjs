@@ -1,16 +1,19 @@
 import { CN_api } from "../api.mjs"
-import { CN_common } from "../common.mjs"
-import { CN_session } from "../session.mjs"
-
 import { CN_base_action } from "../element/action/base_action.mjs"
-import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
-  from "./base_person_model.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
+import {
+  CN_base_person_model,
+  CN_base_person_view,
+  CN_base_person_history,
+  CN_base_person_notes
+} from "./base_person_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input } from "../element/input/input.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_participant_model extends CN_base_person_model {
   constructor() {

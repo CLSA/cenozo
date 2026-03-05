@@ -1,11 +1,10 @@
 import { CN_api } from "../../api.mjs"
-import { CN_common } from "../../common.mjs"
-import { CN_session } from "../../session.mjs"
-
 import { CN_base_action } from "./base_action.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_element_card } from "../card.mjs"
 import { CN_element_label } from "../label.mjs"
 import { CN_input_file } from "../input/file.mjs"
+import { CN_session } from "../../session.mjs"
 
 export class CN_action_upload extends CN_base_action {
   #parent_record = null;

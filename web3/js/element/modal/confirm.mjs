@@ -1,5 +1,5 @@
-import { CN_common } from "../../common.mjs"
 import { CN_base_modal } from "./base_modal.mjs"
+import { CN_common } from "../../common.mjs"
 
 export class CN_modal_confirm extends CN_base_modal {
   constructor(config = {}) {

@@ -1,6 +1,6 @@
 import { CN_api } from "../../api.mjs"
-import { CN_common } from "../../common.mjs"
 import { CN_base_input } from "./base_input.mjs"
+import { CN_common } from "../../common.mjs"
 
 function test_option(option, value) {
   return (

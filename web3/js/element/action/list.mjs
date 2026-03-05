@@ -1,9 +1,9 @@
 import { CN_api } from "../../api.mjs"
-import { CN_common } from "../../common.mjs"
-import { CN_session } from "../../session.mjs"
 import { CN_base_action } from "./base_action.mjs"
-import { CN_modal_confirm } from "../modal/confirm.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_modal_column_filter } from "../modal/column_filter.mjs"
+import { CN_modal_confirm } from "../modal/confirm.mjs"
+import { CN_session } from "../../session.mjs"
 
 export class CN_action_list extends CN_base_action {
   #list_mode;

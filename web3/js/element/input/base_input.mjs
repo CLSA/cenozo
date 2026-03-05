@@ -1,6 +1,5 @@
-import { CN_common } from "../../common.mjs"
-
 import { CN_base_element } from "../base_element.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_state } from "../../state.mjs"
 
 export class CN_base_input extends CN_base_element {

@@ -1,13 +1,12 @@
-import { CN_api } from "../api.mjs"
-import { CN_common } from "../common.mjs"
-import { CN_session } from "../session.mjs"
-import { CN_modal_confirm } from "../element/modal/confirm.mjs"
-
 import { CN_action_add } from "../element/action/add.mjs"
 import { CN_action_list } from "../element/action/list.mjs"
-import { CN_base_model } from "./base_model.mjs"
 import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 import { CN_modal_input } from "../element/modal/input.mjs"
+import { CN_session } from "../session.mjs"
 
 /**
  * Pops up an input dialog to get the reason why a participant will be added to or removed from tracing

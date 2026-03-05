@@ -1,9 +1,8 @@
-import { CN_session } from "../../session.mjs"
-
 import { CN_base_element } from "../base_element.mjs"
 import { CN_element_card } from "../card.mjs"
 import { CN_element_loading_box } from "../loading_box.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
+import { CN_session } from "../../session.mjs"
 
 /**
  * The base class for all action classes (add/view/list/etc)

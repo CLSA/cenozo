@@ -1,6 +1,5 @@
-import { CN_common } from "../../common.mjs"
-
 import { CN_base_input } from "./base_input.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_modal_datetime } from "../modal/datetime.mjs"
 
 export class CN_input_base_datetime extends CN_base_input {
