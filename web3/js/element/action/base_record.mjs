@@ -8,6 +8,7 @@ import { CN_state } from "../../state.mjs"
 export class CN_action_base_record extends CN_base_action {
   #property_groups;
   #form_el;
+  #disabled = false;
 
   /**
    * Constructor
@@ -343,6 +344,32 @@ export class CN_action_base_record extends CN_base_action {
   }
 
   /**
+   * Returns whether the action's UI elements are disabled
+   * @return boolean
+   */
+  get_disabled() {
+    return this.#disabled;
+  }
+
+  /**
+   * Sets whether to disable the action's UI elements
+   * @param boolean disabled
+   */
+  set_disabled(disabled) {
+    this.#disabled = disabled;
+
+    // disable all form inputs by setting the fieldset's disable state
+    const fieldset_el = this.get_body_element().querySelector('fieldset');
+    if (fieldset_el) {
+      if (this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())) {
+        fieldset_el.setAttribute("disabled", true);
+      } else {
+        fieldset_el.removeAttribute("disabled");
+      }
+    }
+  }
+
+  /**
    * Extends parent method
    */
   update_element() {
@@ -351,7 +378,11 @@ export class CN_action_base_record extends CN_base_action {
     // update whether the record can be edited
     const fieldset_el = this.get_body_element().querySelector('fieldset');
     if (fieldset_el) {
-      fieldset_el.disabled = "view" == this.get_type() && !this.get_model().allow_edit();
+      if (this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())) {
+        fieldset_el.setAttribute("disabled", true);
+      } else {
+        fieldset_el.removeAttribute("disabled");
+      }
     }
 
     for (const group_name in this.#property_groups) {

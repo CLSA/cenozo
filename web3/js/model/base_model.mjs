@@ -154,6 +154,8 @@ export class CN_base_model extends CN_base_object {
               null == this.#columns_template[col].column.match(re)
             )
           ) {
+            // datetimes sort descending by default
+            default_order.desc = null != col.match(/datetime/);
             default_order.column = col;
             return true;
           }

@@ -30,7 +30,26 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("root")) this.#root = params.root;
     if (params.hasOwnProperty("framework")) this.#framework = params.framework;
     if (params.hasOwnProperty("notations")) this.#notations = params.notations;
-    if (params.hasOwnProperty("properties")) this.#properties = params.properties;
+    if (params.hasOwnProperty("properties")) {
+      this.#properties = params.properties;
+
+      // cast boolean, int and float column defaults from strings to boolean/numbers
+      if (CN_common.is_object(this.#properties)) {
+        this.get_property_names()
+          .filter(prop_name =>
+            this.#properties[prop_name].data_type.match(/int|float/) &&
+            null != this.#properties[prop_name].default
+          )
+          .forEach(prop_name => {
+            const value = this.#properties[prop_name].default;
+            this.#properties[prop_name].default = (
+              "tinyint" == this.#properties[prop_name].data_type ?
+              "1" == value :
+              Number(value)
+            );
+          });
+      }
+    }
     if (params.hasOwnProperty("children")) this.#child_modules.push.apply(this.#child_modules, params.children);
     if (params.hasOwnProperty("choosing")) {
       this.#child_modules.push.apply(this.#child_modules, params.choosing);

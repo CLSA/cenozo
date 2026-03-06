@@ -216,8 +216,10 @@ export class CN_traceable_view extends CN_action_view {
         parent_model.get_identifier()
       );
       if (trace_reason) {
+        this.set_disabled(true);
         await CN_api.delete(this.get_model().get_view_url(null, "api"));
         await this.on_navigate_to_parent();
+        this.set_disabled(false);
         this.get_model().add_trace(trace_reason);
       }
     }

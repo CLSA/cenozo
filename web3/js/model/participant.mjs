@@ -1257,9 +1257,8 @@ export class CN_participant_selection extends CN_base_element {
     );
 
     this.#created = true;
-
     this.reset();
-    
+
     return element;
   }
 

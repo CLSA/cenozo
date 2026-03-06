@@ -618,30 +618,30 @@ export class CN_action_list extends CN_base_action {
               }
             }
 
-            /*
-            delete_btn_el.addEventListener("click", (e) => {
-              e.stopPropagation();
-              this.on_delete(record);
-            });
-            */
-
-            let content = (
-              last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete() ?
-              `
-                <div class="d-flex">
-                  <div class="w-100">${value}</div>
-                  <div class="flex-shrink-1">
-                    <button name="delete" class="btn btn-sm btn-danger">
-                      <i class="bi bi-x-circle-fill"></i>
-                    </button>
+            if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
+              tr_el.innerHTML += `
+                <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+                  <div class="d-flex">
+                    <div class="w-100">${value}</div>
+                    <div class="flex-shrink-1">
+                      <button name="delete" class="btn btn-sm btn-danger">
+                        <i class="bi bi-x-circle-fill"></i>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ` :
-              value
-            );
-
-            tr_el.innerHTML +=
-              `<td class="text-${column.align} text-truncate border border-light border-2 px-3">${content}</td>`;
+                </td>
+              `;
+              tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.on_delete(record);
+              });
+            } else {
+              tr_el.innerHTML += `
+                <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+                  ${value}
+                </td>
+              `;
+            }
           }
         }
 
@@ -808,7 +808,8 @@ export class CN_action_list extends CN_base_action {
       if (!column.is_hidden(model)) {
         const th_el = this.create_table_header_element(column);
         if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
-          th_el.querySelector("div.d-flex").append(this.constructor.html('<div class="px-4"></div>'));
+          th_el.querySelector("div.d-flex").classList.add("pe-2");
+          th_el.querySelector("div.d-flex").classList.add("me-5");
         }
         header_tr_el.append(th_el);
       }

@@ -5,6 +5,8 @@ import { CN_session } from "../../session.mjs"
 
 export class CN_action_add extends CN_action_base_record {
   #default_values_applied = [];
+  #submit_btn_el;
+  #cancel_btn_el;
 
   /**
    * Constructor
@@ -42,6 +44,20 @@ export class CN_action_add extends CN_action_base_record {
   }
 
   /**
+   * Extend parent method
+   */
+  set_disabled(disabled) {
+    super.set_disabled(disabled);
+
+    if (disabled) {
+      this.#submit_btn_el.setAttribute("disabled", true);
+      this.#cancel_btn_el.setAttribute("disabled", true);
+    } else {
+      this.#submit_btn_el.removeAttribute("disabled");
+      this.#cancel_btn_el.removeAttribute("disabled");
+    }
+  }
+  /**
    * Commits a property's UI value to the state
    * @param string prop_name
    */
@@ -70,6 +86,8 @@ export class CN_action_add extends CN_action_base_record {
     const valid = await this.validate();
     if (!valid) return;
 
+    this.set_disabled(true);
+
     // build the record
     let record = {};
     await Promise.all(
@@ -90,6 +108,8 @@ export class CN_action_add extends CN_action_base_record {
       } else {
         throw error;
       }
+    } finally {
+      this.set_disabled(false);
     }
   }
 
@@ -141,19 +161,19 @@ export class CN_action_add extends CN_action_base_record {
   create_footer_element() {
     const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
 
-    const submit_btn_el = this.constructor.html(
+    this.#submit_btn_el = this.constructor.html(
       '<button name="submit" type="button" class="btn btn-primary">Submit</button>'
     );
-    btn_group_el.append(submit_btn_el);
-    (async () => { submit_btn_el.innerHTML = await this.get_text("submit"); })();
-    submit_btn_el.addEventListener("click", this.on_submit.bind(this));
+    btn_group_el.append(this.#submit_btn_el);
+    (async () => { this.#submit_btn_el.innerHTML = await this.get_text("submit"); })();
+    this.#submit_btn_el.addEventListener("click", this.on_submit.bind(this));
 
-    const cancel_btn_el = this.constructor.html(
+    this.#cancel_btn_el = this.constructor.html(
       '<button name="cancel" type="button" class="btn btn-light">Cancel</button>'
     );
-    btn_group_el.append(cancel_btn_el);
-    (async () => { cancel_btn_el.innerHTML = await this.get_text("cancel"); })();
-    cancel_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
+    btn_group_el.append(this.#cancel_btn_el);
+    (async () => { this.#cancel_btn_el.innerHTML = await this.get_text("cancel"); })();
+    this.#cancel_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     return btn_group_el;
   }

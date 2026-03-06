@@ -7,6 +7,7 @@ import { CN_modal_confirm } from "../modal/confirm.mjs"
 export class CN_action_view extends CN_action_base_record {
   #child_lists_el = null;
   #list_selector_el = null;
+  #delete_btn_el;
 
   /**
    * Constructor
@@ -35,6 +36,8 @@ export class CN_action_view extends CN_action_base_record {
    * Extends the parent method
    */
   async get_text(type) {
+    const model = this.get_model();
+
     if (["crumb", "name"].includes(type)) {
       const name = this.get_property_value("name");
       if (name) return name;
@@ -42,19 +45,19 @@ export class CN_action_view extends CN_action_base_record {
       const title = this.get_property_value("title");
       if (title) return title;
 
-      return CN_common.uc_words(this.get_model().get_singular());
+      return CN_common.uc_words(model.get_singular());
     }
 
     if ("header" == type) {
-      return `${CN_common.uc_words(this.get_model().get_singular())} Details`;
+      return `${CN_common.uc_words(model.get_singular())} Details${model.allow_edit() ? "" : " (read-only)"}`;
     }
 
     if ("view_parent" == type) {
-      const parent_model = this.get_model().get_parent_model();
+      const parent_model = model.get_parent_model();
       return (
         parent_model ?
         `View ${CN_common.uc_words(parent_model.get_singular())}` :
-        `View ${CN_common.uc_words(this.get_model().get_singular())} List`
+        `View ${CN_common.uc_words(model.get_singular())} List`
       );
     }
 
@@ -157,8 +160,26 @@ export class CN_action_view extends CN_action_base_record {
     })).open();
 
     if (response) {
-      await CN_api.delete(this.get_model().get_view_url(null, "api"));
-      await this.on_navigate_to_parent();
+      this.set_disabled(true);
+      try {
+        await CN_api.delete(this.get_model().get_view_url(null, "api"));
+        await this.on_navigate_to_parent();
+      } finally {
+        this.set_disabled(false);
+      }
+    }
+  }
+
+  /**
+   * Extends parent method
+   */
+  set_disabled(disabled) {
+    super.set_disabled(disabled);
+
+    if (disabled) {
+      this.#delete_btn_el.setAttribute("disabled", true);
+    } else {
+      this.#delete_btn_el.removeAttribute("disabled");
     }
   }
 
@@ -178,20 +199,13 @@ export class CN_action_view extends CN_action_base_record {
   update_element() {
     super.update_element();
 
-    // add a delete button (if allowed)
+    // add/remove delete button (if allowed)
     const footer_el = this.get_footer_element();
     if (footer_el) {
-      let delete_btn_el = footer_el.querySelector("button[name=delete]");
-      if (null == delete_btn_el && this.get_model().allow_delete()) {
-        delete_btn_el = this.constructor.html(`
-          <button name="delete" type="button" class="btn btn-danger">
-            Delete ${CN_common.uc_words(this.get_model().get_singular())}
-          </button>
-        `);
-        footer_el.append(delete_btn_el);
-        delete_btn_el.addEventListener("click", this.on_delete.bind(this));
-      } else if (null != delete_btn_el && !this.get_model().allow_delete()) {
-        footer_el.removeChild(delete_btn_el);
+      if (this.get_model().allow_delete()) {
+        footer_el.append(this.#delete_btn_el);
+      } else {
+        this.#delete_btn_el.remove();
       }
     }
 
@@ -290,6 +304,19 @@ export class CN_action_view extends CN_action_base_record {
         <button name="back" type="button" class="btn btn-primary">Back</button>
       </div>
     `);
+
+    // create the delete button but don't append it yet
+    this.#delete_btn_el = this.constructor.html(`
+      <button name="delete" type="button" class="btn btn-danger">
+        Delete ${CN_common.uc_words(this.get_model().get_singular())}
+      </button>
+    `);
+    this.#delete_btn_el.addEventListener("click", this.on_delete.bind(this));
+    if (this.get_disabled()) {
+      this.#delete_btn_el.setAttribute("disabled", true);
+    } else {
+      this.#delete_btn_el.removeAttribute("disabled");
+    }
 
     // wire up the back button
     const back_btn_el = footer_el.querySelector("button[name=back]");
