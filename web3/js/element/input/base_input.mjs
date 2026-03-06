@@ -42,6 +42,7 @@ export class CN_base_input extends CN_base_element {
         // default config
         type: "div",
         error_timeout: 0,
+        required: false,
       },
       ...config
     });

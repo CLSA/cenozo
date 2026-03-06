@@ -59,7 +59,7 @@ export class CN_base_element extends CN_base_object {
    */
   get_config(name) {
     if (!this.#config.has(name)){
-      console.warn(`Referencing undefined config parameter "${name}" in ${this.get_class_name()}`);
+      console.error(`Referencing undefined config parameter "${name}" in ${this.get_class_name()}`);
     }
     return this.#config.get(name);
   }
@@ -88,6 +88,10 @@ export class CN_base_element extends CN_base_object {
    * Sets the element's parent (needed to fire DOM add/remove events)
    */
   set_parent_element(parent_el) {
+    if (null != parent_el && !CN_common.is_element(parent_el)) {
+      throw new Error("Setting parent element to non-element");
+    }
+
     this.#parent_el = parent_el;
 
     if (null != this.#parent_el) {

@@ -729,7 +729,9 @@ export class CN_participant_multiedit extends CN_base_action {
       }
     });
 
-    body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
+    const participant_list_el = body_el.querySelector("[name=participant-list]");
+    this.#participant_selection.set_parent_element(participant_list_el);
+    participant_list_el.append(this.#participant_selection.get_element());
 
     const nav_el = body_el.querySelector("ul.nav-tabs");
     const tab_content_el = body_el.querySelector("div.tab-content");
@@ -1095,9 +1097,8 @@ export class CN_participant_scripts extends CN_base_action {
 /**
  * A class used to create a participant selection element
  */
-export class CN_participant_selection {
-  #params;
-  #element = null;
+export class CN_participant_selection extends CN_base_element {
+  #created = false;
   #count_el = null;
   #identifier_list_el = null;
   #idtype_list_el = null;
@@ -1107,30 +1108,36 @@ export class CN_participant_selection {
   #selection_changed_callbacks = [];
   #validated = false;
 
+  constructor(parent_el = null, config = {}) {
+    super(parent_el, {
+      ...{
+        // default config
+        path: "participant",
+        data: {},
+      },
+      ...config,
+    });
+  }
+
   /**
-   * Contructor
-   * @param object params: can have unique_id (for element ids) and data (sent when confirming the list)
+   * Extend parent method
    */
-  constructor(params={}) {
-    this.#params = {
-      unique_id: params.hasOwnProperty("unique_id") ? params.unique_id : null,
-      path: params.hasOwnProperty("path") ? params.path : "participant",
-      data: params.hasOwnProperty("data") ? params.data : {},
-    };
+  _create_element() {
+    const element = super._create_element();
 
     const identifier_list_id = (
-      null != this.#params.unique_id ?
-      `${this.#params.unique_id}-identifier_list` :
+      this.has_config("unique_id") ?
+      `${this.get_config("unique_id")}-identifier_list` :
       "identifier_list"
     );
 
     const idtype_list_id = (
-      null != this.#params.unique_id ?
-      `${this.#params.unique_id}-idtype_list` :
+      this.has_config("unique_id") ?
+      `${this.get_config("unique_id")}-idtype_list` :
       "idtype_list"
     );
 
-    this.#element = CN_element_card.create_element(null, {
+    element.append(CN_element_card.create_element(null, {
       header: this.constructor.html(`
         <div class="d-flex">
           <div class="flex-grow-1">Participant Selection</div>
@@ -1139,11 +1146,11 @@ export class CN_participant_selection {
       `),
       body: CN_input.create_element("text", null, { id: identifier_list_id }),
       footer: this.constructor.html('<div class="row"></div>'),
-    });
-    this.#element.querySelector("div.card-body").classList.add("p-0");
+    }));
+    element.querySelector("div.card-body").classList.add("p-0");
 
     // add the identifier-type list and confirm button
-    const row_el = this.#element.querySelector("div.row");
+    const row_el = element.querySelector("div.row");
     CN_element_label.create_element(row_el, {
       for: idtype_list_id,
       value: "Identifier",
@@ -1160,10 +1167,10 @@ export class CN_participant_selection {
       )),
     });
 
-    this.#count_el = this.#element.querySelector("div[name=count]");
-    this.#identifier_list_el = this.#element.querySelector("#" + identifier_list_id);
-    this.#idtype_list_el = this.#element.querySelector("#" + idtype_list_id);
-    this.#confirm_btn_el = this.#element.querySelector("button[name=confirm]");
+    this.#count_el = element.querySelector("div[name=count]");
+    this.#identifier_list_el = element.querySelector("#" + identifier_list_id);
+    this.#idtype_list_el = element.querySelector("#" + idtype_list_id);
+    this.#confirm_btn_el = element.querySelector("button[name=confirm]");
 
     // set the confirm button's disabled state to whether the list has any text in it
     this.#identifier_list_el.addEventListener("input", () => {
@@ -1193,7 +1200,7 @@ export class CN_participant_selection {
         }
 
         const data = {
-          ...this.#params.data,
+          ...this.get_config("data"),
           identifier_id: idtype_id,
           identifier_list: this.#identifier_list_el.value
             .toUpperCase()
@@ -1220,7 +1227,7 @@ export class CN_participant_selection {
         this.#selection_changed_callbacks.forEach(callback => callback());
 
         // confirm with the server which identifiers are valid
-        const response = await CN_api.post(this.#params.path, data);
+        const response = await CN_api.post(this.get_config("path"), data);
 
         // note that the response may be an array or an object containing idtype_list and site_list props
         let identifier_list = [];
@@ -1234,8 +1241,11 @@ export class CN_participant_selection {
 
         this.#identifier_list_el.value = identifier_list.join(" ");
         this.#identifier_list_el.style.height = "";
-        this.#identifier_list_el.style.height =
-          (0 == this.#identifier_list_el.length ? 60 : this.#identifier_list_el.scrollHeight) + "px";
+        this.#identifier_list_el.style.height = (
+          0 == this.#identifier_list_el.length ?
+          60 :
+          this.#identifier_list_el.scrollHeight
+        ) + "px";
         this.#count_el.innerHTML = `(${identifier_list.length} selected)`;
 
         // call all attached callbacks since the selection has changed
@@ -1246,14 +1256,12 @@ export class CN_participant_selection {
       },
     );
 
-    this.reset();
-  }
+    this.#created = true;
 
-  // Getters and setters
-  get_path() { return this.#params.path; }
-  set_path(path) { this.#params.path = path; }
-  get_data() { return this.#params.data; }
-  set_data(data) { this.#params.data = data; }
+    this.reset();
+    
+    return element;
+  }
 
   /**
    * Resets the confirmation of the selection back (does not remove the identifier list)
@@ -1262,7 +1270,7 @@ export class CN_participant_selection {
     // call all attached callbacks since the selection has changed
     this.#validated = false;
     this.#selection_changed_callbacks.forEach(callback => callback());
-    if (this.#element) this.#count_el.innerHTML = "(unconfirmed)";
+    if (this.#created) this.#count_el.innerHTML = "(unconfirmed)";
   }
 
   /**
@@ -1277,7 +1285,7 @@ export class CN_participant_selection {
       modifier: { order: "name" },
     });
 
-    if (this.#element) {
+    if (this.#created) {
       this.#identifier_list_el.value = "";
       this.#identifier_list_el.style.height = "";
       this.#identifier_list_el.style.height = "60px";
@@ -1297,14 +1305,16 @@ export class CN_participant_selection {
    * Enables all UI elements of the participant selection
    */
   enable() {
-    this.#identifier_list_el.removeAttribute("disabled");
-    this.#idtype_list_el.removeAttribute("disabled");
+    if (this.#created) {
+      this.#identifier_list_el.removeAttribute("disabled");
+      this.#idtype_list_el.removeAttribute("disabled");
 
-    // the confirm button is only enabled when the identifier list is not empty
-    if (0 < this.#identifier_list_el.value.length) {
-      this.#confirm_btn_el.removeAttribute("disabled");
-    } else {
-      this.#confirm_btn_el.setAttribute("disabled", true);
+      // the confirm button is only enabled when the identifier list is not empty
+      if (0 < this.#identifier_list_el.value.length) {
+        this.#confirm_btn_el.removeAttribute("disabled");
+      } else {
+        this.#confirm_btn_el.setAttribute("disabled", true);
+      }
     }
   }
 
@@ -1312,15 +1322,16 @@ export class CN_participant_selection {
    * Disables all UI elements of the participant selection
    */
   disable() {
-    this.#identifier_list_el.setAttribute("disabled", true);
-    this.#idtype_list_el.setAttribute("disabled", true);
-    this.#confirm_btn_el.setAttribute("disabled", true);
+    if (this.#created) {
+      this.#identifier_list_el.setAttribute("disabled", true);
+      this.#idtype_list_el.setAttribute("disabled", true);
+      this.#confirm_btn_el.setAttribute("disabled", true);
+    }
   }
 
   /**
    * Access methods
    */
-  get_element() { return this.#element; }
   on_selection_changed(callback) { this.#selection_changed_callbacks.push(callback); }
   get_identifier_list() {
     const str = this.#identifier_list_el.value;

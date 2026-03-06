@@ -243,7 +243,11 @@ export class CN_common extends CN_base_object {
   static format_datetime(value, format, long_form = false, am_pm = CN_session.data.user.am_pm) {
     if (null == value) {
       return null;
-    } else if ("record" == format) {
+    } else if (this.is_string(value)) {
+      value = new Date(value);
+    }
+
+    if ("record" == format) {
       return value.toISOString().substr(0, 10) + " " + value.toTimeString().substr(0, 8);
     }
 
@@ -262,14 +266,10 @@ export class CN_common extends CN_base_object {
 
     let parts = [];
     if (include_date) {
-      parts.push(
-        new Intl.DateTimeFormat('en-CA', options).format(new Date(value))
-      );
+      parts.push(new Intl.DateTimeFormat('en-CA', options).format(value));
     }
     if (include_time) {
-      parts.push(
-        this.format_time(value, am_pm, this.is_datetime_type(format, "second"), long_form)
-      );
+      parts.push(this.format_time(value, am_pm, this.is_datetime_type(format, "second"), long_form));
     }
     return parts.join(" @ ");
   }

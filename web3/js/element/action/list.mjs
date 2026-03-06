@@ -576,77 +576,86 @@ export class CN_action_list extends CN_base_action {
 
     const cursor = model.allow_view() ? 'style="cursor: grab"' : "";
     const start_index = (this.#current_page - 1) * 20;
-    this.#records.map(record => {
-      let tr_el = this.constructor.html(`<tr ${cursor}></tr>`);
-      if (this.#is_choosing) {
-        if (record.chosen) tr_el.classList.add("table-primary");
-        if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
-      }
-      tr_el.addEventListener("click", this.on_row_click.bind(this, record));
-      const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
-      for (const col_name in this.#columns) {
-        // don't show hidden columns
-        const column = this.#columns[col_name];
-        if (!column.is_hidden(model)) {
-          let value = record[col_name];
-          if (null === value) {
-            value = "(empty)";
-          } else if ("boolean" == column.type) {
-            value = value ? "Yes" : "No";
-          } else if ("html" == column.type) {
-            // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
-            value = (new Option(value)).innerHTML
-          } else if ("size" == column.type) {
-            value = CN_common.format_filesize(value);
-          } else if (CN_common.is_datetime_type(column.type, "date")) {
-            value = CN_common.format_datetime(value, column.type);
-          } else if ("rank" == column.type) {
-            value = CN_common.ordinal_suffix(value);
-          } else if (CN_common.is_datetime_type(column.type, "time")) {
-            value = CN_common.format_time(value);
-          } else if (CN_common.is_string(value) && 0 < column.limit) {
-            if (value.length > column.limit) {
-              value = value.substring(0, column.limit) + " ...";
-            }
-          }
-
-          /*
-          delete_btn_el.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.on_delete(record);
-          });
-          */
-
-          let content = (
-            last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete() ?
-            `
-              <div class="d-flex">
-                <div class="w-100">${value}</div>
-                <div class="flex-shrink-1">
-                  <button name="delete" class="btn btn-sm btn-danger">
-                    <i class="bi bi-x-circle-fill"></i>
-                  </button>
-                </div>
-              </div>
-            ` :
-            value
-          );
-
-          tr_el.innerHTML +=
-            `<td class="text-${column.align} text-truncate border border-light border-2 px-3">${content}</td>`;
-        }
-      }
-
-      // remove the outer most white borders
-      const td_el_list = tr_el.querySelectorAll("td");
-      const len = td_el_list.length;
-      if (0 < len) {
-        td_el_list[0].classList.add("border-start-0");
-        td_el_list[len-1].classList.add("border-end-0");
-      }
-
+    if (0 == this.#records.length) {
+      let tr_el = this.constructor.html(`
+        <tr>
+          <td colspan="100%" class="text-center">There are no ${this.get_model().get_plural()} found.</td>
+        </tr>
+      `);
       tbody_el.append(tr_el);
-    });
+    } else {
+      this.#records.map(record => {
+        let tr_el = this.constructor.html(`<tr ${cursor}></tr>`);
+        if (this.#is_choosing) {
+          if (record.chosen) tr_el.classList.add("table-primary");
+          if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
+        }
+        tr_el.addEventListener("click", this.on_row_click.bind(this, record));
+        const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
+        for (const col_name in this.#columns) {
+          // don't show hidden columns
+          const column = this.#columns[col_name];
+          if (!column.is_hidden(model)) {
+            let value = record[col_name];
+            if (null === value) {
+              value = "(empty)";
+            } else if ("boolean" == column.type) {
+              value = value ? "Yes" : "No";
+            } else if ("html" == column.type) {
+              // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
+              value = (new Option(value)).innerHTML
+            } else if ("size" == column.type) {
+              value = CN_common.format_filesize(value);
+            } else if (CN_common.is_datetime_type(column.type, "date")) {
+              value = CN_common.format_datetime(value, column.type);
+            } else if ("rank" == column.type) {
+              value = CN_common.ordinal_suffix(value);
+            } else if (CN_common.is_datetime_type(column.type, "time")) {
+              value = CN_common.format_time(value);
+            } else if (CN_common.is_string(value) && 0 < column.limit) {
+              if (value.length > column.limit) {
+                value = value.substring(0, column.limit) + " ...";
+              }
+            }
+
+            /*
+            delete_btn_el.addEventListener("click", (e) => {
+              e.stopPropagation();
+              this.on_delete(record);
+            });
+            */
+
+            let content = (
+              last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete() ?
+              `
+                <div class="d-flex">
+                  <div class="w-100">${value}</div>
+                  <div class="flex-shrink-1">
+                    <button name="delete" class="btn btn-sm btn-danger">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                </div>
+              ` :
+              value
+            );
+
+            tr_el.innerHTML +=
+              `<td class="text-${column.align} text-truncate border border-light border-2 px-3">${content}</td>`;
+          }
+        }
+
+        // remove the outer most white borders
+        const td_el_list = tr_el.querySelectorAll("td");
+        const len = td_el_list.length;
+        if (0 < len) {
+          td_el_list[0].classList.add("border-start-0");
+          td_el_list[len-1].classList.add("border-end-0");
+        }
+
+        tbody_el.append(tr_el);
+      });
+    }
 
     const summary_el = this.get_footer_element().querySelector("div[name=summary]");
     summary_el.innerHTML = [

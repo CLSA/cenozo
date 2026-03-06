@@ -12,7 +12,7 @@ export class CN_search_result_model extends CN_base_model {
         posessive: "search result's",
       },
       columns: {
-        hits: { title: "Hits", type: "number" },
+        hits: { title: "Hits", type: "number", table_prefix: false },
         uid: { column: "participant.uid", title: "UID" },
         full_name: { title: "Participant Name", table_prefix: false },
         result: { title: "Search Matches" },
@@ -46,6 +46,7 @@ export class CN_search_result_list extends CN_action_list {
     const query_el = this.constructor.html(
       '<div class="container-fluid bg-secondary p-2"><div class="row"></div></div>'
     );
+    console.log(this.get_query_parameter("q"));
     CN_element_label.create_element(query_el.querySelector("div.row"), {
       for: id,
       value: "Search",
@@ -54,7 +55,7 @@ export class CN_search_result_list extends CN_action_list {
     CN_input_string.create_element(query_el.querySelector("div.row"),{
       id: id,
       class: "col-sm-11",
-      value: this.get_query_parameter("q"),
+      get_default: () => this.get_query_parameter("q"),
       on_change: async (form_input) => {
         // when changing the search value set the query parameter and re-run the action
         this.set_query_parameter("q", form_input.get_value());

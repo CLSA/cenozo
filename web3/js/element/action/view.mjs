@@ -151,12 +151,12 @@ export class CN_action_view extends CN_action_base_record {
    */
   async on_delete() {
     // first confirm
-    const modal = (new CN_modal_confirm({
+    const response = await (new CN_modal_confirm({
       title: "Please Confirm",
       message: `Are you sure you wish to delete this ${this.get_model().get_singular()}?`,
     })).open();
 
-    if (await modal.test()) {
+    if (response) {
       await CN_api.delete(this.get_model().get_view_url(null, "api"));
       await this.on_navigate_to_parent();
     }

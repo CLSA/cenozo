@@ -545,7 +545,11 @@ class ui3 extends \cenozo\base_object
         'action' => 'list',
         'query' => '?{tables}'
       ];
-      $menu['utilities']['Participant Export'] = [ 'subject' => 'export', 'action' => 'list' ];
+      $menu['utilities']['Participant Export'] = [
+        'subject' => 'export',
+        'action' => 'list',
+        'query' => '?{tables}'
+      ];
       $menu['utilities']['Participant Multi-Edit'] = [ 'subject' => 'participant', 'action' => 'multiedit' ];
       if( $sm->get_setting( 'general', 'participant_import' ) )
       {

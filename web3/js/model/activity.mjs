@@ -15,6 +15,7 @@ export class CN_activity_model extends CN_base_model {
         start_datetime: { title: "Start", type: "datetimesecond" },
         end_datetime: { title: "End", type: "datetimesecond" },
       },
+      default_order: { column: "start_datetime", desc: true },
     });
   }
 }

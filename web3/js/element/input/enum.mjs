@@ -168,8 +168,8 @@ export class CN_input_enum extends CN_base_input {
    * @return Element
    */
   static create_element(parent_el = null, config = {}) {
-    const el = new CN_input_enum(parent_el, config).get_element();
-    if (parent_el) parent_el.append(el);
-    return el;
+    const form_input = new CN_input_enum(parent_el, config);
+    if (parent_el) parent_el.append(form_input.get_element());
+    return form_input;
   }
 }
