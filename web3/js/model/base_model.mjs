@@ -8,9 +8,9 @@ export class CN_base_model extends CN_base_object {
   #unique_id;
   #module;
   #wording;
-  #default_order;
   #properties_template;
   #columns_template;
+  #get_default_order;
   #element = null;
   #parent_model = null;
   #child_model_list = [];
@@ -47,27 +47,7 @@ export class CN_base_model extends CN_base_object {
     // Note that the properties and columns props are only used when configuring the model.
     this.#properties_template = params.properties;
     this.#columns_template = params.columns;
-
-    this.#default_order = { column: null, desc: false };
-    if (params.default_order) {
-      if (CN_common.is_string(params.default_order)) {
-        this.#default_order.column = params.default_order;
-      } else if (CN_common.is_object(params.default_order)) {
-        this.#default_order.column = params.default_order.column;
-        this.#default_order.desc = params.default_order.desc;
-      }
-    } else {
-      if (CN_common.is_object(this.#columns_template)) {
-        // by default sort by start_datetime, datetime, name or the first column
-        this.#default_order.column = (
-          this.#columns_template.rank ? "rank" :
-          this.#columns_template.start_datetime ? "start_datetime" :
-          this.#columns_template.datetime ? "datetime" :
-          this.#columns_template.name ? "name" :
-          Object.keys(this.#columns_template)[0]
-        );
-      }
-    }
+    this.#get_default_order = params.get_default_order;
   }
 
   // access methods
@@ -83,7 +63,6 @@ export class CN_base_model extends CN_base_object {
   get_singular() { return this.#wording.singular; }
   get_plural() { return this.#wording.plural; }
   get_posessive() { return this.#wording.posessive; }
-  get_default_order() { return this.#default_order; }
   get_list_url() { return this.get_base_path("url") + "/list"; }
   get_add_url() { return this.get_base_path("url") + "/add"; }
   get_view_url(id = null, type = "url") {
@@ -147,6 +126,53 @@ export class CN_base_model extends CN_base_object {
     }
 
     return path_parts;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_default_order() {
+    const default_order = { column: null, desc: false };
+    if (this.#get_default_order) {
+      const order = this.#get_default_order(this);
+      if (CN_common.is_string(order)) {
+        default_order.column = order;
+      } else if (CN_common.is_object(order)) {
+        default_order.column = order.column;
+        default_order.desc = order.desc;
+      }
+    } else {
+      if (CN_common.is_object(this.#columns_template)) {
+        const re = this.#parent_model ? new RegExp(`^${this.#parent_model.get_name()}\.`) : null;
+
+        // by default sort by rank, start_datetime, datetime or name (that doesn't belong to the parent model)
+        if (!["rank", "start_datetime", "datetime", "name", "title"].some(col => {
+          if (
+            this.#columns_template[col] && (
+              null == re ||
+              !this.#columns_template[col].column ||
+              null == this.#columns_template[col].column.match(re)
+            )
+          ) {
+            default_order.column = col;
+            return true;
+          }
+        })) {
+          // find the first column that doesn't belong to the parent model
+          Object.keys(this.#columns_template).some(col => {
+            if (
+              null == re ||
+              !this.#columns_template[col].column ||
+              null == this.#columns_template[col].column.match(re)
+            ) {
+              default_order.column = col;
+              return true;
+            }
+          });
+        }
+      }
+    }
+    return default_order;
   }
 
   /**

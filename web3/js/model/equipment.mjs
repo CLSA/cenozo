@@ -20,7 +20,7 @@ export class CN_equipment_model extends CN_base_model {
         uid: { column: "participant.uid", title: "On Loan" },
         note: { column: "equipment.note", title: "Note", type: "text" },
       },
-      default_order: "serial_number",
+      get_default_order: () => "serial_number",
       properties: {
         equipment_type_id: {
           title: "Equipment Type",
