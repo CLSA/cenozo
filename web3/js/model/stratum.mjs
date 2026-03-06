@@ -1,12 +1,14 @@
-import CN_api from "../api.mjs"
-import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_action } from "../element/action/base_action.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_element_card } from "../element/card.mjs"
+import { CN_element_label } from "../element/label.mjs"
+import { CN_input_enum } from "../element/input/enum.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
 import { CN_participant_selection } from "./participant.mjs"
-
-import { CN_base_action } from "../base_action.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_stratum_model extends CN_base_model {
   constructor() {
@@ -93,7 +95,7 @@ export class CN_stratum_model extends CN_base_model {
   }
 }
 
-export class CN_stratum_view extends CN_base_view {
+export class CN_stratum_view extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
@@ -101,7 +103,7 @@ export class CN_stratum_view extends CN_base_view {
     const footer_el = super.create_footer_element();
 
     if (this.get_model().get_module().action_allowed("mass_participant")) {
-      const mass_participant_btn_el = CN_element.create(`
+      const mass_participant_btn_el = this.constructor.html(`
         <button name="mass_participant" type="button" class="btn btn-light btn-outline-primary">
           Manage Stratum Participants
         </button>
@@ -129,8 +131,8 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Constructor
    * @param base_model model: The model that the action belongs to
    */
-  constructor(model) {
-    super("mass_participant", model);
+  constructor(parent_el, model) {
+    super("mass_participant", parent_el, model);
   }
 
   /**
@@ -201,7 +203,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Extend parent method
    */
   create_body_element() {
-    const body_el = CN_element.create(`
+    const body_el = this.constructor.html(`
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
           This utility allows you to add or remove lists of participants to or from the
@@ -221,31 +223,26 @@ export class CN_stratum_mass_participant extends CN_base_action {
 
     // add the operation type select
     const footer_el = body_el.querySelector("[name=operation]");
-    const label_el = CN_element.create_form_label({ for: "operation", value: "Operation" });
-    label_el.classList.add("col-sm-3");
-    footer_el.append(label_el);
+    CN_element_label.create_element(footer_el, { for: "operation", value: "Operation", class: "col-sm-3" });
 
-    const element_el = CN_element.create_form_element("enum", {
+    CN_input_enum.create_element(footer_el, {
       id: "operation",
+      class: "col-sm-9",
       required: true,
-      on_change: (control_el) => {
-        // since this isn't connected to an action we must define the default behaviour
-        this.#operation = control_el.value;
+      enum: {
+       values: [
+         { key: "add", value: "Add to Stratum" },
+         { key: "remove", value: "Remove from Stratum" },
+       ],
+      },
+      on_change: (form_input) => {
+        // since the form input isn't connected to an action we must define the default behaviour
+        this.#operation = form_input.get_value();
         this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
         this.#participant_selection.reset();
         this.update_element();
       },
     });
-    element_el.classList.add("col-sm-9");
-
-    const operation_el = element_el.querySelector("#operation");
-    operation_el.append(CN_element.create(
-      '<option value="add" selected>Add to Stratum</option>'
-    ));
-    operation_el.append(CN_element.create(
-      '<option value="remove">Remove from Stratum</option>'
-    ));
-    footer_el.append(element_el);
 
     // add the participant selection
     body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
@@ -260,11 +257,11 @@ export class CN_stratum_mass_participant extends CN_base_action {
       this.update_element();
     });
 
-    const summary_el = CN_element.create('<div class="container-fluid"></div>');
+    const summary_el = this.constructor.html('<div class="container-fluid"></div>');
     body_el.append(summary_el);
 
     // create the confirm button
-    const confirm_btn_el = CN_element.create(
+    const confirm_btn_el = this.constructor.html(
       '<button name="confirm" type="button" class="btn btn-primary"></button>'
     );
     confirm_btn_el.addEventListener("click", async () => {
@@ -275,24 +272,23 @@ export class CN_stratum_mass_participant extends CN_base_action {
         identifier_list: this.#participant_selection.get_identifier_list(),
       });
 
-      await CN_element.message_modal({
+      await (new CN_modal_message({
         title: `Participants ${"add" == this.#operation ? "Added" : "Removed"}`,
         message: `
           You have successfully ${"add" == this.#operation ? "added" : "removed"} ${response} participant(s)
           ${"add" == this.#operation ? "to" : "from"} the ${this.#stratum.name} stratum.
         `,
-      }).block();
+      })).open();
 
       await this.on_load();
     });
 
     // add the confirm card
-    const confirm_selection_el = CN_element.create_card({
+    CN_element_card.create_element(body_el.querySelector("[name=participant-confirm]"), {
       header: "Confirm Selection",
       body: "",
       footer: confirm_btn_el,
     });
-    body_el.querySelector("[name=participant-confirm]").append(confirm_selection_el);
 
     return body_el;
   }
@@ -301,7 +297,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
    * Extend parent method
    */
   create_footer_element() {
-    const footer_el = CN_element.create(`
+    const footer_el = this.constructor.html(`
       <div class="btn-group" role="group">
         <button name="back" type="button" class="btn btn-primary">View Stratum</button>
       </div>

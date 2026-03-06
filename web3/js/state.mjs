@@ -1,24 +1,36 @@
-import CN_common from "./common.mjs"
-
 import { CN_base_object } from "./base_object.mjs"
+import { CN_common } from "./common.mjs"
 
 export class CN_state extends CN_base_object {
   #stack = [];
   #element;
 
   /**
+   * ADD DOCS
+   */
+  is_bound() {
+    return !!this.#element;
+  }
+
+  /**
    * Binds an element to the state (two-way binding)
    * @param Element el: The element to bind, usually a form element
    */
   bind_element(el) {
+    // set the element's value to the state's current value
     this.#element = el;
+    this.update_element();
+
+    // the last argument is true so that this listener is fired before any other
     this.#element.addEventListener(
       "input",
       () => this.set(
+        // getting the element's value varies depending on the type
         "file" == this.#element.type ? this.#element.files :
         "audio" == this.#element.localName ? this.#element.src :
         this.#element.value
       ),
+      true
     );
   }
 
@@ -49,7 +61,7 @@ export class CN_state extends CN_base_object {
    */
   get() {
     const len = this.#stack.length;
-    return 0 < len ? this.#stack[len-1].value : undefined;
+    return 0 < len ? this.#stack[len-1].value : null;
   }
 
   /**

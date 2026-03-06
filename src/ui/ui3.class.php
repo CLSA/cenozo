@@ -218,8 +218,8 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'GET' == $service['method'] )
       {
-        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}?{tab}' );
-        else $module->add_action( 'list', '?{page}&{restrict}&{order}&{reverse}' );
+        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}?{tab}&{tables}' );
+        else $module->add_action( 'list', '?{tables}' );
       }
       else if( 'PATCH' == $service['method'] )
       {
@@ -543,9 +543,13 @@ class ui3 extends \cenozo\base_object
       $menu['utilities']['Application Log'] = [
         'subject' => 'log_entry',
         'action' => 'list',
-        'query' => '?{page}&{restrict}&{order}&{reverse}'
+        'query' => '?{tables}'
       ];
-      $menu['utilities']['Participant Export'] = [ 'subject' => 'export', 'action' => 'list' ];
+      $menu['utilities']['Participant Export'] = [
+        'subject' => 'export',
+        'action' => 'list',
+        'query' => '?{tables}'
+      ];
       $menu['utilities']['Participant Multi-Edit'] = [ 'subject' => 'participant', 'action' => 'multiedit' ];
       if( $sm->get_setting( 'general', 'participant_import' ) )
       {
@@ -556,12 +560,12 @@ class ui3 extends \cenozo\base_object
     $menu['utilities']['Participant Search'] = [
       'subject' => 'search_result',
       'action' => 'list',
-      'query' => '?{q}&{page}&{restrict}&{order}&{reverse}'
+      'query' => '?{q}&{tables}'
     ];
     $menu['utilities']['User Overview'] = [
       'subject' => 'user',
       'action' => 'overview',
-      'query' => '?{page}&{restrict}&{order}&{reverse}'
+      'query' => '?{tables}'
     ];
 
     if( array_key_exists( 'callback', $module_list ) )
@@ -579,7 +583,7 @@ class ui3 extends \cenozo\base_object
       $menu['utilities']['Tracing'] = [
         'subject' => 'trace',
         'action' => 'list',
-        'query' => '?{page}&{restrict}&{order}&{reverse}'
+        'query' => '?{tables}'
       ];
     }
 

@@ -1,10 +1,10 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
-import CN_timezones from "../timezones.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_country_model } from "./country.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_application_model extends CN_base_model {
   constructor() {
@@ -76,9 +76,9 @@ export class CN_application_model extends CN_base_model {
           title: "Primary Colour",
           type: "color",
           help: "The primary colour to use for the application's user interface.",
-          on_change: async (control_el, valid, action) => {
+          on_change: async (form_input, valid) => {
             // run the default behaviour
-            await action.on_change("primary_color", valid);
+            await form_input.get_action().on_property_change("primary_color", valid);
 
             // then reload the page so the new theme is generated
             if (valid) await CN_session.reload();
@@ -88,9 +88,9 @@ export class CN_application_model extends CN_base_model {
           title: "Secondary Colour",
           type: "color",
           help: "The secondary colour to use for the application's user interface.",
-          on_change: async (control_el, valid, action) => {
+          on_change: async (form_input, valid) => {
             // run the default behaviour
-            await action.on_change("secondary_color", valid);
+            await form_input.get_action().on_property_change("secondary_color", valid);
 
             // then reload the page so the new theme is generated
             if (valid) await CN_session.reload();
@@ -120,24 +120,59 @@ export class CN_application_model extends CN_base_model {
           help: "A footer which is added to all emails sent out by the application.  This text may contain HTML markup.",
         },
         country_id: { title: "Country", type: "typeahead", typeahead: CN_country_model.get_typeahead() },
-        timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
+        timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },
         participant_count: { title: "Participants", meta: {}, is_constant: () => true },
         site_count: { title: "Sites", meta: {}, is_constant: () => true },
       },
     });
   }
+
+  /**
+   * Extend parent method
+   */
+  allow_view() {
+    const parent_model = this.get_parent_model();
+    return parent_model && "participant" == parent_model.get_name() ? false : super.allow_view();
+  }
 }
 
-export class CN_application_view extends CN_base_view {
+export class CN_application_view extends CN_action_view {
   /**
    * Extend the parent method to remove the collection and role list for all applications except the current one.
    * This is because only the current application can get collections and roles from the server.
    */
   get_selector_child_list() {
     return (
-      CN_session.data.application.name == this.get_property("name").state.get() ?
+      CN_session.data.application.name == this.get_property_value("name") ?
       super.get_selector_child_list() :
       super.get_selector_child_list().filter(child => !["collection", "role"].includes(child.model.get_name()))
     );
+  }
+}
+
+export class CN_application_list extends CN_action_list {
+  /**
+   * Extend the parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    // add the manage applications action view when participant is the parent model
+    const parent_model = this.get_model().get_parent_model();
+    if (parent_model && "participant" == parent_model.get_name()) {
+      const manage_btn_el = this.constructor.html(`
+        <button
+          name="manage"
+          type="button"
+          class="btn btn-light btn-outline-primary"
+        >Manage Applications</button>
+      `);
+      manage_btn_el.addEventListener("click", async () => {
+        CN_session.navigate_to(`participant/release/${parent_model.get_identifier()}`);
+      });
+      footer_el.querySelector("div.btn-group").append(manage_btn_el);
+    }
+
+    return footer_el;
   }
 }

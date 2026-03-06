@@ -1,7 +1,10 @@
-import CN_api from "../api.mjs"
-
-import { CN_base_person_model, CN_base_person_view, CN_base_person_history, CN_base_person_notes }
-  from "../base_person_model.mjs"
+import { CN_api } from "../api.mjs"
+import {
+  CN_base_person_model,
+  CN_base_person_view,
+  CN_base_person_history,
+  CN_base_person_notes
+} from "./base_person_model.mjs"
 import { CN_participant_model } from "./participant.mjs"
 
 export class CN_alternate_model extends CN_base_person_model {
@@ -20,6 +23,14 @@ export class CN_alternate_model extends CN_base_person_model {
         association: { title: "Association" },
         alternate_type_list: { title: "Types", table_prefix: false },
         global_note: { title: "Special Note", type: "text", limit: 100 },
+      },
+      get_default_order: (model) => {
+        const parent_model = model.get_parent_model();
+        return (
+          parent_model && "participant" == parent_model.get_name() ?
+          "last_name" :
+          "uid"
+        );
       },
       properties: {
         participant_id: {
@@ -92,8 +103,8 @@ export class CN_alternate_view extends CN_base_person_view {
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
       return [
-        this.get_property("last_name").state.get(),
-        this.get_property("first_name").state.get(),
+        this.get_property_value("last_name"),
+        this.get_property_value("first_name"),
       ].join(", ");
     }
     return await super.get_text(type);

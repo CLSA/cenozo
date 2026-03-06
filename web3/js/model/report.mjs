@@ -1,9 +1,8 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_add } from "../base_add.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_report_view } from "../base_report_view.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_action_report_view } from "../element/action/report_view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_report_model extends CN_base_model {
   constructor() {
@@ -83,7 +82,7 @@ export class CN_report_model extends CN_base_model {
 }
 
 // A private function used by both report_add and report_view
-async function on_load(action) {
+async function create_restriction_inputs(action) {
   const report_type_id = action.get_model().get_parent_model().get_identifier();
   if (report_type_id != action.current_report_type_id) {
     action.current_report_type_id = report_type_id;
@@ -143,7 +142,7 @@ async function on_load(action) {
             }
           };
         } else if ("identifier_list" == prop.restriction_type) {
-          params.type = "string";
+          params.type = "text";
         } else {
           params.type = prop.restriction_type;
         }
@@ -154,15 +153,15 @@ async function on_load(action) {
   }
 }
 
-export class CN_report_add extends CN_base_add {
-  current_report_type_id; // used in the custom on_load method
+export class CN_report_add extends CN_action_add {
+  current_report_type_id; // used in the custom create_restriction_inputs function (above)
 
   /**
    * Extends parent method
    */
-  async on_load() {
-    await on_load(this); // use private function above to load restrictions
-    await super.on_load()
+  async run(children = false) {
+    await create_restriction_inputs(this); // use private function above to load restrictions
+    await super.run(children);
   }
 
   /**
@@ -173,14 +172,14 @@ export class CN_report_add extends CN_base_add {
   }
 }
 
-export class CN_report_view extends CN_base_report_view {
-  current_report_type_id; // used in the custom on_load method
+export class CN_report_view extends CN_action_report_view {
+  current_report_type_id; // used in the custom create_restriction_inputs function (above)
 
   /**
    * Extends parent method
    */
-  async on_load() {
-    await on_load(this); // use private function above to load restrictions
-    await super.on_load();
+  async run(children = false) {
+    await create_restriction_inputs(this); // use private function above to load restrictions
+    await super.run(children);
   }
 }

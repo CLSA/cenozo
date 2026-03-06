@@ -1,11 +1,10 @@
-import CN_api from "../api.mjs"
-import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_custom_report_model extends CN_base_model {
   constructor() {
@@ -27,7 +26,7 @@ export class CN_custom_report_model extends CN_base_model {
           file: {
             encoding: "base64",
             mime_type: "application/sql",
-            get_filename: async (action) => action.get_property("name").state.get() + ".sql",
+            get_filename: async (action) => action.get_property_value("name") + ".sql",
           },
         },
         description: { title: "Description", type: "text" },
@@ -36,7 +35,7 @@ export class CN_custom_report_model extends CN_base_model {
   }
 
   async download_report(id) {
-    await CN_element.wait_for(async () => {
+    await CN_base_element.wait_for(async () => {
       const response = await CN_api.file(`custom_report/${id}`, "text/csv", { file: "report" }, true);
       CN_common.download_file(
         await response.blob(),
@@ -46,7 +45,7 @@ export class CN_custom_report_model extends CN_base_model {
   }
 }
 
-export class CN_custom_report_list extends CN_base_list {
+export class CN_custom_report_list extends CN_action_list {
   /**
    * Non-administrator roles download when clicking items in the list
    */
@@ -59,7 +58,7 @@ export class CN_custom_report_list extends CN_base_list {
   }
 }
 
-export class CN_custom_report_view extends CN_base_view {
+export class CN_custom_report_view extends CN_action_view {
   /**
    * Add operation to footer element
    */
@@ -67,7 +66,7 @@ export class CN_custom_report_view extends CN_base_view {
     const footer_el = super.create_footer_element();
 
     // add the download action
-    const download_btn_el = CN_element.create(
+    const download_btn_el = this.constructor.html(
       '<button name="download" type="button" class="btn btn-light btn-outline-primary">Run Report</button>'
     );
     download_btn_el.addEventListener(

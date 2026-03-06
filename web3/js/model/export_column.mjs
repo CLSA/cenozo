@@ -1,9 +1,8 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_export_model } from "./export.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_export_column_model extends CN_base_model {
   constructor() {
@@ -28,7 +27,7 @@ export class CN_export_column_model extends CN_base_model {
   }
 }
 
-export class CN_export_column_view extends CN_base_view {
+export class CN_export_column_view extends CN_action_view {
   /**
    * Extend parent method
    */
@@ -37,8 +36,6 @@ export class CN_export_column_view extends CN_base_view {
 
     // if the table name has changed then make sure to update the column_name as well
     if ("table_name" == prop_name) {
-      const prop = this.get_property("column_name");
-      prop.state.set(prop.enum.values[0].key);
       await super.on_set_property("column_name");
     }
   }

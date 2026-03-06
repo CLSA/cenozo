@@ -1,8 +1,6 @@
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_report_type_model extends CN_base_model {
   constructor() {
@@ -26,7 +24,7 @@ export class CN_report_type_model extends CN_base_model {
   }
 }
 
-export class CN_report_type_view extends CN_base_view {
+export class CN_report_type_view extends CN_action_view {
   /**
    * Add operation to footer element
    */
@@ -34,7 +32,7 @@ export class CN_report_type_view extends CN_base_view {
     const footer_el = super.create_footer_element();
 
     // add the download action
-    const download_btn_el = CN_element.create(
+    const download_btn_el = this.constructor.html(
       '<button name="run" type="button" class="btn btn-light btn-outline-primary">Run Report</button>'
     );
     download_btn_el.addEventListener(

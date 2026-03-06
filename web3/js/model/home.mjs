@@ -1,9 +1,8 @@
-import CN_api from "../api.mjs"
-import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
-
+import { CN_api } from "../api.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
 import { CN_base_object } from "../base_object.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_home_model extends CN_base_object {
   #name;
@@ -83,10 +82,10 @@ export class CN_home_model extends CN_base_object {
     sm_el.innerHTML = "";
 
     if (0 == CN_session.system_message_list.length) {
-      sm_el.append(CN_element.create('<div class="col-form-label">There are no system messages.</div>'));
+      sm_el.append(CN_base_element.html('<div class="col-form-label">There are no system messages.</div>'));
     } else {
       CN_session.system_message_list.forEach((message, message_index) => {
-        const message_el = CN_element.create(`
+        const message_el = CN_base_element.html(`
           <div class="card mt-3 px-0 ${message.unread ? "" : "text-muted"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
               <button class="btn btn-dark">
@@ -116,7 +115,7 @@ export class CN_home_model extends CN_base_object {
    * @return Element
    */
   render() {
-    this.#element = CN_element.create(`
+    this.#element = CN_base_element.html(`
       <div class="container-fluid rounded bg-white p-4">
         <div class="row">
           <div class="col-sm-6">

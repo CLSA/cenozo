@@ -1,9 +1,8 @@
-import CN_api from "../api.mjs"
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "../traceable_model.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_country_model } from "./country.mjs"
+import { CN_session } from "../session.mjs"
+import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
 
 export class CN_address_model extends CN_traceable_model {
   constructor() {
@@ -32,12 +31,12 @@ export class CN_address_model extends CN_traceable_model {
           title: "International",
           type: "boolean",
           help: "Cannot be changed once the address has been created.",
-          on_change: async (control_el, valid, action) => {
+          on_change: async (form_input, valid) => {
             // run the default behaviour
-            await action.on_change("international", valid);
+            await form_input.get_action().on_property_change("international", valid);
 
             // then update the element to propagate the changed property
-            if (valid) action.update_element();
+            if (valid) form_input.get_action().update_element();
           },
           is_constant: (model) => "view" == model.get_action_name(),
         },
@@ -58,7 +57,7 @@ export class CN_address_model extends CN_traceable_model {
           },
           is_hidden: (model) => (
             "add" == model.get_action_name() ||
-            model.get_action().get_property("international").state.get()
+            model.get_action().get_property_value("international")
           ),
           is_constant: () => true,
           help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
@@ -66,22 +65,14 @@ export class CN_address_model extends CN_traceable_model {
         international_region: {
           title: "Region",
           type: "string",
-          is_hidden: (model) => !(
-            "add" == model.get_action_name() ?
-            1 == model.get_action().get_property("international").element.querySelector("select").value :
-            model.get_action().get_property("international").state.get()
-          ),
+          is_hidden: (model) => !model.get_action().get_property_value("international"),
           help: "International regions are unrestricted and are not automatically set by the postcode.",
         },
         international_country_id: {
           title: "Country",
           type: "typeahead",
           typeahead: CN_country_model.get_typeahead(),
-          is_hidden: (model) => !(
-            "add" == model.get_action_name() ?
-            1 == model.get_action().get_property("international").element.querySelector("select").value :
-            model.get_action().get_property("international").state.get()
-          ),
+          is_hidden: (model) => !model.get_action().get_property_value("international"),
         },
         postcode: {
           title: "Postcode",
@@ -104,21 +95,11 @@ export class CN_address_model extends CN_traceable_model {
 
         months: {
           title: "Available Months",
-          is_hidden: model => !model.get_action().get_property("active").state.get(),
-          properties: {
-            january: { title: "January", type: "boolean" },
-            february: { title: "February", type: "boolean" },
-            march: { title: "March", type: "boolean" },
-            april: { title: "April", type: "boolean" },
-            may: { title: "May", type: "boolean" },
-            june: { title: "June", type: "boolean" },
-            july: { title: "July", type: "boolean" },
-            august: { title: "August", type: "boolean" },
-            september: { title: "September", type: "boolean" },
-            october: { title: "October", type: "boolean" },
-            november: { title: "November", type: "boolean" },
-            december: { title: "December", type: "boolean" },
-          },
+          is_hidden: model => !model.get_action().get_property_value("active"),
+          properties: CN_common.get_month().reduce((obj, month) => {
+            obj[month.toLowerCase()] = { title: month, type: "boolean" };
+            return obj;
+          }, {}),
         },
       },
     });
@@ -134,8 +115,8 @@ export class CN_address_view extends CN_traceable_view {
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
       return [
-        this.get_property("rank").state.get(),
-        this.get_property("city").state.get(),
+        this.get_property_value("rank"),
+        this.get_property_value("city"),
       ].join(") ");
     }
     return await super.get_text(type);
@@ -148,7 +129,7 @@ export class CN_address_view extends CN_traceable_view {
     const footer_el = super.create_footer_element();
 
     // add the timezone action
-    const timezone_btn_el = CN_element.create(
+    const timezone_btn_el = this.constructor.html(
       '<button name="timezone" type="button" class="btn btn-light btn-outline-primary">Use Timezone</button>'
     );
     timezone_btn_el.addEventListener("click", async () => {

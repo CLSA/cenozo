@@ -1,6 +1,5 @@
-import CN_session from "../session.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_consent_model extends CN_base_model {
   constructor() {
@@ -37,12 +36,12 @@ export class CN_consent_model extends CN_base_model {
         accept: {
           title: "Accept",
           type: "boolean",
-          is_constant: () => true,
+          is_constant: (model) => "view" == model.get_action_name(),
         },
         written: {
           title: "Written",
           type: "boolean",
-          is_constant: () => true,
+          is_constant: (model) => "view" == model.get_action_name(),
           is_hidden: () => 3 > CN_session.data.role.tier,
         },
         datetime: { title: "Date & Time", type: "datetimesecond", max: "now" },

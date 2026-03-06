@@ -1,11 +1,10 @@
-import CN_api from "./api.mjs"
-import CN_common from "./common.mjs"
-import CN_session from "./session.mjs"
-
-import { CN_base_add } from "./base_add.mjs"
-import { CN_base_list } from "./base_list.mjs"
+import { CN_action_add } from "./element/action/add.mjs"
+import { CN_action_list } from "./element/action/list.mjs"
+import { CN_action_view } from "./element/action/view.mjs"
+import { CN_api } from "./api.mjs"
 import { CN_base_object } from "./base_object.mjs"
-import { CN_base_view } from "./base_view.mjs"
+import { CN_common } from "./common.mjs"
+import { CN_session } from "./session.mjs"
 
 /**
  * The session class which handles the application
@@ -31,7 +30,26 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("root")) this.#root = params.root;
     if (params.hasOwnProperty("framework")) this.#framework = params.framework;
     if (params.hasOwnProperty("notations")) this.#notations = params.notations;
-    if (params.hasOwnProperty("properties")) this.#properties = params.properties;
+    if (params.hasOwnProperty("properties")) {
+      this.#properties = params.properties;
+
+      // cast boolean, int and float column defaults from strings to boolean/numbers
+      if (CN_common.is_object(this.#properties)) {
+        this.get_property_names()
+          .filter(prop_name =>
+            this.#properties[prop_name].data_type.match(/int|float/) &&
+            null != this.#properties[prop_name].default
+          )
+          .forEach(prop_name => {
+            const value = this.#properties[prop_name].default;
+            this.#properties[prop_name].default = (
+              "tinyint" == this.#properties[prop_name].data_type ?
+              "1" == value :
+              Number(value)
+            );
+          });
+      }
+    }
     if (params.hasOwnProperty("children")) this.#child_modules.push.apply(this.#child_modules, params.children);
     if (params.hasOwnProperty("choosing")) {
       this.#child_modules.push.apply(this.#child_modules, params.choosing);
@@ -132,13 +150,13 @@ export class CN_module extends CN_base_object {
     return new this.#classes.model();
   }
   action_class_exists(name) { return CN_common.is_class(this.#classes[name]); }
-  create_action(name, model) {
+  create_action(name, parent_el, model) {
     if (!CN_common.is_class(this.#classes[name])) {
       throw new Error(
         `Tried to create "${name}" action for "${this.#name}" module but action class isn't implemented`
       );
     }
-    return new this.#classes[name](model);
+    return new this.#classes[name](parent_el, model);
   }
 
   /**
@@ -179,9 +197,9 @@ export class CN_module extends CN_base_object {
       const prefix = `CN_${this.#name}`;
       this.#classes = {
         model: null,
-        add: CN_base_add,
-        list: CN_base_list,
-        view: CN_base_view,
+        add: CN_action_add,
+        list: CN_action_list,
+        view: CN_action_view,
       };
 
       // load the framework classes and use any that are found

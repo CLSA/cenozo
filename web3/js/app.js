@@ -6,9 +6,9 @@
    * Also handles all unhandled exceptions and handles browser navigation events.
    */
   window.addEventListener("load", async () => {
-    const CN_common = (await import("./common.mjs")).default;
-    const CN_element = (await import("./element.mjs")).default;
-    const CN_session = (await import("./session.mjs")).default;
+    const { CN_common } = await import("./common.mjs");
+    const { CN_session } = await import("./session.mjs");
+    const { CN_modal_message } = (await import("./element/modal/message.mjs"));
 
     // catch all unhandled exceptions
     window.addEventListener("unhandledrejection", event => {
@@ -33,8 +33,7 @@
       }
 
       if (!ignore) {
-        const modal = CN_element.message_modal(params);
-        modal.show();
+        (new CN_modal_message(params)).open();
       }
     });
 

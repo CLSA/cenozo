@@ -1,4 +1,4 @@
-import { CN_base_model } from "../base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
 export class CN_activity_model extends CN_base_model {
   constructor() {
@@ -15,6 +15,7 @@ export class CN_activity_model extends CN_base_model {
         start_datetime: { title: "Start", type: "datetimesecond" },
         end_datetime: { title: "End", type: "datetimesecond" },
       },
+      get_default_order: () => ({ column: "start_datetime", desc: true }),
     });
   }
 }

@@ -1,9 +1,8 @@
-import CN_api from "../api.mjs"
-import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_element_card } from "../element/card.mjs"
 
 export class CN_overview_model extends CN_base_model {
   constructor() {
@@ -21,7 +20,7 @@ export class CN_overview_model extends CN_base_model {
   }
 }
 
-export class CN_overview_view extends CN_base_view {
+export class CN_overview_view extends CN_action_view {
   #record = {};
 
   /**
@@ -48,20 +47,20 @@ export class CN_overview_view extends CN_base_view {
    * Override this method to create an overview-specific placeholder
    */
   create_placeholder_element() {
-    const el = CN_element.create('<div class="px-3"></div>');
-    const card_el = CN_element.create_card({
-      header: CN_element.create(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
+    const el = this.constructor.html('<div class="px-3"></div>');
+    const card_el = CN_element_card.create_element(el, {
+      header: this.constructor.html(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
+      body: "",
       footer: null,
+      class: "mt-2",
     });
-    card_el.classList.add("mt-2");
-    el.append(card_el);
 
     const header_el = card_el.querySelector(".card-header");
     header_el.classList.add("placeholder-glow");
 
     const body_el = card_el.querySelector(".card-body");
     for (let row = 0; row < 12; row++) {
-      body_el.append(CN_element.create(`
+      body_el.append(this.constructor.html(`
         <div class="row ${1 == row%2 ? 'bg-dark-subtle' : ''}">
           <label class="col placeholder-glow">
             <span class="placeholder col-${Math.ceil(Math.random()*3)+6}"></span>
@@ -80,7 +79,7 @@ export class CN_overview_view extends CN_base_view {
    * Override this method to display the overview instead of viewing it as a record
    */
   create_body_element() {
-    return CN_element.create("<div></div>");
+    return this.constructor.html("<div></div>");
   }
 
   /**
@@ -95,33 +94,37 @@ export class CN_overview_view extends CN_base_view {
    */
   update_element() {
     // build the overview based on the data property
-    const add_node = (node, parent) => {
+    const add_node = (node, parent_el, first) => {
       if (CN_common.is_array(node.value)) {
         // put the node in a card
         if (null == node.label) {
-          const container_el = CN_element.create('<div class="px-3"></div>');
-          node.value.forEach(child_node => add_node(child_node, container_el));
-          parent.append(container_el);
+          const container_el = this.constructor.html('<div class="px-3"></div>');
+          node.value.forEach((child_node, index) => add_node(child_node, container_el, 0 == index));
+          parent_el.append(container_el);
         } else {
-          const card_el = CN_element.create_card({
-            header: CN_element.create(`<div class="d-flex"><div class="flex-grow-1">${node.label}</div></div>`),
-            footer: null
+          const card_el = CN_element_card.create_element(parent_el, {
+            header: this.constructor.html(
+              `<div class="d-flex"><div class="flex-grow-1">${node.label}</div></div>`
+            ),
+            body: "",
+            footer: null,
+            class: "mt-2",
           });
-          card_el.classList.add("mt-2");
 
           const header_el = card_el.querySelector(".card-header");
           const body_el = card_el.querySelector(".card-body");
 
           // if we're adding multiple cards to the parent then make all cards after the first collapsable
-          if (0 < parent.querySelectorAll(":scope > div.container-fluid").length) {
+          if (0 < parent_el.querySelectorAll(":scope > div.container-fluid").length) {
             const id = ["overview", Math.round(Math.random()*10000000000)].join("-");
             body_el.setAttribute("id", id);
             body_el.classList.add("collapse");
+            if (first) body_el.classList.add("show");
 
             // add a chevron button
-            header_el.querySelector("div.d-flex").append(CN_element.create(`
+            header_el.querySelector("div.d-flex").append(this.constructor.html(`
               <button class="btn btn-primary px-2 py-0">
-                <i class="bi-chevron-down"></i>
+                <i class="bi-chevron-${first ? "up" : "down"}"></i>
               </button>
             `));
 
@@ -137,14 +140,19 @@ export class CN_overview_view extends CN_base_view {
             });
           }
 
-          node.value.forEach(child_node => add_node(child_node, body_el));
-          parent.append(card_el);
+          var first = true;
+          node.value.forEach(child_node => {
+            add_node(child_node, body_el, first);
+
+            // only expand the first child that contains a sub-list
+            if (CN_common.is_array(child_node.value)) first = false;
+          });
         }
       } else {
         // add the label/value as a row to the parent
-        const stripe = 1 == parent.children.length%2;
+        const stripe = 1 == parent_el.children.length%2;
 
-        const child_el = CN_element.create(`
+        const child_el = this.constructor.html(`
           <div class="row ${stripe ? 'bg-dark-subtle' : ''}">
             <label class="col fw-bold">${node.label}</label>
             <div class="col text-end">${node.value}</div>
@@ -161,11 +169,13 @@ export class CN_overview_view extends CN_base_view {
           if (stripe) child_el.classList.add("bg-dark-subtle");
         });
 
-        parent.append(child_el);
+        parent_el.append(child_el);
       }
     };
 
-    this.get_body_element().innerHTML = "";
-    add_node(this.#record.data, this.get_body_element());
+    if (this.#record.data) {
+      this.get_body_element().innerHTML = "";
+      add_node(this.#record.data, this.get_body_element(), true);
+    }
   }
 }

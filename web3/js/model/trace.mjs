@@ -1,9 +1,8 @@
-import CN_api from "../api.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_add } from "../base_add.mjs"
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_model } from "../base_model.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_trace_model extends CN_base_model {
   constructor() {
@@ -32,13 +31,7 @@ export class CN_trace_model extends CN_base_model {
         trace_type_id: {
           title: "Trace Type",
           type: "enum",
-          enum: {
-            path: "trace_type",
-            select: { column: [
-              "name",
-
-            ] },
-          },
+          enum: { path: "trace_type" },
         },
         note: { title: "Note", type: "text" },
       },
@@ -46,13 +39,13 @@ export class CN_trace_model extends CN_base_model {
   }
 }
 
-export class CN_trace_add extends CN_base_add {
+export class CN_trace_add extends CN_action_add {
   async on_load() {
     await super.on_load();
 
     // only allow all-site roles to use the "unreachable" trace type
-    const prop = this.get_property("trace_type_id");
-    let trace_type = prop.enum.values.find(e => "unreachable" == e.name);
+    const enum_values = this.get_property("trace_type_id").form_input.get_config("enum").values;
+    let trace_type = enum_values.find(e => "unreachable" == e.name);
     if (trace_type) trace_type.disabled = true;
 
     // get the participant's current trace type
@@ -63,13 +56,13 @@ export class CN_trace_add extends CN_base_add {
 
     // disable that trace type from the available enum list to prevent duplicates
     if (0 < trace_list.length) {
-      trace_type = prop.enum.values.find(e => e.id == trace_list[0].trace_type_id);
+      trace_type = enum_values.find(e => e.id == trace_list[0].trace_type_id);
       if (trace_type) trace_type.disabled = true;
     }
   }
 }
 
-export class CN_trace_list extends CN_base_list {
+export class CN_trace_list extends CN_action_list {
   /**
    * Extends the parent method
    */

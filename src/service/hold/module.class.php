@@ -186,6 +186,11 @@ class module extends \cenozo\service\site_restricted_participant_module
       if( $select->has_table_columns( 'region' ) )
         $modifier->left_join( 'region', 'hold_address.region_id', 'region.id' );
     }
+
+    if( $select->has_column( 'hold_type_full_name' ) )
+    {
+      $select->add_column( 'CONCAT(hold_type.type, ": ", hold_type.name)', 'hold_type_full_name', false );
+    }
   }
 
   /**

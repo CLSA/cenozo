@@ -1,10 +1,9 @@
-import CN_api from "../api.mjs"
-import CN_common from "../common.mjs"
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_element } from "../element/base_element.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_session } from "../session.mjs"
 import { CN_user_model } from "./user.mjs"
 
 /**
@@ -53,21 +52,23 @@ export class CN_export_model extends CN_base_model {
           title: "Participant Count",
           is_hidden: model => "add" == model.get_action_name(),
           is_constant: () => true,
-          set_postfix: () => {
-            const btn_el = CN_element.create(
+          postfix: (el) => {
+            const btn_el = CN_base_element.html(
               '<button type="button" class="btn btn-outline-primary ms-2">Calculate</button>'
             );
             btn_el.addEventListener(
               "click",
               async () => {
-                const state = this.get_action().get_property("participant_count").state;
-                state.set("(calculating...)");
+                this.get_action().set_property_value("participant_count", "(calculating...)");
                 btn_el.setAttribute("disabled", true);
-                state.set(await CN_api.count(`${this.get_view_url(null, "api")}/participant`));
+                this.get_action().set_property_value(
+                  "participant_count",
+                  await CN_api.count(`${this.get_view_url(null, "api")}/participant`)
+                );
                 btn_el.removeAttribute("disabled");
               },
             );
-            return btn_el;
+            el.append(btn_el);
           },
         },
         description: { title: "Description", type: "text" },
@@ -132,12 +133,12 @@ export class CN_export_model extends CN_base_model {
           key: name,
           value: CN_common.pretty_print("table", name),
         })) },
-        on_change: async (control_el, valid, action) => {
+        on_change: async (form_input, valid) => {
           // run the default behaviour
-          await action.on_change("table_name", valid);
+          await form_input.get_action().on_property_change("table_name", valid);
 
           // re-run the action so the changed property is applied in the view and all child lists
-          if (valid) action.run(true);
+          if (valid) form_input.get_action().run(true);
         }
       },
       subtype: {
@@ -146,7 +147,7 @@ export class CN_export_model extends CN_base_model {
         enum: {
           get_enums: async (model) => {
             let enums = [];
-            const table_name = model.get_action().get_property("table_name").state.get();
+            const table_name = model.get_action().get_property_value("table_name");
             if ("site" == table_name) {
               enums = [
                 { key: "default", value: "Default" },
@@ -174,7 +175,7 @@ export class CN_export_model extends CN_base_model {
           },
         },
         is_hidden: (model) => {
-          const table_name = model.get_action().get_property("table_name").state.get();
+          const table_name = model.get_action().get_property_value("table_name");
           const table = this.get_export_table(table_name);
           return null == table;
         },
@@ -184,7 +185,7 @@ export class CN_export_model extends CN_base_model {
         type: "enum",
         enum: {
           get_enums: (model) => {
-            const table = model.get_action().get_property("table_name").state.get();
+            const table = model.get_action().get_property_value("table_name");
             return (
               table ?
               CN_session.get_module(table).get_property_names().sort().map( name => ({
@@ -201,7 +202,7 @@ export class CN_export_model extends CN_base_model {
   }
 }
 
-export class CN_export_view extends CN_base_view {
+export class CN_export_view extends CN_action_view {
   /**
    * Manually determine the participant count after loading the record
    */
@@ -209,7 +210,7 @@ export class CN_export_view extends CN_base_view {
     await super.on_load();
 
     // reset the partcipant count to unknown
-    this.get_property("participant_count").state.set("(not calculated)");
+    this.set_property_value("participant_count", "(not calculated)");
   }
 
   /**
@@ -219,7 +220,7 @@ export class CN_export_view extends CN_base_view {
     const footer_el = super.create_footer_element();
 
     // add the generate action
-    const generate_btn_el = CN_element.create(
+    const generate_btn_el = this.constructor.html(
       '<button name="generate" type="button" class="btn btn-light btn-outline-primary">Generate</button>'
     );
     generate_btn_el.addEventListener("click", async () => {
@@ -231,7 +232,7 @@ export class CN_export_view extends CN_base_view {
     footer_el.append(generate_btn_el);
 
     // add the duplicate action
-    const duplicate_btn_el = CN_element.create(
+    const duplicate_btn_el = this.constructor.html(
       '<button name="duplicate" type="button" class="btn btn-light btn-outline-primary">Duplicate</button>'
     );
     duplicate_btn_el.addEventListener("click", async () => {

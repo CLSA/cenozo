@@ -1,5 +1,5 @@
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_export_model } from "./export.mjs"
 
 export class CN_export_restriction_model extends CN_base_model {
@@ -22,12 +22,12 @@ export class CN_export_restriction_model extends CN_base_model {
         rank: {
           title: "Rank",
           type: "rank",
-          on_change: async (control_el, valid, action) => {
+          on_change: async (form_input, valid) => {
             // run the default behaviour
-            await action.on_change("rank", valid);
+            await form_input.get_action().on_property_change("rank", valid);
 
             // re-run the action so the changed property is applied in the view and all child lists
-            if (valid) action.run(true);
+            if (valid) this.form_input.get_action().run(true);
           },
         },
         logic: {
@@ -35,7 +35,7 @@ export class CN_export_restriction_model extends CN_base_model {
           type: "enum",
           // don't show logic if this is the first restriction
           is_hidden: (model) => {
-            const rank = model.get_action().get_property("rank").state.get();
+            const rank = model.get_action().get_property_value("rank");
             return !rank || 1 == rank;
           },
         },
@@ -47,7 +47,7 @@ export class CN_export_restriction_model extends CN_base_model {
   }
 }
 
-export class CN_export_restriction_view extends CN_base_view {
+export class CN_export_restriction_view extends CN_action_view {
   /**
    * Extend parent method
    */
@@ -56,8 +56,10 @@ export class CN_export_restriction_view extends CN_base_view {
 
     // if the table name has changed then make sure to update the column_name as well
     if ("table_name" == prop_name) {
-      const prop = this.get_property("column_name");
-      prop.state.set(prop.enum.values[0].key);
+      this.set_property_value(
+        "column_name",
+        this.get_property(prop_name).form_input.get_config("enum").values[0].key
+      );
       await super.on_set_property("column_name");
     }
   }

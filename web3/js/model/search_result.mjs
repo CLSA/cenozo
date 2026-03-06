@@ -1,7 +1,7 @@
-import CN_element from "../element.mjs"
-
-import { CN_base_list } from "../base_list.mjs"
-import { CN_base_model } from "../base_model.mjs"
+import { CN_action_list } from "../element/action/list.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_element_label } from "../element/label.mjs"
+import { CN_input_string } from "../element/input/string.mjs"
 
 export class CN_search_result_model extends CN_base_model {
   constructor() {
@@ -12,7 +12,7 @@ export class CN_search_result_model extends CN_base_model {
         posessive: "search result's",
       },
       columns: {
-        hits: { title: "Hits", type: "number" },
+        hits: { title: "Hits", type: "number", table_prefix: false },
         uid: { column: "participant.uid", title: "UID" },
         full_name: { title: "Participant Name", table_prefix: false },
         result: { title: "Search Matches" },
@@ -21,7 +21,7 @@ export class CN_search_result_model extends CN_base_model {
   }
 }
 
-export class CN_search_result_list extends CN_base_list {
+export class CN_search_result_list extends CN_action_list {
   /**
    * Extends the parent method
    */
@@ -38,27 +38,30 @@ export class CN_search_result_list extends CN_base_list {
   /**
    * Extends the parent method
    */
-  render() {
-    const el = super.render();
+  _create_element() {
+    const el = super._create_element();
 
     // add a search box below the header
     const id = [this.get_model().get_unique_id(), "query"].join("-");
-    const query_el = CN_element.create(
+    const query_el = this.constructor.html(
       '<div class="container-fluid bg-secondary p-2"><div class="row"></div></div>'
     );
-    const label_el = CN_element.create_form_label({ for: id, value: "Search" });
-    label_el.classList.add("col-sm-1");
-    query_el.querySelector("div.row").append(label_el);
-    const element_el = CN_element.create_form_element("string", { id: id });
-    element_el.classList.add("col-sm-11");
-    const input_el = element_el.querySelector("input");
-    input_el.value = this.get_query_parameter("q");
-    input_el.addEventListener("change", async () => {
-      // when changing the search value set the query parameter and re-run the action
-      this.set_query_parameter("q", input_el.value);
-      await this.run();
+    CN_element_label.create_element(query_el.querySelector("div.row"), {
+      for: id,
+      value: "Search",
+      class: "col-sm-1",
     });
-    query_el.querySelector("div.row").append(element_el);
+    CN_input_string.create_element(query_el.querySelector("div.row"),{
+      id: id,
+      class: "col-sm-11",
+      get_default: () => this.get_query_parameter("q"),
+      on_change: async (form_input) => {
+        // when changing the search value set the query parameter and re-run the action
+        this.set_query_parameter("q", form_input.get_value());
+        await this.run();
+      },
+    });
+
     el.querySelector(".card-header").after(query_el);
 
     return el;

@@ -1,10 +1,9 @@
-import CN_api from "../api.mjs"
-import CN_element from "../element.mjs"
-import CN_session from "../session.mjs"
-
-import { CN_base_add } from "../base_add.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_modal_message } from "../element/modal/message.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_hold_model extends CN_base_model {
   constructor() {
@@ -15,8 +14,7 @@ export class CN_hold_model extends CN_base_model {
         posessive: "hold's",
       },
       columns: {
-        hold_type: {
-          column: 'CONCAT(hold_type.type, ": ", hold_type.name)',
+        hold_type_full_name: {
           title: "Type",
           table_prefix: false,
         },
@@ -80,7 +78,7 @@ export class CN_hold_model extends CN_base_model {
   }
 }
 
-export class CN_hold_add extends CN_base_add {
+export class CN_hold_add extends CN_action_add {
   /**
    * Extends the parent method
    */
@@ -97,8 +95,8 @@ export class CN_hold_add extends CN_base_add {
       if (404 != error.response.status) throw error;
     }
 
-    if (deceased_hold_type_id == this.get_property("hold_type_id").state.get()) {
-      await CN_element.message_modal({
+    if (deceased_hold_type_id == this.get_property_value("hold_type_id")) {
+      await (new CN_modal_message({
         title: "Date of Death",
         size: "lg",
         message: `
@@ -111,21 +109,22 @@ export class CN_hold_add extends CN_base_add {
             defining details including whether only the year, year and month, or full date is known.
           </div>
         `,
-      }).block();
+      })).open();
     }
 
     await super.on_submit();
   }
 }
 
-export class CN_hold_view extends CN_base_view {
+export class CN_hold_view extends CN_action_view {
   /**
    * Extends the parent method
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      const prop = this.get_property("hold_type_id");
-      const hold_type = prop.enum.values.find(e => e.key == prop.state.get());
+      const hold_type = this.get_property("hold_type_id").form_input.get_config("enum").values.find(
+        e => e.key == this.get_property_value("hold_type_id")
+      );
       return null == hold_type ? "Removed" : hold_type.value;
     }
     return await super.get_text(type);

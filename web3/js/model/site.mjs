@@ -1,6 +1,5 @@
-import CN_timezones from "../timezones.mjs"
-
-import { CN_base_model } from "../base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 
 export class CN_site_model extends CN_base_model {
   constructor() {
@@ -15,7 +14,7 @@ export class CN_site_model extends CN_base_model {
       },
       properties: {
         name: { title: "Name", },
-        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_timezones } },
+        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },
         phone_number: { title: "Phone Number", },
         address1: { title: "Address", },
         address2: { title: "Address (extra)", },

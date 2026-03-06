@@ -1,8 +1,7 @@
-import CN_element from "../element.mjs"
-
-import { CN_base_add } from "../base_add.mjs"
-import { CN_base_model } from "../base_model.mjs"
-import { CN_base_view } from "../base_view.mjs"
+import { CN_action_add } from "../element/action/add.mjs"
+import { CN_action_view } from "../element/action/view.mjs"
+import { CN_base_model } from "./base_model.mjs"
+import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 
 export class CN_proxy_model extends CN_base_model {
   constructor() {
@@ -18,7 +17,7 @@ export class CN_proxy_model extends CN_base_model {
       },
       properties: {
         proxy_type_id: {
-          title: "Trace Type",
+          title: "Proxy Type",
           type: "enum",
           enum: {
             path: "proxy_type",
@@ -71,29 +70,31 @@ export class CN_proxy_model extends CN_base_model {
   }
 }
 
-export class CN_proxy_add extends CN_base_add {
+export class CN_proxy_add extends CN_action_add {
   async on_submit() {
     let proceed = true;
 
     // show the prompt before adding, if there is one
-    const prop = this.get_property("proxy_type_id");
-    const proxy_type = prop.enum.values.find(e => e.key == prop.state.get());
+    const proxy_type = this.get_property("proxy_type_id").form_input.get_config("enum").values.find(
+      e => e.key == this.get_property_value("proxy_type_id")
+    );
     if (proxy_type && proxy_type.prompt) {
-      proceed = await CN_element.confirm_modal({ message: prompt }).test();
+      proceed = await (new CN_modal_confirm({ message: prompt })).open();
     }
 
     return proceed ? await super.on_submit() : null;
   }
 }
 
-export class CN_proxy_view extends CN_base_view {
+export class CN_proxy_view extends CN_action_view {
   /**
    * Extends the parent method
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      const prop = this.get_property("proxy_type_id");
-      const proxy_type = prop.enum.values.find(e => e.key == prop.state.get());
+      const proxy_type = this.get_property("proxy_type_id").form_input.get_config("enum").values.find(
+        e => e.key == this.get_property_value("proxy_type_id")
+      );
       return null == proxy_type ? "Removed" : proxy_type.value;
     }
     return await super.get_text(type);
