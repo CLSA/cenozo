@@ -1,16 +1,35 @@
 import { CN_base_input } from "./base_input.mjs"
+import { CN_common } from "../../common.mjs"
 
 export class CN_input_text extends CN_base_input {
+  constructor(parent_el, config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_input_text contructor");
+    }
+
+    super(parent_el, {
+      ...{
+        // default config
+        rows: 3,
+      },
+      ...config
+    });
+  }
+
   /**
    * Extends the parent method
    */
   _create_control_element() {
+    const rows = this.get_config("rows");
     return this.constructor.html(`
       <textarea
         class="form-control"
+        rows="${rows}"
         oninput="
+          const height = this.scrollHeight;
+          const min_height = ${rows} * 28;
           this.style.height = '';
-          this.style.height = this.scrollHeight + 'px';
+          this.style.height = (height < min_height ? min_height : height) + 'px';
         "
       ></textarea>
     `);
@@ -47,8 +66,10 @@ export class CN_input_text extends CN_base_input {
 
     const control_el = this.get_control_element();
     if (control_el) {
+      const min_height = this.get_config("rows") * 28;
+      const height = control_el.scrollHeight;
       control_el.style.height = "";
-      control_el.style.height = control_el.scrollHeight + "px";
+      control_el.style.height = (height < min_height ? min_height : height) + 'px';
     }
   }
 

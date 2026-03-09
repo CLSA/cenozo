@@ -885,18 +885,16 @@ export class CN_action_list extends CN_base_action {
       '<div class="d-flex align-items-center justify-content-between"></div>'
     );
 
-    const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
-    footer_el.append(btn_group_el);
-
-    footer_el.append(this.constructor.html('<div name="summary" class="text-center fs-6">Loading...</div>'));
-
-
     footer_el.append(this.constructor.html(`
       <nav aria-label="${CN_common.uc_words(this.get_model().get_singular())} List navigation">
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));
 
+    footer_el.append(this.constructor.html('<div name="summary" class="text-center fs-6">Loading...</div>'));
+
+    const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
+    footer_el.append(btn_group_el);
 
     return footer_el;
   }

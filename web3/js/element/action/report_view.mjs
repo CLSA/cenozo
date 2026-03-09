@@ -10,6 +10,7 @@ export class CN_action_report_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the download button
     const download_btn_el = this.constructor.html(
@@ -35,7 +36,7 @@ export class CN_action_report_view extends CN_action_view {
         response.headers.get('content-disposition').match(/filename=(.*);/)[1],
       );
     });
-    footer_el.append(download_btn_el);
+    left_btn_group_el.append(download_btn_el);
 
     return footer_el;
   }

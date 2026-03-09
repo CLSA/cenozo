@@ -102,12 +102,7 @@ export class CN_modal_base_form extends CN_base_modal {
 
       // if this is a text input update the size after the modal is showing
       this.add_modal_event_listener("shown", () => {
-        const value = input.form_input.get_value();
-        if (value) {
-          const control_el = input.form_input.get_control_element();
-          control_el.style.height = "";
-          control_el.style.height = control_el.scrollHeight + "px";
-        }
+        input.form_input.update_element();
       });
     });
 

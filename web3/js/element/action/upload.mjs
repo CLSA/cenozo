@@ -151,12 +151,17 @@ export class CN_action_upload extends CN_base_action {
    */
   create_footer_element() {
     const footer_el = this.constructor.html(`
-      <div class="btn-group" role="group">
-        <button name="back" type="button" class="btn btn-primary">Back</button>
+      <div class="d-flex w-100">
+        <div class="me-auto btn-group" role="group" name="left-btn-group"></div>
+        <div class="btn-group" role="group" name="right-btn-group"></div>
       </div>
     `);
+    const right_btn_group_el = footer_el.querySelector("div[name=right-btn-group]");
 
-    const back_btn_el = footer_el.querySelector("button[name=back]");
+    const back_btn_el = this.constructor.html(
+      '<button name="back" type="button" class="btn btn-primary">Back</button>'
+    );
+    right_btn_group_el.append(back_btn_el);
     (async () => { back_btn_el.innerHTML = await this.get_text("view_parent"); })();
     back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 

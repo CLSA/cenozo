@@ -101,6 +101,7 @@ export class CN_stratum_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     if (this.get_model().get_module().action_allowed("mass_participant")) {
       const mass_participant_btn_el = this.constructor.html(`
@@ -113,7 +114,7 @@ export class CN_stratum_view extends CN_action_view {
           this.get_model().get_view_url().replace(/stratum\/view/, "stratum/mass_participant")
         );
       });
-      footer_el.append(mass_participant_btn_el);
+      left_btn_group_el.append(mass_participant_btn_el);
     }
 
     return footer_el;
@@ -123,9 +124,7 @@ export class CN_stratum_view extends CN_action_view {
 export class CN_stratum_mass_participant extends CN_base_action {
   #stratum = null;
   #operation = "add";
-  #participant_selection = new CN_participant_selection({
-    path: `stratum/${this.get_model().get_identifier()}/participant`,
-  });
+  #participant_selection;
 
   /**
    * Constructor
@@ -133,6 +132,10 @@ export class CN_stratum_mass_participant extends CN_base_action {
    */
   constructor(parent_el, model) {
     super("mass_participant", parent_el, model);
+
+    this.#participant_selection = new CN_participant_selection(null, {
+      path: `stratum/${this.get_model().get_identifier()}/participant`,
+    });
   }
 
   /**
@@ -168,7 +171,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
     this.#operation = "add";
 
     // reset the participant selection
-    this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
+    this.#participant_selection.set_config("data", { mode: "confirm", operation: this.#operation });
     this.#participant_selection.reset();
   }
 
@@ -177,6 +180,13 @@ export class CN_stratum_mass_participant extends CN_base_action {
    */
   update_element() {
     const body_el = this.get_body_element();
+
+    body_el.querySelector("span[name=name]").innerHTML = (
+      CN_common.is_object(this.#stratum) ?
+      this.#stratum.name :
+      ""
+    );
+
 
     // borrow the operation's error to display a warning about how add/remove works
     const element_el = body_el.querySelector("[name=operation] [name=error]");
@@ -207,7 +217,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
           This utility allows you to add or remove lists of participants to or from the
-          <span class="fw-bold">${this.#stratum.name}</span> stratum.
+          <span name="name" class="fw-bold"></span> stratum.
         </div>
         <div class="pb-2">
           In order to proceed you must first select which participants to add or remove.
@@ -229,6 +239,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
       id: "operation",
       class: "col-sm-9",
       required: true,
+      get_default: () => "add",
       enum: {
        values: [
          { key: "add", value: "Add to Stratum" },
@@ -238,13 +249,14 @@ export class CN_stratum_mass_participant extends CN_base_action {
       on_change: (form_input) => {
         // since the form input isn't connected to an action we must define the default behaviour
         this.#operation = form_input.get_value();
-        this.#participant_selection.set_data({ mode: "confirm", operation: this.#operation });
+        this.#participant_selection.set_config("data", { mode: "confirm", operation: this.#operation });
         this.#participant_selection.reset();
         this.update_element();
       },
     });
 
     // add the participant selection
+    this.#participant_selection.set_parent_element(body_el);
     body_el.querySelector("[name=participant-list]").append(this.#participant_selection.get_element());
     this.#participant_selection.get_element().classList.add("py-2");
     this.#participant_selection.on_selection_changed(() => {
@@ -298,10 +310,14 @@ export class CN_stratum_mass_participant extends CN_base_action {
    */
   create_footer_element() {
     const footer_el = this.constructor.html(`
-      <div class="btn-group" role="group">
-        <button name="back" type="button" class="btn btn-primary">View Stratum</button>
+      <div class="d-flex w-100">
+        <div class="me-auto btn-group" role="group" name="right-btn-group"></div>
+        <div class="btn-group" role="group" name="left-btn-group">
+          <button name="back" type="button" class="btn btn-primary">View Stratum</button>
+        </div>
       </div>
     `);
+
     footer_el.querySelector("button[name=back]").addEventListener("click", this.on_navigate_to_parent.bind(this));
     return footer_el;
   }

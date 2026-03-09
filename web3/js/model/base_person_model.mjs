@@ -40,6 +40,7 @@ export class CN_base_person_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the notes action
     const notes_btn_el = this.constructor.html(
@@ -49,7 +50,7 @@ export class CN_base_person_view extends CN_action_view {
       "click",
       CN_session.navigate_to.bind(CN_session, this.get_model().get_notes_url()),
     );
-    footer_el.append(notes_btn_el);
+    left_btn_group_el.append(notes_btn_el);
 
     // add the history action
     const history_btn_el = this.constructor.html(
@@ -59,7 +60,7 @@ export class CN_base_person_view extends CN_action_view {
       "click",
       CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
     );
-    footer_el.append(history_btn_el);
+    left_btn_group_el.append(history_btn_el);
 
     // add the timezone action
     const timezone_btn_el = this.constructor.html(
@@ -70,7 +71,7 @@ export class CN_base_person_view extends CN_action_view {
       timezone[`${this.get_model().get_name()}_id`] = this.get_model().get_identifier();
       await CN_session.set_timezone(timezone, CN_session.data.user.am_pm);
     });
-    footer_el.append(timezone_btn_el);
+    left_btn_group_el.append(timezone_btn_el);
 
     return footer_el;
   }
@@ -593,14 +594,20 @@ export class CN_base_person_history extends CN_base_action {
    */
   create_footer_element() {
     const footer_el = this.constructor.html(`
-      <div class="btn-group" role="group">
-        <button name="back" type="button" class="btn btn-primary">
-          View ${CN_common.uc_words(this.get_model().get_singular())}
-        </button>
-        <button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>
+      <div class="d-flex w-100">
+        <div class="me-auto btn-group" role="group" name="left-btn-group">
+          <button name="notes" type="button" class="btn btn-light btn-outline-primary">Notes</button>
+        </div>
+        <div class="btn-group" role="group" name="right-btn-group">
+          <button name="back" type="button" class="btn btn-primary">
+            View ${CN_common.uc_words(this.get_model().get_singular())}
+          </button>
+        </div>
       </div>
     `);
+
     this.create_all_footer_elements(footer_el);
+
     return footer_el;
   }
 
@@ -699,10 +706,11 @@ export class CN_base_person_notes extends CN_base_action {
     // only proceed if the note search input has been created
     if (null == this.#search_input) return;
 
-    const search = this.#search_input.get_value();
-    const note_list_el = this.get_element().querySelector("[name=note_list]");
+    let search = this.#search_input.get_value();
+    if (null == search) search = "";
+    const note_list_el = this.get_element().querySelector("[name=note-list]");
     note_list_el.innerHTML = "";
-    this.#note_list.filter(note => 0 <= note.note.search(search)).forEach(note => {
+    this.#note_list.filter(note => note.note.includes(search)).forEach(note => {
       const note_path = `${this.get_model().get_name()}/${this.get_model().get_identifier()}/note/${note.id}`;
       let details = `${note.first_name} ${note.last_name}<br/>`;
       if (allow_edit) {
@@ -731,11 +739,11 @@ export class CN_base_person_notes extends CN_base_action {
         <div class="card">
           <div class="card-body row p-2">
             <div class="col-4 ${note.sticky ? "text-primary fw-bold" : ""}">${details}</div>
-            <div class="col-8" name="note">
-            </div>
+            <div class="col-8" name="note"></div>
           <div>
         <div>
       `);
+      note_list_el.append(note_el);
 
       if (allow_edit) {
         note_el.querySelector("[name=sticky]").addEventListener("click", async () => {
@@ -759,6 +767,8 @@ export class CN_base_person_notes extends CN_base_action {
       CN_input_text.create_element(note_el.querySelector("[name=note]"), {
         id: `note-${note.id}`,
         required: true,
+        //disabled: !allow_edit,
+        get_default: () => note.note,
         on_change: async (form_input, valid) => {
           if (valid) {
             await CN_api.patch(note_path, { note: form_input.get_value() });
@@ -768,16 +778,6 @@ export class CN_base_person_notes extends CN_base_action {
           }
         },
       });
-
-      // set the note and resize the textarea
-      const textarea_el = note_el.querySelector("textarea");
-      textarea_el.backup_value = note.note;
-      textarea_el.value = note.note;
-      if (!allow_edit) textarea_el.setAttribute("disabled", true);
-      note_list_el.append(note_el);
-
-      textarea_el.style.height = "";
-      textarea_el.style.height = textarea_el.scrollHeight + "px";
     });
   }
 
@@ -802,7 +802,7 @@ export class CN_base_person_notes extends CN_base_action {
       </div>
     `);
 
-    return this.constructor.html(`<div name="note_list" class="container-fluid">${card_list.join("")}</div>`);
+    return this.constructor.html(`<div name="note-list" class="container-fluid">${card_list.join("")}</div>`);
   }
 
   /**
@@ -821,7 +821,7 @@ export class CN_base_person_notes extends CN_base_action {
           </div>
         </div>
         <div name="search" class="row my-3"></div>
-        <div name="note_list" class="container-fluid px-0"></div>
+        <div name="note-list" class="container-fluid px-0"></div>
       </div>
     `);
 
@@ -845,8 +845,9 @@ export class CN_base_person_notes extends CN_base_action {
     this.#search_input = new CN_input_string(search_div_el, {
       id: "search",
       class: "col-sm-10",
-      on_input: async (form_input, valid) => {
-        if (valid) this.set_query_parameter("search", form_input.get_value());
+      get_default: () => this.get_query_parameter("search"),
+      on_input: async (form_input) => {
+        this.set_query_parameter("search", form_input.get_value());
         this.update_element();
       },
     });
@@ -876,14 +877,20 @@ export class CN_base_person_notes extends CN_base_action {
    */
   create_footer_element() {
     const footer_el = this.constructor.html(`
-      <div class="btn-group" role="group">
-        <button name="back" type="button" class="btn btn-primary">
-          View ${CN_common.uc_words(this.get_model().get_singular())}
-        </button>
-        <button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>
+      <div class="d-flex w-100">
+        <div class="me-auto btn-group" role="group" name="left-btn-group">
+          <button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>
+        </div>
+        <div class="btn-group" role="group" name="right-btn-group">
+          <button name="back" type="button" class="btn btn-primary">
+            View ${CN_common.uc_words(this.get_model().get_singular())}
+          </button>
+        </div>
       </div>
     `);
+
     this.create_all_footer_elements(footer_el);
+
     return footer_el;
   }
 

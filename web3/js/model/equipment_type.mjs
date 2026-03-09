@@ -36,6 +36,7 @@ export class CN_equipment_type_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     if (this.get_model().get_module().action_allowed("upload")) {
       const upload_btn_el = this.constructor.html(`
@@ -46,7 +47,7 @@ export class CN_equipment_type_view extends CN_action_view {
       upload_btn_el.addEventListener("click", async () => {
         await CN_session.navigate_to(`equipment_type/upload/${this.get_model().get_identifier()}`);
       });
-      footer_el.append(upload_btn_el);
+      left_btn_group_el.append(upload_btn_el);
     }
 
     return footer_el;

@@ -127,6 +127,7 @@ export class CN_address_view extends CN_traceable_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the timezone action
     const timezone_btn_el = this.constructor.html(
@@ -138,7 +139,7 @@ export class CN_address_view extends CN_traceable_view {
         CN_session.data.user.am_pm,
       );
     });
-    footer_el.append(timezone_btn_el);
+    left_btn_group_el.append(timezone_btn_el);
 
     return footer_el;
   }

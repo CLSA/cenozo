@@ -218,6 +218,7 @@ export class CN_export_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the generate action
     const generate_btn_el = this.constructor.html(
@@ -229,7 +230,7 @@ export class CN_export_view extends CN_action_view {
       const response = await CN_api.post(`${model.get_view_url(null, "api")}/export_file`);
       await CN_session.navigate_to(`${model.get_view_url()}/export_file/view/${response}`);
     });
-    footer_el.append(generate_btn_el);
+    left_btn_group_el.append(generate_btn_el);
 
     // add the duplicate action
     const duplicate_btn_el = this.constructor.html(
@@ -243,7 +244,7 @@ export class CN_export_view extends CN_action_view {
       );
       await CN_session.navigate_to(model.get_view_url(response));
     });
-    footer_el.append(duplicate_btn_el);
+    left_btn_group_el.append(duplicate_btn_el);
 
     return footer_el;
   }

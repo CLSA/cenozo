@@ -8,6 +8,7 @@ export class CN_action_view extends CN_action_base_record {
   #child_lists_el = null;
   #list_selector_el = null;
   #delete_btn_el;
+  #back_btn_el;
 
   /**
    * Constructor
@@ -178,8 +179,10 @@ export class CN_action_view extends CN_action_base_record {
 
     if (disabled) {
       this.#delete_btn_el.setAttribute("disabled", true);
+      this.#back_btn_el.setAttribute("disabled", true);
     } else {
       this.#delete_btn_el.removeAttribute("disabled");
+      this.#back_btn_el.removeAttribute("disabled");
     }
   }
 
@@ -200,10 +203,10 @@ export class CN_action_view extends CN_action_base_record {
     super.update_element();
 
     // add/remove delete button (if allowed)
-    const footer_el = this.get_footer_element();
-    if (footer_el) {
+    const right_btn_group_el = this.get_footer_element().querySelector("div[name=right-btn-group]");
+    if (right_btn_group_el) {
       if (this.get_model().allow_delete()) {
-        footer_el.append(this.#delete_btn_el);
+        right_btn_group_el.prepend(this.#delete_btn_el);
       } else {
         this.#delete_btn_el.remove();
       }
@@ -249,7 +252,7 @@ export class CN_action_view extends CN_action_base_record {
           <button
             name="${child.model.get_name()}"
             type="button"
-            class="col btn ${selected ? "btn-light fw-bold" : "btn-primary"} mx-1"
+            class="col btn ${selected ? "btn-light fw-bold" : "btn-primary"} text-nowrap mx-1"
           >${title}</button>
         `);
 
@@ -300,10 +303,12 @@ export class CN_action_view extends CN_action_base_record {
    */
   create_footer_element() {
     const footer_el = this.constructor.html(`
-      <div class="btn-group" role="group">
-        <button name="back" type="button" class="btn btn-primary">Back</button>
+      <div class="d-flex w-100">
+        <div class="me-auto btn-group" role="group" name="left-btn-group"></div>
+        <div class="btn-group" role="group" name="right-btn-group"></div>
       </div>
     `);
+    const right_btn_group_el = footer_el.querySelector("div[name=right-btn-group]");
 
     // create the delete button but don't append it yet
     this.#delete_btn_el = this.constructor.html(`
@@ -318,10 +323,13 @@ export class CN_action_view extends CN_action_base_record {
       this.#delete_btn_el.removeAttribute("disabled");
     }
 
-    // wire up the back button
-    const back_btn_el = footer_el.querySelector("button[name=back]");
-    (async () => { back_btn_el.innerHTML = await this.get_text("view_parent"); })();
-    back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
+    // create the back button
+    this.#back_btn_el = this.constructor.html(
+      '<button name="back" type="button" class="btn btn-primary">Back</button>'
+    );
+    right_btn_group_el.append(this.#back_btn_el);
+    (async () => { this.#back_btn_el.innerHTML = await this.get_text("view_parent"); })();
+    this.#back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
     return footer_el;
   }
@@ -346,7 +354,7 @@ export class CN_action_view extends CN_action_base_record {
         </div>
       `),
       body: null,
-      footer: this.constructor.html(`<div class="row"></div>`),
+      footer: this.constructor.html(`<div class="row gy-2"></div>`),
     });
     this.#list_selector_el.setAttribute("name", "list-selector");
 

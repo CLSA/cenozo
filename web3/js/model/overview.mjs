@@ -47,21 +47,25 @@ export class CN_overview_view extends CN_action_view {
    * Override this method to create an overview-specific placeholder
    */
   create_placeholder_element() {
-    const el = this.constructor.html('<div class="px-3"></div>');
+    const el = this.constructor.html('<div></div>');
     const card_el = CN_element_card.create_element(el, {
       header: this.constructor.html(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
       body: "",
       footer: null,
-      class: "mt-2",
     });
 
     const header_el = card_el.querySelector(".card-header");
+    const body_el = card_el.querySelector(".card-body");
+
+    card_el.classList.remove("mb-2");
+    header_el.classList.remove("text-bg-primary");
+    header_el.classList.add("text-bg-secondary");
+    header_el.classList.add("rounded-0");
     header_el.classList.add("placeholder-glow");
 
-    const body_el = card_el.querySelector(".card-body");
     for (let row = 0; row < 12; row++) {
       body_el.append(this.constructor.html(`
-        <div class="row ${1 == row%2 ? 'bg-dark-subtle' : ''}">
+        <div class="row p-1 ${1 == row%2 ? 'bg-dark-subtle' : ''}">
           <label class="col placeholder-glow">
             <span class="placeholder col-${Math.ceil(Math.random()*3)+6}"></span>
           </label>
@@ -98,9 +102,7 @@ export class CN_overview_view extends CN_action_view {
       if (CN_common.is_array(node.value)) {
         // put the node in a card
         if (null == node.label) {
-          const container_el = this.constructor.html('<div class="px-3"></div>');
-          node.value.forEach((child_node, index) => add_node(child_node, container_el, 0 == index));
-          parent_el.append(container_el);
+          node.value.forEach((child_node, index) => add_node(child_node, parent_el, 0 == index));
         } else {
           const card_el = CN_element_card.create_element(parent_el, {
             header: this.constructor.html(
@@ -108,16 +110,19 @@ export class CN_overview_view extends CN_action_view {
             ),
             body: "",
             footer: null,
-            class: "mt-2",
           });
 
           const header_el = card_el.querySelector(".card-header");
           const body_el = card_el.querySelector(".card-body");
 
+          card_el.classList.remove("mb-2");
+          header_el.classList.remove("text-bg-primary");
+          header_el.classList.add("text-bg-secondary");
+          header_el.classList.add("rounded-0");
+
           // if we're adding multiple cards to the parent then make all cards after the first collapsable
           if (0 < parent_el.querySelectorAll(":scope > div.container-fluid").length) {
-            const id = ["overview", Math.round(Math.random()*10000000000)].join("-");
-            body_el.setAttribute("id", id);
+            body_el.classList.add("py-1");
             body_el.classList.add("collapse");
             if (first) body_el.classList.add("show");
 
@@ -153,7 +158,7 @@ export class CN_overview_view extends CN_action_view {
         const stripe = 1 == parent_el.children.length%2;
 
         const child_el = this.constructor.html(`
-          <div class="row ${stripe ? 'bg-dark-subtle' : ''}">
+          <div class="row p-1 ${stripe ? 'bg-dark-subtle' : ''}">
             <label class="col fw-bold">${node.label}</label>
             <div class="col text-end">${node.value}</div>
           </div>
@@ -169,6 +174,7 @@ export class CN_overview_view extends CN_action_view {
           if (stripe) child_el.classList.add("bg-dark-subtle");
         });
 
+        parent_el.classList.add("container-fluid");
         parent_el.append(child_el);
       }
     };
@@ -177,5 +183,17 @@ export class CN_overview_view extends CN_action_view {
       this.get_body_element().innerHTML = "";
       add_node(this.#record.data, this.get_body_element(), true);
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  _create_element() {
+    const el = super._create_element();
+
+    el.querySelector("div.card-body").classList.remove("px-0");
+    el.querySelector("div.card-body").classList.add("p-0");
+
+    return el;
   }
 }

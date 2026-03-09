@@ -159,22 +159,28 @@ export class CN_action_add extends CN_action_base_record {
    * Extends parent method
    */
   create_footer_element() {
-    const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
+    const footer_el = this.constructor.html(`
+      <div class="d-flex w-100">
+        <div class="me-auto btn-group" role="group" name="left-btn-group"></div>
+        <div class="btn-group" role="group" name="right-btn-group"></div>
+      </div>
+    `);
+    const right_btn_group_el = footer_el.querySelector("div[name=right-btn-group]");
 
     this.#submit_btn_el = this.constructor.html(
       '<button name="submit" type="button" class="btn btn-primary">Submit</button>'
     );
-    btn_group_el.append(this.#submit_btn_el);
+    right_btn_group_el.append(this.#submit_btn_el);
     (async () => { this.#submit_btn_el.innerHTML = await this.get_text("submit"); })();
     this.#submit_btn_el.addEventListener("click", this.on_submit.bind(this));
 
     this.#cancel_btn_el = this.constructor.html(
       '<button name="cancel" type="button" class="btn btn-light">Cancel</button>'
     );
-    btn_group_el.append(this.#cancel_btn_el);
+    right_btn_group_el.append(this.#cancel_btn_el);
     (async () => { this.#cancel_btn_el.innerHTML = await this.get_text("cancel"); })();
     this.#cancel_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
 
-    return btn_group_el;
+    return footer_el;
   }
 }

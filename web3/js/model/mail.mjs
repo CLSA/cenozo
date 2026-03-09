@@ -146,6 +146,7 @@ export class CN_mail_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     const preview_btn_el = this.constructor.html(
       '<button name="preview" type="button" class="btn btn-light btn-outline-primary">Preview</button>'
@@ -172,7 +173,7 @@ export class CN_mail_view extends CN_action_view {
         size: "xl",
       })).open();
     });
-    footer_el.append(preview_btn_el);
+    left_btn_group_el.append(preview_btn_el);
 
     return footer_el;
   }

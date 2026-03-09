@@ -64,6 +64,7 @@ export class CN_custom_report_view extends CN_action_view {
    */
   create_footer_element() {
     const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the download action
     const download_btn_el = this.constructor.html(
@@ -73,7 +74,7 @@ export class CN_custom_report_view extends CN_action_view {
       "click",
       this.get_model().download_report.bind(this, this.get_model().get_identifier()),
     );
-    footer_el.append(download_btn_el);
+    left_btn_group_el.append(download_btn_el);
 
     return footer_el;
   }
