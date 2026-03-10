@@ -2,6 +2,13 @@ import { CN_base_element } from "../base_element.mjs"
 import { CN_common } from "../../common.mjs"
 import { CN_state } from "../../state.mjs"
 
+/**
+ * Bass class for all input elements
+ * @event setvalue: ran when the input's value is set
+ * @event commitvalue: ran when the input's value is committed
+ * @event clearvalue: ran when the input's value is cleared
+ * @event undovalue: ran when the input's value is undone
+ */
 export class CN_base_input extends CN_base_element {
   #action;
   #state;
@@ -13,6 +20,7 @@ export class CN_base_input extends CN_base_element {
   #control_div_el;
   #error_div_el;
   #postfix_div_el;
+  #undo_btn_el;
   #event_listeners = true;
 
   /**
@@ -43,6 +51,7 @@ export class CN_base_input extends CN_base_element {
         type: "div",
         error_timeout: 0,
         required: false,
+        undo: false,
       },
       ...config
     });
@@ -157,6 +166,15 @@ export class CN_base_input extends CN_base_element {
       });
     }
 
+    // add the undo button if enabled
+    if (this.get_config("undo")) {
+      this.#undo_btn_el = this.constructor.html(
+        '<button type="button" name="undo" class="btn btn-warning ms-2 d-none">Undo</button>'
+      );
+      this.#undo_btn_el.addEventListener("click", this.undo_value.bind(this, true));
+      this.#postfix_div_el.append(this.#undo_btn_el);
+    }
+
     // append the control and add prefix and postfix elements
     if (this.has_config("prefix")) {
       const prefix = this.get_config("prefix");
@@ -217,6 +235,16 @@ export class CN_base_input extends CN_base_element {
    */
   set_value(value) {
     this.#state.set(value);
+
+    if (this.get_config("undo") && this.#undo_btn_el) {
+      if (this.#state.can_undo()) {
+        this.#undo_btn_el.classList.remove("d-none");
+      } else {
+        this.#undo_btn_el.classList.add("d-none");
+      }
+    }
+
+    this.run_event_listeners("setvalue");
   }
 
   /**
@@ -224,6 +252,16 @@ export class CN_base_input extends CN_base_element {
    */
   commit_value() {
     this.#state.commit();
+
+    if (this.get_config("undo") && this.#undo_btn_el) {
+      if (this.#state.can_undo()) {
+        this.#undo_btn_el.classList.remove("d-none");
+      } else {
+        this.#undo_btn_el.classList.add("d-none");
+      }
+    }
+
+    this.run_event_listeners("commitvalue");
   }
 
   /**
@@ -231,6 +269,16 @@ export class CN_base_input extends CN_base_element {
    */
   clear_value() {
     this.#state.clear();
+
+    if (this.get_config("undo") && this.#undo_btn_el) {
+      if (this.#state.can_undo()) {
+        this.#undo_btn_el.classList.remove("d-none");
+      } else {
+        this.#undo_btn_el.classList.add("d-none");
+      }
+    }
+
+    this.run_event_listeners("clearvalue");
   }
 
   /**
@@ -238,13 +286,22 @@ export class CN_base_input extends CN_base_element {
    */
   undo_value(committed = false) {
     this.#state.undo(committed);
+
+    if (this.get_config("undo") && this.#undo_btn_el) {
+      if (this.#state.can_undo()) {
+        this.#undo_btn_el.classList.remove("d-none");
+      } else {
+        this.#undo_btn_el.classList.add("d-none");
+      }
+    }
+
+    this.run_event_listeners("undovalue");
   }
 
   /**
    * ADD DOCS
    */
-  async update() {
-  }
+  async update() {}
 
   /**
    * Determines if there was an error

@@ -774,7 +774,7 @@ export class CN_base_person_notes extends CN_base_action {
             await CN_api.patch(note_path, { note: form_input.get_value() });
             form_input.flash_border();
           } else {
-            form_input.undo_value();
+            form_input.undo_value(true);
           }
         },
       });

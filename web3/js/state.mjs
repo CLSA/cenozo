@@ -103,10 +103,20 @@ export class CN_state extends CN_base_object {
   }
 
   /**
+   * Whether there are any values in the state's stack
+   * @return boolean
+   */
+  can_undo() {
+    return 1 < this.#stack.length;
+  }
+
+  /**
    * Returns to the state's earlier value
    * @param boolean committed: Whether to return to the last committed state
    */
   undo(committed=false) {
+    this.#stack.pop();
+
     if (committed) {
       // keep going to the previous state until there are none left or we find one that is committed
       let state = this.#stack[this.#stack.length-1];
@@ -114,9 +124,6 @@ export class CN_state extends CN_base_object {
         this.#stack.pop();
         state = this.#stack[this.#stack.length-1];
       }
-    } else {
-      // simply go to the previous state
-      this.#stack.pop();
     }
 
     // now apply the element binding

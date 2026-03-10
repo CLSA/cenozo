@@ -186,7 +186,7 @@ export class CN_traceable_view extends CN_action_view {
         await super.on_set_property(prop_name);
         this.get_model().add_trace(trace_reason);
       } else {
-        this.get_property(prop_name).form_input.undo_value();
+        this.get_property(prop_name).form_input.undo_value(true);
         this.run();
       }
     } else {

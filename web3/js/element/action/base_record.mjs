@@ -278,6 +278,7 @@ export class CN_action_base_record extends CN_base_action {
 
       input_config.action = this;
       input_config.class = "col-sm-9";
+      input_config.undo = true;
 
       // make errors in the view action go away after 4 seconds
       input_config.error_timeout = "view" == this.get_type() ? 4000 : 0;
@@ -340,6 +341,7 @@ export class CN_action_base_record extends CN_base_action {
         };
       }
       prop.form_input = CN_input.create_input(prop.type, null, input_config);
+      prop.form_input.add_event_listener("undovalue", () => this.on_set_property(prop.name));
     }
   }
 
@@ -391,9 +393,9 @@ export class CN_action_base_record extends CN_base_action {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
         if (group_el) {
           if (group.is_hidden(this.get_model())) {
-            group_el.style.display = "none";
+            group_el.classList.add("d-none");
           } else {
-            group_el.style.removeProperty("display");
+            group_el.classList.remove("d-none");
           }
         }
       }
@@ -403,9 +405,9 @@ export class CN_action_base_record extends CN_base_action {
         if (prop_el) {
           // remove any properties that evaluate to hidden
           if (prop.is_hidden(this.get_model())) {
-            prop_el.style.display = "none";
+            prop_el.classList.add("d-none");
           } else {
-            prop_el.style.removeProperty("display");
+            prop_el.classList.remove("d-none");
           }
 
           // disable any properties that evaluate to constant
@@ -545,7 +547,7 @@ export class CN_action_base_record extends CN_base_action {
     if (valid) {
       await this.on_set_property(prop_name);
     } else if ("view" == this.get_type()) {
-      this.get_property(prop_name).form_input.undo_value();
+      this.get_property(prop_name).form_input.undo_value(false);
     }
   }
 

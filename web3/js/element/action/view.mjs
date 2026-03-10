@@ -105,8 +105,6 @@ export class CN_action_view extends CN_action_base_record {
 
     // fill in the property values (if the form_inputs have been created)
     this.get_all_properties().filter(prop => prop.form_input).forEach(prop => {
-      prop.form_input.clear_value();
-
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
         // put the ID in the typeahead list
         prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
@@ -136,7 +134,7 @@ export class CN_action_view extends CN_action_base_record {
       data[prop_name] = await this.get_property_value_for_record(prop_name);
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
-      this.get_property(prop_name).form_input.undo_value();
+      this.get_property(prop_name).form_input.undo_value(true);
       if (error.response && 409 == error.response.status) {
         JSON.parse(error.body).forEach(prop_name => {
           this.get_property(prop_name).form_input.show_error("Conflicts with existing record");

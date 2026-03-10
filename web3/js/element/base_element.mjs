@@ -2,6 +2,11 @@ import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
+/**
+ * Base class for all elements
+ * @event domadd: ran when the element is added to the DOM
+ * @event domremove: ran when the element is removed from the DOM
+ */
 export class CN_base_element extends CN_base_object {
   // The DOMParser used by create() when creating elements from HTML strings
   static #dom_parser = new DOMParser();
@@ -9,6 +14,7 @@ export class CN_base_element extends CN_base_object {
   #el;
   #parent_el;
   #config = new Map();
+  #event_listeners = {};
 
   /**
    * Constructor
@@ -62,6 +68,26 @@ export class CN_base_element extends CN_base_object {
       console.error(`Referencing undefined config parameter "${name}" in ${this.get_class_name()}`);
     }
     return this.#config.get(name);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  add_event_listener(type, callback, once = false) {
+    if (!CN_common.is_array(this.#event_listeners[type])) this.#event_listeners[type] = [];
+    this.#event_listeners[type].push({ callback: callback, once: once });
+  }
+
+  /**
+   * ADD DOCS
+   */
+  run_event_listeners(type) {
+    if (CN_common.is_array(this.#event_listeners[type])) {
+      this.#event_listeners[type] = this.#event_listeners[type].filter((listener, index, arr) => {
+        listener.callback(this);
+        return !listener.once; // remove any listeners that are only called once
+      });
+    }
   }
 
   /**
@@ -134,12 +160,16 @@ export class CN_base_element extends CN_base_object {
   /**
    * ADD DOCS
    */
-  async on_dom_add() {}
+  async on_dom_add() {
+    this.run_event_listeners("domadd");
+  }
 
   /**
    * ADD DOCS
    */
-  async on_dom_remove() {}
+  async on_dom_remove() {
+    this.run_event_listeners("domremove");
+  }
 
   /**
    * Creates a "please wait" blocking modal

@@ -721,7 +721,7 @@ export class CN_participant_multiedit extends CN_base_action {
       </div>
     `);
 
-    this.#participant_selection.on_selection_changed(() => {
+    this.#participant_selection.add_event_listener("selectionchanged", () => {
       const participant_edit_el = body_el.querySelector("[name=participant-edit]");
       if (this.#participant_selection.get_identifier_list().length) {
         participant_edit_el.classList.remove("d-none");
@@ -729,7 +729,7 @@ export class CN_participant_multiedit extends CN_base_action {
         participant_edit_el.classList.add("d-none");
       }
     });
-:
+
     const participant_list_el = body_el.querySelector("[name=participant-list]");
     this.#participant_selection.set_parent_element(participant_list_el);
     participant_list_el.append(this.#participant_selection.get_element());
@@ -1103,6 +1103,7 @@ export class CN_participant_scripts extends CN_base_action {
 
 /**
  * A class used to create a participant selection element
+ * @event selectionchanged: ran when the participant selection has changed
  */
 export class CN_participant_selection extends CN_base_element {
   #created = false;
@@ -1113,7 +1114,6 @@ export class CN_participant_selection extends CN_base_element {
   #idtype_list_form_input;
   #confirm_btn_el = null;
   #site_list = [];
-  #selection_changed_callbacks = [];
 
   constructor(parent_el = null, config = {}) {
     super(parent_el, {
@@ -1184,9 +1184,8 @@ export class CN_participant_selection extends CN_base_element {
         this.update_element();
 
         if (this.#validated) {
-          // call all attached callbacks since the selection has changed
           this.#validated = false;
-          this.#selection_changed_callbacks.forEach(callback => callback());
+          this.run_event_listeners("selectionchanged");
         }
       },
     });
@@ -1266,9 +1265,8 @@ export class CN_participant_selection extends CN_base_element {
         // disable until the operation is complete
         this.set_disabled(true);
 
-        // call all attached callbacks since the selection has changed
         this.#validated = false;
-        this.#selection_changed_callbacks.forEach(callback => callback());
+        this.run_event_listeners("selectionchanged");
 
         // confirm with the server which identifiers are valid
         try {
@@ -1287,9 +1285,8 @@ export class CN_participant_selection extends CN_base_element {
           this.#identifier_list_form_input.set_value(identifier_list.join(" "));
           this.#count_el.innerHTML = `(${identifier_list.length} selected)`;
 
-          // call all attached callbacks since the selection has changed
           this.#validated = true;
-          this.#selection_changed_callbacks.forEach(callback => callback());
+          this.run_event_listeners("selectionchanged");
         } finally {
           this.set_disabled(false);
         }
@@ -1306,9 +1303,8 @@ export class CN_participant_selection extends CN_base_element {
    * Resets the confirmation of the selection back (does not remove the identifier list)
    */
   reset_confirmation() {
-    // call all attached callbacks since the selection has changed
     this.#validated = false;
-    this.#selection_changed_callbacks.forEach(callback => callback());
+    this.run_event_listeners("selectionchanged");
     if (this.#created) this.#count_el.innerHTML = "(unconfirmed)";
   }
 
@@ -1345,7 +1341,6 @@ export class CN_participant_selection extends CN_base_element {
   /**
    * Access methods
    */
-  on_selection_changed(callback) { this.#selection_changed_callbacks.push(callback); }
   get_identifier_list() {
     const str = this.#identifier_list_form_input.get_value();
     return this.#validated && 0 < str.length ? str.split(" ") : [];
