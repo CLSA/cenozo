@@ -435,7 +435,6 @@ export class CN_participant_multiedit extends CN_base_action {
     // reset the list and edit components
     this.#selected_participant_properties = [];
     await this.#participant_selection.reset();
-    this.get_body_element().querySelector("[name=participant-edit]").style.display = "none";
 
     // make sure the module's classes have been loaded, then create a new model
     const promise_list = [];
@@ -715,7 +714,7 @@ export class CN_participant_multiedit extends CN_base_action {
           participants.
         </div>
         <div name="participant-list" class="py-1"></div>
-        <div name="participant-edit" class="py-1" style="display: none;">
+        <div name="participant-edit" class="py-1 d-none">
           <ul class="nav nav-tabs" role="tablist"></ul>
           <div class="tab-content"></div>
         </div>
@@ -723,13 +722,14 @@ export class CN_participant_multiedit extends CN_base_action {
     `);
 
     this.#participant_selection.on_selection_changed(() => {
+      const participant_edit_el = body_el.querySelector("[name=participant-edit]");
       if (this.#participant_selection.get_identifier_list().length) {
-        body_el.querySelector("[name=participant-edit]").style.removeProperty("display");
+        participant_edit_el.classList.remove("d-none");
       } else {
-        body_el.querySelector("[name=participant-edit]").style.display = "none";
+        participant_edit_el.classList.add("d-none");
       }
     });
-
+:
     const participant_list_el = body_el.querySelector("[name=participant-list]");
     this.#participant_selection.set_parent_element(participant_list_el);
     participant_list_el.append(this.#participant_selection.get_element());

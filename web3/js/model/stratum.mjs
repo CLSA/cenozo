@@ -227,7 +227,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
         </div>
         <div name="operation" class="row py-1"></div>
         <div name="participant-list" class="py-1"></div>
-        <div name="participant-confirm" class="py-1" style="display: none;"></div>
+        <div name="participant-confirm" class="py-1 d-none"></div>
       </div>
     `);
 
@@ -262,9 +262,9 @@ export class CN_stratum_mass_participant extends CN_base_action {
     this.#participant_selection.on_selection_changed(() => {
       const confirm_el = body_el.querySelector("[name=participant-confirm]");
       if (this.#participant_selection.get_identifier_list().length) {
-        confirm_el.style.removeProperty("display");
+        confirm_el.className.remove("d-none");
       } else {
-        confirm_el.style.display = "none";
+        confirm_el.className.add("d-none");
       }
       this.update_element();
     });
