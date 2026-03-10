@@ -453,7 +453,7 @@ export class CN_session extends CN_base_object {
           <div name="breadcrumbs" class="collapse navbar-collapse ms-2">
           </div>
           <div name="menu-btn-group" class="d-flex">
-            <button name="access" class="btn btn-outline-light mx-1"></button>
+            <div name="access"></div>
             <button name="clock" class="btn btn-outline-light">
               <i class="bi-clock-fill"></i>
               <span name="time" class="nav-item"></span>
@@ -505,12 +505,26 @@ export class CN_session extends CN_base_object {
     const main_menu_offcanvas_el = document.getElementById("main-menu-offcanvas");
     const main_menu_offcanvas_bs = new bootstrap.Offcanvas(main_menu_offcanvas_el);
 
-    const access_el = main_menu_header_el.querySelector("button[name=access]");
-    access_el.innerHTML = `${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}`;
-    access_el.addEventListener("click", () => {
-      main_menu_offcanvas_bs.hide();
-      (new CN_modal_site_role()).open();
-    });
+    const access_el = main_menu_header_el.querySelector("div[name=access]");
+    const access_count = await CN_api.count("self/0/access");
+    if (1 == access_count) {
+      access_el.append(CN_base_element.html(`
+        <div class="text-bg-primary mx-1 p-2">
+          ${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}
+        </div>
+      `));
+    } else {
+      const access_btn_el = CN_base_element.html(`
+        <button name="access" class="btn btn-outline-light mx-1">
+          ${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}
+        </button>
+      `);
+      access_btn_el.addEventListener("click", () => {
+        main_menu_offcanvas_bs.hide();
+        (new CN_modal_site_role()).open();
+      });
+      access_el.append(access_btn_el);
+    }
 
     // keep the clock running
     const time_el = main_menu_header_el.querySelector("span[name=time]");

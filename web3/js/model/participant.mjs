@@ -1208,8 +1208,8 @@ export class CN_participant_selection extends CN_base_element {
     this.#idtype_list_form_input = CN_input.create_input("enum", row_el, {
       id: idtype_list_id,
       class: "d-flex align-items-center col-sm-9",
-      required: true,
-
+      required: false,
+      placeholder: "UID",
       on_change: () => this.reset_confirmation(),
       // add the confirm button as a postfix to the identifier-type selector
       postfix: (el) => el.append(this.#confirm_btn_el),
@@ -1220,10 +1220,7 @@ export class CN_participant_selection extends CN_base_element {
             modifier: { order: "name" },
           });
 
-          return [
-            {key: "", value: "UID"},
-            ...list.map(idtype => ({ key: idtype.id, value: idtype.name, regex: idtype.regex })),
-          ];
+          return list.map(idtype => ({ key: idtype.id, value: idtype.name, regex: idtype.regex }));
         },
       },
     });
@@ -1350,7 +1347,7 @@ export class CN_participant_selection extends CN_base_element {
    */
   on_selection_changed(callback) { this.#selection_changed_callbacks.push(callback); }
   get_identifier_list() {
-    const str = this.#identifier_list_form_input.get_value_for_record();
+    const str = this.#identifier_list_form_input.get_value();
     return this.#validated && 0 < str.length ? str.split(" ") : [];
   }
   get_site_list() { return this.#site_list; }
