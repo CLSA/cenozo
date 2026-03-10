@@ -34,10 +34,14 @@ export class CN_element_label extends CN_base_element {
 
     const help = this.get_config("help");
     if (help) {
-      el.innerHTML = `<i class="bi-info-circle-fill"></i> ${el.innerHTML}`;
-      el.setAttribute("data-bs-toggle", "tooltip");
-      el.setAttribute("data-bs-title", help);
-      new bootstrap.Tooltip(el);
+      el.innerHTML = `
+        <i
+          class="bi-info-circle-fill"
+          data-bs-toggle="tooltip"
+          data-bs-title="${help}"
+        ></i> ${el.innerHTML}
+      `;
+      new bootstrap.Tooltip(el.querySelector(".bi-info-circle-fill"));
     }
 
     return el;
