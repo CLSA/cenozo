@@ -129,7 +129,7 @@ export class CN_overview_view extends CN_action_view {
             // add a chevron button
             header_el.querySelector("div.d-flex").append(this.constructor.html(`
               <button class="btn btn-primary px-2 py-0">
-                <i class="bi-chevron-${first ? "up" : "down"}"></i>
+                <i class="bi bi-chevron-${first ? "up" : "down"}"></i>
               </button>
             `));
 

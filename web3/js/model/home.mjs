@@ -89,7 +89,7 @@ export class CN_home_model extends CN_base_object {
           <div class="card mt-3 px-0 ${message.unread ? "" : "text-muted"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
               <button class="btn btn-dark">
-                <i class="bi-envelope-${message.unread ? "" : "open-"}fill"></i>
+                <i class="bi bi-envelope-${message.unread ? "" : "open-"}fill"></i>
               </button>
               ${message.title}
             </div>

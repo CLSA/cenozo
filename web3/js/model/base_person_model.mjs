@@ -553,7 +553,7 @@ export class CN_base_person_history extends CN_base_action {
       const btn_el = this.constructor.html(`
         <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
           ${CN_common.uc_words(category.subject)}
-          <i class="bi-${null === this.get_query_parameter(category.subject) ? "check" : "x"}-circle"></i>
+          <i class="bi bi-${null === this.get_query_parameter(category.subject) ? "check" : "x"}-circle"></i>
         </button>
       `);
       btn_el.addEventListener("click", () => {
@@ -719,7 +719,7 @@ export class CN_base_person_notes extends CN_base_action {
             name="sticky"
             type="button"
             class="btn btn-${note.sticky ? "warning" : "secondary"} px-1 py-0 me-1"
-          ><i class="bi-pin-fill"></i></button>
+          ><i class="bi bi-pin-fill"></i></button>
           ${details}
         `;
       }
@@ -730,7 +730,7 @@ export class CN_base_person_notes extends CN_base_action {
             name="delete"
             type="button"
             class="btn btn-danger px-1 py-0 me-1"
-          ><i class="bi-x-lg"></i></button>
+          ><i class="bi bi-x-lg"></i></button>
         `;
       }
       details += `${CN_common.format_datetime(note.datetime, "datetimesecond")}`;

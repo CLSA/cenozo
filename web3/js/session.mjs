@@ -455,7 +455,7 @@ export class CN_session extends CN_base_object {
           <div name="menu-btn-group" class="d-flex">
             <div name="access"></div>
             <button name="clock" class="btn btn-outline-light">
-              <i class="bi-clock-fill"></i>
+              <i class="bi bi-clock-fill"></i>
               <span name="time" class="nav-item"></span>
             </button>
           </div>

@@ -231,7 +231,7 @@ export class CN_base_element extends CN_base_object {
     if ([null, "Error"].includes(base_name)) {
       const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
       crumb_list.push({
-        name: unread ? "Home" : 'Home <i class="bi-envelope-fill text-warning"></i>',
+        name: unread ? "Home" : 'Home <i class="bi bi-envelope-fill text-warning"></i>',
         path: ""
       });
     }
@@ -251,7 +251,7 @@ export class CN_base_element extends CN_base_object {
     const root_el = this.html("<div></div>");
     let last_crumb_el = null;
     crumb_list.forEach(crumb => {
-      root_el.append(this.html('<i class="bi-chevron-compact-right text-light"></i>'));
+      root_el.append(this.html('<i class="bi bi-chevron-compact-right text-light"></i>'));
       let crumb_el = this.html(`
         <button
           class="btn btn-primary px-1"

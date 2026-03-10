@@ -213,10 +213,10 @@ export class CN_base_action extends CN_base_element {
     // add a data notation button
     const notation_btn_el = this.constructor.html(`
       <button name="notation" class="btn btn-primary px-2 py-0">
-        <i class="bi-info-circle fs-5"></i>
+        <i class="bi bi-info-circle fs-5"></i>
       </button>
     `);
-    notation_btn_el.addEventListener("click", async (event) => {
+    notation_btn_el.addEventListener("click", async () => {
       const module = this.get_model().get_module();
       const response = await (new CN_modal_input({
         title: "Page Documentation",
@@ -237,7 +237,7 @@ export class CN_base_action extends CN_base_element {
     // add a data refresh button
     const refresh_btn_el = this.constructor.html(`
       <button name="refresh" class="btn btn-primary px-2 py-0">
-        <i class="bi-arrow-clockwise fs-5"></i>
+        <i class="bi bi-arrow-clockwise fs-5"></i>
       </button>
     `);
     refresh_btn_el.addEventListener("click", this.run.bind(this));

@@ -533,7 +533,7 @@ export class CN_participant_multiedit extends CN_base_action {
           params.postfix = (el) => {
             const btn_el = this.constructor.html(`
               <button name="remove" type="button" class="btn btn-danger ms-2">
-                <i class="bi-x-circle-fill"></i>
+                <i class="bi bi-x-circle-fill"></i>
               </button>
             `);
             btn_el.addEventListener(
