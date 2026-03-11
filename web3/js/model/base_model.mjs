@@ -11,7 +11,7 @@ export class CN_base_model extends CN_base_object {
   #properties_template;
   #columns_template;
   #get_default_order;
-  #element = null;
+  #element;
   #parent_model = null;
   #child_model_list = [];
   #action_name = null;
@@ -52,7 +52,6 @@ export class CN_base_model extends CN_base_object {
 
   // access methods
   get_module() { return this.#module; }
-  get_element() { return this.#element; }
   get_unique_id() { return this.#unique_id; }
   get_parent_model() { return this.#parent_model; }
   get_child_model_list() { return this.#child_model_list; }
@@ -259,13 +258,14 @@ export class CN_base_model extends CN_base_object {
    * Creates the model's element
    * @return Element
    */
-  render() {
-    this.#element = (
-      null == this.#action ?
-      this.#element = CN_base_element.html(`<div id="${this.#unique_id}"></div>`) :
-      this.#element = this.#action.get_element()
-    );
-
+  get_element() {
+    if (undefined === this.#element) {
+      this.#element = (
+        null == this.#action ?
+        this.#element = CN_base_element.html(`<div id="${this.#unique_id}"></div>`) :
+        this.#element = this.#action.get_element()
+      );
+    }
     return this.#element;
   }
 

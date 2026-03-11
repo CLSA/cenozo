@@ -138,8 +138,13 @@ class ui3 extends \cenozo\base_object
     $modifier->order( 'subject' );
     $modifier->order( 'method' );
 
+    // add the two pseudo-modules
+    $module_list = [
+      'home' => lib::create( 'ui\module', 'home' ),
+      'error' => lib::create( 'ui\module', 'error' ),
+    ];
+
     // use the list of services to build the module list
-    $module_list = [];
     foreach( $service_class_name::select( $select, $modifier ) as $service )
     {
       // add the subject as a new module

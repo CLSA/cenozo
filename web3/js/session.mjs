@@ -28,9 +28,6 @@ export class CN_session extends CN_base_object {
   static data = null;
   static system_message_list = [];
 
-  static home_model = null;
-  static error_model = null;
-
   constructor() {
     throw new Error("Abstract class CN_session can't be instantiated.");
   }
@@ -141,8 +138,8 @@ export class CN_session extends CN_base_object {
     for(const module_name in modules) {
       const params = modules[module_name];
 
-      // a module is "root" if it's found in the list, utility menus, is a custom_report or report_type
-      params.root = ["custom_report", "report_type"].includes(module_name);
+      // a module is "root" if it's found in the list, utility menus, or is one of the special modules
+      params.root = ["home", "error", "custom_report", "report_type"].includes(module_name);
 
       if (!params.root && null != this.data.menu.lists) {
         for (const m in this.data.menu.lists) {
@@ -399,8 +396,8 @@ export class CN_session extends CN_base_object {
     // first load all non-leaf models in parallel as their data may be needed by the leaf model
     await Promise.all(PATH_MODEL_LIST.slice(0, -1).map(model => model.get_action().on_load()));
 
-    // now render and run the leaf module
-    main_content_el.append(leaf_model.render());
+    // now add the model's element to the DOM and run the leaf module
+    main_content_el.append(leaf_model.get_element());
     await leaf_model.run();
     await this.update_breadcrumbs();
   }
@@ -408,15 +405,14 @@ export class CN_session extends CN_base_object {
   /**
    * Renders an error to the UI
    */
-  static render_error(error) {
+  static async render_error(error) {
     const main_content_el = document.getElementById("main-content");
     main_content_el.innerHTML = "";
 
-    // render the error as the main content
+    // create an error model and add it's element to the DOM
     const model = new CN_error_model(error);
-    if (error instanceof URIError) model.status = 404;
-    const error_module_el = model.render();
-    main_content_el.append(error_module_el);
+    await model.run();
+    main_content_el.append(model.get_element());
   }
 
   /**
@@ -430,7 +426,7 @@ export class CN_session extends CN_base_object {
       await this.load();
       await this.render();
     } catch (error) {
-      this.render_error(error);
+      await this.render_error(error);
     }
   }
 
@@ -682,7 +678,7 @@ export class CN_session extends CN_base_object {
         await this.update_breadcrumbs();
       }, 300000);
     } catch (error) {
-      this.render_error(error);
+      await this.render_error(error);
     } finally {
       this.set_loading_state(false);
     }

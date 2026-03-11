@@ -77,7 +77,7 @@ export class CN_input_file extends CN_base_input {
   }
 
   /**
-   * Convenience method to create and render the element (without needing access to the created object)
+   * Convenience method to create and add to a parent element (without needing access to the created object)
    * @param object params: The parameters sent to the class constructor
    * @return Element
    */

@@ -31,7 +31,7 @@ export class CN_form_association_list extends CN_action_list {
       const module = CN_session.get_module(record.subject);
 
       // Make sure the module's classes have been loaded, then create a new model
-      // Note that we don't have to configure it because we're not using it to render anything
+      // Note that we don't have to configure it because we're not using it to generate an element
       await module.load_classes();
       const model = module.create_model();
 

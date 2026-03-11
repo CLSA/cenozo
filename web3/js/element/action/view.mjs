@@ -24,7 +24,7 @@ export class CN_action_view extends CN_action_base_record {
    */
   get_selector_child_list() {
     return this.get_model().get_child_model_list().reduce((list, model) => {
-      if (null == model.get_element()) model.render();
+      if (null == model.get_element()) model.get_element();
       list.push({
         title: CN_common.uc_words(model.get_plural()),
         model: model,
