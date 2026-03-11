@@ -1,7 +1,10 @@
+import { CN_api } from "../../api.mjs"
 import { CN_base_element } from "../base_element.mjs"
+import { CN_common } from "../../common.mjs"
 import { CN_element_card } from "../card.mjs"
 import { CN_element_loading_box } from "../loading_box.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
+import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../../session.mjs"
 
 /**
@@ -210,29 +213,48 @@ export class CN_base_action extends CN_base_element {
     const el = this.constructor.html('<div class="d-flex"><div class="flex-grow-1"></div></div>');
     (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
 
-    // add a data notation button
-    const notation_btn_el = this.constructor.html(`
-      <button name="notation" class="btn btn-primary px-2 py-0">
-        <i class="bi bi-info-circle fs-5"></i>
-      </button>
-    `);
-    notation_btn_el.addEventListener("click", async () => {
-      const module = this.get_model().get_module();
-      const response = await (new CN_modal_input({
-        title: "Page Documentation",
-        message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
-        input: "text",
-        value: module.get_notation(this.#type),
-      })).open();
+    const model = this.get_model();
+    const module = model.get_module();
+    const notation_module = CN_session.get_module("notation");
+    const notation = module.get_notation(this.#type);
+    if (notation || (notation_module && notation_module.action_allowed("edit"))) {
+      const title = `${CN_common.uc_words(model.get_singular())} ${CN_common.uc_words(this.#type)} Documentation`;
+      // add a data notation button
+      const notation_btn_el = this.constructor.html(`
+        <button name="notation" class="btn btn-primary px-2 py-0">
+          <i class="bi bi-info-circle fs-5 ${notation ? "text-warning" : ""}"></i>
+        </button>
+      `);
+      notation_btn_el.addEventListener("click", async () => {
+        if (notation_module && notation_module.action_allowed("edit")) {
+          // open an input modal to allow editing the notation
+          const modal = new CN_modal_input({
+            title: title,
+            message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
+            input: "text",
+            required: false,
+            rows: 5,
+            value: notation,
+          });
+          const response = await modal.open();
 
-      if (undefined !== response) module.set_notation(this.#type, response);
-    });
-    el.append(notation_btn_el);
-    new bootstrap.Tooltip(notation_btn_el, {
-      title: "Documentation",
-      trigger: "hover",
-      delay: { "show": 500, "hide": 100 },
-    });
+          if (undefined !== response) module.set_notation(this.#type, response);
+        } else {
+          // display the notation
+          await (new CN_modal_message({
+            title: title,
+            message: notation.replace(/\n/g, "<br/>\n"),
+          })).open();
+        }
+      });
+      el.append(notation_btn_el);
+      new bootstrap.Tooltip(notation_btn_el, {
+        title: "Documentation",
+        trigger: "hover",
+        delay: { "show": 500, "hide": 100 },
+      });
+    } else {
+    }
 
     // add a data refresh button
     const refresh_btn_el = this.constructor.html(`

@@ -3,6 +3,7 @@ import { CN_base_action } from "./base_action.mjs"
 import { CN_common } from "../../common.mjs"
 import { CN_modal_column_filter } from "../modal/column_filter.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
+import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../../session.mjs"
 
 export class CN_action_list extends CN_base_action {
@@ -10,8 +11,6 @@ export class CN_action_list extends CN_base_action {
   #columns;
   #records = [];
   #total_records = null;
-  #limit = null;
-  #offset = null;
   #current_page = 1;
   #is_choosing = false;
   #choosing_list;
@@ -379,9 +378,7 @@ export class CN_action_list extends CN_base_action {
     const parent_model = model.get_parent_model();
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
 
-    this.#limit = response.headers.get("X-Limit");
-    this.#offset = response.headers.get("X-Offset");
-    this.#total_records = response.headers.get("X-Total");
+    this.#total_records = Number(response.headers.get("X-Total"));
     const filters = this.has_column_filters();
 
     // update the parent's child list record count
@@ -778,6 +775,65 @@ export class CN_action_list extends CN_base_action {
         }
       });
     }
+
+    return header_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  create_header_element() {
+    const header_el = super.create_header_element();
+
+    const report_div_el = this.constructor.html(`
+      <div class="dropdown" name="report">
+        <button name="report" type="button" class="btn btn-primary px-2 py-0" data-bs-toggle="dropdown">
+          <i class="bi bi-cloud-download fs-5"></i>
+        </button>
+        <ul class="dropdown-menu">
+          <li><div class="dropdown-header">Download List Data</div></li>
+          <li><button name="csv" class="dropdown-item" href="#">Comma Separated Values (.csv)</button></li>
+          <li><button name="xlsx" class="dropdown-item" href="#">Microsoft Excel (.xlsx)</button></li>
+          <li><button name="ods" class="dropdown-item" href="#">OpenDocument Spreadsheet (.ods)</button></li>
+        </ul>
+      </div>
+    `);
+
+    ["csv", "xlsx", "ods"].forEach(format => {
+      report_div_el.querySelector(`button[name=${format}]`).addEventListener("click", async () => {
+        if (!this.get_model().allow_report()) {
+          await (new CN_modal_message({
+            title: "Error",
+            message: "You cannot download data from this list.",
+            header_class: "text-bg-danger",
+          })).open();
+        } else if (this.#total_records > CN_session.data.application.max_big_report) {
+          await (new CN_modal_message({
+            title: "Error",
+            message: "The list has too many rows to download.",
+            header_class: "text-bg-danger",
+          })).open();
+        } else if ("csv" != format && this.#total_records > CN_session.data.application.max_small_report) {
+          await (new CN_modal_message({
+            title: "Error",
+            message: "The list can only be downloaded as a CSV file.",
+            header_class: "text-bg-danger",
+          })).open();
+        } else {
+          const model = this.get_model();
+          const parent_model = model.get_parent_model();
+          const params = this.get_on_load_parameters();
+          params.modifier.limit = CN_session.data.application.max_big_report;
+          delete params.modifier.offset;
+          const response = await CN_api.file(this.get_on_load_path(), format, params, true);
+          CN_common.download_file(
+            await response.blob(),
+            response.headers.get("content-disposition").match(/filename=(.*);/)[1],
+          );
+        }
+      });
+    });
+    header_el.querySelector("button[name=refresh]").before(report_div_el);
 
     return header_el;
   }

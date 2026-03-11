@@ -38,6 +38,12 @@ export class CN_hin_model extends CN_base_model {
       },
     });
   }
-}
 
-// TODO: do not allow reports (exports) of HIN lists
+  /**
+   * Extend parent method
+   */
+  allow_report() {
+    // do not allow reports (exports) of HIN lists
+    return false;
+  }
+}

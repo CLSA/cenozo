@@ -22,6 +22,7 @@ export class CN_modal_input extends CN_modal_base_form {
     const input_config = {};
     if (this.has_config("value")) input_config.get_default = () => this.get_config("value");
     if (this.has_config("required")) input_config.required = this.get_config("required");
+    if (this.has_config("rows")) input_config.rows = this.get_config("rows");
 
     this.add_input(this.get_config("input"), "input", this.get_config("message"), input_config);
 

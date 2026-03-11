@@ -72,6 +72,9 @@ export class CN_module extends CN_base_object {
             .map(x => x.replace(/^{([^{}]+)}$/, "$1")), // remove the {} enclosing the argument
         };
       }
+
+      // automatically add the report action
+      if (this.#actions.list) this.#actions.report = CN_common.clone(this.#actions.list);
     }
   }
 

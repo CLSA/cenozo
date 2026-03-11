@@ -252,6 +252,7 @@ export class CN_base_model extends CN_base_object {
   allow_delete() { return this.#module.action_allowed("delete"); }
   allow_edit() { return this.#module.action_allowed("edit"); }
   allow_list() { return this.#module.action_allowed("list"); }
+  allow_report() { return this.#module.action_allowed("report"); }
   allow_view() { return this.#module.action_allowed("view"); }
 
   /**
