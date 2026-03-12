@@ -11,7 +11,7 @@ export class CN_base_element extends CN_base_object {
   // The DOMParser used by create() when creating elements from HTML strings
   static #dom_parser = new DOMParser();
 
-  #el;
+  #element;
   #parent_el;
   #config = new Map();
   #event_listeners = {};
@@ -94,11 +94,11 @@ export class CN_base_element extends CN_base_object {
    * ADD DOCS
    */
   get_element() {
-    if (undefined === this.#el) {
-      this.#el = this._create_element();
+    if (undefined === this.#element) {
+      this.#element = this._create_element();
       this.update_element();
     }
-    return this.#el;
+    return this.#element;
   }
 
   /**
@@ -122,8 +122,8 @@ export class CN_base_element extends CN_base_object {
 
     if (null != this.#parent_el) {
       const observer = new MutationObserver(async mutation => {
-        if (this.#el) {
-          if (this.#parent_el.contains(this.#el)) {
+        if (this.#element) {
+          if (this.#parent_el.contains(this.#element)) {
             await this.on_dom_add();
           } else {
             observer.disconnect();

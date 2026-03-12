@@ -147,6 +147,13 @@ export class CN_base_input extends CN_base_element {
     this.#control_div_el.append(this.#control_el);
 
     if (this.#event_listeners) {
+      // only listen to focus events if there's a function to do so with
+      if (this.has_config("on_focus")) {
+        this.#control_el.addEventListener("focus", async () => {
+          await this.get_config("on_focus")(this);
+        });
+      }
+
       // only listen to input events if there's a function to do so with
       if (this.has_config("on_input")) {
         this.#control_el.addEventListener("input", async () => {

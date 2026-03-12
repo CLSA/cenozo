@@ -6,12 +6,6 @@ export class CN_error_model extends CN_base_model {
   #error;
   #element;
 
-  /*
-  // access methods
-  get_identifier() { return null; }
-  get_action_name() { return "view"; }
-  */
-
   constructor(error) {
     super({
       wording: {

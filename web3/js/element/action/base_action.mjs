@@ -1,4 +1,3 @@
-import { CN_api } from "../../api.mjs"
 import { CN_base_element } from "../base_element.mjs"
 import { CN_common } from "../../common.mjs"
 import { CN_element_card } from "../card.mjs"
