@@ -78,22 +78,21 @@ export class CN_home_model extends CN_base_model {
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Version:</label>
                 <div class="col-sm-9 col-form-label">
-                  ${CN_session.data.application.version} build ${CN_session.data.application.build}
+                  ${CN_session.data.application.version} build ${CN_session.data.application.app_build}
+                </div>
+              </div>
+              <div class="row ms-3">
+                <label class="col-sm-3 col-form-label fw-bold">Framework:</label>
+                <div class="col-sm-9 col-form-label">
+                  ${CN_session.data.application.cenozo} build ${CN_session.data.application.cenozo_build}
                 </div>
               </div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Account:</label>
                 <div class="col-sm-9 col-form-label">
                   ${CN_session.data.user.first_name} ${CN_session.data.user.last_name}
+                  (${CN_session.data.user.name})
                 </div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Role:</label>
-                <div class="col-sm-9 col-form-label">${CN_session.data.role.name}</div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Site:</label>
-                <div class="col-sm-9 col-form-label">${CN_session.data.site.name}</div>
               </div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Last login:</label>
@@ -106,6 +105,10 @@ export class CN_home_model extends CN_base_model {
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Active Users:</label>
                 <div class="col-sm-9 col-form-label">${CN_session.data.application.active_users}</div>
+              </div>
+              <div class="row ms-3">
+                <label class="col-sm-3 col-form-label fw-bold">Uptime:</label>
+                <div class="col-sm-9 col-form-label">${CN_session.data.application.uptime}</div>
               </div>
             </div>
             <div class="col-sm-6">

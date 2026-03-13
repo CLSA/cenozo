@@ -129,7 +129,18 @@ final class bootstrap
       {
         $session->initialize();
 
-        // make sure the software and database versions match
+        // make sure the framework and database versions match
+        if( $this->settings['general']['cenozo_version'] != $session->get_application()->cenozo )
+        {
+          throw lib::create( 'exception\runtime',
+            sprintf(
+              'The framework version (%s) does not match the database version (%s).  The web application will '.
+              'remain unavailable until this problem is corrected by an administrator.',
+              $this->settings['general']['cenozo_version'],
+              $session->get_application()->cenozo ),
+            __METHOD__ );
+        }
+
         if( $this->settings['general']['version'] != $session->get_application()->version )
         {
           throw lib::create( 'exception\runtime',

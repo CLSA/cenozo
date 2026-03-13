@@ -30,6 +30,7 @@ class get extends \cenozo\service\service
    */
   protected function create_resource( $index )
   {
+    $util_class_name = lib::get_class_name( 'util' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $script_class_name = lib::get_class_name( 'database\script' );
@@ -57,6 +58,7 @@ class get extends \cenozo\service\service
     $application_sel->add_column( 'id' );
     $application_sel->add_column( 'name' );
     $application_sel->add_column( 'title' );
+    $application_sel->add_column( 'cenozo' );
     $application_sel->add_column( 'version' );
     $application_sel->add_column( 'url' );
     $application_sel->add_column( 'site_based' );
@@ -85,8 +87,22 @@ class get extends \cenozo\service\service
       'user' => $db_user->get_column_values( $user_sel )
     ];
     $pseudo_record['application']['identifier'] = is_null( $db_identifier ) ? NULL : $db_identifier->name;
+    $pseudo_record['application']['cenozo_build'] = CENOZO_BUILD;
+    $pseudo_record['application']['app_build'] = APP_BUILD;
     $pseudo_record['application']['build'] = sprintf( '%s-%s', CENOZO_BUILD, APP_BUILD );
     $pseudo_record['application']['cenozo_url'] = $session->version3 ? CENOZO3_URL : CENOZO_URL;
+
+    if( $session->version3 )
+    {
+      $uptime = 'Unknown';
+      try
+      {
+        $response = $util_class_name::exec_timeout( 'uptime -p', 1 );
+        $uptime = preg_replace( '/^up /', '', $response['output'] );
+      }
+      catch ( \cenozo\exception\runtime $e ) {} // ignore errors and report an unknown time
+      $pseudo_record['application']['uptime'] = $uptime;
+    }
 
     // the following details are only provided if the user has access to the application
     if( !is_null( $db_user ) && !is_null( $db_role ) )

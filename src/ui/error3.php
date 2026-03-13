@@ -27,20 +27,20 @@
 
     <div class="container">
       <div class="card">
-          <div class="card-header text-bg-primary fw-bold fs-4">
-            <i class="glyphicon glyphicon-exclamation-sign"></i>
-            <?php echo $title; ?>
-          </div>
-          <div class="card-body">
-            <p class="alert">
-              <?php echo $message; ?>
-            </p>
-  <?php if( isset( $code ) && $code ) { ?>
-            <code class="spacer" style="background-color: inherit;">
-              Error Code: <?php echo $code; ?>
-            </code>
-  <?php } ?>
-          </div>
+        <div class="card-header text-bg-primary fw-bold fs-4">
+          <i class="glyphicon glyphicon-exclamation-sign"></i>
+          <?php echo $title; ?>
+        </div>
+        <div class="card-body">
+          <p class="alert">
+            <?php echo $message; ?>
+          </p>
+<?php if( isset( $code ) && $code ) { ?>
+          <code class="spacer" style="background-color: inherit;">
+            Error Code: <?php echo $code; ?>
+          </code>
+<?php } ?>
+        </div>
       </div>
     </div>
   </div>

@@ -23,11 +23,13 @@ class ui3 extends \cenozo\base_object
    */
   public function get_maintenance_interface()
   {
+    $this->add_base_libs();
+
     $title = $this->maintenance_title;
     $message = $this->maintenance_message;
 
     ob_start();
-    if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', ' ' );
+    if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', $_SERVER['REQUEST_URI'] );
     include( sprintf( '%s/src/ui/error3.php', CENOZO_PATH ) );
     return ob_get_clean();
   }
@@ -42,13 +44,15 @@ class ui3 extends \cenozo\base_object
    */
   public function get_error_interface( $error )
   {
+    $this->add_base_libs();
+
     $title = $error['title'];
     $message = $error['message'];
     $code = array_key_exists( 'code', $error ) && $error['code'] ? $error['code'] : NULL;
 
     ob_start();
-    if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', ' ' );
-    include( CENOZO_PATH.'/src/ui/error.php' );
+    if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', $_SERVER['REQUEST_URI'] );
+    include( CENOZO_PATH.'/src/ui/error3.php' );
     return ob_get_clean();
   }
 
@@ -63,7 +67,6 @@ class ui3 extends \cenozo\base_object
     $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
 
-    // since there is no error we need to load the angular scripts
     $this->add_base_libs();
 
     if( is_null( $session->get_user() ) )
@@ -652,7 +655,7 @@ class ui3 extends \cenozo\base_object
   }
 
   /**
-   * Adds angular libs needed by the login and most main interfaces
+   * Adds libs needed by the login and most main interfaces
    */
   protected function add_base_libs()
   {
@@ -690,7 +693,7 @@ class ui3 extends \cenozo\base_object
   }
 
   /**
-   * Adds angular libs needed by most main interfaces
+   * Adds libs needed by most main interfaces
    */
   protected function add_interface_libs()
   {
