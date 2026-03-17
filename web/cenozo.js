@@ -2838,8 +2838,21 @@
                   ) {
                     // record.chosen shows in the list which record is selected
                     record.chosen = record.chosen ? 0 : 1;
-                    // record.chosenNow keeps track of which records to apply if the changes are committed
-                    record.chosenNow = record.chosen;
+
+                    // now track whether the record will be added or removed once applied
+                    const chooseList = $scope.model.listModel.chooseList;
+                    if (chooseList[record.id]) {
+                      // we're already altering the choose state, so remove that change if necessary
+                      if (
+                        (record.chosen && "remove" == chooseList[record.id]) ||
+                        (!record.chosen && "add" == chooseList[record.id])
+                      ) {
+                        delete chooseList[record.id];
+                      }
+                    } else {
+                      // note which way we'll be changing the choose state
+                      chooseList[record.id] = record.chosen ? "add" : "remove";
+                    }
                   }
                 }
               },
@@ -5660,10 +5673,8 @@
                   });
                   this.cache = this.cache.concat(response.data);
                   var total = parseInt(response.headers("X-Total"));
-                  this.isReportAllowed =
-                    CnSession.application.maxBigReport >= total;
-                  this.isReportBig =
-                    CnSession.application.maxSmallReport < total;
+                  this.isReportAllowed = CnSession.application.maxBigReport >= total;
+                  this.isReportBig = CnSession.application.maxSmallReport < total;
                 } finally {
                   this.isLoading = false;
                 }
@@ -5789,17 +5800,15 @@
       return {
         construct: function (object, parentModel) {
           if (angular.isUndefined(parentModel.module.defaultOrder))
-            throw new Error(
-              "Cannot create list factory, module.defaultOrder is missing."
-            );
+            throw new Error("Cannot create list factory, module.defaultOrder is missing.");
 
           angular.extend(object, {
             parentModel: parentModel,
             heading: parentModel.module.name.singular.ucWords() + " List",
             order: parentModel.module.defaultOrder,
             total: 0,
-            minOffset: null,
-            cache: [],
+            records: [],
+            chooseList: {},
             enableReports: true,
             isReportLoading: false,
             isReportAllowed: false,
@@ -5809,9 +5818,7 @@
             paginationModel: CnPaginationFactory.instance(),
             isLoading: false,
             chooseMode: false,
-            isChooseDisabled: function (record) {
-              return false;
-            },
+            isChooseDisabled: function (record) { return false; },
             columnRestrictLists: {},
           });
 
@@ -5839,9 +5846,7 @@
                 } else {
                   // do model-based sorting
                   this.order = { column: column, reverse: reverse };
-                  if (this.cache.length < this.total) {
-                    await this.onList(true);
-                  }
+                  if (this.records.length < this.total) await this.onList(true);
                   this.paginationModel.currentPage = 1;
                 }
               }
@@ -5853,12 +5858,9 @@
             "setRestrictList",
             async function (column, newList) {
               // sanity check
-              if (!angular.isArray(newList))
-                throw new Error(
-                  'Tried to set restrict list for column "' +
-                    column +
-                    '" to a non-array.'
-                );
+              if (!angular.isArray(newList)) {
+                throw new Error('Tried to set restrict list for column "' + column + '" to a non-array.');
+              }
 
               if (!angular.isArray(this.columnRestrictLists[column]))
                 this.columnRestrictLists[column] = [];
@@ -5876,8 +5878,7 @@
                   // do state-based restricting
                   var restrict = this.columnRestrictLists;
                   if (0 == newList.length) {
-                    if (angular.isDefined(restrict[column]))
-                      delete restrict[column];
+                    if (angular.isDefined(restrict[column])) delete restrict[column];
                   } else {
                     restrict[column] = newList;
                   }
@@ -5885,16 +5886,13 @@
                   // now remove the descriptions from all restrictions
                   for (var name in restrict) {
                     restrict[name].forEach((obj) => {
-                      if (angular.isDefined(obj.description))
-                        delete obj.description;
+                      if (angular.isDefined(obj.description)) delete obj.description;
                     });
                   }
 
                   this.parentModel.setQueryParameter(
                     "restrict",
-                    angular.equals(restrict, {})
-                      ? undefined
-                      : angular.toJson(restrict)
+                    angular.equals(restrict, {}) ? undefined : angular.toJson(restrict)
                   );
                   this.parentModel.setQueryParameter("page", 1);
                   await this.parentModel.reloadState(true);
@@ -5915,20 +5913,9 @@
             async function () {
               if (angular.isUndefined(this.paginationModel.ignore)) {
                 // set the page as a query parameter
-                this.parentModel.setQueryParameter(
-                  "page",
-                  this.paginationModel.currentPage
-                );
+                this.parentModel.setQueryParameter("page", this.paginationModel.currentPage);
                 await this.parentModel.reloadState(false);
-
-                // get more records if the max index is past the last record or the min index is before the first one
-                if (
-                  (this.cache.length < this.total &&
-                    this.paginationModel.getMaxIndex() >=
-                      this.cache.length + this.minOffset) ||
-                  this.paginationModel.getMinIndex() < this.minOffset
-                )
-                  this.onList();
+                this.onList();
               }
             }
           );
@@ -5952,31 +5939,29 @@
             object,
             "onApplyChosen",
             async function () {
-              if (!this.parentModel.getChooseEnabled())
-                throw new Error(
-                  "Calling onApplyChosen() but choose is not enabled."
-                );
+              if (!this.parentModel.getChooseEnabled()) {
+                throw new Error("Calling onApplyChosen() but choose is not enabled.");
+              }
 
-              var data = {};
-              var addArray = this.cache.reduce((list, record) => {
-                if (1 === record.chosenNow) list.push(record.id);
-                return list;
-              }, []);
-              if (0 < addArray.length) data.add = addArray;
-              var removeArray = this.cache.reduce((list, record) => {
-                if (0 === record.chosenNow) list.push(record.id);
-                return list;
-              }, []);
-              if (0 < removeArray.length) data.remove = removeArray;
+              var data = {
+                add: Object.keys(this.chooseList).reduce((list, id) => {
+                  if ("add" == this.chooseList[id]) list.push(id);
+                  return list;
+                }, []),
+                remove: Object.keys(this.chooseList).reduce((list, id) => {
+                  if ("remove" == this.chooseList[id]) list.push(id);
+                  return list;
+                }, []),
+              };
+              if (0 == data.add.length) delete data.add;
+              if (0 == data.remove.length) delete data.remove;
 
-              if (0 < addArray.length || 0 < removeArray.length) {
+              if (data.add || data.remove) {
                 var self = this;
                 await CnHttpFactory.instance({
                   path: this.parentModel.getServiceCollectionPath(),
                   data: data,
-                  onError: function (error) {
-                    self.onApplyChosenError(error);
-                  },
+                  onError: function (error) { self.onApplyChosenError(error); },
                 }).post();
               }
 
@@ -6017,23 +6002,16 @@
             object,
             "onDelete",
             async function (record) {
-              if (!this.parentModel.getDeleteEnabled())
-                throw new Error(
-                  "Calling onDelete() but delete is not enabled."
-                );
+              if (!this.parentModel.getDeleteEnabled()) {
+                throw new Error("Calling onDelete() but delete is not enabled.");
+              }
 
               var self = this;
-              var httpObj = {
-                path: this.parentModel.getServiceResourcePath(
-                  record.getIdentifier()
-                ),
-              };
-              httpObj.onError = function (error) {
-                self.onDeleteError(error);
-              };
+              var httpObj = { path: this.parentModel.getServiceResourcePath(record.getIdentifier()) };
+              httpObj.onError = function (error) { self.onDeleteError(error); };
               await CnHttpFactory.instance(httpObj).delete();
 
-              this.cache.some((item, index, array) => {
+              this.records.some((item, index, array) => {
                 if (item.getIdentifier() == record.getIdentifier()) {
                   this.total--;
                   array.splice(index, 1);
@@ -6055,16 +6033,10 @@
             function (response) {
               if (409 == response.status) {
                 CnModalMessageFactory.instance({
-                  title:
-                    "Unable to delete " +
-                    this.parentModel.module.name.singular +
-                    " record",
+                  title: "Unable to delete " + this.parentModel.module.name.singular + " record",
                   message:
-                    "It is not possible to delete this " +
-                    this.parentModel.module.name.singular +
-                    " record because it is being referenced by " +
-                    response.data +
-                    " in the database.",
+                    "It is not possible to delete this " + this.parentModel.module.name.singular +
+                    " record because it is being referenced by " + response.data + " in the database.",
                   error: true,
                 }).show();
               } else {
@@ -6086,7 +6058,7 @@
           /**
            * Loads records from the server.
            *
-           * @param boolean replace: Whether to replace the cached list or append to it
+           * @param boolean replace: Whether to replace the record list or append to it
            */
           cenozo.addExtendableFunction(
             object,
@@ -6096,10 +6068,7 @@
               this.parentModel.listingState = "list";
 
               if (angular.isUndefined(replace)) replace = false;
-              if (replace) {
-                this.cache = [];
-                this.minOffset = null;
-              }
+              if (replace) this.records = [];
 
               // set up the restrict, offset and sorting
               if (this.parentModel.hasQueryParameter("restrict")) {
@@ -6108,12 +6077,11 @@
                   this.columnRestrictLists = angular.fromJson(restrict);
                   for (var name in this.columnRestrictLists) {
                     this.columnRestrictLists[name].forEach((obj) => {
-                      obj.description = CnSession.describeRestriction(
-                        angular.isDefined(
-                          this.parentModel.module.columnList[name]
-                        )
-                          ? this.parentModel.module.columnList[name].type
-                          : "string",
+                      obj.description = CnSession.describeRestriction((
+                          angular.isDefined(this.parentModel.module.columnList[name]) ?
+                          this.parentModel.module.columnList[name].type :
+                          "string"
+                        ),
                         obj.test,
                         obj.value,
                         obj.unit
@@ -6135,20 +6103,15 @@
               // isn't set to 1)
               var currentPage = replace ? 1 : this.paginationModel.currentPage;
               var queryCurrentPage = this.parentModel.getQueryParameter("page");
-              if (angular.isDefined(queryCurrentPage))
-                currentPage = queryCurrentPage;
+              if (angular.isDefined(queryCurrentPage)) currentPage = queryCurrentPage;
               this.paginationModel.ignore = true;
 
               // start by getting the data from the parent model using the column restrict lists
-              var data = this.parentModel.getServiceData(
-                "list",
-                this.columnRestrictLists
-              );
+              var data = this.parentModel.getServiceData("list", this.columnRestrictLists);
               if (angular.isUndefined(data.modifier)) data.modifier = {};
-              data.assert_offset =
-                (currentPage - 1) * this.paginationModel.itemsPerPage + 1;
-              if (this.parentModel.getChooseEnabled() && this.chooseMode)
-                data.choosing = 1;
+              data.modifier.limit = CnSession.application.listRowSize;
+              data.modifier.offset = (currentPage - 1) * CnSession.application.listRowSize;
+              if (this.parentModel.getChooseEnabled() && this.chooseMode) data.choosing = 1;
 
               // add the table prefix to the column if there isn't already a prefix
               var column = this.order.column;
@@ -6174,9 +6137,11 @@
                 if (angular.isDefined(highlight)) {
                   highlightCondition[column] = {
                     highlight: highlight,
-                    color:
+                    color: (
                       this.parentModel.columnList[column].highlightColor ?
-                      this.parentModel.columnList[column].highlightColor : "#fff2ae"
+                      this.parentModel.columnList[column].highlightColor :
+                      "#fff2ae"
+                    ),
                   };
                 }
               }
@@ -6189,39 +6154,41 @@
                 delete this.paginationModel.ignore;
 
                 this.paginationModel.currentPage = currentPage;
-                var offset = parseInt(response.headers("X-Offset"));
-                if (null == this.minOffset || offset < this.minOffset)
-                  this.minOffset = offset;
 
-                // add the getIdentifier() method to each row before adding it to the cache
-                response.data.forEach((item) => {
-                  item.getIdentifier = function () {
+                // add the getIdentifier() method to each row
+                response.data.forEach(record => {
+                  record.getIdentifier = function () {
                     return self.parentModel.getIdentifierFromRecord(this);
                   };
+
+                  // when in choose mode, update record chosen state based on the choose list
+                  if (this.chooseList[record.id]) {
+                    record.chosen = "add" == this.chooseList[record.id];
+                  }
 
                   // check if we should highlight the row (by default no)
                   var highlightList = [];
                   for (var name in highlightCondition) {
-                    if(item[name] == highlightCondition[name].highlight) {
+                    if(record[name] == highlightCondition[name].highlight) {
                       highlightList.push(highlightCondition[name].color);
                     }
                   }
 
                   if (0 < highlightList.length) {
-                    item.style = {
+                    record.style = {
                       "font-weight": 'bold',
-                      "background": 1 < highlightList.length ?
+                      "background": (
+                        1 < highlightList.length ?
                         "repeating-linear-gradient(45deg" + ("," + highlightList.join(",")).repeat(15) + ")" :
                         highlightList[0]
+                      ),
                     };
                   }
                 });
-                this.cache = this.cache.concat(response.data);
+                this.records = response.data;
                 this.total = parseInt(response.headers("X-Total"));
-                this.isReportAllowed =
-                  CnSession.application.maxBigReport >= this.total;
-                this.isReportBig =
-                  CnSession.application.maxSmallReport < this.total;
+                this.isReportAllowed = CnSession.application.maxBigReport >= this.total;
+                this.isReportBig = CnSession.application.maxSmallReport < this.total;
                 this.afterListFunctions.forEach((fn) => fn());
               } finally {
                 this.isLoading = false;
@@ -6261,10 +6228,7 @@
               }
 
               // start by getting the data from the parent model using the column restrict lists
-              var data = this.parentModel.getServiceData(
-                "report",
-                this.columnRestrictLists
-              );
+              var data = this.parentModel.getServiceData("report", this.columnRestrictLists);
               if (angular.isUndefined(data.modifier)) data.modifier = {};
 
               // add the table prefix to the column if there isn't already a prefix
@@ -6284,14 +6248,11 @@
               try {
                 var response = await CnHttpFactory.instance(httpObj).query();
 
-                this.reportBlob = new Blob([response.data], {
-                  type: response
-                    .headers("Content-Type")
-                    .replace(/"(.*)"/, "$1"),
-                });
-                this.reportFilename = response
-                  .headers("Content-Disposition")
-                  .match(/filename=(.*);/)[1];
+                this.reportBlob = new Blob(
+                  [response.data],
+                  { type: response.headers("Content-Type").replace(/"(.*)"/, "$1") }
+                );
+                this.reportFilename = response.headers("Content-Disposition").match(/filename=(.*);/)[1];
               } finally {
                 this.isReportLoading = false;
               }
@@ -6330,8 +6291,9 @@
             object,
             "onSelect",
             async function (record) {
-              if (!this.parentModel.getViewEnabled())
+              if (!this.parentModel.getViewEnabled()) {
                 throw new Error("Calling onSelect() but view is not enabled.");
+              }
               this.afterSelectFunctions.forEach((fn) => fn());
               await this.parentModel.transitionToViewState(record);
             }
@@ -6341,6 +6303,7 @@
             object,
             "toggleChooseMode",
             async function () {
+              this.chooseList = {};
               this.chooseMode = !this.chooseMode;
               await this.onList(true);
             }
@@ -7900,9 +7863,12 @@
             "getTypeaheadData",
             function (input, viewValue) {
               // create the modifier
-              var modifier = angular.isDefined(input.typeahead.modifier)
-                ? angular.copy(input.typeahead.modifier)
-                : {};
+              var modifier = (
+                angular.isDefined(input.typeahead.modifier) ?
+                angular.copy(input.typeahead.modifier) :
+                {}
+              );
+              if (angular.isUndefined(modifier.limit)) modifier.limit = 20;
               if (angular.isUndefined(modifier.where)) modifier.where = [];
               else if (!angular.isArray(modifier.where))
                 modifier.where = [modifier.where];
@@ -10740,33 +10706,24 @@
   /**
    * Creates a pagination widget for paging through lists
    */
-  cenozo.factory("CnPaginationFactory", function () {
-    var object = function (params) {
-      this.currentPage = 1;
-      this.showPageLimit = 5;
-      this.itemsPerPage = 20;
-      this.changePage = function () {};
-      angular.extend(this, params);
+  cenozo.factory("CnPaginationFactory", [
+    "CnSession",
+    function (CnSession) {
+      var object = function (params) {
+        this.currentPage = 1;
+        this.showPageLimit = 5;
+        this.itemsPerPage = CnSession.application.listRowSize;
+        this.changePage = function () {};
+        angular.extend(this, params);
+      };
 
-      this.getLimitTo = function (minOffset, cacheLength) {
-        return (
-          (this.currentPage - 1) * this.itemsPerPage - minOffset - cacheLength
-        );
+      return {
+        instance: function (params) {
+          return new object(angular.isUndefined(params) ? {} : params);
+        },
       };
-      this.getMinIndex = function () {
-        return (this.currentPage - 1) * this.itemsPerPage;
-      };
-      this.getMaxIndex = function () {
-        return this.currentPage * this.itemsPerPage - 1;
-      };
-    };
-
-    return {
-      instance: function (params) {
-        return new object(angular.isUndefined(params) ? {} : params);
-      },
-    };
-  });
+    },
+  ]);
 
   /* ############################################################################################## */
 

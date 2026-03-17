@@ -277,6 +277,7 @@ export class CN_participant_model extends CN_base_person_model {
               { column: "last_name", operator: "like", value: `%${value}%`, or: true },
             ],
             order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
+            limit: 20,
           },
         });
       },

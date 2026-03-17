@@ -85,6 +85,7 @@ export class CN_user_model extends CN_base_model {
               { column: "user.name", operator: "like", value: `%${value}%`, or: true },
             ],
             order: 'CONCAT(user.first_name," ",user.last_name," (",user.name,")")',
+            limit: 20,
           },
         });
       },

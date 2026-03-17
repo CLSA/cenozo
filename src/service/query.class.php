@@ -28,7 +28,7 @@ class query extends read
   {
     parent::prepare();
 
-    $setting_manager = lib::create( 'business\setting_manager' );
+    $session = lib::create( 'business\session' );
     $relationship_class_name = lib::get_class_name( 'database\relationship' );
 
     $leaf_subject = $this->get_leaf_subject();
@@ -66,15 +66,9 @@ class query extends read
       }
     }
 
-    if( is_null( $this->modifier->get_limit() ) )
+    if( !$session->version3 && is_null( $this->modifier->get_limit() ) )
     {
-      // query limit of 100 needs to be hard-coded (really, it needs to be evenly divided by the number of
-      // items per page shown by the web UI)
       $this->modifier->limit( 100 );
-      $assert_offset = $this->get_argument( 'assert_offset', NULL );
-      // Set the offset such that the assert-offset will fall inside the query-limit
-      if( !is_null( $assert_offset ) )
-        $this->modifier->offset( 100 * ( ceil( $assert_offset / 100 ) - 1 ) );
     }
   }
 

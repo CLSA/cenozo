@@ -87,6 +87,7 @@ export class CN_equipment_model extends CN_base_model {
               value: `%${value}%`,
             },
             order: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )'
+            limit: 20,
           },
         });
       },

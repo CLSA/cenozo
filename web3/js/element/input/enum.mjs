@@ -79,9 +79,6 @@ export class CN_input_enum extends CN_base_input {
         modifier: enum_obj.modifier ? enum_obj.modifier : { order: "name" },
       };
 
-      // always add a limit to make sure that list isn't truncated
-      if (!get_params.modifier.limit) get_params.modifier.limit = 1000;
-
       // the path may be dynamic
       let path = CN_common.is_function(enum_obj.path) ? await enum_obj.path(this) : enum_obj.path;
 

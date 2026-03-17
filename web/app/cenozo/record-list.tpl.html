@@ -124,18 +124,17 @@
             <div class="loading" uib-tooltip="Loading&hellip;"></div>
           </td>
         </tr>
-        <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.cache.length">
+        <tr ng-if="!model.listModel.isLoading && 0 == model.listModel.total">
           <td colspan="{{ numColumns + ( model.getDeleteEnabled() ? 1 : 0 ) }}">
             There are no {{ model.module.name.plural }} found.
           </td>
         </tr>
         <tr ng-if="!model.listModel.isLoading"
-            ng-repeat="record in model.listModel.cache
-                       | orderBy: model.listModel.order.column:model.listModel.order.reverse
-                       | cnEmptyToEnd: ( disableEmptyToEnd ? '' : model.listModel.order.column )
-                       | limitTo: model.listModel.paginationModel.getLimitTo(
-                                    model.listModel.minOffset, model.listModel.cache.length )
-                       | limitTo: model.listModel.paginationModel.itemsPerPage"
+            ng-repeat="
+              record in model.listModel.records |
+              orderBy: model.listModel.order.column:model.listModel.order.reverse |
+              cnEmptyToEnd: ( disableEmptyToEnd ? '' : model.listModel.order.column )
+            "
             ng-click="model.listModel.chooseMode ? chooseRecord( record ) : selectRecord( record )"
             ng-class="{ success:model.listModel.chooseMode && record.chosen }"
             ng-style="record.style">
@@ -176,7 +175,7 @@
             <ul
               uib-pagination class="pagination pull-left"
               ng-model="model.listModel.paginationModel.currentPage"
-              ng-show="!model.listModel.isLoading && model.listModel.cache.length > model.listModel.paginationModel.itemsPerPage"
+              ng-show="!model.listModel.isLoading && model.listModel.total > model.listModel.paginationModel.itemsPerPage"
               ng-change="model.listModel.onPagination()"
               direction-links="false"
               boundary-links="true"

@@ -20,6 +20,7 @@ export class CN_country_model extends CN_base_model {
           modifier: {
             where: { column: "name", operator: "like", value: `%${value}%` },
             order: 'name',
+            limit: 20,
           },
         });
       },

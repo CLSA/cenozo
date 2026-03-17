@@ -53,6 +53,7 @@ export class CN_study_phase_model extends CN_base_model {
               { column: "study_phase.name", operator: "like", value: `%${value}%`, or: true },
             ],
             order: 'CONCAT( study.name, ": ", study_phase.name )',
+            limit: 20,
           },
         });
       },

@@ -13,7 +13,7 @@ export class CN_action_list extends CN_base_action {
   #total_records = null;
   #current_page = 1;
   #is_choosing = false;
-  #choosing_list;
+  #choose_list = {};
 
   /**
    * Constructor
@@ -266,15 +266,25 @@ export class CN_action_list extends CN_base_action {
   async on_choose() {
     if (this.#is_choosing) {
       // send selected records back to the server
-      if (0 < this.#choosing_list.add.length || 0 < this.#choosing_list.remove.length) {
-        const params = {};
-        if (0 < this.#choosing_list.add.length) params.add = this.#choosing_list.add;
-        if (0 < this.#choosing_list.remove.length) params.remove = this.#choosing_list.remove;
+      const params = {
+        add: Object.keys(this.#choose_list).reduce((list, id) => {
+          if ("add" == this.#choose_list[id]) list.push(id);
+          return list;
+        }, []),
+        remove: Object.keys(this.#choose_list).reduce((list, id) => {
+          if ("remove" == this.#choose_list[id]) list.push(id);
+          return list;
+        }, []),
+      };
+      if (0 < params.add.length) delete params.add;
+      if (0 < params.remove.length) delete params.remove;
+      if (params.add || params.remove) {
         await CN_api.post(this.get_model().get_base_path("api"), params);
       }
     }
 
     // toggle the is_choosing state
+    this.#choose_list = {};
     this.#is_choosing = !this.#is_choosing;
     await this.run();
   }
@@ -395,15 +405,13 @@ export class CN_action_list extends CN_base_action {
     // replace the records at the current page with the returned records
     this.#records = await response.json();
 
+    // when in choose mode, update record chosen state based on the choose list
     if (this.#is_choosing) {
-      // make note of chosen records
-      this.#choosing_list = {
-        current: this.#records.filter(record => record.chosen).map(record => record.id),
-        add: [],
-        remove: [],
-      };
-    } else {
-      this.#choosing_list = null;
+      this.#records.forEach(record => {
+        if (this.#choose_list[record.id]) {
+          record.chosen = "add" == this.chooseList[record.id];
+        }
+      });
     }
   }
 
@@ -465,20 +473,18 @@ export class CN_action_list extends CN_base_action {
       // toggle the record's chosen state
       record.chosen = !record.chosen;
 
-      let list_type = this.#choosing_list.current.includes(record.id) ? "remove" : "add";
-      let add = (
-        this.#choosing_list.current.includes(record.id) ?
-        !record.chosen :
-        record.chosen
-      );
-
-      if (add) {
-        if (!this.#choosing_list[list_type].includes(record.id)) {
-          this.#choosing_list[list_type].push(record.id);
+      // now track whether the record will be added or removed once applied
+      if (this.#choose_list[record.id]) {
+        // we're already altering the choose state, so remove that change if necessary
+        if (
+          (record.chosen && "remove" == this.#choose_list[record.id]) ||
+          (!record.chosen && "add" == this.#choose_list[record.id])
+        ) {
+          delete this.#choose_list[record.id];
         }
       } else {
-        let index = this.#choosing_list[list_type].indexOf(record.id);
-        if (-1 !== index) this.#choosing_list[list_type].splice(index, 1);
+        // note which way we'll be changing the choose state
+        this.#choose_list[record.id] = record.chosen ? "add" : "remove";
       }
 
       this.update_element();
