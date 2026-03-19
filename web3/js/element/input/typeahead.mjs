@@ -13,11 +13,12 @@ export class CN_input_typeahead extends CN_base_input {
     const default_config = {
       typeahead: {
         min_length: 2,
+        allow_new: false,
         promise: null,
         timeout_id: null,
         open: false,
-        on_select: (item) => {
-          this.set_value(item.value);
+        on_select: (value) => {
+          this.set_value(value);
           this.commit_value();
           if (this.has_config("on_change")) {
             this.get_config("on_change")(this, this.validate());
@@ -82,10 +83,13 @@ export class CN_input_typeahead extends CN_base_input {
           this.#dropdown_bs.hide();
         }
       } else if ("Enter" == event.key) {
-        if (null === this.get_value()) {
+        const value = this.get_value();
+        if (null === value) {
           // the input box is empty, so set to empty
-          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
+          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(null);
           this.#dropdown_bs.hide();
+        } else if (typeahead.allow_new) {
+          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(value);
         }
       }
     });
@@ -103,7 +107,7 @@ export class CN_input_typeahead extends CN_base_input {
       } else {
         if (null === this.get_value()) {
           // the input box is empty, so set to empty
-          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select({ value: null });
+          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(null);
           this.#dropdown_bs.hide();
         } else {
           // return to the last committed value
@@ -158,7 +162,7 @@ export class CN_input_typeahead extends CN_base_input {
                 item_el.addEventListener("click", () => {
                   const typeahead = this.get_config("typeahead");
                   this.set_value(item.value);
-                  if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item);
+                  if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item.value);
                   this.#dropdown_bs.hide();
                 });
                 return item_el;
@@ -199,7 +203,8 @@ export class CN_input_typeahead extends CN_base_input {
     // NOTE: the element's params is not the same as the property's params object (it is cloned)
     let value = this.get_value();
     if (null != value) {
-      value = this.get_config("typeahead").list.find(item => value === item.value).key;
+      const selected_item = this.get_config("typeahead").list.find(item => value === item.value);
+      if (selected_item) value = selected_item.key;
     }
     return value;
   }
