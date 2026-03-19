@@ -86,7 +86,7 @@ export class CN_equipment_model extends CN_base_model {
               operator: "like",
               value: `%${value}%`,
             },
-            order: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )'
+            order: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )',
             limit: 20,
           },
         });

@@ -139,11 +139,11 @@ export class CN_base_input extends CN_base_element {
     if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
     if (this.#control_name) this.#control_el.setAttribute("name", this.#control_name);
     this.update();
-    this.set_value(
-      this.has_config("get_default") ?
-      this.get_config("get_default")(this.#action ? this.#action.get_model() : null) :
-      null
-    );
+
+    // set the value to the default (only if it hasn't been set yet)
+    if (null === this.get_value() && this.has_config("get_default")) {
+      this.set_value(this.get_config("get_default")(this.#action ? this.#action.get_model() : null));
+    }
     this.#control_div_el.append(this.#control_el);
 
     if (this.#event_listeners) {

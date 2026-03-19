@@ -90,7 +90,7 @@ export class CN_api extends CN_base_object {
         role_id != CN_session.data.role.id
       )
     ) {
-      await (CN_modal_message({
+      await (new CN_modal_message({
         title: "Login Mismatch",
         size: "lg",
         type: "danger",

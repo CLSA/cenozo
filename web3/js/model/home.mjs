@@ -29,7 +29,7 @@ export class CN_home_model extends CN_base_model {
     } else {
       CN_session.system_message_list.forEach((message, message_index) => {
         const message_el = CN_base_element.html(`
-          <div class="card mt-3 px-0 ${message.unread ? "" : "text-muted"}">
+          <div class="card mt-3 px-0 ${message.unread ? "" : "text-black text-opacity-50"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
               <button class="btn btn-dark">
                 <i class="bi bi-envelope-${message.unread ? "" : "open-"}fill"></i>
