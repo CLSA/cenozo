@@ -17,6 +17,7 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
       {
         get_default: () => CN_session.data.user.timezone,
         typeahead: { list: CN_common.get_timezones() },
+        required: true,
       }
     );
     this.add_input("boolean", "am_pm", "Use 12-Hour Clock", { get_default: () => CN_session.data.user.am_pm });

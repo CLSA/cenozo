@@ -32,14 +32,6 @@ export class CN_input_range extends CN_base_input {
   }
 
   /**
-   * Extends parent method
-   */
-  async get_value_for_record() {
-    const value = await super.get_value_for_record();
-    return null == value ? null : Number(value);
-  }
-
-  /**
    * Extends the parent method
    */
   _create_control_element() {
@@ -52,6 +44,14 @@ export class CN_input_range extends CN_base_input {
         step="${this.get_config("step")}"
       ></input>
     `);
+  }
+
+  /**
+   * Extends parent method
+   */
+  async _calculate_value_for_record(value) {
+    value = await super._calculate_value_for_record(value);
+    return null == value ? null : Number(value);
   }
 
   /**

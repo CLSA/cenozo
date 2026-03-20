@@ -44,13 +44,6 @@ export class CN_input_base_datetime extends CN_base_input {
   }
 
   /**
-   * Extends the parent method
-   */
-  async get_value_for_record() {
-    return CN_common.format_datetime(this.#date, "record");
-  }
-
-  /**
    * Extends parent method
    */
   validate() {
@@ -119,5 +112,12 @@ export class CN_input_base_datetime extends CN_base_input {
       }
     });
     return control_el;
+  }
+
+  /**
+   * Extends the parent method
+   */
+  async _calculate_value_for_record(value) {
+    return CN_common.format_datetime(this.#date, "record");
   }
 }

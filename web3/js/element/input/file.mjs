@@ -13,22 +13,6 @@ export class CN_input_file extends CN_base_input {
   }
 
   /**
-   * Overrides parent method
-   */
-  async get_value_for_record() {
-    const file = this.get_config("file");
-
-    // convert from blob
-    let value = await CN_common.convert_from_blob(file.encoding, this.get_value()[0]);
-    if ("base64" == file.encoding) {
-      // remove the base64 metadata
-      value = value.replace(/.*;base64,/, "");
-    }
-
-    return value;
-  }
-
-  /**
    * Extends parent method
    */
   set_value(value) {
@@ -74,6 +58,22 @@ export class CN_input_file extends CN_base_input {
     }
 
     return super.validate();
+  }
+
+  /**
+   * Overrides parent method
+   */
+  async _calculate_value_for_record(value) {
+    const file = this.get_config("file");
+
+    // convert from blob
+    value = await CN_common.convert_from_blob(file.encoding, this.get_value()[0]);
+    if ("base64" == file.encoding) {
+      // remove the base64 metadata
+      value = value.replace(/.*;base64,/, "");
+    }
+
+    return value;
   }
 
   /**

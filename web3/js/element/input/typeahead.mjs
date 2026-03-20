@@ -4,6 +4,8 @@ import { CN_common } from "../../common.mjs"
 export class CN_input_typeahead extends CN_base_input {
   #typeahead_el;
   #dropdown_bs;
+  #active_item;
+  #selection_made = false;
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
@@ -17,8 +19,8 @@ export class CN_input_typeahead extends CN_base_input {
         promise: null,
         timeout_id: null,
         open: false,
-        on_select: (value) => {
-          this.set_value(value);
+        on_select: (form_input, item) => {
+          this.set_value(item.value);
           this.commit_value();
           if (this.has_config("on_change")) {
             this.get_config("on_change")(this, this.validate());
@@ -49,6 +51,70 @@ export class CN_input_typeahead extends CN_base_input {
   }
 
   /**
+   * Extend parent method
+   */
+  get_value() {
+    let value = super.get_value();
+    if (CN_common.is_string(value)) value = value.trim();
+    return "" === value ? null : value;
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_add() {
+    await super.on_dom_add();
+
+    // add the typeahead's element after the prop's element once it's been inserted into the DOM
+    this.get_control_element().after(this.#typeahead_el);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async select_previous() {
+    if (!this.#active_item) return;
+
+    const list = this.#get_matching_list();
+    if (0 == list.length) return;
+
+    const new_index = list.map(item => item.key).indexOf(this.#active_item.key) - 1;
+    if (list[new_index]) this.#active_item = list[new_index];
+
+    await this.update();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async select_next() {
+    if (!this.#active_item) return;
+
+    const list = this.#get_matching_list();
+    if (0 == list.length) return;
+
+    const new_index = list.map(item => item.key).indexOf(this.#active_item.key) + 1;
+    if (list[new_index]) this.#active_item = list[new_index];
+
+    await this.update();
+  }
+
+  /**
+   * Extend parent method
+   */
+  async update() {
+    await super.update();
+
+    Array.from(this.#typeahead_el.querySelectorAll("ul button")).forEach(button_el => {
+      if (this.#active_item && button_el.getAttribute("name") == String(this.#active_item.key)) {
+        button_el.classList.add("text-bg-primary");
+      } else {
+        button_el.classList.remove("text-bg-primary");
+      }
+    });
+  }
+
+  /**
    * Extends the parent method
    */
   _create_control_element() {
@@ -74,7 +140,6 @@ export class CN_input_typeahead extends CN_base_input {
       () => { this.get_config("typeahead").open = false; }
     );
 
-    // cancel the typeahead when the escape key is pressed
     el.addEventListener("keydown", (event) => {
       const typeahead = this.get_config("typeahead");
       if ("Escape" == event.key) {
@@ -82,36 +147,58 @@ export class CN_input_typeahead extends CN_base_input {
           if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
           this.#dropdown_bs.hide();
         }
+      } else if ("ArrowUp" == event.key) {
+        event.preventDefault();
+        this.select_previous();
+      } else if ("ArrowDown" == event.key) {
+        event.preventDefault();
+        this.select_next();
       } else if ("Enter" == event.key) {
         const value = this.get_value();
         if (null === value) {
           // the input box is empty, so set to empty
-          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(null);
+          typeahead.on_select(this, { key: undefined, value: null });
           this.#dropdown_bs.hide();
-        } else if (typeahead.allow_new) {
-          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(value);
+        } else {
+          if (typeahead.open) {
+            if (this.#active_item) {
+              typeahead.on_select(this, this.#active_item);
+              this.#selection_made = true;
+              this.#dropdown_bs.hide();
+            }
+          } else if (typeahead.allow_new) {
+            typeahead.on_select(this, { key: undefined, value: value });
+          }
         }
+      } else if ("Tab" == event.key) {
+        // disable the tab button
+        event.preventDefault();
       }
     });
+
     el.addEventListener("blur", async () => {
       // we may be blurring after a button click, so give it time to process
       await CN_common.sleep(200);
 
-      const typeahead = this.get_config("typeahead");
-      if (typeahead.open) {
-        // if the typeahead is still open but we haven't focussed on a dropdown item then cancel and close
-        if (!document.activeElement.classList.contains("dropdown-item")) {
-          if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
-          this.#dropdown_bs.hide();
-        }
+      if (this.#selection_made) {
+        this.#selection_made = false;
       } else {
-        if (null === this.get_value()) {
-          // the input box is empty, so set to empty
-          if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(null);
-          this.#dropdown_bs.hide();
+        const typeahead = this.get_config("typeahead");
+        if (typeahead.open) {
+          // if the typeahead is still open but we haven't focussed on a dropdown item then cancel and close
+          if (!document.activeElement.classList.contains("dropdown-item")) {
+            if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
+            this.#dropdown_bs.hide();
+          }
         } else {
-          // return to the last committed value
-          this.undo_value(true);
+          if (null === this.get_value()) {
+            // the input box is empty, so set to empty
+            typeahead.on_select(this, { key: undefined, value: null });
+            this.#dropdown_bs.hide();
+          } else {
+            // return to the last committed value
+            this.undo_value(true);
+          }
         }
       }
     });
@@ -135,7 +222,8 @@ export class CN_input_typeahead extends CN_base_input {
         const typeahead = this.get_config("typeahead");
         typeahead.timeout_id = null;
 
-        // only proceed if the typeahead isn't loading and we've reached the min length threshold
+        // only determine the list if we've reached the min length threshold
+        this.#active_item = null;
         let li_el_list = [];
         if (null != value && typeahead.min_length <= value.length) {
           // generate the list if the get_list() function exists
@@ -151,25 +239,30 @@ export class CN_input_typeahead extends CN_base_input {
           // now create a list of <li> elements for the typeahead's <ul> element
           // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
           if (null != value) {
-            li_el_list = typeahead.list
-              // Make sure only matching items are included (this is already done in get_list() but not when
-              // the list isn't dynamic
-              .filter(item => item.value.match(new RegExp(RegExp.escape(value), "i")))
-              .map(item => {
-                const item_el = this.constructor.html(
-                  `<li><button type="button" class="dropdown-item">${item.value}</button></li>`
-                );
-                item_el.addEventListener("click", () => {
-                  const typeahead = this.get_config("typeahead");
-                  this.set_value(item.value);
-                  if (CN_common.is_function(typeahead.on_select)) typeahead.on_select(item.value);
-                  this.#dropdown_bs.hide();
-                });
-                return item_el;
-              }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
+            li_el_list = this.#get_matching_list().map((item, index) => {
+              if (0 == index) this.#active_item = item;
+
+              const item_el = this.constructor.html(`
+                <li>
+                  <button
+                    name="${item.key}"
+                    type="button"
+                    class="dropdown-item ${item.key == this.#active_item.key ? "text-bg-primary" : ""}"
+                  >${item.value}</button>
+                </li>
+              `);
+              item_el.addEventListener("click", async () => {
+                this.#active_item = item;
+                await this.update();
+
+                this.get_config("typeahead").on_select(this, item);
+                this.#selection_made = true;
+                this.#dropdown_bs.hide();
+              });
+              return item_el;
+            }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
           }
         }
-
 
         // now replace the dropdown's list with the matching items
         const ul_el = this.#typeahead_el.querySelector("ul");
@@ -189,34 +282,19 @@ export class CN_input_typeahead extends CN_base_input {
   /**
    * Extend parent method
    */
-  get_value() {
-    let value = super.get_value();
-    if (CN_common.is_string(value)) value = value.trim();
-    return "" === value ? null : value;
+  async _calculate_value_for_record(value) {
+    return this.#active_item ? this.#active_item.key : null;
   }
 
   /**
-   * Extend parent method
+   * ADD DOCS
    */
-  async get_value_for_record() {
-    // convert from value to key by looking up the element's typeahead list in the params object
-    // NOTE: the element's params is not the same as the property's params object (it is cloned)
-    let value = this.get_value();
-    if (null != value) {
-      const selected_item = this.get_config("typeahead").list.find(item => value === item.value);
-      if (selected_item) value = selected_item.key;
-    }
-    return value;
-  }
-
-  /**
-   * Extend parent method
-   */
-  async on_dom_add() {
-    await super.on_dom_add();
-
-    // add the typeahead's element after the prop's element once it's been inserted into the DOM
-    this.get_control_element().after(this.#typeahead_el);
+  #get_matching_list() {
+    // Make sure only matching items are included
+    // (this is already done in get_list() but not when the list isn't dynamic)
+    return this.get_config("typeahead").list.filter(
+      item => item.value.match(new RegExp(RegExp.escape(this.get_value()), "i"))
+    );
   }
 
   /**

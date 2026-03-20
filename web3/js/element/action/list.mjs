@@ -268,16 +268,16 @@ export class CN_action_list extends CN_base_action {
       // send selected records back to the server
       const params = {
         add: Object.keys(this.#choose_list).reduce((list, id) => {
-          if ("add" == this.#choose_list[id]) list.push(id);
+          if ("add" == this.#choose_list[id]) list.push(Number(id));
           return list;
         }, []),
         remove: Object.keys(this.#choose_list).reduce((list, id) => {
-          if ("remove" == this.#choose_list[id]) list.push(id);
+          if ("remove" == this.#choose_list[id]) list.push(Number(id));
           return list;
         }, []),
       };
-      if (0 < params.add.length) delete params.add;
-      if (0 < params.remove.length) delete params.remove;
+      if (0 == params.add.length) delete params.add;
+      if (0 == params.remove.length) delete params.remove;
       if (params.add || params.remove) {
         await CN_api.post(this.get_model().get_base_path("api"), params);
       }

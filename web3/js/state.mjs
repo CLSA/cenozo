@@ -2,8 +2,18 @@ import { CN_base_object } from "./base_object.mjs"
 import { CN_common } from "./common.mjs"
 
 export class CN_state extends CN_base_object {
+  #calculate_record_value;
   #stack = [];
   #element;
+
+  constructor(calculate_record_value = null) {
+    super();
+    this.#calculate_record_value = (
+      CN_common.is_function(calculate_record_value) ?
+      calculate_record_value :
+      value => value
+    );
+  }
 
   /**
    * ADD DOCS
@@ -61,19 +71,49 @@ export class CN_state extends CN_base_object {
    */
   get() {
     const len = this.#stack.length;
-    return 0 < len ? this.#stack[len-1].value : null;
+    return 0 < len ? this.#stack[len-1].input_value : null;
+  }
+
+  /**
+   * Gets the current value of the state as intended for a record
+   * @return (dynamic)
+   */
+  async get_for_record() {
+    const len = this.#stack.length;
+    if (0 < len) {
+      // Make sure the record value has been calculating before returning the value
+      await this.#stack[len-1].promise;
+      return this.#stack[len-1].record_value;
+    } else {
+      return null;
+    }
   }
 
   /**
    * Sets the value of the state
-   * @param (dynamic) val: The value to set the state to
+   * @param mixed input_value: The value to set the state to
+   * @param mixed record_value: The value meant for a record (optional, will be calculated if not provided)
    */
-  set(val) {
+  set(input_value, record_value = undefined) {
     // do nothing if the new value is the same as the current one
-    if (this.get() === val) return;
+    if (this.get() === input_value) return;
 
     const len = this.#stack.length;
-    const new_state = { value: val, committed: false };
+    const new_state = {
+      committed: false,
+      input_value: input_value,
+      record_value: record_value,
+    };
+    
+    new_state.promise = (
+      async () => {
+        if (undefined === new_state.record_value) {
+          new_state.record_value = await this.#calculate_record_value(new_state.input_value);
+        }
+      }
+    )();
+
+    // start determining the record value now
 
     if (0 < len && !this.#stack[len-1].committed) {
       // when the current state isn't committed then simply overwrite it

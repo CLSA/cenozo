@@ -12,6 +12,7 @@ import { CN_state } from "../../state.mjs"
 export class CN_base_input extends CN_base_element {
   #action;
   #state;
+  #record_state;
   #control_id;
   #control_name;
   #control_el;
@@ -63,7 +64,9 @@ export class CN_base_input extends CN_base_element {
     this.#action = action;
     this.#control_id = id;
     this.#control_name = name;
-    this.#state = new CN_state();
+    this.#state = new CN_state((value) => {
+      return this._calculate_value_for_record(value);
+    });
   }
 
   /**
@@ -142,7 +145,9 @@ export class CN_base_input extends CN_base_element {
 
     // set the value to the default (only if it hasn't been set yet)
     if (null === this.get_value() && this.has_config("get_default")) {
-      this.set_value(this.get_config("get_default")(this.#action ? this.#action.get_model() : null));
+      const default_value = this.get_config("get_default")(this.#action ? this.#action.get_model() : null);
+      this.set_value(default_value);
+      if (!["", null].includes(default_value)) this.commit_value();
     }
     this.#control_div_el.append(this.#control_el);
 
@@ -233,15 +238,14 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   async get_value_for_record() {
-    const value = this.get_value();
-    return "" === value ? null : value;
+    return await this.#state.get_for_record();
   }
 
   /**
    * ADD DOCS
    */
-  set_value(value) {
-    this.#state.set(value);
+  set_value(value, value_for_record = undefined) {
+    this.#state.set(value, value_for_record);
 
     if (this.get_config("undo") && this.#undo_btn_el) {
       if (this.#state.can_undo()) {
@@ -421,5 +425,12 @@ export class CN_base_input extends CN_base_element {
     this.#control_el.style.removeProperty("border-width");
     this.#control_el.style.removeProperty("margin");
     this.#error_div_el.innerHTML = "";
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async _calculate_value_for_record(value) {
+    return "" === value ? null : value;
   }
 }

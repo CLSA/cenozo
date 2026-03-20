@@ -108,7 +108,7 @@ export class CN_action_view extends CN_action_base_record {
       if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
         // put the ID in the typeahead list
         prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
-        prop.form_input.set_value(record[`formatted_${prop.name}`]);
+        prop.form_input.set_value(record[`formatted_${prop.name}`], record[prop.name]);
       } else if (CN_common.is_datetime_type(prop.type, "date")) {
         // convert string value to object
         prop.form_input.set_value(record[prop.name] ? new Date(record[prop.name]) : null);

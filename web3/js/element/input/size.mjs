@@ -53,18 +53,6 @@ export class CN_input_size extends CN_input_float {
   /**
    * Extend parent method
    */
-  get_value_for_record() {
-    const value = this.get_value();
-    return (
-      CN_common.is_float(value) ?
-      CN_common.format_filesize(`${value} ${this.#size_form_input.get_value()}`, true) :
-      null
-    );
-  }
-
-  /**
-   * Extend parent method
-   */
   set_value(value) {
     if (null != value) {
       // convert the value to a filesize string
@@ -73,6 +61,17 @@ export class CN_input_size extends CN_input_float {
       super.set_value(size);
       this.#size_form_input.set_value(unit ? unit : "Bytes");
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  async _calculate_value_for_record(value) {
+    return (
+      CN_common.is_float(value) ?
+      CN_common.format_filesize(`${value} ${this.#size_form_input.get_value()}`, true) :
+      null
+    );
   }
 
   /**

@@ -38,8 +38,8 @@ export class CN_input_boolean extends CN_input_enum {
   /**
    * Extends parent method
    */
-  async get_value_for_record() {
-    const value = await super.get_value_for_record();
+  async _calculate_value_for_record(value) {
+    value = await super._calculate_value_for_record(value);
     return null == value ? null : Number(value);
   }
 
