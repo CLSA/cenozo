@@ -1151,10 +1151,12 @@ class participant extends record
     {
       // sanitize the entries
       $identifier_list =
-        explode( ' ', // delimite string by spaces and create array from result
-        preg_replace( '/[^a-zA-Z0-9_ ]/', '', // remove anything that isn't a letter, number, underscore or space
-        preg_replace( '/[\s,;|\/]/', ' ', // replace whitespace and separation chars with a space
-        strtoupper( $identifier_list ) ) ) ); // convert to uppercase
+        // delimite string by spaces and create array from result
+        explode( ' ',
+        // remove anything that isn't a letter, number, dash, underscore or space
+        preg_replace( '/[^a-zA-Z0-9-_ ]/', '',
+        // replace whitespace and separation chars with a space
+        preg_replace( '/[\s,;|\/]/', ' ', $identifier_list ) ) );
     }
 
     // match identifiers based on regex

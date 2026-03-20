@@ -9831,11 +9831,10 @@
 
             // clean up the identifier list
             var fixedList = this.identifierListString
-              .toUpperCase()
               // replace whitespace and separation chars with a space
               .replace(/[\s,;|\/]/g, " ")
-              // remove anything that isn't a letter, number, underscore or space
-              .replace(/[^a-zA-Z0-9_ ]/g, "")
+              // remove anything that isn't a letter, number, dash, underscore or space
+              .replace(/[^a-zA-Z0-9-_ ]/g, "")
               // delimite string by spaces and create array from result
               .split(" ")
               // match UIDs (eg: A123456)
