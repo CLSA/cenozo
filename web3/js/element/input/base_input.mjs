@@ -64,9 +64,7 @@ export class CN_base_input extends CN_base_element {
     this.#action = action;
     this.#control_id = id;
     this.#control_name = name;
-    this.#state = new CN_state((value) => {
-      return this._calculate_value_for_record(value);
-    });
+    this.#state = new CN_state(value => this._calculate_value_for_record(value));
   }
 
   /**
@@ -147,7 +145,6 @@ export class CN_base_input extends CN_base_element {
     if (null === this.get_value() && this.has_config("get_default")) {
       const default_value = this.get_config("get_default")(this.#action ? this.#action.get_model() : null);
       this.set_value(default_value);
-      if (!["", null].includes(default_value)) this.commit_value();
     }
     this.#control_div_el.append(this.#control_el);
 

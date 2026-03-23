@@ -40,7 +40,7 @@ export class CN_input_boolean extends CN_input_enum {
    */
   async _calculate_value_for_record(value) {
     value = await super._calculate_value_for_record(value);
-    return null == value ? null : Number(value);
+    return null == value ? null : ([1, true, "true"].includes(value) ? 1 : 0);
   }
 
   /**
