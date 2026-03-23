@@ -57,8 +57,10 @@ async function check_for_trace(type, action, identifier) {
           If you proceed the participant will no longer have an active ${type}.
           In order to help with tracing, please provide the reason that you are changing the participant's ${type}:
         `,
-        required: true,
-        input: "string",
+        input: {
+          type: "string",
+          required: true,
+        },
       })).open();
     }
   } else {
@@ -70,8 +72,10 @@ async function check_for_trace(type, action, identifier) {
           Before your change the participant did not have an active ${type}.
           Please provide how the new ${type} information was determined:
         `,
-        required: true,
-        input: "string",
+        input: {
+          type: "string",
+          required: true,
+        },
       })).open();
     }
   }

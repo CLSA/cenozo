@@ -230,10 +230,12 @@ export class CN_base_action extends CN_base_element {
           const modal = new CN_modal_input({
             title: title,
             message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
-            input: "text",
-            required: false,
-            rows: 5,
-            value: notation,
+            input: {
+              type: "text",
+              required: false,
+              rows: 5,
+              get_default: () => notation,
+            },
           });
           const response = await modal.open();
 

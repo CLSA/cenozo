@@ -104,7 +104,7 @@ export class CN_state extends CN_base_object {
       input_value: input_value,
       record_value: record_value,
     };
-    
+
     new_state.promise = (
       async () => {
         if (undefined === new_state.record_value) {

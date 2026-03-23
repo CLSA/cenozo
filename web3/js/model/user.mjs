@@ -123,9 +123,11 @@ export class CN_user_list extends CN_action_list {
         const modal = new CN_modal_input({
           title: "Find User",
           message: "Please provide the username of the user you wish to find.",
-          input: "string",
-          required: true,
           do_not_close: true,
+          input: {
+            type: "string",
+            required: true,
+          },
         });
 
         while (true) {

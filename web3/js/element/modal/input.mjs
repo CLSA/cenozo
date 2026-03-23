@@ -10,21 +10,27 @@ export class CN_modal_input extends CN_modal_base_form {
     super({
       ...{
         // default config
-        input: "string",
         title: "Please Provide Input",
         message: "Enter Value",
         cancel_text: "Cancel",
         ok_text: "OK",
+        input: {
+          // default input config
+          ...{
+            type: "string",
+          },
+          ...config.input,
+        },
       },
       ...config
     });
 
-    const input_config = {};
-    if (this.has_config("value")) input_config.get_default = () => this.get_config("value");
-    if (this.has_config("required")) input_config.required = this.get_config("required");
-    if (this.has_config("rows")) input_config.rows = this.get_config("rows");
+    // remove the type from the input config (so it doesn't conflict with the input's type config)
+    const input = this.get_config("input");
+    const type = input.type;
+    delete input.type;
 
-    this.add_input(this.get_config("input"), "input", this.get_config("message"), input_config);
+    this.add_input(type, "input", this.get_config("message"), input);
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
