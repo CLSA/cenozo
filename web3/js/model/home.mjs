@@ -44,7 +44,7 @@ export class CN_home_model extends CN_base_model {
 
         const btn_el = message_el.querySelector("button");
         btn_el.addEventListener("click", async () => {
-          btn_el.setAttribute("disabled", true);
+          CN_base_element.set_disabled(btn_el, true);
 
           const message = CN_session.system_message_list[message_index];
           if (message.unread) {
@@ -58,7 +58,7 @@ export class CN_home_model extends CN_base_model {
           CN_session.update_breadcrumbs();
           this.update_element();
 
-          btn_el.removeAttribute("disabled");
+          CN_base_element.set_disabled(btn_el, false);
         });
         sm_el.append(message_el);
       });

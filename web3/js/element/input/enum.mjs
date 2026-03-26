@@ -138,7 +138,7 @@ export class CN_input_enum extends CN_base_input {
 
       enum_obj.values.forEach(option => {
         const option_el = this.constructor.html(`<option value="${option.key}">${option.value}</option>`);
-        if (option.disabled) option_el.setAttribute("disabled", true);
+        if (option.disabled) this.constructor.set_disabled(option_el, true);
 
         // determine which option is selected
         if (test_option(option, value)) {

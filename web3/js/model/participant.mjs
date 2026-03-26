@@ -329,6 +329,7 @@ export class CN_participant_multiedit extends CN_base_action {
   #module_list = {
     participant: {
       module: null,
+      proceed_btn_el: null,
       properties: {
         availability_type_id: null,
         email: null,
@@ -337,7 +338,7 @@ export class CN_participant_multiedit extends CN_base_action {
         global_note: null,
         honorific: null,
         mass_email: null,
-        out_of_area: null,
+        out_of_area: "",
         language_id: null,
         preferred_site_id: null,
         sex: null,
@@ -346,6 +347,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
     collection: {
       module: null,
+      proceed_btn_el: null,
       enum: {
         path: `application/${CN_session.data.application.id}/collection`,
         select: { column: ["name", { column: "locked", alias: "disabled" }] },
@@ -357,6 +359,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
     consent: {
       module: null,
+      proceed_btn_el: null,
       properties: {
         consent_type_id: null,
         accept: null,
@@ -367,6 +370,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
     event: {
       module: null,
+      proceed_btn_el: null,
       properties: {
         event_type_id: null,
         datetime: null,
@@ -374,6 +378,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
     hold: {
       module: null,
+      proceed_btn_el: null,
       properties: {
         hold_type_id: null,
         datetime: null,
@@ -381,10 +386,12 @@ export class CN_participant_multiedit extends CN_base_action {
     },
     note: {
       module: null,
+      proceed_btn_el: null,
       // special so properties are not required
     },
     proxy: {
       module: null,
+      proceed_btn_el: null,
       properties: {
         proxy_type_id: null,
         datetime: null,
@@ -392,12 +399,13 @@ export class CN_participant_multiedit extends CN_base_action {
     },
     study: {
       module: null,
+      proceed_btn_el: null,
       enum: { path: "study" },
     },
   };
 
   #participant_selection = new CN_participant_selection();
-  #selected_participant_properties = [];
+  #selected_participant_properties = {};
 
   /**
    * Constructor
@@ -434,7 +442,7 @@ export class CN_participant_multiedit extends CN_base_action {
    */
   async on_load() {
     // reset the list and edit components
-    this.#selected_participant_properties = [];
+    this.#selected_participant_properties = {};
     await this.#participant_selection.reset();
 
     // make sure the module's classes have been loaded, then create a new model
@@ -506,7 +514,8 @@ export class CN_participant_multiedit extends CN_base_action {
         fields_el.innerHTML = "";
 
         // create a list of all selected participant properties
-        this.#selected_participant_properties.forEach(prop_name => {
+        const participant_properties = Object.keys(this.#selected_participant_properties).sort();
+        participant_properties.forEach(prop_name => {
           const module_prop = this.#module_list.participant.module.get_property(prop_name);
           const prop = mod.properties[prop_name];
           const prop_id = `participant_${prop_name}`;
@@ -524,12 +533,28 @@ export class CN_participant_multiedit extends CN_base_action {
           if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
           if (undefined === params.placeholder) params.placeholder = "(empty)";
 
+          params.get_default = (model) => {
+            return null;
+          };
+
           // restore any previous values
           if ("enum" != params.type && prev_params[prop_name]) params.value = prev_params[prop_name];
 
           if (undefined === params.max_length && module_prop && module_prop.max_length) {
             params.max_length = module_prop.max_length;
           }
+
+          params.on_change = async () => {
+            // validate all participant properties before we proceed
+            let invalid = false;
+            await Promise.all(
+              Object.keys(this.#selected_participant_properties).map(property => (async () => {
+                const test = await this.#selected_participant_properties[property].validate();
+                if (!test) invalid = true;
+              })())
+            );
+            this.constructor.set_disabled(mod.proceed_btn_el, invalid);
+          };
 
           params.postfix = (el) => {
             const btn_el = this.constructor.html(`
@@ -540,17 +565,18 @@ export class CN_participant_multiedit extends CN_base_action {
             btn_el.addEventListener(
               "click",
               async () => {
-                this.#selected_participant_properties.splice(
-                  this.#selected_participant_properties.indexOf(prop_name),
-                  1
-                );
+                delete this.#selected_participant_properties[prop_name];
+                if (0 == Object.keys(this.#selected_participant_properties).length) {
+                  this.constructor.set_disabled(mod.proceed_btn_el, true);
+                }
                 this.update_element();
               },
             );
             el.append(btn_el);
           };
 
-          CN_input.create_element(params.type, row_el, params);
+          this.#selected_participant_properties[prop_name] = CN_input.create_input(params.type, row_el, params);
+          row_el.append(this.#selected_participant_properties[prop_name].get_element());
           fields_el.append(row_el);
         });
 
@@ -560,14 +586,13 @@ export class CN_participant_multiedit extends CN_base_action {
         );
         select_el.append(this.constructor.html('<option>Select which column to edit</option>'));
         for (const prop_name in mod.properties) {
-          if (!this.#selected_participant_properties.includes(prop_name)) {
+          if (!participant_properties.includes(prop_name)) {
             const prop = mod.properties[prop_name];
             select_el.append(this.constructor.html(`<option value="${prop_name}">${prop.title}</option>`));
           }
         }
         select_el.addEventListener("change", () => {
-          this.#selected_participant_properties.push(select_el.value);
-          this.#selected_participant_properties.sort();
+          this.#selected_participant_properties[select_el.value] = null;
           select_el.value = undefined;
           this.update_element();
         });
@@ -593,6 +618,7 @@ export class CN_participant_multiedit extends CN_base_action {
             required: true,
             name: "sticky",
             class: "col-sm-9",
+            get_default: () => "false",
           });
           fields_el.append(sticky_row_el);
 
@@ -612,6 +638,9 @@ export class CN_participant_multiedit extends CN_base_action {
             required: true,
             name: "note",
             class: "col-sm-9",
+            on_change: (form_input, valid) => {
+              this.constructor.set_disabled(mod.proceed_btn_el, !valid);
+            },
           });
           fields_el.append(note_row_el);
         } else if (mod.enum) {
@@ -632,6 +661,7 @@ export class CN_participant_multiedit extends CN_base_action {
             action: this,
             required: true,
             name: "operation",
+            get_default: () => "add",
             class: "d-flex align-items-center col-sm-9",
             enum: {
               values: [
@@ -680,12 +710,13 @@ export class CN_participant_multiedit extends CN_base_action {
             params.action = this;
             params.class = "d-flex align-items-center col-sm-9";
             params.name = prop_name;
+            params.get_default = () => module_prop.default;
 
             if (!params.type) params.type = "string";
-            if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
+            if (undefined === params.required) params.required = module_prop.required;
             if (undefined === params.placeholder) params.placeholder = "(empty)";
 
-            if (undefined === params.max_length && module_prop && module_prop.max_length) {
+            if (undefined === params.max_length && module_prop.max_length) {
               params.max_length = module_prop.max_length;
             }
 
@@ -782,7 +813,7 @@ export class CN_participant_multiedit extends CN_base_action {
         </div>
       `);
 
-      const proceed_btn_el = this.constructor.html(`
+      mod.proceed_btn_el = this.constructor.html(`
         <button class="btn btn-primary" name="proceed">${
           "participant" == module_name ?
           "Change Details" :
@@ -791,21 +822,15 @@ export class CN_participant_multiedit extends CN_base_action {
           `Add ${pretty_module_name}`
         }</button>
       `);
+      this.constructor.set_disabled(mod.proceed_btn_el, true);
 
-      proceed_btn_el.addEventListener("click", async () => {
+      mod.proceed_btn_el.addEventListener("click", async () => {
         let response = null;
         await this.constructor.wait_for(async () => {
           const data = {
             identifier_id: this.#participant_selection.get_idtype(),
             identifier_list: this.#participant_selection.get_identifier_list(),
           }
-
-          // validate the form before proceeding
-          let valid = true;
-          Array.from(tab_el.querySelectorAll("div[name=element]")).forEach(el => {
-            if (!el.validate()) valid = false;
-          });
-          if (!valid) return;
 
           // build the data object posted to the server
           data["participant" == module_name ? "input_list" : module_name] = Array.from(
@@ -853,7 +878,7 @@ export class CN_participant_multiedit extends CN_base_action {
         })).open();
       });
 
-      tab_el.querySelector("div.card-footer").append(proceed_btn_el);
+      tab_el.querySelector("div.card-footer").append(mod.proceed_btn_el);
       tab_content_el.append(tab_el);
     }
 
@@ -978,12 +1003,9 @@ export class CN_participant_scripts extends CN_base_action {
         );
       }
       const btn_el = this.constructor.html(
-        `<button
-          type="button"
-          class="btn btn-outline-primary w-100"
-          ${disabled ? "disabled" : ""}
-        >${title}</button>`
+        `<button type="button" class="btn btn-outline-primary w-100">${title}</button>`
       );
+      this.constructor.set_disabled(btn_el, disabled);
       btn_el.addEventListener("click", async () => {
         if (script.end_datetime) {
           if (reversable) {
@@ -1138,11 +1160,10 @@ export class CN_participant_selection extends CN_base_element {
       this.#idtype_list_form_input.set_disabled(this.#disabled);
 
       // the confirm button is only enabled when the identifier list is not empty
-      if (!this.#disabled && null != this.#identifier_list_form_input.get_value()) {
-        this.#confirm_btn_el.removeAttribute("disabled");
-      } else {
-        this.#confirm_btn_el.setAttribute("disabled", true);
-      }
+      this.constructor.set_disabled(
+        this.#confirm_btn_el,
+        this.#disabled || null == this.#identifier_list_form_input.get_value()
+      );
     }
   }
 
@@ -1196,8 +1217,9 @@ export class CN_participant_selection extends CN_base_element {
 
     // add the identifier-type list and confirm button
     this.#confirm_btn_el = this.constructor.html(
-      '<button name="confirm" type="button" class="btn btn-primary ms-2" disabled>Confirm List</button>'
+      '<button name="confirm" type="button" class="btn btn-primary ms-2">Confirm List</button>'
     );
+    this.constructor.set_disabled(this.#confirm_btn_el, true);
 
     const row_el = element.querySelector("div.row");
     CN_element_label.create_element(row_el, {

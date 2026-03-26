@@ -52,6 +52,7 @@ export class CN_base_input extends CN_base_element {
         type: "div",
         error_timeout: 0,
         required: false,
+        disabled: false,
         undo: false,
       },
       ...config
@@ -139,6 +140,7 @@ export class CN_base_input extends CN_base_element {
     this.#control_el = this._create_control_element(el);
     if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
     if (this.#control_name) this.#control_el.setAttribute("name", this.#control_name);
+    this.set_disabled(this.get_config("disabled"));
     this.update();
 
     // set the value to the default (only if it hasn't been set yet)
@@ -166,7 +168,7 @@ export class CN_base_input extends CN_base_element {
       // validate and call on_change function when the value changes
       this.#control_el.addEventListener("change", async () => {
         // always validate the input
-        const valid = this.validate();
+        const valid = await this.validate();
 
         // call the on_change function if it exists
         if (this.has_config("on_change")) {
@@ -315,8 +317,8 @@ export class CN_base_input extends CN_base_element {
    * Determines if there was an error
    * @return boolean
    */
-  validate() {
-    const value = this.get_value();
+  async validate() {
+    const value = await this.get_value_for_record();
     let error = null;
 
     if ([undefined, null, ""].includes(value)) {
@@ -378,7 +380,8 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   set_disabled(disabled) {
-    this.#control_el.disabled = disabled;
+    this.set_config("disabled", disabled);
+    this.constructor.set_disabled(this.#control_el, disabled);
   }
 
   /**

@@ -76,6 +76,7 @@
         if (proceed) {
           const login = async () => {
             submit_button_el.setAttribute("disabled", true);
+            submit_button_el.classList.add("disabled");
             submit_button_el.innerHTML = "Processing...";
 
             const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
@@ -113,6 +114,7 @@
                 );
 
                 submit_button_el.removeAttribute("disabled");
+                submit_button_el.classList.remove("disabled");
                 submit_button_el.innerHTML = "Submit";
               }
             }

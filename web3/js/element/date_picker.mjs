@@ -212,13 +212,11 @@ export class CN_element_date_picker extends CN_base_element {
       const day = date.getDate();
       const restricted = this.get_config("is_restricted")(date);
       const date_td_el = this.constructor.html('<td class="text-center p-0"></td>');
-      const date_btn_el = this.constructor.html(`
-        <button
-          class="btn btn-light w-100 rounded-0 ${month != this.#month || restricted ? "disabled" : ""}"
-        >${day}</button>
-      `);
+      const date_btn_el = this.constructor.html(
+        `<button class="btn btn-light w-100 rounded-0">${day}</button>`
+      );
       date_td_el.append(date_btn_el);
-      if (restricted) date_btn_el.setAttribute("disabled", true);
+      if (restricted || month != this.#month) this.constructor.set_disabled(date_btn_el, true);
 
       // highlight if the calendar date matches the date selected by the user
       if (

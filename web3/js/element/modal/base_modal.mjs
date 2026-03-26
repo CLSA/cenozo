@@ -70,7 +70,7 @@ export class CN_base_modal extends CN_base_element {
    */
   set_disabled(disabled) {
     this.#resolve_button_list.forEach(button => {
-      button.element.disabled = disabled;
+      this.constructor.set_disabled(button.element, disabled);
     });
   }
 

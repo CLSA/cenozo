@@ -362,11 +362,10 @@ export class CN_action_base_record extends CN_base_action {
     // disable all form inputs by setting the fieldset's disable state
     const fieldset_el = this.get_body_element().querySelector('fieldset');
     if (fieldset_el) {
-      if (this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())) {
-        fieldset_el.setAttribute("disabled", true);
-      } else {
-        fieldset_el.removeAttribute("disabled");
-      }
+      this.constructor.set_disabled(
+        fieldset_el,
+        this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())
+      );
     }
   }
 
@@ -379,11 +378,10 @@ export class CN_action_base_record extends CN_base_action {
     // update whether the record can be edited
     const fieldset_el = this.get_body_element().querySelector('fieldset');
     if (fieldset_el) {
-      if (this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())) {
-        fieldset_el.setAttribute("disabled", true);
-      } else {
-        fieldset_el.removeAttribute("disabled");
-      }
+      this.constructor.set_disabled(
+        fieldset_el,
+        this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())
+      );
     }
 
     for (const group_name in this.#property_groups) {
@@ -465,18 +463,18 @@ export class CN_action_base_record extends CN_base_action {
    * Extends parent method
    */
   create_placeholder_element() {
-    const el_list = Array.from(Array(7).keys()).map((e,index) => `
-      <div class="row mb-3">
-        <label class="col-sm-3 col-form-label text-end placeholder-glow">
-          <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
-        </label>
-        <div class="col-sm-9 placeholder-glow h-100">
-          <input class="form-control placeholder" disabled></input>
+    return this.constructor.html(
+      Array.from(Array(7).keys()).map((e,index) => `
+        <div class="row mb-3">
+          <label class="col-sm-3 col-form-label text-end placeholder-glow">
+            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
+          </label>
+          <div class="col-sm-9 placeholder-glow h-100">
+            <input class="form-control placeholder disabled" disabled></input>
+          </div>
         </div>
-      </div>
-    `);
-
-    return this.constructor.html(`<div class="px-3">${el_list.join("")}</div>`);
+      `).join("")
+    );
   }
 
   /**

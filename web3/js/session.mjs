@@ -568,10 +568,11 @@ export class CN_session extends CN_base_object {
       const sub_menu_el = CN_base_element.html(`
         <div name="lists">
           <div class="btn-group-vertical w-100">
-            <button type="button" class="btn btn-primary" disabled>Lists</button>
+            <button type="button" class="btn btn-primary">Lists</button>
           </div>
         </div>
       `);
+      CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
       if (null != col_width) sub_menu_el.classList.add(`col-${split_lists ? 2*col_width : col_width}`);
       main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
 
@@ -589,8 +590,20 @@ export class CN_session extends CN_base_object {
       let index = 0;
       for (const title in this.data.menu.lists) {
         const name = this.data.menu.lists[title];
+        let side = null;
+        let rounded = "";
+        if (split_lists) {
+          side = 2*index < lists_total ? "a" : "b";
+          if (0 == index || Math.ceil(lists_total/2) == index) {
+            rounded = "rounded-0";
+          } else if ("a" == side) {
+            rounded = "rounded-end-0";
+          } else { // "b" == side
+            rounded = "rounded-start-0";
+          }
+        }
         const btn_el = CN_base_element.html(`
-          <button name="${name}.list" type="button" class="btn btn-outline-primary">${title}</button>
+          <button name="${name}.list" type="button" class="btn btn-outline-primary ${rounded}">${title}</button>
         `);
         btn_el.addEventListener("click", async () => {
           main_menu_offcanvas_bs.hide();
@@ -600,7 +613,7 @@ export class CN_session extends CN_base_object {
         // split lists need to distribute menu items across two button groups
         const parent_el = (
           split_lists ?
-          btn_group_el.querySelector(`[name=${2*index < lists_total ? "a" : "b"}]`) :
+          btn_group_el.querySelector(`[name=${side}]`) :
           btn_group_el
         );
         parent_el.append(btn_el);
@@ -614,10 +627,11 @@ export class CN_session extends CN_base_object {
       const sub_menu_el = CN_base_element.html(`
         <div name="utilities">
           <div class="btn-group-vertical w-100">
-            <button type="button" class="btn btn-primary" disabled>Utilities</button>
+            <button type="button" class="btn btn-primary">Utilities</button>
           </div>
         </div>
       `);
+      CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
       if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
       main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
 
@@ -644,10 +658,11 @@ export class CN_session extends CN_base_object {
       const sub_menu_el = CN_base_element.html(`
         <div name="reports">
           <div class="btn-group-vertical w-100">
-            <button type="button" class="btn btn-primary" disabled>Reports</button>
+            <button type="button" class="btn btn-primary">Reports</button>
           </div>
         </div>
       `);
+      CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
       if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
       main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
 

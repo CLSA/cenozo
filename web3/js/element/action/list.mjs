@@ -679,7 +679,7 @@ export class CN_action_list extends CN_base_action {
       const prev_el = this.constructor.html(`
         <li class="page-item"><button class="page-link"><i class="bi bi-rewind-fill"></i></button></li>
       `);
-      if (1 == this.#current_page) prev_el.classList.add("disabled");
+      if (1 == this.#current_page) this.constructor.set_disabled(prev_el, true);
       pagination_el.append(prev_el);
       prev_el.querySelector("button").addEventListener("click", async () => {
         if (1 != this.#current_page) await this.set_page(1);
@@ -720,7 +720,7 @@ export class CN_action_list extends CN_base_action {
       const next_el = this.constructor.html(`
         <li class="page-item"><button class="page-link"><i class="bi bi-fast-forward-fill"></i></button></li>
       `);
-      if (pages == this.#current_page) next_el.classList.add("disabled");
+      if (pages == this.#current_page) this.constructor.set_disabled(next_el, true);
       pagination_el.append(next_el);
       next_el.querySelector("button").addEventListener("click", async () => {
         if (pages != this.#current_page) await this.set_page(pages);

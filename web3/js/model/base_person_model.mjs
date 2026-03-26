@@ -767,7 +767,7 @@ export class CN_base_person_notes extends CN_base_action {
       CN_input_text.create_element(note_el.querySelector("[name=note]"), {
         id: `note-${note.id}`,
         required: true,
-        //disabled: !allow_edit,
+        disabled: !allow_edit,
         get_default: () => note.note,
         on_change: async (form_input, valid) => {
           if (valid) {

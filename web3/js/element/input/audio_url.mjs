@@ -11,7 +11,7 @@ export class CN_input_audio_url extends CN_base_input {
   /**
    * Replace the parent method
    */
-  validate() {
+  async validate() {
     // no validation required
     return true;
   }

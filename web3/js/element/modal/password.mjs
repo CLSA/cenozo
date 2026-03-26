@@ -59,24 +59,19 @@ export class CN_modal_password extends CN_modal_base_form {
   /**
    * Extend parent method
    */
-  _check_form() {
+  async _check_form() {
     const pw_form_input = this.get_input("new_password").form_input;
-    const pw__check_form_input = this.get_input("new_password_check").form_input;
+    const new_pw_form_input = this.get_input("new_password_check").form_input;
 
     const ok_btn_el = this.get_resolve_button("OK").element;
-    if (pw_form_input.get_value() != pw__check_form_input.get_value()) {
-      pw__check_form_input.show_error("Does not match new password", 0);
-      ok_btn_el.setAttribute("disabled", true);
+    if (pw_form_input.get_value() != new_pw_form_input.get_value()) {
+      new_pw_form_input.show_error("Does not match new password", 0);
+      this.constructor.set_disabled(ok_btn_el, true);
       return false;
     }
 
-    const check = super._check_form();
-    if (check) {
-      ok_btn_el.removeAttribute("disabled");
-    } else {
-      ok_btn_el.setAttribute("disabled", true);
-    }
-
+    const check = await super._check_form();
+    this.constructor.set_disabled(ok_btn_el, !check);
     return check;
   }
 

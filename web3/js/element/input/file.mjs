@@ -39,7 +39,7 @@ export class CN_input_file extends CN_base_input {
   /**
    * Extends parent method
    */
-  validate() {
+  async validate() {
     const mime_type = this.get_config("file").mime_type;
     const value = this.get_value();
     const file_list = CN_common.is_filelist(value) ? Array.from(value) : [];
@@ -57,7 +57,7 @@ export class CN_input_file extends CN_base_input {
       return false;
     }
 
-    return super.validate();
+    return await super.validate();
   }
 
   /**

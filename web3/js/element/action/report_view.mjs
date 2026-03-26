@@ -14,8 +14,9 @@ export class CN_action_report_view extends CN_action_view {
 
     // add the download button
     const download_btn_el = this.constructor.html(
-      '<button name="download" type="button" class="btn btn-light btn-outline-primary" disabled>Download</button>'
+      '<button name="download" type="button" class="btn btn-light btn-outline-primary">Download</button>'
     );
+    this.constructor.set_disabled(download_btn_el, true);
     download_btn_el.addEventListener("click", async () => {
       const model = this.get_model();
 
@@ -60,7 +61,7 @@ export class CN_action_report_view extends CN_action_view {
 
     const stage = this.get_property_value("stage");
     if ("completed" == stage) {
-      download_btn_el.removeAttribute("disabled");
+      this.constructor.set_disabled(download_btn_el, false);
     } else if (!["completed", "failed"].includes(stage)) {
       card_header_el.classList.add("bg-loading");
 
@@ -74,7 +75,7 @@ export class CN_action_report_view extends CN_action_view {
           const stage = this.get_property_value("stage");
           if (["completed", "failed"].includes(stage)) {
             if ("completed" == stage) {
-              download_btn_el.removeAttribute("disabled");
+              this.constructor.set_disabled(download_btn_el, false);
             }
             card_header_el.classList.remove("bg-loading");
             clearInterval(this.#refresh_interval);

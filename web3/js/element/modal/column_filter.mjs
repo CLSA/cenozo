@@ -100,7 +100,7 @@ export class CN_modal_column_filter extends CN_base_modal {
         },
         on_change: async (form_input, valid) => {
           condition.or = await form_input.get_value_for_record();
-          this.#check_form();
+          await this.#check_form();
         },
       });
       condition.element.append(condition.or_input.get_element());
@@ -113,7 +113,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       enum: { values: this.#operator_list },
       on_change: async (form_input, valid) => {
         condition.operator = await form_input.get_value_for_record();
-        this.#check_form();
+        await this.#check_form();
       },
     });
     condition.element.append(condition.operator_input.get_element());
@@ -126,7 +126,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       get_default: () => condition.value,
       on_change: async (form_input, valid) => {
         condition.value = await form_input.get_value_for_record();
-        this.#check_form();
+        await this.#check_form();
       },
     });
     condition.element.append(condition.value_input.get_element());
@@ -185,17 +185,18 @@ export class CN_modal_column_filter extends CN_base_modal {
   /**
    * ADD DOCS
    */
-  #check_form() {
-    // search for any invalid condition
-    const invalid = this.#condition_list.some(condition => {
-      return !condition.value_input.validate();
-    });
-    const ok_btn_el = this.get_resolve_button(this.get_config("ok_text")).element;
-    if (invalid) {
-      ok_btn_el.setAttribute("disabled", true);
-    } else {
-      ok_btn_el.removeAttribute("disabled");
-    }
+  async #check_form() {
+    let invalid = false;
+
+    // validate all condition inputs setting invalid to true if any fail
+    await Promise.all(
+      this.#condition_list.map(condition => (async () => {
+        const test = await condition.value_input.validate();
+        if (!test) invalid = true;
+      })())
+    );
+
+    this.constructor.set_disabled(this.get_resolve_button(this.get_config("ok_text")).element, invalid);
   }
 
   /**

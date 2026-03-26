@@ -17,7 +17,7 @@ export class CN_input_base_number extends CN_input_base_string {
   /**
    * Extends parent method
    */
-  validate() {
+  async validate() {
     const value = this.get_value();
 
     if (this.has_config("min") && value < this.get_config("min")) {
@@ -30,7 +30,7 @@ export class CN_input_base_number extends CN_input_base_string {
       return false;
     }
 
-    return super.validate();
+    return await super.validate();
   }
 
   /**

@@ -174,14 +174,8 @@ export class CN_action_view extends CN_action_base_record {
    */
   set_disabled(disabled) {
     super.set_disabled(disabled);
-
-    if (disabled) {
-      this.#delete_btn_el.setAttribute("disabled", true);
-      this.#back_btn_el.setAttribute("disabled", true);
-    } else {
-      this.#delete_btn_el.removeAttribute("disabled");
-      this.#back_btn_el.removeAttribute("disabled");
-    }
+    this.constructor.set_disabled(this.#delete_btn_el, disabled);
+    this.constructor.set_disabled(this.#back_btn_el, disabled);
   }
 
   /**
@@ -315,11 +309,7 @@ export class CN_action_view extends CN_action_base_record {
       </button>
     `);
     this.#delete_btn_el.addEventListener("click", this.on_delete.bind(this));
-    if (this.get_disabled()) {
-      this.#delete_btn_el.setAttribute("disabled", true);
-    } else {
-      this.#delete_btn_el.removeAttribute("disabled");
-    }
+    this.constructor.set_disabled(this.#delete_btn_el, this.get_disabled());
 
     // create the back button
     this.#back_btn_el = this.constructor.html(

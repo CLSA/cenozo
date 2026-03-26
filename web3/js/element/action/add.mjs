@@ -49,13 +49,8 @@ export class CN_action_add extends CN_action_base_record {
   set_disabled(disabled) {
     super.set_disabled(disabled);
 
-    if (disabled) {
-      this.#submit_btn_el.setAttribute("disabled", true);
-      this.#cancel_btn_el.setAttribute("disabled", true);
-    } else {
-      this.#submit_btn_el.removeAttribute("disabled");
-      this.#cancel_btn_el.removeAttribute("disabled");
-    }
+    this.constructor.set_disabled(this.#submit_btn_el, disabled);
+    this.constructor.set_disabled(this.#cancel_btn_el, disabled);
   }
   /**
    * Commits a property's UI value to the state
@@ -71,10 +66,19 @@ export class CN_action_add extends CN_action_base_record {
   async validate() {
     let valid = true;
 
-    // validate all visible properties
-    this.get_all_properties().forEach(prop => {
-      if (!prop.is_hidden(this.get_model()) && !prop.form_input.validate()) valid = false;
-    });
+    // validate all visible properties setting valid to false if any fail
+    await Promise.all(
+      this.get_all_properties().map(prop => {
+        if (!prop.is_hidden(this.get_model())) {
+          return (
+            async () => {
+              const test = await prop.form_input.validate();
+              if (!test) valid = false;
+            }
+          )();
+        }
+      })
+    );
 
     return valid;
   }

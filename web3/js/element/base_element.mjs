@@ -171,6 +171,23 @@ export class CN_base_element extends CN_base_object {
     this.run_event_listeners("domremove");
   }
 
+  /** 
+   * ADD DOCS
+   */
+  static set_disabled(element, disabled) {
+    if (!CN_common.is_element(element)) {
+      console.error(`Tried to set disabled state on non element.`);
+    } else {
+      if (disabled) {
+        element.setAttribute("disabled", true);
+        element.classList.add("disabled");
+      } else {
+        element.removeAttribute("disabled");
+        element.classList.remove("disabled");
+      }   
+    }   
+  }
+
   /**
    * Creates a "please wait" blocking modal
    * @return Promise
@@ -262,14 +279,14 @@ export class CN_base_element extends CN_base_object {
       last_crumb_el = crumb_el;
       root_el.append(crumb_el);
       if (null == crumb.path) {
-        crumb_el.setAttribute("disabled", true);
+        this.set_disabled(crumb_el, true);
       } else {
         crumb_el.addEventListener("click", CN_session.navigate_to.bind(CN_session, crumb.path));
       }
     });
 
     // the last crumb shuold always be disabled
-    if (last_crumb_el) last_crumb_el.setAttribute("disabled", true);
+    if (last_crumb_el) this.set_disabled(last_crumb_el, true);
 
     return root_el;
   }

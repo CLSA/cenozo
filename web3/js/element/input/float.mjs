@@ -4,14 +4,14 @@ export class CN_input_float extends CN_input_base_number {
   /**
    * Extends parent method
    */
-  validate() {
+  async validate() {
     const value = this.get_value();
     if ("" !== value && !value.match(/^-?(([0-9]+\.?)|([0-9]*\.[0-9]+))$/)) {
       this.show_error(`"${value}" is not a valid decimal number`);
       return false;
     }
 
-    return super.validate();
+    return await super.validate();
   }
 
   /**

@@ -34,6 +34,7 @@ export class CN_event_model extends CN_base_model {
 
         site_user: {
           title: "Site/User",
+          is_hidden: (model) => "add" == model.get_action_name(),
           open: true,
           properties: {
             site: {
@@ -61,6 +62,7 @@ export class CN_event_model extends CN_base_model {
 
         address: {
           title: "Address",
+          is_hidden: (model) => "add" == model.get_action_name(),
           properties: {
             international: {
               title: "International",

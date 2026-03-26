@@ -48,8 +48,18 @@ export class CN_modal_base_form extends CN_base_modal {
   /**
    * ADD DOCS
    */
-  _check_form() {
-    return !this.#input_list.some(e => !e.form_input.validate());
+  async _check_form() {
+    let valid = true;
+
+    // validate all inputs setting valid to false if any fail
+    await Promise.all(
+      this.#input_list.map(input => (async () => {
+        const test = await input.form_input.validate();
+        if (!test) valid = false;
+      })())
+    );
+
+    return valid;
   }
 
   /**

@@ -28,8 +28,9 @@ export class CN_modal_datetime extends CN_base_modal {
     });
 
     const mode = this.get_config("mode");
-    if (!CN_common.is_datetime_type(mode, "date"))
+    if (!CN_common.is_datetime_type(mode, "date")) {
       throw new Error(`CN_modal_datetime: ${mode} is not supported`);
+    }
 
     if (null === this.get_config("value")) this.set_config("value", new Date());
     if (!CN_common.is_date(this.get_config("value"))) {

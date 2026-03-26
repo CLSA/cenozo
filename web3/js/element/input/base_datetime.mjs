@@ -3,7 +3,7 @@ import { CN_common } from "../../common.mjs"
 import { CN_modal_datetime } from "../modal/datetime.mjs"
 
 export class CN_input_base_datetime extends CN_base_input {
-  #date;
+  #date = null;
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
@@ -34,19 +34,18 @@ export class CN_input_base_datetime extends CN_base_input {
    * Extend parent method
    */
   set_value(value) {
-
     if (CN_common.is_string(value)) value = new Date(value);
     this.#date = value;
 
     // convert date object to string
     const input_type = this.get_class_name().replace(/^CN_input_/, "");
-    super.set_value(value ? CN_common.format_datetime(value, input_type, true) : null);
+    super.set_value(value ? CN_common.format_datetime(value, input_type, true) : "(empty)");
   }
 
   /**
    * Extends parent method
    */
-  validate() {
+  async validate() {
     const input_type = this.get_class_name().replace(/^CN_input_/, "");
 
     if (CN_common.is_date(this.#date)) {
@@ -63,7 +62,7 @@ export class CN_input_base_datetime extends CN_base_input {
       }
     }
 
-    return super.validate();
+    return await super.validate();
   }
 
   /**
