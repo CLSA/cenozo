@@ -334,7 +334,7 @@ export class CN_base_input extends CN_base_element {
       } else if (this.has_config("max_length")) {
         const max_length = this.get_config("max_length");
         if (String(value).length > max_length) {
-          error = `Must be at no more than ${max_length} characters long`;
+          error = `Must be at no more than ${max_length} character${1 == max_length ? "" : "s"} long`;
         }
       } else {
         // test the implicit regex
