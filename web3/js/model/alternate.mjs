@@ -131,10 +131,9 @@ export class CN_alternate_notes extends CN_action_notes {
     }
 
     if ("header" == type) {
-      const columns = ["first_name", "last_name"];
       const data = await CN_api.get(
         model.get_view_url(null, "api"),
-        { select: { column: columns } },
+        { select: { column: ["first_name", "last_name"] } },
       );
       return (
         CN_common.uc_words(model.get_singular()) +

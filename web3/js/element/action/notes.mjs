@@ -22,6 +22,17 @@ export class CN_action_notes extends CN_base_action {
     this.set_footer_at_top(true);
   }
 
+  // Getters and setters
+  get_note_module_name() { return this.#note_module_name; }
+  set_note_module_name(name) { this.#note_module_name = name; }
+
+  /**
+   * ADD DOCS
+   */
+  get_note_url() {
+    return `${this.get_model().get_view_url(null, "api")}/${this.#note_module_name}`;
+  }
+
   /**
    * Extend parent method
    */
@@ -59,7 +70,7 @@ export class CN_action_notes extends CN_base_action {
     await super.on_load();
 
     // load all notes
-    this.#note_list = await CN_api.get(`${this.get_model().get_view_url(null, "api")}/note`, {
+    this.#note_list = await CN_api.get(this.get_note_url(), {
       select: { column: [
           "id", "sticky", "datetime", "note",
           {table: "user", column: "first_name"},
@@ -88,7 +99,7 @@ export class CN_action_notes extends CN_base_action {
     const note_list_el = this.get_element().querySelector("[name=note-list]");
     note_list_el.innerHTML = "";
     this.#note_list.filter(note => note.note.includes(search)).forEach(note => {
-      const note_path = `${this.get_model().get_name()}/${this.get_model().get_identifier()}/note/${note.id}`;
+      const note_path = `${this.get_note_url()}/${note.id}`;
       let details = `${note.first_name} ${note.last_name}<br/>`;
       if (allow_edit) {
         details = `
@@ -193,7 +204,7 @@ export class CN_action_notes extends CN_base_action {
             <div class="card-header text-bg-secondary fw-bold fs-5">Add Note</div>
             <div class="card-body p-0"></div>
             <div class="card-footer p-0">
-              <button name="add" type="button" class="btn btn-secondary w-100">Submit</button>
+              <button name="add" type="button" class="btn btn-primary rounded-top-0 w-100">Submit</button>
             </div>
           </div>
         </div>
@@ -207,7 +218,7 @@ export class CN_action_notes extends CN_base_action {
     const new_note_input = new CN_input_text(card_body_el, { id: "new_note" });
     card_body_el.append(new_note_input.get_element());
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
-      await CN_api.post(`${this.get_model().get_name()}/${this.get_model().get_identifier()}/note`, {
+      await CN_api.post(this.get_note_url(), {
         user_id: CN_session.data.user.id,
         datetime: CN_common.format_datetime(new Date(), "record"),
         note: new_note_input.get_value(),
