@@ -1,4 +1,3 @@
-import { CN_action_add } from "../element/action/add.mjs"
 import { CN_action_list } from "../element/action/list.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
@@ -31,34 +30,21 @@ export class CN_trace_model extends CN_base_model {
         trace_type_id: {
           title: "Trace Type",
           type: "enum",
-          enum: { path: "trace_type" },
+          enum: {
+            get_enums: async () => {
+              const response = await CN_api.get("trace_type");
+              return response.map(tt => ({
+                key: tt.id,
+                value: tt.name,
+                // only allow all-site roles to use the "unreachable" trace type
+                disabled: !CN_session.data.role.all_sites && "unreachable" == tt.name,
+              }));
+            },
+          },
         },
         note: { title: "Note", type: "text" },
       },
     });
-  }
-}
-
-export class CN_trace_add extends CN_action_add {
-  async on_load() {
-    await super.on_load();
-
-    // only allow all-site roles to use the "unreachable" trace type
-    const enum_values = this.get_property("trace_type_id").form_input.get_config("enum").values;
-    let trace_type = enum_values.find(e => "unreachable" == e.name);
-    if (trace_type) trace_type.disabled = true;
-
-    // get the participant's current trace type
-    const trace_list = await CN_api.get(this.get_model().get_base_path("api"), {
-      select: { column: "trace_type_id" },
-      modifier: { order: { "trace.datetime": true } } },
-    );
-
-    // disable that trace type from the available enum list to prevent duplicates
-    if (0 < trace_list.length) {
-      trace_type = enum_values.find(e => e.id == trace_list[0].trace_type_id);
-      if (trace_type) trace_type.disabled = true;
-    }
   }
 }
 

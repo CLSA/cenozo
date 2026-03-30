@@ -389,7 +389,7 @@ export class CN_participant_notes extends CN_action_notes {
   }
 }
 
- export class CN_participant_multiedit extends CN_base_action {
+export class CN_participant_multiedit extends CN_base_action {
   #module_list = {
     participant: {
       module: null,

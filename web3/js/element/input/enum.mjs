@@ -31,6 +31,15 @@ export class CN_input_enum extends CN_base_input {
   }
 
   /**
+   * ADD DOCS
+   */
+  get_value_label() {
+    const value = this.get_value();
+    const option = this.get_config("enum").values.find(o => test_option(o, value));
+    return option ? option.value : null;
+  }
+
+  /**
    * Extend parent method
    */
   get_value() {
