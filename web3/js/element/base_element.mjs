@@ -171,7 +171,7 @@ export class CN_base_element extends CN_base_object {
     this.run_event_listeners("domremove");
   }
 
-  /** 
+  /**
    * ADD DOCS
    */
   static set_disabled(element, disabled) {
@@ -184,8 +184,8 @@ export class CN_base_element extends CN_base_object {
       } else {
         element.removeAttribute("disabled");
         element.classList.remove("disabled");
-      }   
-    }   
+      }
+    }
   }
 
   /**

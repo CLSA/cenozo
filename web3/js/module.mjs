@@ -1,5 +1,6 @@
 import { CN_action_add } from "./element/action/add.mjs"
 import { CN_action_list } from "./element/action/list.mjs"
+import { CN_action_notes } from "./element/action/notes.mjs"
 import { CN_action_view } from "./element/action/view.mjs"
 import { CN_api } from "./api.mjs"
 import { CN_base_object } from "./base_object.mjs"
@@ -198,12 +199,11 @@ export class CN_module extends CN_base_object {
     // only load if the classes haven't already been loaded
     if (!CN_common.is_object(this.#classes)) {
       const prefix = `CN_${this.#name}`;
-      this.#classes = {
-        model: null,
-        add: CN_action_add,
-        list: CN_action_list,
-        view: CN_action_view,
-      };
+      this.#classes = { model: null };
+      if (this.action_allowed("add")) this.#classes.add = CN_action_add;
+      if (this.action_allowed("list")) this.#classes.list = CN_action_list;
+      if (this.action_allowed("notes")) this.#classes.notes = CN_action_notes;
+      if (this.action_allowed("view")) this.#classes.view = CN_action_view;
 
       // load the framework classes and use any that are found
       if (this.#framework) {

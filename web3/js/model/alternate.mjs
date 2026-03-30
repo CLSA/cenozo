@@ -1,11 +1,13 @@
+import { CN_action_notes } from "../element/action/notes.mjs"
 import { CN_api } from "../api.mjs"
 import {
   CN_base_person_model,
   CN_base_person_view,
   CN_base_person_history,
-  CN_base_person_notes
 } from "./base_person_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_participant_model } from "./participant.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_alternate_model extends CN_base_person_model {
   constructor() {
@@ -113,4 +115,68 @@ export class CN_alternate_view extends CN_base_person_view {
 
 export class CN_alternate_history extends CN_base_person_history {}
 
-export class CN_alternate_notes extends CN_base_person_notes {}
+export class CN_alternate_notes extends CN_action_notes {
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    const model = this.get_model();
+
+    if ("crumb" == type) {
+      const data = await CN_api.get(
+        model.get_view_url(null, "api"),
+        { select: { column: ["first_name", "last_name"] } },
+      );
+      return `${data.first_name} ${data.last_name}`;
+    }
+
+    if ("header" == type) {
+      const columns = ["first_name", "last_name"];
+      const data = await CN_api.get(
+        model.get_view_url(null, "api"),
+        { select: { column: columns } },
+      );
+      return (
+        CN_common.uc_words(model.get_singular()) +
+        ` Notes for ${data.first_name} ${data.last_name}`
+      );
+    }
+
+    return await super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_topfooter_element() {
+    const topfooter_el = super.create_topfooter_element();
+
+    // wire-up the history button
+    topfooter_el.querySelector("button[name=history]").addEventListener(
+      "click",
+      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
+    );
+
+    return topfooter_el;
+  }
+
+  /**
+   * Extend parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    const history_btn_el = this.constructor.html(
+      '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'
+    );
+
+    // wire-up the history button
+    history_btn_el.addEventListener(
+      "click",
+      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
+    );
+    footer_el.querySelector("div[name=left-btn-group]").append(history_btn_el);
+
+    return footer_el;
+  }
+}
