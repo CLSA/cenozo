@@ -12,6 +12,7 @@ import { CN_session } from "../../session.mjs"
 export class CN_base_action extends CN_base_element {
   #type;
   #model = null;
+  #disabled = false;
   #header_el;
   #body_el;
   #placeholder_el;
@@ -42,6 +43,10 @@ export class CN_base_action extends CN_base_element {
   // access methods
   get_type() { return this.#type }
   get_model() { return this.#model }
+  get_disabled() { return this.#disabled; }
+  set_disabled(disabled) {
+    this.#disabled = disabled;
+  }
   get_query_parameter(key) {
     return this.#model.get_module().get_action_query_parameter(this.#type, key);
   }

@@ -7,7 +7,6 @@ import { CN_input } from "../input/input.mjs"
 export class CN_action_base_record extends CN_base_action {
   #property_groups;
   #form_el;
-  #disabled = false;
 
   /**
    * Constructor
@@ -345,26 +344,18 @@ export class CN_action_base_record extends CN_base_action {
   }
 
   /**
-   * Returns whether the action's UI elements are disabled
-   * @return boolean
-   */
-  get_disabled() {
-    return this.#disabled;
-  }
-
-  /**
    * Sets whether to disable the action's UI elements
    * @param boolean disabled
    */
   set_disabled(disabled) {
-    this.#disabled = disabled;
+    super.set_disabled(disabled);
 
     // disable all form inputs by setting the fieldset's disable state
     const fieldset_el = this.get_body_element().querySelector('fieldset');
     if (fieldset_el) {
       this.constructor.set_disabled(
         fieldset_el,
-        this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())
+        this.get_disabled() || ("view" == this.get_type() && !this.get_model().allow_edit())
       );
     }
   }
@@ -380,7 +371,7 @@ export class CN_action_base_record extends CN_base_action {
     if (fieldset_el) {
       this.constructor.set_disabled(
         fieldset_el,
-        this.#disabled || ("view" == this.get_type() && !this.get_model().allow_edit())
+        this.get_disabled() || ("view" == this.get_type() && !this.get_model().allow_edit())
       );
     }
 
