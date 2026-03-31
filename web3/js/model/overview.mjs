@@ -122,14 +122,15 @@ export class CN_overview_view extends CN_action_view {
 
           // if we're adding multiple cards to the parent then make all cards after the first collapsable
           if (0 < parent_el.querySelectorAll(":scope > div.container-fluid").length) {
+            const show = first || !node.value.some(n => CN_common.is_array(n.value));
             body_el.classList.add("py-1");
             body_el.classList.add("collapse");
-            if (first) body_el.classList.add("show");
+            if (show) body_el.classList.add("show");
 
             // add a chevron button
             header_el.querySelector("div.d-flex").append(this.constructor.html(`
               <button class="btn btn-primary px-2 py-0">
-                <i class="bi bi-chevron-${first ? "up" : "down"}"></i>
+                <i class="bi bi-chevron-${show ? "up" : "down"}"></i>
               </button>
             `));
 
@@ -145,12 +146,12 @@ export class CN_overview_view extends CN_action_view {
             });
           }
 
-          var first = true;
+          let first_child = true;
           node.value.forEach(child_node => {
-            add_node(child_node, body_el, first);
+            add_node(child_node, body_el, first_child);
 
             // only expand the first child that contains a sub-list
-            if (CN_common.is_array(child_node.value)) first = false;
+            if (CN_common.is_array(child_node.value)) first_child = false;
           });
         }
       } else {
