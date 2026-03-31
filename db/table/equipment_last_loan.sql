@@ -15,4 +15,6 @@ CREATE TABLE equipment_last_loan (
     REFERENCES equipment_loan (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

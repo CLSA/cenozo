@@ -1,6 +1,6 @@
 CREATE TRIGGER consent_BEFORE_DELETE
 BEFORE DELETE ON consent FOR EACH ROW
-BEING
+BEGIN
   SET @test = (
     SELECT consent_type.name
     FROM consent_type

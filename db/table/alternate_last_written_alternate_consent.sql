@@ -22,4 +22,6 @@ CREATE TABLE alternate_last_written_alternate_consent (
     REFERENCES alternate_consent (id)
     ON DELETE SET NULL
     ON UPDATE CASCADE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

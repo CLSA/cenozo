@@ -646,7 +646,7 @@ INSERT INTO postcode ( name, region_id, timezone_offset, daylight_savings ) VALU
 ( "K1A 1L6", ( SELECT id FROM region WHERE abbreviation = "ON" ), -5, 1 ),
 ( "K1A 1L7", ( SELECT id FROM region WHERE abbreviation = "ON" ), -5, 1 ),
 ( "K1A 1L8", ( SELECT id FROM region WHERE abbreviation = "ON" ), -5, 1 ),
-( "K1A 1L9", ( SELECT id FROM region WHERE abbreviation = "ON" ), -5, 1 ),   
+( "K1A 1L9", ( SELECT id FROM region WHERE abbreviation = "ON" ), -5, 1 ),
 ( "00", ( SELECT id FROM region WHERE abbreviation = "NY" ), -5, 1 ),
 ( "01", ( SELECT id FROM region WHERE abbreviation = "MA" ), -5, 1 ),
 ( "02", ( SELECT id FROM region WHERE abbreviation = "MA" ), -5, 1 ),

@@ -1,6 +1,6 @@
 CREATE TRIGGER consent_BEFORE_UPDATE
 BEFORE UPDATE ON consent FOR EACH ROW
-BEING
+BEGIN
   SET @test = (
     SELECT consent_type.name
     FROM consent_type
