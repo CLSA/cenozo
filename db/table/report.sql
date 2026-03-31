@@ -1,0 +1,59 @@
+CREATE TABLE report (
+  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  report_type_id INT(10) UNSIGNED NOT NULL,
+  report_schedule_id INT(10) UNSIGNED NULL DEFAULT NULL,
+  user_id INT(10) UNSIGNED NOT NULL,
+  application_id INT(10) UNSIGNED NOT NULL,
+  site_id INT(10) UNSIGNED NOT NULL,
+  role_id INT(10) UNSIGNED NOT NULL,
+  format ENUM('CSV', 'Excel', 'LibreOffice') NOT NULL DEFAULT 'CSV',
+  size BIGINT(20) UNSIGNED NULL DEFAULT NULL,
+  stage ENUM('started', 'reading data', 'writing data', 'completed', 'failed') NOT NULL DEFAULT 'started',
+  progress FLOAT NOT NULL DEFAULT 0,
+  datetime DATETIME NOT NULL,
+  elapsed FLOAT NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  INDEX fk_report_type_id (report_type_id ASC),
+  INDEX fk_user_id (user_id ASC),
+  INDEX fk_site_id (site_id ASC),
+  INDEX fk_role_id (role_id ASC),
+  INDEX fk_application_id (application_id ASC),
+  INDEX fk_report_schedule_id (report_schedule_id ASC),
+  INDEX dk_datetime (datetime ASC),
+  INDEX dk_stage (stage ASC),
+  INDEX dk_size (size ASC),
+  CONSTRAINT fk_report_application_id
+    FOREIGN KEY (application_id)
+    REFERENCES application (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_report_report_schedule_id
+    FOREIGN KEY (report_schedule_id)
+    REFERENCES report_schedule (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_report_report_type_id
+    FOREIGN KEY (report_type_id)
+    REFERENCES report_type (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_report_role_id
+    FOREIGN KEY (role_id)
+    REFERENCES role (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_report_site_id
+    FOREIGN KEY (site_id)
+    REFERENCES site (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_report_user_id
+    FOREIGN KEY (user_id)
+    REFERENCES user (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

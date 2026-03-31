@@ -1,0 +1,21 @@
+CREATE TABLE user (
+  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  name VARCHAR(45) NOT NULL,
+  password VARCHAR(255) NULL DEFAULT NULL,
+  password_type ENUM('whirlpool', 'bcrypt') NULL DEFAULT NULL,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  email VARCHAR(255) NULL DEFAULT NULL,
+  timezone VARCHAR(45) NOT NULL DEFAULT 'Canada/Eastern',
+  use_12hour_clock TINYINT(1) NOT NULL DEFAULT 0,
+  login_failures INT(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE INDEX uq_name (name ASC),
+  UNIQUE INDEX uq_email (email ASC),
+  INDEX dk_active (active ASC))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;
