@@ -1,6 +1,5 @@
 import { CN_base_modal } from "./base_modal.mjs"
 import { CN_common } from "../../common.mjs"
-import { CN_session } from "../../session.mjs"
 
 import { CN_input } from "../input/input.mjs";
 import { CN_element_label } from "../label.mjs";

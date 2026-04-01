@@ -3,7 +3,6 @@ import { CN_action_view } from "../element/action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
-import { CN_session } from "../session.mjs"
 
 export class CN_hold_model extends CN_base_model {
   constructor() {
