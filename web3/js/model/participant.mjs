@@ -283,6 +283,16 @@ export class CN_participant_model extends CN_base_person_model {
       },
     };
   }
+
+  /**
+   * Extend parent method
+   */
+  allow_edit() {
+    return (
+      super.allow_edit() &&
+      !("view" == this.get_action_name() && "Yes" != this.get_action().get_property_value("exclusion"))
+    );
+  }
 }
 
 export class CN_participant_view extends CN_base_person_view {

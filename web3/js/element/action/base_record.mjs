@@ -476,17 +476,26 @@ export class CN_action_base_record extends CN_base_action {
   create_property_group_element(group_name) {
     const group = this.#property_groups[group_name];
     const group_id = [this.get_model().get_unique_id(), group_name].join("-");
+
+    // we use <a> instead of <button> so that the the accordion can still be expanded when the action is disabled
     return this.constructor.html(`
       <div name="${group_name}" class="accordion-item px-0">
         <div class="accordion-header">
-          <button
-            class="accordion-button ${group.open ? "" : "collapsed"} fw-bold py-2"
+          <a
+            href="#"
+            class="
+              accordion-button
+              link-underline
+              link-underline-opacity-0
+              ${group.open ? "" : "collapsed"}
+              fw-bold py-2
+            "
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#${group_id}"
             aria-expanded="${group.open ? "true" : "false"}"
             aria-controls="${group_id}"
-          >${group.title}</button>
+          >${group.title}</a>
         </div>
         <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
           <div class="accordion-body"></div>
