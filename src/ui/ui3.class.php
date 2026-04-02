@@ -448,6 +448,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'trace_type' == $module->get_subject() )
       {
+        $module->add_child( 'trace_type_mail' );
         $module->add_child( 'participant' );
       }
       else if( 'user' == $module->get_subject() )
@@ -476,14 +477,15 @@ class ui3 extends \cenozo\base_object
       ['subject' => 'collection', 'title' => 'Collections'],
       ['subject' => 'consent_type', 'title' => 'Consent Types'],
       ['subject' => 'event_type', 'title' => 'Event Types'],
+      ['subject' => 'identifier', 'title' => 'Identifiers'],
+      ['subject' => 'hold_type', 'title' => 'Hold Types'],
+      ['subject' => 'notation', 'title' => 'Notations'],
       ['subject' => 'participant', 'title' => 'Participants'],
       ['subject' => 'proxy_type', 'title' => 'Proxy Types'],
       ['subject' => 'setting', 'title' => 'Settings'],
       ['subject' => 'study', 'title' => 'Studies'],
+      ['subject' => 'trace_type', 'title' => 'Trace Types'],
       ['subject' => 'user', 'title' => 'Users'],
-      ['subject' => 'notation', 'title' => 'Notations'],
-      ['subject' => 'hold_type', 'title' => 'Hold Types'],
-      ['subject' => 'identifier', 'title' => 'Identifiers'],
     ];
 
     if( $extended )

@@ -1,4 +1,6 @@
-CREATE TABLE trace_type_mail (
+SELECT "Creating new trace_type_mail table" AS "";
+
+CREATE TABLE IF NOT EXISTS trace_type_mail (
   id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
   create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),

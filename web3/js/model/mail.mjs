@@ -24,7 +24,7 @@ export class CN_mail_model extends CN_base_model {
           title: "From Name",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         from_address: {
@@ -33,7 +33,7 @@ export class CN_mail_model extends CN_base_model {
           help: 'Must be in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         to_name: {
@@ -51,7 +51,7 @@ export class CN_mail_model extends CN_base_model {
           },
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         to_address: {
@@ -64,7 +64,7 @@ export class CN_mail_model extends CN_base_model {
           },
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         cc_address: {
@@ -72,7 +72,7 @@ export class CN_mail_model extends CN_base_model {
           help: 'May be a comma-delimited list of email addresses in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         bcc_address: {
@@ -80,7 +80,7 @@ export class CN_mail_model extends CN_base_model {
           help: 'May be a comma-delimited list of email addresses in the format "account@domain.name".',
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         schedule_datetime: {
@@ -89,7 +89,7 @@ export class CN_mail_model extends CN_base_model {
           min: "now",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         sent_datetime: {
@@ -108,7 +108,7 @@ export class CN_mail_model extends CN_base_model {
           title: "Subject",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         body: {
@@ -116,7 +116,7 @@ export class CN_mail_model extends CN_base_model {
           type: "text",
           is_constant: (model) => (
             "view" == model.get_action_name() &&
-            null != model.get_action().get_property_value("sent_datetime")
+            "(empty)" != model.get_action().get_property_value("sent_datetime")
           ),
         },
         note: {
@@ -135,7 +135,7 @@ export class CN_mail_model extends CN_base_model {
     return (
       super.allow_delete() &&
       "mail.view" == CN_session.get_leaf_action_name() &&
-      null == this.get_action().get_property_value("sent_datetime")
+      "(empty)" == this.get_action().get_property_value("sent_datetime")
     );
   }
 }

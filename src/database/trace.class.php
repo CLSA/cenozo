@@ -31,5 +31,39 @@ class trace extends record
     }
 
     parent::save();
+
+    if( is_null( $this->trace_type_id ) )
+    {
+      // when adding a trace with no type make sure to remove all trace mail for this participant
+      $trace_mod = lib::create( 'database\modifier' );
+      $trace_mod->where( 'trace_type_id', '!=', NULL );
+      foreach( $db_participant->get_trace_object_list( $trace_mod ) as $db_trace )
+      {
+        $mail_mod = lib::create( 'database\modifier' );
+        $mail_mod->where( 'sent_datetime', '=', NULL );
+        foreach( $db_trace->get_mail_object_list( $mail_mod ) as $db_mail ) $db_mail->delete();
+      }
+    }
+    else
+    {
+      // add any trace mail associated with the trace's type
+      $this->add_mail();
+    }
+  }
+
+  /**
+   * Adds emails for this trace
+   * @access public
+   */
+  public function add_mail()
+  {
+    $db_trace_type = $this->get_trace_type();
+    if( !is_null( $db_trace_type ) )
+    {
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'language_id', '=', $this->get_participant()->language_id );
+      foreach( $db_trace_type->get_trace_type_mail_object_list( $modifier ) as $db_trace_type_mail )
+        $db_trace_type_mail->add_mail( $this );
+    }
   }
 }

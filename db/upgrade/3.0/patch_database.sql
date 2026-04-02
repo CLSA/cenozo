@@ -2,6 +2,9 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE trace_has_mail.sql
+SOURCE trace_type_mail.sql
+
 SOURCE update_version_number.sql
 
 COMMIT;

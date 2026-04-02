@@ -11,7 +11,6 @@ export class CN_trace_type_model extends CN_base_model {
       columns: {
         name: { title: "Name" },
         participant_count: { title: "Participants", type: "number", table_prefix: false },
-        role_list: { title: "Roles", table_prefix: false },
         description: { title: "Description", type: "text" },
       },
       properties: {

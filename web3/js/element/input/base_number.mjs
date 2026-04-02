@@ -20,14 +20,20 @@ export class CN_input_base_number extends CN_input_base_string {
   async validate() {
     const value = this.get_value();
 
-    if (this.has_config("min") && value < this.get_config("min")) {
-      this.show_error(`The minimum number allowed is ${this.get_config("min")}`);
-      return false;
+    if (this.has_config("min")) {
+      const min = this.get_config("min");
+      if (null != min && value < min) {
+        this.show_error(`The minimum number allowed is ${this.get_config("min")}`);
+        return false;
+      }
     }
 
-    if (this.has_config("max") && value > this.get_config("max")) {
-      this.show_error(`The maximum number allowed is ${this.get_config("max")}`);
-      return false;
+    if (this.has_config("max")) {
+      const max = this.get_config("max");
+      if (null != max && value > max) {
+        this.show_error(`The maximum number allowed is ${this.get_config("max")}`);
+        return false;
+      }
     }
 
     return await super.validate();
@@ -37,7 +43,7 @@ export class CN_input_base_number extends CN_input_base_string {
    * Extends parent method
    */
   async _calculate_value_for_record(value) {
-    value = await super._calculate_value_for_record();
+    value = await super._calculate_value_for_record(value);
     return null == value ? null : Number(value);
   }
 }
