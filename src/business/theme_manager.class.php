@@ -106,24 +106,29 @@ class theme_manager extends \cenozo\singleton
     $filename = sprintf( '%s/web/css/theme.css', APPLICATION_PATH );
     $success = false !== file_put_contents( $filename, $css );
 
-    // now generate the version 3 css theme.css file
-    $css = $this->css3_template;
-
-    // find all color types in the css template
-    $matches = array();
-    preg_match_all( $regex, $css, $matches );
-
-    // replace color references in the css string with actual values
-    foreach( $matches[0] as $index => $match )
+    // now generate the version 3 css theme.css file (if the web3 path exists)
+    if( is_dir( sprintf( '%s/web3', APPLICATION_PATH ) ) )
     {
-      $type = $matches[1][$index];
-      $fraction = $matches[2][$index];
-      $css = str_replace( $match, $this->get_color( $type, $fraction ), $css );
+      $css = $this->css3_template;
+
+      // find all color types in the css template
+      $matches = array();
+      preg_match_all( $regex, $css, $matches );
+
+      // replace color references in the css string with actual values
+      foreach( $matches[0] as $index => $match )
+      {
+        $type = $matches[1][$index];
+        $fraction = $matches[2][$index];
+        $css = str_replace( $match, $this->get_color( $type, $fraction ), $css );
+      }
+
+      $filename = sprintf( '%s/web3/css/theme.css', APPLICATION_PATH );
+
+      $success = $success && false !== file_put_contents( $filename, $css );
     }
 
-    $filename = sprintf( '%s/web3/css/theme.css', APPLICATION_PATH );
-
-    return $success && false !== file_put_contents( $filename, $css );
+    return $success;
   }
 
   /**
