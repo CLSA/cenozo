@@ -12,7 +12,7 @@ export class CN_element_time_picker extends CN_base_element {
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_element_time_picker contructor");
+      throw new Error("Non-object config argument passed to CN_element_time_picker constructor");
     }
 
     super(parent_el, {
@@ -104,7 +104,7 @@ export class CN_element_time_picker extends CN_base_element {
     date.setMilliseconds(0);
     const tz = Intl.DateTimeFormat(
       'en-CA',
-      { timeZone: CN_session.data.user.timezone, timeZoneName: "short" }
+      { timeZone: CN_session.get("user", "timezone"), timeZoneName: "short" }
     ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
     this.#time_el.innerHTML = CN_common.format_time(date, this.get_config("show_seconds")) + ` ${tz}`;
   }
@@ -117,13 +117,13 @@ export class CN_element_time_picker extends CN_base_element {
 
     const time_div_el = this.constructor.html('<div class="row"></div>');
     el.append(time_div_el);
-    CN_element_label.create_element(time_div_el, { class: "col-3", value: "Time" });
+    CN_element_label.append(time_div_el, { class: "col-3", value: "Time" });
     this.#time_el = this.constructor.html('<div name="time" class="col-form-label col-9"></div>');
     time_div_el.append(this.#time_el);
 
     const hours_div_el = this.constructor.html('<div class="row"></div>');
     el.append(hours_div_el);
-    CN_element_label.create_element(hours_div_el, { for: "hours", class: "col-3", value: "Hour" });
+    CN_element_label.append(hours_div_el, { for: "hours", class: "col-3", value: "Hour" });
     this.#hours_input = new CN_input_range(hours_div_el, {
       id: "hours",
       class: "col-9",
@@ -136,7 +136,7 @@ export class CN_element_time_picker extends CN_base_element {
 
     const minutes_div_el = this.constructor.html('<div class="row"></div>');
     el.append(minutes_div_el);
-    CN_element_label.create_element(minutes_div_el, { for: "minutes", class: "col-3", value: "Minute" });
+    CN_element_label.append(minutes_div_el, { for: "minutes", class: "col-3", value: "Minute" });
     this.#minutes_input = new CN_input_range(minutes_div_el, {
       id: "minutes",
       class: "col-9",
@@ -150,7 +150,7 @@ export class CN_element_time_picker extends CN_base_element {
     if (this.get_config("show_seconds")) {
       const seconds_div_el = this.constructor.html('<div class="row"></div>');
       el.append(seconds_div_el);
-      CN_element_label.create_element(seconds_div_el, { for: "seconds", class: "col-3", value: "Second" });
+      CN_element_label.append(seconds_div_el, { for: "seconds", class: "col-3", value: "Second" });
       this.#seconds_input = new CN_input_range(seconds_div_el, {
         id: "seconds",
         class: "col-9",

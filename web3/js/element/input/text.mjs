@@ -4,7 +4,7 @@ import { CN_common } from "../../common.mjs"
 export class CN_input_text extends CN_base_input {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_text contructor");
+      throw new Error("Non-object config argument passed to CN_input_text constructor");
     }
 
     super(parent_el, {
@@ -71,16 +71,5 @@ export class CN_input_text extends CN_base_input {
       control_el.style.height = "";
       control_el.style.height = (height < min_height ? min_height : height) + 'px';
     }
-  }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(parent_el = null, config = {}) {
-    const el = new CN_input_text(parent_el, config).get_element();
-    if (parent_el) parent_el.append(el);
-    return el;
   }
 }

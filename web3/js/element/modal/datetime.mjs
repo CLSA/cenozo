@@ -9,7 +9,7 @@ export class CN_modal_datetime extends CN_base_modal {
 
   constructor(config) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_account contructor");
+      throw new Error("Non-object config argument passed to CN_modal_datetime constructor");
     }
 
     super({

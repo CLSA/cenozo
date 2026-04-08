@@ -50,7 +50,7 @@ export class CN_custom_report_list extends CN_action_list {
    * Non-administrator roles download when clicking items in the list
    */
   async on_row_click(record) {
-    if (3 <= CN_session.data.role.tier || this.is_choosing()) {
+    if (3 <= CN_session.get("role", "tier") || this.is_choosing()) {
       await super.on_row_click(record);
     } else {
       await this.get_model().download_report(record.id);

@@ -233,9 +233,9 @@ export class CN_stratum_mass_participant extends CN_base_action {
 
     // add the operation type select
     const footer_el = body_el.querySelector("[name=operation]");
-    CN_element_label.create_element(footer_el, { for: "operation", value: "Operation", class: "col-sm-3" });
+    CN_element_label.append(footer_el, { for: "operation", value: "Operation", class: "col-sm-3" });
 
-    CN_input_enum.create_element(footer_el, {
+    CN_input_enum.append(footer_el, {
       id: "operation",
       class: "col-sm-9",
       required: true,
@@ -284,19 +284,19 @@ export class CN_stratum_mass_participant extends CN_base_action {
         identifier_list: this.#participant_selection.get_identifier_list(),
       });
 
-      await (new CN_modal_message({
+      await CN_modal_message.create_and_open({
         title: `Participants ${"add" == this.#operation ? "Added" : "Removed"}`,
         message: `
           You have successfully ${"add" == this.#operation ? "added" : "removed"} ${response} participant(s)
           ${"add" == this.#operation ? "to" : "from"} the ${this.#stratum.name} stratum.
         `,
-      })).open();
+      });
 
       await this.on_load();
     });
 
     // add the confirm card
-    CN_element_card.create_element(body_el.querySelector("[name=participant-confirm]"), {
+    CN_element_card.append(body_el.querySelector("[name=participant-confirm]"), {
       header: "Confirm Selection",
       body: "",
       footer: confirm_btn_el,

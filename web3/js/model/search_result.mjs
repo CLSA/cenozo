@@ -46,12 +46,12 @@ export class CN_search_result_list extends CN_action_list {
     const query_el = this.constructor.html(
       '<div class="container-fluid bg-secondary p-2"><div class="row"></div></div>'
     );
-    CN_element_label.create_element(query_el.querySelector("div.row"), {
+    CN_element_label.append(query_el.querySelector("div.row"), {
       for: id,
       value: "Search",
       class: "col-sm-1",
     });
-    CN_input_string.create_element(query_el.querySelector("div.row"),{
+    CN_input_string.append(query_el.querySelector("div.row"),{
       id: id,
       class: "col-sm-11",
       get_default: () => this.get_query_parameter("q"),

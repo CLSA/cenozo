@@ -143,6 +143,14 @@ export class CN_state extends CN_base_object {
   }
 
   /**
+   * ADD DOCS
+   */
+  is_commited() {
+    const len = this.#stack.length;
+    return 0 < len ? this.#stack[len-1].commited : false;
+  }
+
+  /**
    * Whether there are any values in the state's stack
    * @return boolean
    */

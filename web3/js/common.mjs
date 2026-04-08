@@ -226,7 +226,7 @@ export class CN_common extends CN_base_object {
    * @param boolean seconds: Whether to include seconds
    * @return string
    */
-  static format_time(value, seconds = false, am_pm = CN_session.data.user.am_pm) {
+  static format_time(value, seconds = false, am_pm = CN_session.get("user", "am_pm")) {
     let options = { hour12: am_pm, hour: am_pm ? "numeric" : "2-digit", minute: "2-digit" };
     if (seconds) options.second = "2-digit";
     return new Intl.DateTimeFormat('en-CA', options).format(new Date(value));
@@ -240,7 +240,7 @@ export class CN_common extends CN_base_object {
    * @param boolean long_form: Whether to format in long or short form
    * @return string
    */
-  static format_datetime(value, format, long_form = false, am_pm = CN_session.data.user.am_pm) {
+  static format_datetime(value, format, long_form = false, am_pm = CN_session.get("user", "am_pm")) {
     if (null == value) {
       return null;
     } else if (this.is_string(value)) {

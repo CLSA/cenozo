@@ -6,6 +6,8 @@ import { CN_session } from "../session.mjs"
 
 export class CN_home_model extends CN_base_model {
   #element;
+  #system_message_list = [];
+  #last_activity = null;
 
   constructor() {
     super({
@@ -21,13 +23,26 @@ export class CN_home_model extends CN_base_model {
    * ADD DOCS
    */
   update_element() {
+    // update the last activity
+    let last_activity = "None";
+    if (this.#last_activity) {
+      last_activity = (
+        CN_common.format_datetime(this.#last_activity.start_datetime, "date") +
+        " from " +
+        CN_common.format_time(this.#last_activity.start_datetime) +
+        " until " +
+        CN_common.format_time(this.#last_activity.end_datetime)
+      );
+    }
+    this.#element.querySelector("div[name=last-activity]").innerHTML = last_activity;
+
     const sm_el = this.#element.querySelector("[name=system-messages]");
     sm_el.innerHTML = "";
 
-    if (0 == CN_session.system_message_list.length) {
+    if (0 == this.#system_message_list.length) {
       sm_el.append(CN_base_element.html('<div class="col-form-label">There are no system messages.</div>'));
     } else {
-      CN_session.system_message_list.forEach((message, message_index) => {
+      this.#system_message_list.forEach((message, message_index) => {
         const message_el = CN_base_element.html(`
           <div class="card mt-3 px-0 ${message.unread ? "" : "text-black text-opacity-50"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
@@ -46,15 +61,16 @@ export class CN_home_model extends CN_base_model {
         btn_el.addEventListener("click", async () => {
           CN_base_element.set_disabled(btn_el, true);
 
-          const message = CN_session.system_message_list[message_index];
+          const message = this.#system_message_list[message_index];
           if (message.unread) {
-            await CN_api.post(`system_message/${message.id}/user`, CN_session.data.user.id);
+            await CN_api.post(`system_message/${message.id}/user`, CN_session.get("user", "id"));
             message.unread = false;
           } else {
-            await CN_api.delete(`system_message/${message.id}/user/${CN_session.data.user.id}`);
+            await CN_api.delete(`system_message/${message.id}/user/${CN_session.get("user", "id")}`);
             message.unread = true;
           }
 
+          // update whether there is unread mail in the breadcrumb trail
           CN_session.update_breadcrumbs();
           this.update_element();
 
@@ -74,47 +90,39 @@ export class CN_home_model extends CN_base_model {
         <div class="container-fluid rounded bg-white p-4">
           <div class="row">
             <div class="col-sm-6">
-              <div class="text-primary fs-4">Welcome to ${CN_session.data.application.title}</div>
+              <div class="text-primary fs-4">Welcome to ${CN_session.get("application", "title")}</div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Version:</label>
                 <div class="col-sm-9 col-form-label">
-                  ${CN_session.data.application.version} build ${CN_session.data.application.app_build}
+                  ${CN_session.get("application", "version")} build ${CN_session.get("application", "app_build")}
                 </div>
               </div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Framework:</label>
                 <div class="col-sm-9 col-form-label">
-                  ${CN_session.data.application.cenozo} build ${CN_session.data.application.cenozo_build}
+                  ${CN_session.get("application", "cenozo")} build ${CN_session.get("application", "cenozo_build")}
                 </div>
               </div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Account:</label>
                 <div class="col-sm-9 col-form-label">
-                  ${CN_session.data.user.first_name} ${CN_session.data.user.last_name}
-                  (${CN_session.data.user.name})
+                  ${CN_session.get("user", "first_name")} ${CN_session.get("user", "last_name")}
+                  (${CN_session.get("user", "name")})
                 </div>
               </div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Last login:</label>
-                <div class="col-sm-9 col-form-label">
-                  ${CN_common.format_datetime(CN_session.data.user.last_activity.start_datetime, "datetime")}
-                  until
-                  ${CN_common.format_datetime(CN_session.data.user.last_activity.end_datetime, "datetime")}
-                </div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Active Users:</label>
-                <div class="col-sm-9 col-form-label">${CN_session.data.application.active_users}</div>
+                <div name="last-activity" class="col-sm-9 col-form-label">(loading...)</div>
               </div>
               <div class="row ms-3">
                 <label class="col-sm-3 col-form-label fw-bold">Uptime:</label>
-                <div class="col-sm-9 col-form-label">${CN_session.data.application.uptime}</div>
+                <div class="col-sm-9 col-form-label">${CN_session.get("application", "uptime")}</div>
               </div>
             </div>
             <div class="col-sm-6">
               <img
                 class="w-100"
-                src="${CN_session.data.application.cenozo_url}/img/branding.png"
+                src="${CN_session.get("application", "cenozo_url")}/img/branding.png"
                 alt="${APP_TITLE}"
               ></img>
             </div>
@@ -132,7 +140,26 @@ export class CN_home_model extends CN_base_model {
    * Replace parent method
    */
   async run() {
-    await CN_session.update_system_messages();
+    const [system_message_response, activity_response] = await Promise.all([
+      CN_api.get("self/0/system_message", {
+        no_activity: 1,
+        select: { column: ["id", "title", "note", "unread"] },
+        modifier: { order: { unread: true, id: false } },
+      }),
+
+      CN_api.get(`user/${CN_session.get("user", "id")}/activity`, {
+        select: { column: ["start_datetime", "end_datetime"] },
+        modifier: {
+          where: { column: "end_datetime", operator: "!=", value: null },
+          order: { start_datetime: true },
+          limit: 1,
+        },
+      }), 
+    ]);
+
+    this.#system_message_list = system_message_response;
+    this.#last_activity = 0 < activity_response.length ? activity_response[0] : null;
+
     this.update_element();
   }
 }

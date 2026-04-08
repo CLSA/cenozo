@@ -6,29 +6,29 @@ import { CN_session } from "../../session.mjs"
 export class CN_modal_account extends CN_modal_base_form {
   constructor(config = { title: "Account Details" }) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_account contructor");
+      throw new Error("Non-object config argument passed to CN_modal_account constructor");
     }
 
     super(config);
 
-    this.add_input("string", "first_name", "First Name", { get_default: () => CN_session.data.user.first_name });
-    this.add_input("string", "last_name", "Last Name", { get_default: () => CN_session.data.user.last_name });
-    this.add_input("email", "email", "Email", { get_default: () => CN_session.data.user.email });
+    this.add_input("string", "first_name", "First Name", { get_default: () => CN_session.get("user", "first_name") });
+    this.add_input("string", "last_name", "Last Name", { get_default: () => CN_session.get("user", "last_name") });
+    this.add_input("email", "email", "Email", { get_default: () => CN_session.get("user", "email") });
 
     // add the resolve buttons
-    this.add_resolve_button("light", "Cancel", () => this._resolve(false));
+    this.add_resolve_button("light", "Cancel", () => this._resolve(null));
     this.add_resolve_button("success", "OK", async () => {
       const data = {
         user: {
-          first_name: this.get_input_value("first_name"),
-          last_name: this.get_input_value("last_name"),
-          email: this.get_input_value("email"),
+          first_name: await this.get_input_value_for_record("first_name"),
+          last_name: await this.get_input_value_for_record("last_name"),
+          email: await this.get_input_value_for_record("email"),
         },
       };
       if (
-        CN_session.data.user.first_name != data.user.first_name ||
-        CN_session.data.user.last_name != data.user.last_name ||
-        CN_session.data.user.email != data.user.email
+        CN_session.get("user", "first_name") != data.user.first_name ||
+        CN_session.get("user", "last_name") != data.user.last_name ||
+        CN_session.get("user", "email") != data.user.email
       ) {
         // update the server
         try {
@@ -36,14 +36,12 @@ export class CN_modal_account extends CN_modal_base_form {
           await CN_api.patch("self/0", data);
 
           // update the UI
-          CN_session.data.user.first_name = data.user.first_name;
-          CN_session.data.user.last_name = data.user.last_name;
-          CN_session.data.user.email = data.user.email;
+          this._resolve(data.user);
         } finally {
-          this.set_disabled(false);
+          this.set_disabled(null);
         }
       }
-      this._resolve(true);
+      this._resolve(null);
     });
   }
 

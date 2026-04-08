@@ -54,11 +54,11 @@ export class CN_form_association_list extends CN_action_list {
         }
         await CN_session.navigate_to(path);
       } else {
-        await (new CN_modal_message({
+        await CN_modal_message.create_and_open({
           title: "Permission Denied",
           message: `You do not have access to viewing ${model.get_plural()} records.`,
           type: "danger",
-        })).open();
+        });
       }
     }
   }

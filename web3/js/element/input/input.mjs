@@ -50,15 +50,4 @@ export class CN_input extends CN_base_object {
 
     throw new Error(`Tried to create invalid input type "${type}"`);
   }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object config: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(type, parent_el, config) {
-    const el = CN_input.create_input(type, parent_el, config).get_element()
-    if (parent_el) parent_el.append(el);
-    return el;
-  }
 }

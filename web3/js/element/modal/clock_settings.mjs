@@ -5,7 +5,7 @@ import { CN_session } from "../../session.mjs"
 export class CN_modal_clock_settings extends CN_modal_base_form {
   constructor(config = { title: "Clock Settings" }) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_clock_settings contructor");
+      throw new Error("Non-object config argument passed to CN_modal_clock_settings constructor");
     }
 
     super(config);
@@ -15,19 +15,19 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
       "timezone",
       "Timezone",
       {
-        get_default: () => CN_session.data.user.timezone,
+        get_default: () => CN_session.get("user", "timezone"),
         typeahead: { list: CN_common.get_timezones() },
         required: true,
       }
     );
-    this.add_input("boolean", "am_pm", "Use 12-Hour Clock", { get_default: () => CN_session.data.user.am_pm });
+    this.add_input("boolean", "am_pm", "Use 12-Hour Clock", { get_default: () => CN_session.get("user", "am_pm") });
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", () => this._resolve(false));
     this.add_resolve_button("success", "OK", async () => {
-      const timezone = this.get_input_value("timezone");
-      const am_pm = this.get_input_value("am_pm");
-      if (CN_session.data.user.timezone != timezone || CN_session.data.user.am_pm != am_pm) {
+      const timezone = this.get_input_value_for_record("timezone");
+      const am_pm = this.get_input_value_for_record("am_pm");
+      if (CN_session.get("user", "timezone") != timezone || CN_session.get("user", "am_pm") != am_pm) {
         try {
           this.set_disabled(true);
           await CN_session.set_timezone(timezone, am_pm);

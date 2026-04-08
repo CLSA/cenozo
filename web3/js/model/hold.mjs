@@ -95,7 +95,7 @@ export class CN_hold_add extends CN_action_add {
     }
 
     if (deceased_hold_type_id == this.get_property_value("hold_type_id")) {
-      await (new CN_modal_message({
+      await CN_modal_message.create_and_open({
         title: "Date of Death",
         size: "lg",
         message: `
@@ -108,7 +108,7 @@ export class CN_hold_add extends CN_action_add {
             defining details including whether only the year, year and month, or full date is known.
           </div>
         `,
-      })).open();
+      });
     }
 
     await super.on_submit();

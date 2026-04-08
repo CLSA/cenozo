@@ -17,7 +17,7 @@ export class CN_element_date_picker extends CN_base_element {
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_element_date_picker contructor");
+      throw new Error("Non-object config argument passed to CN_element_date_picker constructor");
     }
 
     super(parent_el, {
@@ -169,8 +169,7 @@ export class CN_element_date_picker extends CN_base_element {
     // set the mode button text
     this.#mode_btn_el.innerHTML = [CN_common.get_month(this.#month), this.#year].join(" ");
 
-    this.#table_el.innerHTML = "";
-    this.#table_el.append(this.constructor.html(`
+    this.#table_el.replaceChildren(this.constructor.html(`
       <thead>
         <tr>
           ${CN_common.get_weekday(null, "en", "short").map(
@@ -252,8 +251,7 @@ export class CN_element_date_picker extends CN_base_element {
     // set the mode button text
     this.#mode_btn_el.innerHTML = this.#year;
 
-    this.#table_el.innerHTML = "";
-    this.#table_el.append(this.constructor.html(`
+    this.#table_el.replaceChildren(this.constructor.html(`
       <thead>
         <tr>
           <th class="text-center" scope="col"></th>
@@ -296,8 +294,7 @@ export class CN_element_date_picker extends CN_base_element {
     // set the mode button text
     this.#mode_btn_el.innerHTML = `${this.#start_year} - ${this.#start_year + this.#year_range - 1}`;
 
-    this.#table_el.innerHTML = "";
-    this.#table_el.append(this.constructor.html(`
+    this.#table_el.replaceChildren(this.constructor.html(`
       <thead>
         <tr>
           <th class="text-center" scope="col"></th>

@@ -79,7 +79,7 @@ export class CN_proxy_add extends CN_action_add {
       e => e.key == this.get_property_value("proxy_type_id")
     );
     if (proxy_type && proxy_type.prompt) {
-      proceed = await (new CN_modal_confirm({ message: prompt })).open();
+      proceed = await CN_modal_confirm.create_and_open({ message: prompt });
     }
 
     return proceed ? await super.on_submit() : null;

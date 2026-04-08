@@ -4,7 +4,7 @@ import { CN_common } from "../../common.mjs"
 export class CN_input_range extends CN_base_input {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_range contructor");
+      throw new Error("Non-object config argument passed to CN_input_range constructor");
     }
 
     super(parent_el, {
@@ -52,16 +52,5 @@ export class CN_input_range extends CN_base_input {
   async _calculate_value_for_record(value) {
     value = await super._calculate_value_for_record(value);
     return null == value ? null : Number(value);
-  }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(parent_el = null, config = {}) {
-    const el = new CN_input_range(parent_el, config).get_element();
-    if (parent_el) parent_el.append(el);
-    return el;
   }
 }

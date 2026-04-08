@@ -7,7 +7,7 @@ export class CN_input_base_datetime extends CN_base_input {
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_base_datetime contructor");
+      throw new Error("Non-object config argument passed to CN_input_base_datetime constructor");
     }
 
     super(parent_el, {
@@ -99,8 +99,7 @@ export class CN_input_base_datetime extends CN_base_input {
       const max = this._determine_min_max(this.get_config("get_max")());
       if (CN_common.is_date(max)) config.max = max;
 
-      const response = await (new CN_modal_datetime(config)).open();
-
+      const response = await CN_modal_datetime.create_and_open(config);
       if (undefined !== response) {
         this.set_value(response);
 

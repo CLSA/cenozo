@@ -97,8 +97,7 @@ export class CN_base_action extends CN_base_element {
     if (this.#simple_mode) {
       const placeholder_el = this.get_placeholder_element();
       const body_el = model_el.querySelector(":scope > div");
-      body_el.innerHTML = "";
-      if (placeholder_el) body_el.append(placeholder_el);
+      body_el.replaceChildren(placeholder_el);
     } else {
       const card_header_el = model_el.querySelector(":scope > div > div.card > .card-header");
       card_header_el.innerHTML = "Loading...";
@@ -110,8 +109,7 @@ export class CN_base_action extends CN_base_element {
 
       const placeholder_el = this.get_placeholder_element();
       const card_body_el = model_el.querySelector(":scope > div > div.card > .card-body");
-      card_body_el.innerHTML = "";
-      if (placeholder_el) card_body_el.append(placeholder_el);
+      card_body_el.replaceChildren(placeholder_el);
 
       const card_footer_el = model_el.querySelector(":scope > div > div.card > .card-footer");
       card_footer_el.innerHTML = "";
@@ -127,30 +125,25 @@ export class CN_base_action extends CN_base_element {
 
     if (this.#simple_mode) {
       const body_el = model_el.querySelector(":scope > div");
-      body_el.innerHTML = "";
-      if (body_el) body_el.append(this.get_body_element());
+      body_el.replaceChildren(this.get_body_element());
     } else {
       const header_el = this.get_header_element();
       const card_header_el = model_el.querySelector(":scope > div > div.card > .card-header");
-      card_header_el.innerHTML = "";
-      if (header_el) card_header_el.append(this.get_header_element());
+      card_header_el.replaceChildren(this.get_header_element());
 
       if (this.#footer_at_top) {
         const topfooter_el = this.get_topfooter_element();
         const card_topfooter_el = model_el.querySelector(":scope > div > div.card > .card-topfooter");
-        card_topfooter_el.innerHTML = "";
-        if (topfooter_el) card_topfooter_el.append(this.get_topfooter_element());
+        card_topfooter_el.replaceChildren(this.get_topfooter_element());
       }
 
       const body_el = this.get_body_element();
       const card_body_el = model_el.querySelector(":scope > div > div.card > .card-body");
-      card_body_el.innerHTML = "";
-      if (body_el) card_body_el.append(this.get_body_element());
+      card_body_el.replaceChildren(this.get_body_element());
 
       const footer_el = this.get_footer_element();
       const card_footer_el = model_el.querySelector(":scope > div > div.card > .card-footer");
-      card_footer_el.innerHTML = "";
-      if (footer_el) card_footer_el.append(this.get_footer_element());
+      card_footer_el.replaceChildren(this.get_footer_element());
     }
   }
 
@@ -232,9 +225,10 @@ export class CN_base_action extends CN_base_element {
       notation_btn_el.addEventListener("click", async () => {
         if (notation_module && notation_module.action_allowed("edit")) {
           // open an input modal to allow editing the notation
-          const modal = new CN_modal_input({
+          const response = await CN_modal_input.create_and_open({
             title: title,
-            message: "Provide documentation relevant to this page, or leave blank if no documentation is required.",
+            message:
+              "Provide documentation relevant to this page, or leave blank if no documentation is required.",
             input: {
               type: "text",
               required: false,
@@ -242,15 +236,14 @@ export class CN_base_action extends CN_base_element {
               get_default: () => notation,
             },
           });
-          const response = await modal.open();
 
           if (undefined !== response) module.set_notation(this.#type, response);
         } else {
           // display the notation
-          await (new CN_modal_message({
+          await CN_modal_message.create_and_open({
             title: title,
             message: notation.replace(/\n/g, "<br/>\n"),
-          })).open();
+          });
         }
       });
       el.append(notation_btn_el);
@@ -300,7 +293,7 @@ export class CN_base_action extends CN_base_element {
    * @return Element
    */
   create_placeholder_element() {
-    return CN_element_loading_box.create_element();
+    return CN_element_loading_box.create();
   }
 
   /**
@@ -326,7 +319,7 @@ export class CN_base_action extends CN_base_element {
       if (placeholder_el) div_el.append(placeholder_el);
       el.append(div_el);
     } else {
-      CN_element_card.create_element(el, {
+      CN_element_card.append(el, {
         header: "Loading...",
         body: placeholder_el ? placeholder_el : "",
         footer: "",

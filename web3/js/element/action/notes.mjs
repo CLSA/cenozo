@@ -152,7 +152,7 @@ export class CN_action_notes extends CN_base_action {
         });
       }
 
-      CN_input_text.create_element(note_el.querySelector("[name=note]"), {
+      CN_input_text.append(note_el.querySelector("[name=note]"), {
         id: `note-${note.id}`,
         required: true,
         disabled: !allow_edit,
@@ -219,7 +219,7 @@ export class CN_action_notes extends CN_base_action {
     card_body_el.append(new_note_input.get_element());
     body_el.querySelector("[name=add]").addEventListener("click", async () => {
       await CN_api.post(this.get_note_url(), {
-        user_id: CN_session.data.user.id,
+        user_id: CN_session.get("user", "id"),
         datetime: CN_common.format_datetime(new Date(), "record"),
         note: new_note_input.get_value(),
       });
@@ -229,7 +229,7 @@ export class CN_action_notes extends CN_base_action {
 
     // add the search field
     const search_div_el = body_el.querySelector("div[name=search]");
-    CN_element_label.create_element(search_div_el, { for: "search", value: "Search", class: "col-sm-2" });
+    CN_element_label.append(search_div_el, { for: "search", value: "Search", class: "col-sm-2" });
     this.#search_input = new CN_input_string(search_div_el, {
       id: "search",
       class: "col-sm-10",

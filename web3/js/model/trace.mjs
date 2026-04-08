@@ -16,7 +16,7 @@ export class CN_trace_model extends CN_base_model {
         cohort: {
           column: "cohort.name",
           title: "Cohort",
-          is_hidden: () => "trace.list" != CN_session.get_leaf_action_name(),
+          is_hidden: (model) => null != model.get_parent_model(),
         },
         trace_type: { column: "trace_type.name", title: "Type" },
         datetime: { title: "Date & Time", type: "datetime" },
@@ -37,7 +37,7 @@ export class CN_trace_model extends CN_base_model {
                 key: tt.id,
                 value: tt.name,
                 // only allow all-site roles to use the "unreachable" trace type
-                disabled: !CN_session.data.role.all_sites && "unreachable" == tt.name,
+                disabled: !CN_session.get("role", "all_sites") && "unreachable" == tt.name,
               }));
             },
           },
@@ -54,12 +54,12 @@ export class CN_trace_list extends CN_action_list {
    */
   get_on_load_parameters() {
     let params = super.get_on_load_parameters();
-    if ("trace.list" == CN_session.get_leaf_action_name()) {
+    if (null == this.get_model().get_parent_model()) {
       params.modifier.where = [{
         // restrict based on role's all_sites parameter
         column: "trace_type.name",
-        operator: CN_session.data.role.all_sites ? "!=" : "=",
-        value: CN_session.data.role.all_sites ? null : "site",
+        operator: CN_session.get("role", "all_sites") ? "!=" : "=",
+        value: CN_session.get("role", "all_sites") ? null : "site",
       }, {
         // do not include excluded participants
         column: "participant.exclusion_id",
@@ -84,7 +84,7 @@ export class CN_trace_list extends CN_action_list {
    * Extends the parent method
    */
   async on_row_click(record) {
-    if ("trace.list" == CN_session.get_leaf_action_name()) {
+    if (null == this.get_model().get_parent_model()) {
       await CN_session.navigate_to(`participant/view/${record.participant_id}`);
     }
   }

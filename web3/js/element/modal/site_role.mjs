@@ -6,28 +6,26 @@ import { CN_session } from "../../session.mjs"
 export class CN_modal_site_role extends CN_modal_base_form {
   constructor(config = { title: "Select Site & Role" }) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_site_role contructor");
+      throw new Error("Non-object config argument passed to CN_modal_site_role constructor");
     }
 
     super(config);
 
-    this.add_input("enum", "site_id", "Site", { get_default: () => CN_session.data.site.id });
-    this.add_input("enum", "role_id", "Role", { get_default: () => CN_session.data.role.id });
+    this.add_input("enum", "site_id", "Site", { get_default: () => CN_session.get("site", "id") });
+    this.add_input("enum", "role_id", "Role", { get_default: () => CN_session.get("role", "id") });
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", () => this._resolve(false));
     this.add_resolve_button("success", "OK", async () => {
       const data = {
-        site: { id: this.get_input_value("site_id") },
-        role: { id: this.get_input_value("role_id") },
+        site: { id: await this.get_input_value_for_record("site_id") },
+        role: { id: await this.get_input_value_for_record("role_id") },
       };
-      if (CN_session.data.site.id != data.site.id || CN_session.data.role.id != data.role.id) {
+      if (CN_session.get("site", "id") != data.site.id || CN_session.get("role", "id") != data.role.id) {
         // update the server
         try {
           this.set_disabled(true);
           await CN_api.patch("self/0", data);
-          CN_session.set_loading_state(true);
-          document.getElementById("main-content").innerHTML = "";
           CN_session.reload(true);
         } finally {
           this.set_disabled(false);

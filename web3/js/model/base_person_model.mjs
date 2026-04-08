@@ -69,7 +69,7 @@ export class CN_base_person_view extends CN_action_view {
     timezone_btn_el.addEventListener("click", async () => {
       const timezone = {};
       timezone[`${this.get_model().get_name()}_id`] = this.get_model().get_identifier();
-      await CN_session.set_timezone(timezone, CN_session.data.user.am_pm);
+      await CN_session.set_timezone(timezone, CN_session.get("user", "am_pm"));
     });
     left_btn_group_el.append(timezone_btn_el);
 

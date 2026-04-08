@@ -51,7 +51,7 @@ async function check_for_trace(type, action, identifier) {
   if ("removed" == action) {
     // check to see if tracing will be required after removing/deactivating the contact type
     if (1 == data[changing_count_column] && null == data.trace_type) {
-      response = await (new CN_modal_input({
+      response = await CN_modal_input.create_and_open({
         title: "Tracing Required",
         message: `
           If you proceed the participant will no longer have an active ${type}.
@@ -61,12 +61,12 @@ async function check_for_trace(type, action, identifier) {
           type: "string",
           required: true,
         },
-      })).open();
+      });
     }
   } else {
     // check to see if tracing will be resolved after adding/activating the contact type
     if (0 == data[changing_count_column] && 0 < data[other_count_column] && null != data.trace_type) {
-      response = await (new CN_modal_input({
+      response = await CN_modal_input.create_and_open({
         title: "Tracing Completed",
         message: `
           Before your change the participant did not have an active ${type}.
@@ -76,7 +76,7 @@ async function check_for_trace(type, action, identifier) {
           type: "string",
           required: true,
         },
-      })).open();
+      });
     }
   }
 
@@ -91,10 +91,10 @@ export class CN_traceable_model extends CN_base_model {
       // this happens after redirecting the browser, so don't await
       await CN_api.patch(`participant/${this.get_parent_model().get_identifier()}`, {
         explain_last_trace: {
-          user_id: CN_session.data.user.id,
-          site_id: CN_session.data.site.id,
-          role_id: CN_session.data.role.id,
-          application_id: CN_session.data.application.id,
+          user_id: CN_session.get("user", "id"),
+          site_id: CN_session.get("site", "id"),
+          role_id: CN_session.get("role", "id"),
+          application_id: CN_session.get("application", "id"),
           note: trace_reason,
         }
       });

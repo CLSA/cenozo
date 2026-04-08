@@ -36,12 +36,6 @@
         <div ng-if="session.application.developmentMode" class="container-fluid text-warning">
           This application is currently in development mode.
         </div>
-        <div class="container-fluid">
-          There {{ 1 == session.application.activeUsers ? "is" : "are" }} currently
-          {{ session.application.activeUsers }} active user{{ 1 == session.application.activeUsers ? "" : "s" }},
-          {{ session.site.activeUsers }} of which {{ 1 == session.site.activeUsers ? "is" : "are" }}
-          logged into your site.
-        </div>
       </div>
       <div class="col-sm-4 hidden-xs">
         <h3>

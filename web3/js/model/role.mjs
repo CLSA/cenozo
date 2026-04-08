@@ -23,7 +23,7 @@ export class CN_role_model extends CN_base_model {
     // restrict the application role list by application-type
     return (
       "application" == this.get_parent_model().get_name() ?
-      `application_type/${CN_session.data.application.application_type_id}/role` :
+      `application_type/${CN_session.get("application", "application_type_id")}/role` :
       super.get_base_path(type)
     );
   }

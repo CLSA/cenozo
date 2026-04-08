@@ -48,12 +48,13 @@ export class CN_overview_view extends CN_action_view {
    */
   create_placeholder_element() {
     const el = this.constructor.html('<div></div>');
-    const card_el = CN_element_card.create_element(el, {
+    const card = CN_element_card.append(el, {
       header: this.constructor.html(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
       body: "",
       footer: null,
     });
 
+    const card_el = card.get_element();
     const header_el = card_el.querySelector(".card-header");
     const body_el = card_el.querySelector(".card-body");
 
@@ -104,7 +105,7 @@ export class CN_overview_view extends CN_action_view {
         if (null == node.label) {
           node.value.forEach((child_node, index) => add_node(child_node, parent_el, 0 == index));
         } else {
-          const card_el = CN_element_card.create_element(parent_el, {
+          const card = CN_element_card.append(parent_el, {
             header: this.constructor.html(
               `<div class="d-flex"><div class="flex-grow-1">${node.label}</div></div>`
             ),
@@ -112,6 +113,7 @@ export class CN_overview_view extends CN_action_view {
             footer: null,
           });
 
+          const card_el = card.get_element();
           const header_el = card_el.querySelector(".card-header");
           const body_el = card_el.querySelector(".card-body");
 

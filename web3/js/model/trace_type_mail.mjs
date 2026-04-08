@@ -90,11 +90,11 @@ export class CN_trace_type_mail_view extends CN_action_view {
       }
       if (response.mail_footer) message += "\n" + response.mail_footer;
 
-      await (new CN_modal_message({
+      await CN_modal_message.create_and_open({
         title: "Mail Preview",
         message: message,
         size: "xl",
-      })).open();
+      });
     });
     left_btn_group_el.append(preview_btn_el);
 
@@ -107,7 +107,7 @@ export class CN_trace_type_mail_view extends CN_action_view {
       });
 
       const validate = JSON.parse(response.validate);
-      await (new CN_modal_message({
+      await CN_modal_message.create_and_open({
         title: "Validation Results",
         message: [
           null == validate || !validate.subject ?
@@ -117,7 +117,7 @@ export class CN_trace_type_mail_view extends CN_action_view {
           "The body contains no errors." :
           `The body contains the invalid variable <span class="fw-bold">$${validate.body}$</span>`,
         ].join("<br/>"),
-      })).open();
+      });
     });
     left_btn_group_el.append(validate_btn_el);
 

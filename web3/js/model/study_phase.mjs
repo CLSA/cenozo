@@ -25,7 +25,7 @@ export class CN_study_phase_model extends CN_base_model {
           title: "Special Identifier",
           type: "enum",
           enum: { path: "identifier" },
-          is_hidden: () => 3 > CN_session.data.role.tier,
+          is_hidden: () => 3 > CN_session.get("role", "tier"),
           help: "The special identifier used by this study-phase.",
         },
       },

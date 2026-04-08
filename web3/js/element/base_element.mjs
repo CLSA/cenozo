@@ -1,6 +1,5 @@
 import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
-import { CN_session } from "../session.mjs"
 
 /**
  * Base class for all elements
@@ -22,7 +21,7 @@ export class CN_base_element extends CN_base_object {
    */
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_base_element contructor");
+      throw new Error("Non-object config argument passed to CN_base_element constructor");
     }
 
     super();
@@ -81,10 +80,10 @@ export class CN_base_element extends CN_base_object {
   /**
    * ADD DOCS
    */
-  run_event_listeners(type) {
+  run_event_listeners(type, ...args) {
     if (CN_common.is_array(this.#event_listeners[type])) {
       this.#event_listeners[type] = this.#event_listeners[type].filter((listener, index, arr) => {
-        listener.callback(this);
+        listener.callback(this, ...args);
         return !listener.once; // remove any listeners that are only called once
       });
     }
@@ -207,7 +206,7 @@ export class CN_base_element extends CN_base_object {
         </div>
       </div>
     `);
-    document.getElementById("main-content").append(modal_el);
+    document.querySelector("body").append(modal_el);
     const modal_bs = new bootstrap.Modal(modal_el, { keyboard: false, backdrop: "static" });
 
     // wait for delay before showing the modal
@@ -237,61 +236,6 @@ export class CN_base_element extends CN_base_object {
   }
 
   /**
-   * Creates a breadcrumb trail based on a model list
-   * @param [model] model_list: A list of models in their trail order
-   * @return Element
-   */
-  static async create_breadcrumb_trail(base_name, model_list = []) {
-    // create a list of all crumbs (adding chevrons later)
-    const crumb_list = [];
-
-    if ([null, "Error"].includes(base_name)) {
-      const unread = 0 == CN_session.system_message_list.filter(message => message.unread).length;
-      crumb_list.push({
-        name: unread ? "Home" : 'Home <i class="bi bi-envelope-fill text-warning"></i>',
-        path: ""
-      });
-    }
-
-    if (null != base_name) crumb_list.push({ name: base_name, path: null });
-
-    // run all get_text() async calls in parallel
-    await Promise.all(model_list.map(model => (async () => {
-      let crumb = { name: "...", path: "view" == model.get_action_name() ? model.get_view_url() : null };
-      crumb_list.push(crumb);
-
-      // get the name after we've added the crumb to the list, otherwise it may be out of order
-      crumb.name = await model.get_action().get_text("crumb");
-    })()));
-
-    // add each crumb to the trail, interspersed by chevrons
-    const root_el = this.html("<div></div>");
-    let last_crumb_el = null;
-    crumb_list.forEach(crumb => {
-      root_el.append(this.html('<i class="bi bi-chevron-compact-right text-light"></i>'));
-      let crumb_el = this.html(`
-        <button
-          class="btn btn-primary px-1"
-          data-bs-dismiss="offcanvas"
-          data-bs-target="#main-menu-offcanvas"
-        >${crumb.name}</button>
-      `);
-      last_crumb_el = crumb_el;
-      root_el.append(crumb_el);
-      if (null == crumb.path) {
-        this.set_disabled(crumb_el, true);
-      } else {
-        crumb_el.addEventListener("click", CN_session.navigate_to.bind(CN_session, crumb.path));
-      }
-    });
-
-    // the last crumb shuold always be disabled
-    if (last_crumb_el) this.set_disabled(last_crumb_el, true);
-
-    return root_el;
-  }
-
-  /**
    * Converts an HTML string into an Element object
    * @param string input: HTML expressed as a string
    * @return Element
@@ -310,5 +254,30 @@ export class CN_base_element extends CN_base_object {
     }
 
     return CN_base_element.#dom_parser.parseFromString(html, "text/html").body.firstChild;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  static create(config) {
+    return (new this(null, config)).get_element();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  static append(parent_el, config) {
+    const obj = new this(parent_el, config)
+    if (parent_el) parent_el.append(obj.get_element());
+    return obj;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  static replace(parent_el, config) {
+    const obj = new this(parent_el, config);
+    if (parent_el) parent_el.replaceChildren(obj.get_element());
+    return obj;
   }
 }

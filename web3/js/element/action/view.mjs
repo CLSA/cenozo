@@ -153,10 +153,10 @@ export class CN_action_view extends CN_action_base_record {
    */
   async on_delete() {
     // first confirm
-    const response = await (new CN_modal_confirm({
+    const response = await CN_modal_confirm.create_and_open({
       title: "Please Confirm",
       message: `Are you sure you wish to delete this ${this.get_model().get_singular()}?`,
-    })).open();
+    });
 
     if (response) {
       this.set_disabled(true);
@@ -333,7 +333,7 @@ export class CN_action_view extends CN_action_base_record {
     el.append(this.#child_lists_el);
 
     // create the list-selector control element
-    this.#list_selector_el = CN_element_card.create_element(null, {
+    this.#list_selector_el = CN_element_card.create({
       header: this.constructor.html(`
         <div class="d-flex">
           <div class="flex-grow-1">

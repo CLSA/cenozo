@@ -312,7 +312,7 @@ export class CN_action_list extends CN_base_action {
 
     let params = {
       modifier: {
-        limit: CN_session.data.application.list_row_size,
+        limit: CN_session.get("application", "list_row_size"),
         offset: (this.#current_page - 1) * 20,
         where: []
       },
@@ -672,7 +672,7 @@ export class CN_action_list extends CN_base_action {
     const pagination_el = this.get_footer_element().querySelector("ul.pagination");
     pagination_el.innerHTML = "";
 
-    const pages = Math.ceil(this.#total_records / CN_session.data.application.list_row_size);
+    const pages = Math.ceil(this.#total_records / CN_session.get("application", "list_row_size"));
 
     if (1 < pages) {
       // add the previous button
@@ -770,10 +770,10 @@ export class CN_action_list extends CN_base_action {
       header_el.addEventListener("click", this.on_sort_column.bind(this, column));
       filter_btn.addEventListener("click", async (event) => {
         event.stopPropagation();
-        const response = await (new CN_modal_column_filter({
+        const response = await CN_modal_column_filter.create_and_open({
           table: CN_common.uc_words(this.get_model().get_singular()),
           column: column,
-        })).open();
+        });
         if (response) {
           column.condition_list = response;
           this.write_query_parameters();
@@ -808,28 +808,28 @@ export class CN_action_list extends CN_base_action {
     ["csv", "xlsx", "ods"].forEach(format => {
       report_div_el.querySelector(`button[name=${format}]`).addEventListener("click", async () => {
         if (!this.get_model().allow_report()) {
-          await (new CN_modal_message({
+          await CN_modal_message.create_and_open({
             title: "Error",
             message: "You cannot download data from this list.",
             header_class: "text-bg-danger",
-          })).open();
-        } else if (this.#total_records > CN_session.data.application.max_big_report) {
-          await (new CN_modal_message({
+          });
+        } else if (this.#total_records > CN_session.get("application", "max_big_report")) {
+          await CN_modal_message.create_and_open({
             title: "Error",
             message: "The list has too many rows to download.",
             header_class: "text-bg-danger",
-          })).open();
-        } else if ("csv" != format && this.#total_records > CN_session.data.application.max_small_report) {
-          await (new CN_modal_message({
+          });
+        } else if ("csv" != format && this.#total_records > CN_session.get("application", "max_small_report")) {
+          await CN_modal_message.create_and_open({
             title: "Error",
             message: "The list can only be downloaded as a CSV file.",
             header_class: "text-bg-danger",
-          })).open();
+          });
         } else {
           const model = this.get_model();
           const parent_model = model.get_parent_model();
           const params = this.get_on_load_parameters();
-          params.modifier.limit = CN_session.data.application.max_big_report;
+          params.modifier.limit = CN_session.get("application", "max_big_report");
           delete params.modifier.offset;
           const response = await CN_api.file(this.get_on_load_path(), format, params, true);
           CN_common.download_file(

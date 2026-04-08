@@ -31,13 +31,12 @@ class get extends \cenozo\service\service
   protected function create_resource( $index )
   {
     $util_class_name = lib::get_class_name( 'util' );
-    $user_class_name = lib::get_class_name( 'database\user' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
     $script_class_name = lib::get_class_name( 'database\script' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
     $application_class_name = lib::get_class_name( 'database\application' );
     $notation_class_name = lib::get_class_name( 'database\notation' );
-    $setting_manager = lib::create( 'business\setting_manager' );
+    $sm = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_application_type = $db_application->get_application_type();
@@ -45,13 +44,6 @@ class get extends \cenozo\service\service
     $db_site = $session->get_site();
     $db_role = $session->get_role();
     $db_user = $session->get_user();
-
-    $user_sel = lib::create( 'database\select' );
-    $user_sel->add_column( 'id' );
-    $user_mod = lib::create( 'database\modifier' );
-    $user_mod->where( 'name', '=', $setting_manager->get_setting( 'utility', 'username' ) );
-    $user_list = $user_class_name::select( $user_sel, $user_mod );
-    $utility_user_id = $user_list[0]['id'];
 
     $application_sel = lib::create( 'database\select' );
     $application_sel->from( 'application' );
@@ -98,7 +90,7 @@ class get extends \cenozo\service\service
       try
       {
         $response = $util_class_name::exec_timeout( 'uptime -p', 1 );
-        $uptime = preg_replace( '/^up /', '', $response['output'] );
+        $uptime = preg_replace( '/^up (.*)\n/', '\1', $response['output'] );
       }
       catch ( \cenozo\exception\runtime $e ) {} // ignore errors and report an unknown time
       $pseudo_record['application']['uptime'] = $uptime;
@@ -162,10 +154,10 @@ class get extends \cenozo\service\service
       {
         // get a list of all activated modules
         $module_list = [];
-        if( $setting_manager->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
-        if( $setting_manager->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
-        if( $setting_manager->get_setting( 'module', 'relation' ) ) $module_list[] = 'relation';
-        if( $setting_manager->get_setting( 'module', 'script' ) ) $module_list[] = 'script';
+        if( $sm->get_setting( 'module', 'interview' ) ) $module_list[] = 'interview';
+        if( $sm->get_setting( 'module', 'recording' ) ) $module_list[] = 'recording';
+        if( $sm->get_setting( 'module', 'relation' ) ) $module_list[] = 'relation';
+        if( $sm->get_setting( 'module', 'script' ) ) $module_list[] = 'script';
 
         // include the user's access
         $access_sel = lib::create( 'database\select' );
@@ -195,7 +187,7 @@ class get extends \cenozo\service\service
         );
       }
 
-      if( !$session->version3 && $setting_manager->get_setting( 'module', 'script' ) )
+      if( !$session->version3 && $sm->get_setting( 'module', 'script' ) )
       {
         $db_pine_application = $session->get_pine_application();
 
@@ -230,24 +222,27 @@ class get extends \cenozo\service\service
       $pseudo_record['application']['type'] = $db_application_type->name;
       $pseudo_record['application']['application_type_id'] = $db_application_type->id;
 
-      // include the last (closed) activity for this user
-      $activity_sel = lib::create( 'database\select' );
-      $activity_sel->add_column( 'start_datetime' );
-      $activity_sel->add_column( 'end_datetime' );
-      $activity_sel->add_table_column( 'site', 'name', 'site_name' );
-      $activity_sel->add_table_column( 'role', 'name', 'role_name' );
-      $activity_mod = lib::create( 'database\modifier' );
-      $activity_mod->join( 'site', 'activity.site_id', 'site.id' );
-      $activity_mod->join( 'role', 'activity.role_id', 'role.id' );
-      $activity_mod->where( 'end_datetime', '!=', NULL );
-      $activity_mod->order_desc( 'start_datetime' );
-      $activity_mod->limit( 1 );
-      $activity_list = $db_user->get_activity_list( $activity_sel, $activity_mod );
-      $last_activity = current( $activity_list );
-      $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
+      if( !$session->version3 )
+      {
+        // include the last (closed) activity for this user
+        $activity_sel = lib::create( 'database\select' );
+        $activity_sel->add_column( 'start_datetime' );
+        $activity_sel->add_column( 'end_datetime' );
+        $activity_sel->add_table_column( 'site', 'name', 'site_name' );
+        $activity_sel->add_table_column( 'role', 'name', 'role_name' );
+        $activity_mod = lib::create( 'database\modifier' );
+        $activity_mod->join( 'site', 'activity.site_id', 'site.id' );
+        $activity_mod->join( 'role', 'activity.role_id', 'role.id' );
+        $activity_mod->where( 'end_datetime', '!=', NULL );
+        $activity_mod->order_desc( 'start_datetime' );
+        $activity_mod->limit( 1 );
+        $activity_list = $db_user->get_activity_list( $activity_sel, $activity_mod );
+        $last_activity = current( $activity_list );
+        $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
+      }
 
       // if the interview module is on then indicate whether the user is in an open assignment
-      if( $setting_manager->get_setting( 'module', 'interview' ) )
+      if( $sm->get_setting( 'module', 'interview' ) )
       {
         $pseudo_record['user']['assignment'] = NULL;
         $db_assignment = $db_user->get_open_assignment();
@@ -261,40 +256,17 @@ class get extends \cenozo\service\service
         }
       }
 
-      // include the number of active users for the application and whether it is in development mode
-      $activity_mod = lib::create( 'database\modifier' );
-      $activity_mod->where( 'user_id', '!=', $utility_user_id );
-      $activity_mod->where( 'end_datetime', '=', NULL );
-      $activity_mod->where( 'application_id', '=', $db_application->id );
-      $pseudo_record['application']['active_users'] = $activity_class_name::count( $activity_mod );
       $pseudo_record['application']['development_mode'] = lib::in_development_mode();
-      $pseudo_record['application']['list_row_size'] =
-        $setting_manager->get_setting( 'general', 'list_row_size' );
-      $pseudo_record['application']['login_failure_limit'] =
-        $setting_manager->get_setting( 'general', 'login_failure_limit' );
-      $pseudo_record['application']['max_big_report'] =
-        $setting_manager->get_setting( 'report', 'max_big_rows' );
-      $pseudo_record['application']['max_small_report'] =
-        $setting_manager->get_setting( 'report', 'max_small_rows' );
+      $pseudo_record['application']['list_row_size'] = $sm->get_setting( 'general', 'list_row_size' );
+      $pseudo_record['application']['login_failure_limit'] = $sm->get_setting( 'general', 'login_failure_limit' );
+      $pseudo_record['application']['max_big_report'] = $sm->get_setting( 'report', 'max_big_rows' );
+      $pseudo_record['application']['max_small_report'] = $sm->get_setting( 'report', 'max_small_rows' );
       $pseudo_record['application']['voip_enabled'] =
-        $setting_manager->get_setting( 'module', 'voip' ) &&
-        $setting_manager->get_setting( 'voip', 'enabled' );
-      $pseudo_record['application']['check_for_missing_hin'] =
-        $setting_manager->get_setting( 'general', 'check_for_missing_hin' );
-      $pseudo_record['application']['uid_regex'] =
-        $setting_manager->get_setting( 'general', 'uid_regex' );
-      $pseudo_record['application']['default_postcode'] =
-        $setting_manager->get_setting( 'general', 'default_postcode' );
-      $pseudo_record['application']['use_relation'] =
-        $setting_manager->get_setting( 'general', 'use_relation' );
-
-      // include the number of active users for the site
-      $activity_mod = lib::create( 'database\modifier' );
-      $activity_mod->where( 'user_id', '!=', $utility_user_id );
-      $activity_mod->where( 'end_datetime', '=', NULL );
-      $activity_mod->where( 'application_id', '=', $db_application->id );
-      $activity_mod->where( 'site_id', '=', $db_site->id );
-      $pseudo_record['site']['active_users'] = $activity_class_name::count( $activity_mod );
+        $sm->get_setting( 'module', 'voip' ) && $sm->get_setting( 'voip', 'enabled' );
+      $pseudo_record['application']['check_for_missing_hin'] = $sm->get_setting( 'general', 'check_for_missing_hin' );
+      $pseudo_record['application']['uid_regex'] = $sm->get_setting( 'general', 'uid_regex' );
+      $pseudo_record['application']['default_postcode'] = $sm->get_setting( 'general', 'default_postcode' );
+      $pseudo_record['application']['use_relation'] = $sm->get_setting( 'general', 'use_relation' );
 
       // include all module notations
       $notation_sel = lib::create( 'database\select' );

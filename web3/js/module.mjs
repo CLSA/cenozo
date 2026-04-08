@@ -171,7 +171,7 @@ export class CN_module extends CN_base_object {
     const current_description = this.get_notation(type);
     if (description == current_description) return;
 
-    const application_type_id = this.#framework ? null : CN_session.data.application.application_type_id;
+    const application_type_id = this.#framework ? null : CN_session.get("application", "application_type_id");
     const path = `notation/application_type_id=${application_type_id};subject=${this.#name};type=${type}`;
 
     if (!description) {

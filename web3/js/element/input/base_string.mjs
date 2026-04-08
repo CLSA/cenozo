@@ -4,7 +4,7 @@ import { CN_common } from "../../common.mjs"
 export class CN_input_base_string extends CN_base_input {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_base_string contructor");
+      throw new Error("Non-object config argument passed to CN_input_base_string constructor");
     }
 
     super(parent_el, config);

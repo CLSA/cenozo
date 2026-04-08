@@ -5,7 +5,7 @@ import { CN_modal_base_form } from "./base_form.mjs"
 export class CN_modal_password extends CN_modal_base_form {
   constructor(config = { title: "Change Password" }) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_password contructor");
+      throw new Error("Non-object config argument passed to CN_modal_password constructor");
     }
 
     super(config);
@@ -30,8 +30,8 @@ export class CN_modal_password extends CN_modal_base_form {
       const data = {
         user: {
           password: {
-            current: this.get_input_value("current_password"),
-            requested: this.get_input_value("new_password"),
+            current: await this.get_input_value_for_record("current_password"),
+            requested: await this.get_input_value_for_record("new_password"),
           },
         },
       };

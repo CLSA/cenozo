@@ -30,7 +30,7 @@ export class CN_base_input extends CN_base_element {
    */
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_base_input contructor");
+      throw new Error("Non-object config argument passed to CN_base_input constructor");
     }
 
     // the id and name config parameters are used for an child element, not the root element
@@ -295,7 +295,9 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   undo_value(committed = false) {
+    const data = { was_committed: this.#state.is_commited() };
     this.#state.undo(committed);
+    data.is_committed = this.#state.is_commited();
 
     if (this.get_config("undo") && this.#undo_btn_el) {
       if (this.#state.can_undo()) {
@@ -305,7 +307,7 @@ export class CN_base_input extends CN_base_element {
       }
     }
 
-    this.run_event_listeners("undovalue");
+    this.run_event_listeners("undovalue", data);
   }
 
   /**

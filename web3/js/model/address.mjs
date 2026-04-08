@@ -135,7 +135,7 @@ export class CN_address_view extends CN_traceable_view {
     timezone_btn_el.addEventListener("click", async () => {
       await CN_session.set_timezone(
         { address_id: this.get_model().get_identifier() },
-        CN_session.data.user.am_pm,
+        CN_session.get("user", "am_pm"),
       );
     });
     left_btn_group_el.append(timezone_btn_el);

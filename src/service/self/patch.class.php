@@ -63,35 +63,65 @@ class patch extends \cenozo\service\service
             $timezone = $user_array['timezone'];
             if( is_object( $timezone ) )
             {
+              $timezone_name = NULL;
               try
               {
+                // get appropriate address
+                $db_address = NULL;
                 if( property_exists( $timezone, 'address_id' ) )
                 {
-                  // make sure the address exists
-                  lib::create( 'database\address', $timezone->address_id );
+                  // make sure the address exists and its timezone is valid
+                  $db_address = lib::create( 'database\address', $value->address_id );
                 }
                 else if( property_exists( $timezone, 'participant_id' ) )
                 {
                   // make sure the participant exists and has an address
-                  $db_participant = lib::create( 'database\participant', $timezone->participant_id );
-                  if( is_null( $db_participant->get_first_address() ) ) $this->status->set_code( 409 );
+                  $db_address = lib::create(
+                    'database\participant',
+                    $timezone->participant_id
+                  )->get_first_address();
                 }
                 else if( property_exists( $timezone, 'alternate_id' ) )
                 {
                   // make sure the alternate exists and has an address
-                  $db_alternate = lib::create( 'database\alternate', $timezone->alternate_id );
-                  if( is_null( $db_alternate->get_first_address() ) ) $this->status->set_code( 409 );
+                  $db_address = lib::create(
+                    'database\alternate',
+                    $timezone->alternate_id
+                  )->get_first_address();
                 }
                 else
                 {
                   $this->status->set_code( 400 );
+                  return;
                 }
+
+                if( is_null( $db_address ) )
+                {
+                  $this->status->set_code( 409 );
+                  return;
+                }
+
+                $this->new_timezone_name = $db_address->get_timezone_name();
               }
               catch( \cenozo\exception\runtime $e )
               {
                 if( preg_match( '/^Load failed/', $e->get_raw_message() ) ) $this->status->set_code( 409 );
                 else throw $e;
               }
+            }
+            else
+            {
+              $this->new_timezone_name = $timezone;
+            }
+
+            // now make sure the new timezone name is valid
+            try
+            {
+              new \DateTimeZone( $this->new_timezone_name );
+            }
+            catch( \Exception $e )
+            {
+              $this->status->set_code( 400 );
             }
           }
         }
@@ -244,4 +274,11 @@ class patch extends \cenozo\service\service
       }
     }
   }
+
+  /**
+   * The new timezone name (determined in the validate() method
+   * @var string
+   * @access protected
+   */
+  protected $new_timezone_name = NULL;
 }

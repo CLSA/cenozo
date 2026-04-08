@@ -84,13 +84,13 @@ export class CN_api extends CN_base_object {
     }
 
     if (
-      null != CN_session.data && (
-        site_id != CN_session.data.site.id ||
-        user_id != CN_session.data.user.id ||
-        role_id != CN_session.data.role.id
+      CN_session.has_data() && (
+        site_id != CN_session.get("site", "id") ||
+        user_id != CN_session.get("user", "id") ||
+        role_id != CN_session.get("role", "id")
       )
     ) {
-      await (new CN_modal_message({
+      await CN_modal_message.create_and_open({
         title: "Login Mismatch",
         size: "lg",
         type: "danger",
@@ -104,7 +104,7 @@ export class CN_api extends CN_base_object {
             If this message persists then please contact support as someone else may be logged into your account.
           </div>
         `,
-      })).open();
+      });
 
       CN_session.reload(true);
       const error = new Error("Session mismatch.");
@@ -168,7 +168,7 @@ export class CN_api extends CN_base_object {
    * @return Response or object or string
    */
   static async get(path, params, return_response = false) {
-    const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
+    const timezone = CN_session.has_data() ? CN_session.get("user", "timezone") : "UTC";
     const response = await this.fetch(
       path,
       params,
@@ -215,7 +215,7 @@ export class CN_api extends CN_base_object {
    * @return Response or object or string
    */
   static async patch(path, data, raw = false, return_response = false) {
-    const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
+    const timezone = CN_session.has_data() ? CN_session.get("user", "timezone") : "UTC";
     const response = await this.fetch(
       path,
       null,
@@ -247,7 +247,7 @@ export class CN_api extends CN_base_object {
    * @return Response or object or string
    */
   static async post(path, data, raw = false, return_response = false) {
-    const timezone = null != CN_session.data ? CN_session.data.user.timezone : "UTC";
+    const timezone = CN_session.has_data() ? CN_session.get("user", "timezone") : "UTC";
     const response = await this.fetch(
       path,
       null,

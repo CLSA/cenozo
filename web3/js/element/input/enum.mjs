@@ -13,7 +13,7 @@ function test_option(option, value) {
 export class CN_input_enum extends CN_base_input {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_enum contructor");
+      throw new Error("Non-object config argument passed to CN_input_enum constructor");
     }
 
     // make sure the enum config object has a values array
@@ -166,16 +166,5 @@ export class CN_input_enum extends CN_base_input {
    */
   _create_control_element() {
     return this.constructor.html('<select class="form-select"></select>');
-  }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(parent_el = null, config = {}) {
-    const form_input = new CN_input_enum(parent_el, config);
-    if (parent_el) parent_el.append(form_input.get_element());
-    return form_input;
   }
 }

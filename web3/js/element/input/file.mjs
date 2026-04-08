@@ -66,24 +66,18 @@ export class CN_input_file extends CN_base_input {
   async _calculate_value_for_record(value) {
     const file = this.get_config("file");
 
-    // convert from blob
-    value = await CN_common.convert_from_blob(file.encoding, this.get_value()[0]);
-    if ("base64" == file.encoding) {
+    // convert the first file in file lists from blob to base64
+    if (CN_common.is_filelist(value)) {
+      value = await CN_common.convert_from_blob(file.encoding, value[0]);
+    } else if (CN_common.is_object(value)) {
+      value = value.data;
+    }
+
+    if (null != value && "base64" == file.encoding) {
       // remove the base64 metadata
       value = value.replace(/.*;base64,/, "");
     }
 
     return value;
-  }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(parent_el = null, config = {}) {
-    const el = new CN_input_file(parent_el, config).get_element();
-    if (parent_el) parent_el.append(el);
-    return el;
   }
 }

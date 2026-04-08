@@ -33,20 +33,12 @@
       }
 
       if (!ignore) {
-        (new CN_modal_message(params)).open();
+        CN_modal_message.create_and_open(params);
       }
     });
 
     // reload modules anytime the browser navigation buttons are clicked
-    window.addEventListener("popstate", async event => {
-      try {
-        await CN_session.load();
-        CN_session.render();
-      } catch (error) {
-        CN_session.render_error(error);
-      }
-    });
-
+    window.addEventListener("popstate", () => CN_session.render());
     CN_session.start();
   }, {once: true});
 

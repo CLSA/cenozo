@@ -6,10 +6,11 @@ export class CN_input_typeahead extends CN_base_input {
   #dropdown_bs;
   #active_item;
   #selection_made = false;
+  #input_changed = false;
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_input_typeahead contructor");
+      throw new Error("Non-object config argument passed to CN_input_typeahead constructor");
     }
 
     const default_config = {
@@ -28,6 +29,7 @@ export class CN_input_typeahead extends CN_base_input {
         },
         on_cancel: () => {
           this.undo_value(false);
+          this.#input_changed = false;
         },
       },
     };
@@ -75,7 +77,7 @@ export class CN_input_typeahead extends CN_base_input {
   async select_previous() {
     if (!this.#active_item) return;
 
-    const list = this.#get_matching_list();
+    const list = this.#get_matching_list(this.get_value());
     if (0 == list.length) return;
 
     const new_index = list.map(item => item.key).indexOf(this.#active_item.key) - 1;
@@ -90,7 +92,7 @@ export class CN_input_typeahead extends CN_base_input {
   async select_next() {
     if (!this.#active_item) return;
 
-    const list = this.#get_matching_list();
+    const list = this.#get_matching_list(this.get_value());
     if (0 == list.length) return;
 
     const new_index = list.map(item => item.key).indexOf(this.#active_item.key) + 1;
@@ -131,14 +133,12 @@ export class CN_input_typeahead extends CN_base_input {
     this.#dropdown_bs = new bootstrap.Dropdown(this.#typeahead_el);
 
     // track whether the dropdown is open or not
-    this.#typeahead_el.addEventListener(
-      "shown.bs.dropdown",
-      () => { this.get_config("typeahead").open = true; }
-    );
-    this.#typeahead_el.addEventListener(
-      "hidden.bs.dropdown",
-      () => { this.get_config("typeahead").open = false; }
-    );
+    this.#typeahead_el.addEventListener("shown.bs.dropdown", () => {
+      this.get_config("typeahead").open = true;
+    });
+    this.#typeahead_el.addEventListener("hidden.bs.dropdown", () => {
+      this.get_config("typeahead").open = false;
+    });
 
     el.addEventListener("keydown", (event) => {
       const typeahead = this.get_config("typeahead");
@@ -164,6 +164,7 @@ export class CN_input_typeahead extends CN_base_input {
             if (this.#active_item) {
               typeahead.on_select(this, this.#active_item);
               this.#selection_made = true;
+              this.#input_changed = false;
               this.#dropdown_bs.hide();
             }
           } else if (typeahead.allow_new) {
@@ -171,8 +172,8 @@ export class CN_input_typeahead extends CN_base_input {
           }
         }
       } else if ("Tab" == event.key) {
-        // disable the tab button
-        event.preventDefault();
+        // disable the tab button when the list is open
+        if (typeahead.open) event.preventDefault();
       }
     });
 
@@ -190,7 +191,7 @@ export class CN_input_typeahead extends CN_base_input {
             if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
             this.#dropdown_bs.hide();
           }
-        } else {
+        } else if (this.#input_changed) {
           if (null === this.get_value()) {
             // the input box is empty, so set to empty
             typeahead.on_select(this, { key: undefined, value: null });
@@ -198,6 +199,7 @@ export class CN_input_typeahead extends CN_base_input {
           } else {
             // return to the last committed value
             this.undo_value(true);
+            this.#input_changed = false;
           }
         }
       }
@@ -218,6 +220,7 @@ export class CN_input_typeahead extends CN_base_input {
 
       // wait a short while after the user has stopped typing before proceeding
       typeahead.timeout_id = setTimeout(typeahead.promise = async () => {
+        this.#input_changed = true;
         const value = this.get_value();
         const typeahead = this.get_config("typeahead");
         typeahead.timeout_id = null;
@@ -239,7 +242,7 @@ export class CN_input_typeahead extends CN_base_input {
           // now create a list of <li> elements for the typeahead's <ul> element
           // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
           if (null != value) {
-            li_el_list = this.#get_matching_list().map((item, index) => {
+            li_el_list = this.#get_matching_list(value).map((item, index) => {
               if (0 == index) this.#active_item = item;
 
               const item_el = this.constructor.html(`
@@ -257,6 +260,7 @@ export class CN_input_typeahead extends CN_base_input {
 
                 this.get_config("typeahead").on_select(this, item);
                 this.#selection_made = true;
+                this.#input_changed = false;
                 this.#dropdown_bs.hide();
               });
               return item_el;
@@ -283,28 +287,23 @@ export class CN_input_typeahead extends CN_base_input {
    * Extend parent method
    */
   async _calculate_value_for_record(value) {
+    if (!this.#active_item) {
+      const list = this.#get_matching_list(value);
+      if (0 < list.length) this.#active_item = list[0];
+    }
     return this.#active_item ? this.#active_item.key : null;
   }
 
   /**
    * ADD DOCS
    */
-  #get_matching_list() {
+  #get_matching_list(value) {
+    if (!value) return [];
+
     // Make sure only matching items are included
     // (this is already done in get_list() but not when the list isn't dynamic)
     return this.get_config("typeahead").list.filter(
-      item => item.value.match(new RegExp(RegExp.escape(this.get_value()), "i"))
+      item => item.value.match(new RegExp(RegExp.escape(value), "i"))
     );
-  }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(parent_el = null, config = {}) {
-    const el = new CN_input_typeahead(parent_el, config).get_element();
-    if (parent_el) parent_el.append(el);
-    return el;
   }
 }

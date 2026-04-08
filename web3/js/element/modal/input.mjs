@@ -4,7 +4,7 @@ import { CN_modal_base_form } from "./base_form.mjs"
 export class CN_modal_input extends CN_modal_base_form {
   constructor(config) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_account contructor");
+      throw new Error("Non-object config argument passed to CN_modal_input constructor");
     }
 
     super({

@@ -339,7 +339,10 @@ export class CN_action_base_record extends CN_base_action {
         };
       }
       prop.form_input = CN_input.create_input(prop.type, null, input_config);
-      prop.form_input.add_event_listener("undovalue", () => this.on_set_property(prop.name));
+      prop.form_input.add_event_listener("undovalue", (input, data) => {
+        // only update the property if we're undoing from a committed value to a committed value
+        if (data.was_committed && data.is_committed) this.on_set_property(prop.name);
+      });
     }
   }
 
@@ -454,18 +457,18 @@ export class CN_action_base_record extends CN_base_action {
    * Extends parent method
    */
   create_placeholder_element() {
-    return this.constructor.html(
-      Array.from(Array(7).keys()).map((e,index) => `
-        <div class="row mb-3">
-          <label class="col-sm-3 col-form-label text-end placeholder-glow">
-            <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
-          </label>
-          <div class="col-sm-9 placeholder-glow h-100">
-            <input class="form-control placeholder disabled" disabled></input>
-          </div>
+    const prop_list = Array.from(Array(7).keys()).map(() => `
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label text-end placeholder-glow">
+          <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>
+        </label>
+        <div class="col-sm-9 placeholder-glow h-100">
+          <input class="form-control placeholder disabled" disabled></input>
         </div>
-      `).join("")
-    );
+      </div>
+    `);
+
+    return this.constructor.html(`<div>${prop_list.join("")}</div>`);
   }
 
   /**
@@ -512,12 +515,12 @@ export class CN_action_base_record extends CN_base_action {
     prop.element = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
 
     // add the label to the property
-    const label_el = CN_element_label.create_element(prop.element, {
+    CN_element_label.append(prop.element, {
       for: prop.id,
       value: prop.title,
-      help: prop.help
+      help: prop.help,
+      class: "col-sm-3"
     });
-    label_el.classList.add("col-sm-3");
 
     prop.form_input.set_parent_element(prop.element);
     prop.element.append(prop.form_input.get_element());

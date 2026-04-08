@@ -9,7 +9,7 @@ export class CN_modal_base_form extends CN_base_modal {
 
   constructor(config) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_modal_base_form contructor");
+      throw new Error("Non-object config argument passed to CN_modal_base_form constructor");
     }
 
     super(config);
@@ -42,6 +42,14 @@ export class CN_modal_base_form extends CN_base_modal {
   get_input_value(name) {
     const input = this.get_input(name);
     return input ? input.form_input.get_value() : null;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async get_input_value_for_record(name) {
+    const input = this.get_input(name);
+    return input ? await input.form_input.get_value_for_record() : null;
   }
 
   /**
@@ -97,16 +105,13 @@ export class CN_modal_base_form extends CN_base_modal {
 
       // add the label
       const el = this.constructor.html('<div class="row mb-3"></div>');
-      const label_el = CN_element_label.create_element(el, {
-        for: config.id,
-        value: input.title,
-        class: "col-sm-3",
-      });
+      CN_element_label.append(el, { for: config.id, value: input.title, class: "col-sm-3" });
 
       // add the input
       input.form_input = CN_input.create_input(input.type, el, config);
       el.append(input.form_input.get_element());
       body_el.querySelector("div[name=inputs]").append(el);
+      input.form_input.commit_value();
 
       // if this is a text input update the size after the modal is showing
       this.add_modal_event_listener("shown", () => {

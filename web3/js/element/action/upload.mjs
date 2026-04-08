@@ -79,11 +79,7 @@ export class CN_action_upload extends CN_base_action {
     summary_el.innerHTML = "";
 
     if (CN_common.is_object(this.#summary_data)) {
-      CN_element_card.create_element(summary_el, {
-        header: "Upload Summary",
-        body: "",
-        footer: "",
-      });
+      CN_element_card.append(summary_el, { header: "Upload Summary", body: "", footer: "" });
 
       if (this.upload_is_valid()) {
         // create the upload button to be used below
@@ -113,12 +109,7 @@ export class CN_action_upload extends CN_base_action {
 
     // add the file input
     const row_el = this.constructor.html('<div class="row mx-1 pb-2"></div>');
-
-    const label_el = CN_element_label.create_element(row_el, {
-      for: "file",
-      class: "col-sm-3",
-      value: "CSV Data File"
-    });
+    CN_element_label.append(row_el, { for: "file", class: "col-sm-3", value: "CSV Data File" });
 
     const file_form_input = new CN_input_file(row_el, {
       id: "file",

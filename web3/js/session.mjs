@@ -2,6 +2,7 @@ import { CN_api } from "./api.mjs"
 import { CN_base_element } from "./element/base_element.mjs"
 import { CN_base_object } from "./base_object.mjs"
 import { CN_common } from "./common.mjs"
+import { CN_element_breadcrumb_trail } from "./element/breadcrumb_trail.mjs"
 import { CN_error_model } from "./model/error.mjs"
 import { CN_home_model } from "./model/home.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
@@ -12,73 +13,100 @@ import { CN_modal_site_role } from "./element/modal/site_role.mjs"
 import { CN_module } from "./module.mjs"
 
 /**
- * A private list of all modules used by the session
- */
-const MODULE_MAP = new Map();
-
-/**
- * A private array of models based on the current path
- */
-let PATH_MODEL_LIST = [];
-
-/**
  * The session class which handles the application
  */
-export class CN_session extends CN_base_object {
-  static data = null;
-  static system_message_list = [];
+class session extends CN_base_object {
+  #module_map = new Map();
+  #path_model_list = [];
+  #data = null;
+  #breadcrumb_trail;
 
-  constructor() {
-    throw new Error("Abstract class CN_session can't be instantiated.");
+  #main_menu_header_el;
+  #main_menu_offcanvas_el;
+  #main_content_el;
+  #breadcrumbs_el;
+  #menu_btn_group_el;
+  #menu_el;
+
+  /**
+   * ADD DOCS
+   */
+  get(category, property) {
+    if (!this.#data.hasOwnProperty(category)) {
+      throw new Error(`Tried to get unknown session category "${category}"`);
+    }
+    if (!this.#data[category].hasOwnProperty(property)) {
+      throw new Error(`Tried to get unknown session ${category} property "${property}"`);
+    }
+    return this.#data[category][property];
   }
 
   /**
    * Gets a module by name
    * @param string name: The module's name
    */
-  static get_module(name) { return MODULE_MAP.get(name); }
+  get_module(name) { return this.#module_map.get(name); }
 
   /**
-   * Returns the last model in the path (model currently showing on screen)
-   * @return model
+   * ADD DOCS
    */
-  static get_leaf_model() {
-    return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[PATH_MODEL_LIST.length-1];
+  has_data() { return null !== this.#data; }
+
+  /**
+   * Navigates the browser to the given path
+   */
+  async navigate_to(path) {
+    if (this.#data.application.development_mode) console.info(`navigating to /${path}`);
+    window.history.pushState({}, "", `${ROOT_URL}/${path}`);
+    await this.render();
   }
 
   /**
-   * Returns the first model in the path
-   * @return model
+   * Handles browser navigation buttons
    */
-  static get_root_model() {
-    return 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
-  }
+  async render() {
+    this.#main_content_el.innerHTML = "";
+    try {
+      // show loading indicator in breadcrumb trail
+      this.#breadcrumb_trail.set_config("loading", true);
+      this.#breadcrumb_trail.update_element();
 
-  /**
-   * Returns the name.action of the root module (or null if there is no root module)
-   * @return string
-   */
-  static get_root_action_name() {
-    const model = 0 == PATH_MODEL_LIST.length ? null : PATH_MODEL_LIST[0];
-    return model ? `${model.get_name()}.${model.get_action_name()}` : null;
-  }
+      await this.#load();
 
-  /**
-   * Returns the name.action of the leaf module (or null if there is no leaf module)
-   * @return string
-   */
-  static get_leaf_action_name() {
-    const model = this.get_leaf_model();
-    return model ? `${model.get_name()}.${model.get_action_name()}` : null;
-  }
+      // determine the leaf model
+      let leaf_model = this.#get_leaf_model();
+      if (null == leaf_model) leaf_model = new CN_home_model();
 
-  static set_loading_state(loading) {
-    if (loading) {
-      document.querySelector("div[name=app_bg]").classList.add("loading");
-      document.querySelector("nav.navbar").classList.add("bg-loading");
-    } else {
-      document.querySelector("div[name=app_bg]").classList.remove("loading");
-      document.querySelector("nav.navbar").classList.remove("bg-loading");
+      // first load all non-leaf models in parallel as their data may be needed by the leaf model
+      await Promise.all(this.#path_model_list.slice(0, -1).map(model => model.get_action().on_load()));
+
+      // now add the model's element to the DOM and run the leaf module
+      this.#main_content_el.append(leaf_model.get_element());
+      await leaf_model.run();
+
+      // create the crumbs for the breadcrumb trail
+      const crumb_list = [];
+      await Promise.all(this.#path_model_list.map(model => (async () => {
+        let crumb = { name: "...", path: "view" == model.get_action_name() ? model.get_view_url() : null };
+        crumb_list.push(crumb);
+
+        // get the name after we've added the crumb to the list, otherwise it may be out of order
+        crumb.name = await model.get_action().get_text("crumb");
+      })()));
+
+      // update the breadcrumbs
+      this.#breadcrumb_trail.set_config("loading", false);
+      this.#breadcrumb_trail.set_config("crumb_list", crumb_list);
+      this.#breadcrumb_trail.update_element();
+    } catch (error) {
+      const model = new CN_error_model(error);
+      await model.run();
+      this.#main_content_el.append(model.get_element());
+
+      // update the breadcrumbs
+      this.#breadcrumb_trail.set_config("loading", false);
+      this.#breadcrumb_trail.set_config("crumb_list", [{ name: "Error", path: null }]);
+      this.#breadcrumb_trail.update_element();
     }
   }
 
@@ -86,17 +114,18 @@ export class CN_session extends CN_base_object {
    * Reloads the page at a particular path
    * @param boolean root: Wether to return to the application root
    */
-  static reload(root = false) {
-    this.update_breadcrumbs(true);
-    const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
-    menu_btn_group.innerHTML = "";
-    menu_btn_group.append(CN_base_element.html(`
+  reload(root = false) {
+    // show loading indicator in breadcrumb trail
+    this.#breadcrumb_trail.set_config("loading", true);
+    this.#breadcrumb_trail.update_element();
+
+    this.#main_content_el.innerHTML = "";
+    this.#menu_btn_group_el.replaceChildren(CN_base_element.html(`
       <div class="spinner-border text-light" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
     `));
-    this.set_loading_state(true);
-    document.getElementById("main-content").innerHTML = "";
+    this.#set_loading_state(true);
     if (root) {
       window.location.assign(ROOT_URL);
     } else {
@@ -104,139 +133,19 @@ export class CN_session extends CN_base_object {
     }
   }
 
-  /**
-   * Logs the user out of the application
-   */
-  static async logout() {
-    await CN_base_element.wait_for(async () => {
-      await CN_api.delete("self/0");
-      this.reload(true);
-    });
-  }
+  async set_timezone(timezone, am_pm) {
+    if (this.#data.user.timezone != timezone || this.#data.user.am_pm != am_pm) {
+      // show loading indicator in breadcrumb trail
+      this.#breadcrumb_trail.set_config("loading", true);
+      this.#breadcrumb_trail.update_element();
 
-  /**
-   * Reads the user's session data from the server
-   */
-  static async update_data() {
-    this.data = await CN_api.get("self/0");
-
-    // convert use_12hour_clock to am_pm
-    this.data.user.am_pm = this.data.user.use_12hour_clock;
-    delete this.data.user.use_12hour_clock;
-
-    // prepare notations
-    const notations = this.data.notation.reduce((list, notation) => {
-      if (!list.hasOwnProperty(notation.subject)) list[notation.subject] = {};
-      list[notation.subject][notation.type] = notation.description;
-      return list;
-    }, {});
-
-    // create all modules
-    MODULE_MAP.clear();
-    const modules = this.data.modules;
-    delete this.data.modules;
-    for(const module_name in modules) {
-      const params = modules[module_name];
-
-      // a module is "root" if it's found in the list, utility menus, or is one of the special modules
-      params.root = ["home", "error", "custom_report", "report_type"].includes(module_name);
-
-      if (!params.root && null != this.data.menu.lists) {
-        for (const m in this.data.menu.lists) {
-          if (this.data.menu.lists[m] === module_name) {
-            params.root = true;
-            break;
-          }
-        }
-      }
-
-      if (!params.root && null != this.data.menu.utilities) {
-        for (const u in this.data.menu.utilities) {
-          if (this.data.menu.utilities[u].subject === module_name) {
-            params.root = true;
-            break;
-          }
-        }
-      }
-
-      // add the module's notations
-      params.notations = notations.hasOwnProperty(module_name) ? notations[module_name] : {};
-
-      MODULE_MAP.set(module_name, new CN_module(params));
-    }
-
-    MODULE_MAP.forEach(module => module.resolve_children());
-  }
-
-  /**
-   * Updates the system message list
-   */
-  static async update_system_messages() {
-    this.system_message_list = await CN_api.get(
-      "self/0/system_message",
-      {
-        no_activity: 1,
-        select: { column: ["id", "title", "note", "unread"] },
-        modifier: { order: { unread: true, id: false } },
-      },
-    );
-  }
-
-  /**
-   * Updates the breadcrumb trail based on the current URL
-   */
-  static update_breadcrumbs(loading = false) {
-    // add the breadcrumbs
-    const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
-    breadcrumbs_el.innerHTML = "";
-    (async () => {
-      if (!loading) await this.update_system_messages();
-      breadcrumbs_el.append(
-        await CN_base_element.create_breadcrumb_trail(
-          loading ? "Loading..." : null,
-          loading ? [] : PATH_MODEL_LIST,
-        )
-      );
-    })();
-  }
-
-  /**
-   * Gets the current time formatted by the user's preferences
-   * @return string
-   */
-  static get_time() {
-    const datetime = CN_common.format_time(new Date());
-    const tz = Intl.DateTimeFormat(
-      'en-CA',
-      { timeZone: this.data.user.timezone, timeZoneName: "short" }
-    ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
-    return `${datetime} ${tz}`;
-  }
-
-  static get_timezone() {
-    return this.data.user.timezone;
-  }
-
-  static get_am_pm() {
-    return this.data.user.am_pm;
-  }
-
-  static get_tz_offset() {
-    return this.data.user.tz_offset;
-  }
-
-  static async set_timezone(timezone, am_pm) {
-    if (this.data.user.timezone != timezone || this.data.user.am_pm != am_pm) {
-      this.update_breadcrumbs(true);
-      const menu_btn_group = document.querySelector("div[name=menu-btn-group]");
-      menu_btn_group.innerHTML = "";
-      menu_btn_group.append(CN_base_element.html(`
+      this.#main_content_el.innerHTML = "";
+      this.#menu_btn_group_el.replaceChildren(CN_base_element.html(`
         <div class="spinner-border text-light" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
       `));
-      this.set_loading_state(true);
-      document.getElementById("main-content").innerHTML = "";
+      this.#set_loading_state(true);
 
       // update the user then reload the UI so all datetimes are adjusted
       try {
@@ -263,7 +172,7 @@ export class CN_session extends CN_base_object {
             );
           }
 
-          await (new CN_modal_message(params)).open();
+          await CN_modal_message.create_and_open(params);
         } else {
           throw error;
         }
@@ -274,18 +183,132 @@ export class CN_session extends CN_base_object {
   }
 
   /**
+   * Starts the application
+   */
+  async start() {
+    await this.#update_data();
+    if (this.#data.application.development_mode) console.info("Development mode");
+    await this.#generate_ui();
+    await this.render();
+    this.#set_loading_state(false);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  update_breadcrumbs() {
+    this.#breadcrumb_trail.update_element();
+  }
+
+  /**
+   * Returns the last model in the path (model currently showing on screen)
+   * @return model
+   */
+  #get_leaf_model() {
+    return 0 == this.#path_model_list.length ? null : this.#path_model_list[this.#path_model_list.length-1];
+  }
+
+  /**
+   * Returns the first model in the path
+   * @return model
+   */
+  #get_root_model() {
+    return 0 == this.#path_model_list.length ? null : this.#path_model_list[0];
+  }
+
+  /**
+   * Returns the name.action of the root module (or null if there is no root module)
+   * @return string
+   */
+  #get_root_action_name() {
+    const model = 0 == this.#path_model_list.length ? null : this.#path_model_list[0];
+    return model ? `${model.get_name()}.${model.get_action_name()}` : null;
+  }
+
+  #set_loading_state(loading) {
+    if (loading) {
+      document.querySelector("div[name=app-bg]").classList.add("loading");
+      document.querySelector("nav.navbar").classList.add("bg-loading");
+    } else {
+      document.querySelector("div[name=app-bg]").classList.remove("loading");
+      document.querySelector("nav.navbar").classList.remove("bg-loading");
+    }
+  }
+
+  /**
+   * Logs the user out of the application
+   */
+  async #logout() {
+    await CN_base_element.wait_for(async () => {
+      await CN_api.delete("self/0");
+      this.reload(true);
+    });
+  }
+
+  /**
+   * Reads the user's session data from the server
+   */
+  async #update_data() {
+    this.#data = await CN_api.get("self/0");
+
+    // convert use_12hour_clock to am_pm
+    this.#data.user.am_pm = this.#data.user.use_12hour_clock;
+    delete this.#data.user.use_12hour_clock;
+
+    // prepare notations
+    const notations = this.#data.notation.reduce((list, notation) => {
+      if (!list.hasOwnProperty(notation.subject)) list[notation.subject] = {};
+      list[notation.subject][notation.type] = notation.description;
+      return list;
+    }, {});
+
+    // create all modules
+    this.#module_map.clear();
+    const modules = this.#data.modules;
+    delete this.#data.modules;
+    for(const module_name in modules) {
+      const params = modules[module_name];
+
+      // a module is "root" if it's found in the list, utility menus, or is one of the special modules
+      params.root = ["home", "error", "custom_report", "report_type"].includes(module_name);
+
+      if (!params.root && null != this.#data.menu.lists) {
+        for (const m in this.#data.menu.lists) {
+          if (this.#data.menu.lists[m] === module_name) {
+            params.root = true;
+            break;
+          }
+        }
+      }
+
+      if (!params.root && null != this.#data.menu.utilities) {
+        for (const u in this.#data.menu.utilities) {
+          if (this.#data.menu.utilities[u].subject === module_name) {
+            params.root = true;
+            break;
+          }
+        }
+      }
+
+      // add the module's notations
+      params.notations = notations.hasOwnProperty(module_name) ? notations[module_name] : {};
+
+      this.#module_map.set(module_name, new CN_module(params));
+    }
+
+    this.#module_map.forEach(module => module.resolve_children());
+  }
+
+  /**
    * Loads all modules and creates all models based on the current URL
    */
-  static async load() {
-    const main_content_el = document.getElementById("main-content");
-    const menu_el = document.getElementById("main-menu-offcanvas").querySelector("div[name=menu]");
-
+  async #load() {
     // un-highlight any selected menu button
-    const selected_menu_btn_el = menu_el.querySelector("button.fw-bold");
+    const selected_menu_btn_el = this.#menu_el.querySelector("button.fw-bold");
     if (selected_menu_btn_el) selected_menu_btn_el.classList.remove("fw-bold");
 
     // reset the path model list
-    PATH_MODEL_LIST.length = 0;
+    this.#path_model_list.length = 0;
 
     // build the action list based on the path
     const href_parts = window.location.pathname
@@ -353,10 +376,10 @@ export class CN_session extends CN_base_object {
 
     // create and configure all models
     let parent_model = null;
-    PATH_MODEL_LIST = model_data_list.map((model_data, index) => {
+    this.#path_model_list = model_data_list.map((model_data, index) => {
       const model = model_data.module.create_model();
       model.configure(
-        main_content_el,
+        this.#main_content_el,
         model_data.action,
         model_data.identifier,
         parent_model,
@@ -367,74 +390,28 @@ export class CN_session extends CN_base_object {
     });
 
     // highlight menu item corresponding with the path's first model
-    if (0 < PATH_MODEL_LIST.length) {
-      let name = this.get_root_action_name();
+    if (0 < this.#path_model_list.length) {
+      let name = this.#get_root_action_name();
       // reports all have the same action name, so add the report-type identifier
-      if ("report_type.view" == this.get_root_action_name()) name += '.' + this.get_root_model().get_identifier();
+      if ("report_type.view" == this.#get_root_action_name()) {
+        name += '.' + this.#get_root_model().get_identifier();
+      }
 
-      let menu_btn_el = menu_el.querySelector(`button[name="${name}"]`);
+      let menu_btn_el = this.#menu_el.querySelector(`button[name="${name}"]`);
       if (menu_btn_el) {
         menu_btn_el.classList.add("fw-bold");
       } else {
-        menu_btn_el = menu_el.querySelector(`button[name="${PATH_MODEL_LIST[0].get_name()}.list"]`);
+        menu_btn_el = this.#menu_el.querySelector(`button[name="${this.#path_model_list[0].get_name()}.list"]`);
         if (menu_btn_el) menu_btn_el.classList.add("fw-bold");
       }
     }
   }
 
   /**
-   * Renders the current state to the UI based on the loaded modules/models
-   */
-  static async render() {
-    const main_content_el = document.getElementById("main-content");
-    main_content_el.innerHTML = "";
-
-    // determine the leaf model
-    let leaf_model = this.get_leaf_model();
-    if (null == leaf_model) leaf_model = new CN_home_model();
-
-    // first load all non-leaf models in parallel as their data may be needed by the leaf model
-    await Promise.all(PATH_MODEL_LIST.slice(0, -1).map(model => model.get_action().on_load()));
-
-    // now add the model's element to the DOM and run the leaf module
-    main_content_el.append(leaf_model.get_element());
-    await leaf_model.run();
-    await this.update_breadcrumbs();
-  }
-
-  /**
-   * Renders an error to the UI
-   */
-  static async render_error(error) {
-    const main_content_el = document.getElementById("main-content");
-    main_content_el.innerHTML = "";
-
-    // create an error model and add it's element to the DOM
-    const model = new CN_error_model(error);
-    await model.run();
-    main_content_el.append(model.get_element());
-  }
-
-  /**
-   * Navigates the browser to the given path
-   */
-  static async navigate_to(path) {
-    if (this.data.application.development_mode) console.info(`navigating to /${path}`);
-    window.history.pushState({}, "", `${ROOT_URL}/${path}`);
-
-    try {
-      await this.load();
-      await this.render();
-    } catch (error) {
-      await this.render_error(error);
-    }
-  }
-
-  /**
    * Creates the main UI body
    */
-  static create_body() {
-    document.querySelector("div[name=app_body]").innerHTML = `
+  async #generate_ui() {
+    this.#main_menu_header_el = CN_base_element.html(`
       <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
         <div class="container-fluid">
           <button
@@ -446,22 +423,31 @@ export class CN_session extends CN_base_object {
           >
             <strong>${APP_TITLE}</strong>
           </button>
-          <div name="breadcrumbs" class="collapse navbar-collapse ms-2">
-          </div>
-          <div name="menu-btn-group" class="d-flex">
-            <div name="access"></div>
-            <button name="clock" class="btn btn-outline-light">
-              <i class="bi bi-clock-fill"></i>
-              <span name="time" class="nav-item"></span>
-            </button>
-          </div>
         </div>
       </nav>
+    `);
 
+    this.#breadcrumbs_el = CN_base_element.html(
+      '<div name="breadcrumbs" class="collapse navbar-collapse ms-2"></div>'
+    );
+    this.#main_menu_header_el.querySelector("div.container-fluid").append(this.#breadcrumbs_el);
+    this.#breadcrumb_trail = CN_element_breadcrumb_trail.append(this.#breadcrumbs_el, { loading: true });
+
+    this.#menu_btn_group_el = CN_base_element.html(`
+      <div name="menu-btn-group" class="d-flex">
+        <div name="access"></div>
+        <button name="clock" class="btn btn-outline-light">
+          <i class="bi bi-clock-fill"></i>
+          <span name="time" class="nav-item"></span>
+        </button>
+      </div>
+    `);
+    this.#main_menu_header_el.querySelector("div.container-fluid").append(this.#menu_btn_group_el);
+
+    this.#main_menu_offcanvas_el = CN_base_element.html(`
       <div
         class="offcanvas offcanvas-top h-auto"
         id="main-menu-offcanvas"
-        aria-labelledby="main-menu-offcanvas-label"
         data-bs-backdrop="false"
         tabindex="-1"
         style="translate: 0 46px;"
@@ -484,87 +470,96 @@ export class CN_session extends CN_base_object {
           <div name="menu" class="row mt-1 g-2"></div>
         </div>
       </div>
-      <div id="main-content" class="container-fluid my-2"></div>
-    `;
-  }
+    `);
+    this.#menu_el = this.#main_menu_offcanvas_el.querySelector("div[name=menu]");
 
-  /**
-   * Starts the application
-   */
-  static async start() {
-    await this.update_data();
-    if (this.data.application.development_mode) console.info("Development mode");
-    this.create_body();
+    this.#main_content_el = CN_base_element.html('<div class="container-fluid my-2"></div>');
 
-    const split_lists = null != this.data.menu.lists && 20 <= Object.keys(this.data.menu.lists).length;
-    const main_menu_header_el = document.getElementById("main-menu-header");
-    const main_menu_offcanvas_el = document.getElementById("main-menu-offcanvas");
-    const main_menu_offcanvas_bs = new bootstrap.Offcanvas(main_menu_offcanvas_el);
+    document.querySelector("div[name=app-body]").replaceChildren(
+      this.#main_menu_header_el,
+      this.#main_menu_offcanvas_el,
+      this.#main_content_el,
+    );
 
-    const access_el = main_menu_header_el.querySelector("div[name=access]");
+    const split_lists = null != this.#data.menu.lists && 20 <= Object.keys(this.#data.menu.lists).length;
+    const main_menu_offcanvas_bs = new bootstrap.Offcanvas(this.#main_menu_offcanvas_el);
+
+    const access_el = this.#main_menu_header_el.querySelector("div[name=access]");
     const access_count = await CN_api.count("self/0/access");
     if (1 == access_count) {
       access_el.append(CN_base_element.html(`
         <div class="text-bg-primary mx-1 p-2">
-          ${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}
+          ${CN_common.uc_words(this.#data.role.name)} @ ${this.#data.site.name}
         </div>
       `));
     } else {
       const access_btn_el = CN_base_element.html(`
         <button name="access" class="btn btn-outline-light mx-1">
-          ${CN_common.uc_words(this.data.role.name)} @ ${this.data.site.name}
+          ${CN_common.uc_words(this.#data.role.name)} @ ${this.#data.site.name}
         </button>
       `);
       access_btn_el.addEventListener("click", () => {
         main_menu_offcanvas_bs.hide();
-        (new CN_modal_site_role()).open();
+        CN_modal_site_role.create_and_open();
       });
       access_el.append(access_btn_el);
     }
 
     // keep the clock running
-    const time_el = main_menu_header_el.querySelector("span[name=time]");
-    const update_clock = () => time_el.innerHTML = this.get_time();
+    const time_el = this.#main_menu_header_el.querySelector("span[name=time]");
+    const update_clock = () => {
+      const datetime = CN_common.format_time(new Date());
+      const tz = Intl.DateTimeFormat(
+        'en-CA',
+        { timeZone: this.#data.user.timezone, timeZoneName: "short" }
+      ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
+      time_el.innerHTML = `${datetime} ${tz}`;
+    };
     update_clock();
     setInterval(update_clock, 1000);
 
     // wire up the clock and menu buttons
-    const clock_el = main_menu_header_el.querySelector("button[name=clock]");
+    const clock_el = this.#main_menu_header_el.querySelector("button[name=clock]");
     clock_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_clock_settings()).open();
+      CN_modal_clock_settings.create_and_open();
     });
-    const account_btn_el = main_menu_offcanvas_el.querySelector("button[name=account]");
-    account_btn_el.addEventListener("click", () => {
+    const account_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=account]");
+    account_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_account()).open();
+      const response = await CN_modal_account.create_and_open();
+      if (null != response) {
+        this.#data.user.first_name = response.first_name;
+        this.#data.user.last_name = response.last_name;
+        this.#data.user.email = response.email;
+      }
     });
-    const timezone_btn_el = main_menu_offcanvas_el.querySelector("button[name=timezone]");
+    const timezone_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=timezone]");
     timezone_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_clock_settings()).open();
+      CN_modal_clock_settings.create_and_open();
     });
-    const password_btn_el = main_menu_offcanvas_el.querySelector("button[name=password]");
+    const password_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=password]");
     password_btn_el.addEventListener("click", () => {
       main_menu_offcanvas_bs.hide();
-      (new CN_modal_password()).open();
+      CN_modal_password.create_and_open();
     });
-    const logout_btn_el = main_menu_offcanvas_el.querySelector("button[name=logout]");
+    const logout_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=logout]");
     logout_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
-      await this.logout();
+      await this.#logout();
     });
 
     // determine the column width of each sub-menu
     const total_menus = (
-      (null == this.data.menu.lists ? 0 : 1) +
-      (null == this.data.menu.utilities ? 0 : 1) +
-      (null == this.data.menu.reports ? 0 : 1)
+      (null == this.#data.menu.lists ? 0 : 1) +
+      (null == this.#data.menu.utilities ? 0 : 1) +
+      (null == this.#data.menu.reports ? 0 : 1)
     );
     const col_width = 1 < total_menus ?  12/(total_menus + (split_lists?1:0)) : null;
 
     // build the lists sub-menu
-    if (null != this.data.menu.lists) {
+    if (null != this.#data.menu.lists) {
       const sub_menu_el = CN_base_element.html(`
         <div name="lists">
           <div class="btn-group-vertical w-100">
@@ -574,7 +569,7 @@ export class CN_session extends CN_base_object {
       `);
       CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
       if (null != col_width) sub_menu_el.classList.add(`col-${split_lists ? 2*col_width : col_width}`);
-      main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
+      this.#menu_el.append(sub_menu_el);
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
       if (split_lists) {
@@ -586,10 +581,10 @@ export class CN_session extends CN_base_object {
         `));
       }
 
-      const lists_total = Object.keys(this.data.menu.lists).length;
+      const lists_total = Object.keys(this.#data.menu.lists).length;
       let index = 0;
-      for (const title in this.data.menu.lists) {
-        const name = this.data.menu.lists[title];
+      for (const title in this.#data.menu.lists) {
+        const name = this.#data.menu.lists[title];
         let side = null;
         let rounded = "";
         if (split_lists) {
@@ -623,7 +618,7 @@ export class CN_session extends CN_base_object {
     }
 
     // build the utilities sub-menu
-    if (null != this.data.menu.utilities) {
+    if (null != this.#data.menu.utilities) {
       const sub_menu_el = CN_base_element.html(`
         <div name="utilities">
           <div class="btn-group-vertical w-100">
@@ -633,11 +628,11 @@ export class CN_session extends CN_base_object {
       `);
       CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
       if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
-      main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
+      this.#menu_el.append(sub_menu_el);
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
-      for (const title in this.data.menu.utilities) {
-        const utility = this.data.menu.utilities[title];
+      for (const title in this.#data.menu.utilities) {
+        const utility = this.#data.menu.utilities[title];
         const btn_el = CN_base_element.html(`
           <button
             name="${utility.subject}.${utility.action}"
@@ -654,7 +649,7 @@ export class CN_session extends CN_base_object {
     }
 
     // build the reports sub-menu
-    if (null != this.data.menu.reports) {
+    if (null != this.#data.menu.reports) {
       const sub_menu_el = CN_base_element.html(`
         <div name="reports">
           <div class="btn-group-vertical w-100">
@@ -664,11 +659,11 @@ export class CN_session extends CN_base_object {
       `);
       CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
       if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
-      main_menu_offcanvas_el.querySelector("div[name=menu]").append(sub_menu_el);
+      this.#menu_el.append(sub_menu_el);
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
-      for (const title in this.data.menu.reports) {
-        const id = this.data.menu.reports[title];
+      for (const title in this.#data.menu.reports) {
+        const id = this.#data.menu.reports[title];
         const btn_el = CN_base_element.html(`
           <button
             name="${null == id ? "custom_report.list" : "report_type.view." + id}"
@@ -683,19 +678,9 @@ export class CN_session extends CN_base_object {
         btn_group_el.append(btn_el);
       }
     }
-
-    try {
-      await this.load();
-      await this.render();
-
-      // update the breadcrumbs every 5 minutes (this will check for system messages)
-      setInterval(async () => {
-        await this.update_breadcrumbs();
-      }, 300000);
-    } catch (error) {
-      await this.render_error(error);
-    } finally {
-      this.set_loading_state(false);
-    }
   }
 }
+
+// Now create the session singleton and export it
+const CN_session = new session();
+export { CN_session };

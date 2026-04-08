@@ -4,7 +4,7 @@ import { CN_common } from "../common.mjs"
 export class CN_element_card extends CN_base_element {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_element_card contructor");
+      throw new Error("Non-object config argument passed to CN_element_card constructor");
     }
 
     // don't replace classes, append them instead
@@ -65,17 +65,6 @@ export class CN_element_card extends CN_base_element {
       footer_el.remove();
     }
 
-    return el;
-  }
-
-  /**
-   * Convenience method to create and add to a parent element (without needing access to the created object)
-   * @param object params: The parameters sent to the class constructor
-   * @return Element
-   */
-  static create_element(parent_el = null, config = {}) {
-    const el = new CN_element_card(parent_el, config).get_element();
-    if (parent_el) parent_el.append(el);
     return el;
   }
 }

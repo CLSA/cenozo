@@ -51,7 +51,7 @@ export class CN_error_model extends CN_base_model {
       }
       console.error(message);
 
-      this.#element = CN_element_card.create_element(null, {
+      this.#element = CN_element_card.create({
         header: "Loading...",
         body: "",
         footer: "",
@@ -63,11 +63,6 @@ export class CN_error_model extends CN_base_model {
         this.#element.querySelector(".card-body").innerHTML = await this.get_text("message");
       })();
       this.#element.querySelector(".card-footer").classList.add("bg-danger");
-
-      // add the breadcrumbs
-      const breadcrumbs_el = document.querySelector("#main-menu-header div[name=breadcrumbs]");
-      breadcrumbs_el.innerHTML = "";
-      (async () => { breadcrumbs_el.append(await CN_base_element.create_breadcrumb_trail("Error")); })();
     }
 
     return this.#element;

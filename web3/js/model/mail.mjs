@@ -129,12 +129,13 @@ export class CN_mail_model extends CN_base_model {
   }
 
   /**
-   * Only allow email to be deleted if it hasn't been sent
+   * Extend parent method
    */
   allow_delete() {
+    // Only allow email to be deleted if it hasn't been sent
     return (
       super.allow_delete() &&
-      "mail.view" == CN_session.get_leaf_action_name() &&
+      "view" == this.get_action_name() &&
       "(empty)" == this.get_action().get_property_value("sent_datetime")
     );
   }
@@ -167,11 +168,11 @@ export class CN_mail_view extends CN_action_view {
       }
       if (response.mail_footer) message += "\n" + response.mail_footer;
 
-      await (new CN_modal_message({
+      await CN_modal_message.create_and_open({
         title: "Mail Preview",
         message: message,
         size: "xl",
-      })).open();
+      });
     });
     left_btn_group_el.append(preview_btn_el);
 

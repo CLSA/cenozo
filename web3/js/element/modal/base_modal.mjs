@@ -14,7 +14,7 @@ export class CN_base_modal extends CN_base_element {
    */
   constructor(config = {}) {
     if (!CN_common.is_object(config)) {
-      throw new Error("Non-object config argument passed to CN_base_modal contructor");
+      throw new Error("Non-object config argument passed to CN_base_modal constructor");
     }
 
     // the type must be div
@@ -109,6 +109,13 @@ export class CN_base_modal extends CN_base_element {
    */
   add_modal_event_listener(type, listener) {
     this.#modal_event_listener_list.push({ type, listener });
+  }
+
+  /**
+   * ADD DOCS
+   */
+  static async create_and_open(config) {
+    return await (new this(config)).open();
   }
 
   /**

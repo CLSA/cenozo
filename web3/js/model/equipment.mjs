@@ -37,7 +37,7 @@ export class CN_equipment_model extends CN_base_model {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
-          is_hidden: (model) => !CN_session.data.role.all_sites || "site" == model.get_parent_model().get_name(),
+          is_hidden: (model) => !CN_session.get("role", "all_sites") || "site" == model.get_parent_model().get_name(),
         },
         serial_number: { title: "Serial Number", format: "identifier" },
         status: {

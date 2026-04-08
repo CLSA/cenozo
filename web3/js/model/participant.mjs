@@ -25,7 +25,7 @@ export class CN_participant_model extends CN_base_person_model {
       status: { title: "Status", table_prefix: false },
     };
     // only add the site column if this is a site-based application
-    if (CN_session.data.application.site_based) {
+    if (CN_session.get("application", "site_based")) {
       columns.site = { column: "site.name", title: "Site" };
     }
     columns.global_note = { title: "Special Note", type: "text", limit: 20 };
@@ -139,7 +139,7 @@ export class CN_participant_model extends CN_base_person_model {
               title: "Date of Birth",
               type: "dob",
               max: "now",
-              is_constant: () => 3 <= CN_session.data.role.tier,
+              is_constant: () => 3 <= CN_session.get("role", "tier"),
             },
             date_of_death: {
               title: "Date of Death",
@@ -423,7 +423,7 @@ export class CN_participant_multiedit extends CN_base_action {
       module: null,
       proceed_btn_el: null,
       enum: {
-        path: `application/${CN_session.data.application.id}/collection`,
+        path: `application/${CN_session.get("application", "id")}/collection`,
         select: { column: ["name", { column: "locked", alias: "disabled" }] },
         modifier: {
           where: { column: "collection.active", operator: "=", value: true },
@@ -595,7 +595,7 @@ export class CN_participant_multiedit extends CN_base_action {
           const prop_id = `participant_${prop_name}`;
           const row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-          CN_element_label.create_element(row_el, { for: prop_id, value: prop.title, class: "col-sm-3" });
+          CN_element_label.append(row_el, { for: prop_id, value: prop.title, class: "col-sm-3" });
 
           // determine the property's UI element based on the type
           let params = CN_common.clone(prop);
@@ -680,13 +680,13 @@ export class CN_participant_multiedit extends CN_base_action {
           let sticky_prop_id = `${module_name}_sticky`;
           const sticky_row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-          CN_element_label.create_element(sticky_row_el, {
+          CN_element_label.append(sticky_row_el, {
             for: sticky_prop_id,
             value: "Sticky",
             class: "col-sm-3",
           });
 
-          CN_input.create_element( "boolean", sticky_row_el, {
+          CN_input.append( "boolean", sticky_row_el, {
             id: sticky_prop_id,
             action: this,
             required: true,
@@ -700,13 +700,13 @@ export class CN_participant_multiedit extends CN_base_action {
           let note_prop_id = `${module_name}_note`;
           const note_row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-          CN_element_label.create_element(note_row_el, {
+          CN_element_label.append(note_row_el, {
             for: note_prop_id,
             value: "Note",
             class: "col-sm-3",
           });
 
-          CN_input.create_element( "text", note_row_el, {
+          CN_input.append( "text", note_row_el, {
             id: note_prop_id,
             action: this,
             required: true,
@@ -724,13 +724,13 @@ export class CN_participant_multiedit extends CN_base_action {
           let op_prop_id = `${module_name}_operation`;
           const op_row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-          CN_element_label.create_element(op_row_el, {
+          CN_element_label.append(op_row_el, {
             for: op_prop_id,
             value: "Operation",
             class: "col-sm-3",
           });
 
-          CN_input.create_element( "enum", op_row_el, {
+          CN_input.append( "enum", op_row_el, {
             id: op_prop_id,
             action: this,
             required: true,
@@ -750,13 +750,13 @@ export class CN_participant_multiedit extends CN_base_action {
           let item_prop_id = `${module_name}_id`;
           const item_row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-          CN_element_label.create_element(item_row_el, {
+          CN_element_label.append(item_row_el, {
             for: item_prop_id,
             value: pretty_module_name,
             class: "col-sm-3",
           });
 
-          CN_input.create_element( "enum", item_row_el, {
+          CN_input.append( "enum", item_row_el, {
             id: item_prop_id,
             action: this,
             required: true,
@@ -772,7 +772,7 @@ export class CN_participant_multiedit extends CN_base_action {
             const prop_id = `${module_name}_${prop_name}`;
             const row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-            CN_element_label.create_element(row_el, {
+            CN_element_label.append(row_el, {
               for: prop_id,
               value: prop.title,
               class: "col-sm-3",
@@ -794,7 +794,7 @@ export class CN_participant_multiedit extends CN_base_action {
               params.max_length = module_prop.max_length;
             }
 
-            CN_input.create_element(params.type, row_el, params);
+            CN_input.append(params.type, row_el, params);
             fields_el.append(row_el);
           }
         }
@@ -917,11 +917,11 @@ export class CN_participant_multiedit extends CN_base_action {
           }, {});
 
           if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
-            await (new CN_modal_message({
+            await CN_modal_message.create_and_open({
               title: "No Columns Selected",
               message: "Please select at least one column to edit.",
               type: "danger",
-            })).open();
+            });
             return;
           }
 
@@ -940,7 +940,7 @@ export class CN_participant_multiedit extends CN_base_action {
           } the "${name}" ${pretty_module_name}.`;
         }
 
-        await (new CN_modal_message({
+        await CN_modal_message.create_and_open({
           title: (
             "participant" == module_name ?
             "Participant Details Updated" :
@@ -949,7 +949,7 @@ export class CN_participant_multiedit extends CN_base_action {
             `${pretty_module_name} Records Added`
           ),
           message: message,
-        })).open();
+        });
       });
 
       tab_el.querySelector("div.card-footer").append(mod.proceed_btn_el);
@@ -1030,7 +1030,7 @@ export class CN_participant_scripts extends CN_base_action {
     await super.on_load();
 
     // get the script list for this application
-    this.#script_list = await CN_api.get(`application/${CN_session.data.application.id}/script`, {
+    this.#script_list = await CN_api.get(`application/${CN_session.get("application", "id")}/script`, {
       select: { column: ["id", "name", "url"] },
       modifier: {
         where: {
@@ -1110,19 +1110,19 @@ export class CN_participant_scripts extends CN_base_action {
 
           // if we still don't have a token then there's a problem
           if (null == script.token) {
-            await (new CN_modal_message({
+            await CN_modal_message.create_and_open({
               title: "Respondent Not Found",
               message:
                 "Unable to find the respondent record belonging to the script you are trying to launch. " +
                 "If the problem persists please contact support.",
               type: "danger",
-            })).open();
+            });
           } else {
             // launch the sript
             const url_params = {
               show_hidden: 1,
-              site: CN_session.data.site.name,
-              username: CN_session.data.user.name,
+              site: CN_session.get("site", "name"),
+              username: CN_session.get("user", "name"),
             };
             const params = (new URLSearchParams(url_params)).toString()
             window.open(
@@ -1259,7 +1259,7 @@ export class CN_participant_selection extends CN_base_element {
       "idtype_list"
     );
 
-    const card_el = CN_element_card.create_element(null, {
+    const card = CN_element_card.append(element, {
       header: this.constructor.html(`
         <div class="d-flex">
           <div class="flex-grow-1">Participant Selection</div>
@@ -1269,9 +1269,8 @@ export class CN_participant_selection extends CN_base_element {
       body: "",
       footer: this.constructor.html('<div class="row"></div>'),
     });
-    element.append(card_el);
 
-    const card_body_el = card_el.querySelector(".card-body");
+    const card_body_el = card.get_element().querySelector(".card-body");
     this.#identifier_list_form_input = CN_input.create_input("text", card_body_el, {
       id: identifier_list_id,
       rows: 5,
@@ -1296,7 +1295,7 @@ export class CN_participant_selection extends CN_base_element {
     this.constructor.set_disabled(this.#confirm_btn_el, true);
 
     const row_el = element.querySelector("div.row");
-    CN_element_label.create_element(row_el, {
+    CN_element_label.append(row_el, {
       for: idtype_list_id,
       value: "Identifier",
       class: "col-sm-3",
