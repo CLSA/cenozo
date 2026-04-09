@@ -73,68 +73,74 @@ export class CN_home_model extends CN_base_model {
   /**
    * Replace parent method
    */
-  get_element() {
-    if (undefined === this.#element) {
-      // determine the last activity
-      let last_activity = "None";
-      const activity = CN_session.get("user", "last_activity");
-      if (null != activity) {
-        last_activity = (
-          CN_common.format_datetime(activity.start_datetime, "date") +
-          " from " +
-          CN_common.format_time(activity.start_datetime) +
-          " until " +
-          CN_common.format_time(activity.end_datetime)
-        );
-      }
-
-      this.#element = CN_base_element.html(`
-        <div class="container-fluid rounded bg-white p-4">
-          <div class="row">
-            <div class="col-sm-6">
-              <div class="text-primary fs-4">Welcome to ${CN_session.get("application", "title")}</div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Version:</label>
-                <div class="col-sm-9 col-form-label">
-                  ${CN_session.get("application", "version")} build ${CN_session.get("application", "app_build")}
-                </div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Framework:</label>
-                <div class="col-sm-9 col-form-label">
-                  ${CN_session.get("application", "cenozo")} build ${CN_session.get("application", "cenozo_build")}
-                </div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Account:</label>
-                <div class="col-sm-9 col-form-label">
-                  ${CN_session.get("user", "first_name")} ${CN_session.get("user", "last_name")}
-                  (${CN_session.get("user", "name")})
-                </div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Last login:</label>
-                <div class="col-sm-9 col-form-label">${last_activity}</div>
-              </div>
-              <div class="row ms-3">
-                <label class="col-sm-3 col-form-label fw-bold">Uptime:</label>
-                <div name="uptime" class="col-sm-9 col-form-label">Unknown</div>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <img
-                class="w-100"
-                src="${CN_session.get("application", "cenozo_url")}/img/branding.png"
-                alt="${APP_TITLE}"
-              ></img>
-            </div>
-            <div class="mt-4 text-primary fs-4">System Messages</div>
-            <div name="system-messages" class="row ms-3"></div>
-          </div>
-        </div>
-      `);
+  _create_element() {
+    // determine the last activity
+    let last_activity = "None";
+    const activity = CN_session.get("user", "last_activity");
+    if (null != activity) {
+      last_activity = (
+        CN_common.format_datetime(activity.start_datetime, "date") +
+        " from " +
+        CN_common.format_time(activity.start_datetime) +
+        " until " +
+        CN_common.format_time(activity.end_datetime)
+      );
     }
 
+    return CN_base_element.html(`
+      <div class="container-fluid rounded bg-white p-4">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="text-primary fs-4">Welcome to ${CN_session.get("application", "title")}</div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Version:</label>
+              <div class="col-sm-9 col-form-label">
+                ${CN_session.get("application", "version")} build ${CN_session.get("application", "app_build")}
+              </div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Framework:</label>
+              <div class="col-sm-9 col-form-label">
+                ${CN_session.get("application", "cenozo")} build ${CN_session.get("application", "cenozo_build")}
+              </div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Account:</label>
+              <div class="col-sm-9 col-form-label">
+                ${CN_session.get("user", "first_name")} ${CN_session.get("user", "last_name")}
+                (${CN_session.get("user", "name")})
+              </div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Last login:</label>
+              <div class="col-sm-9 col-form-label">${last_activity}</div>
+            </div>
+            <div class="row ms-3">
+              <label class="col-sm-3 col-form-label fw-bold">Uptime:</label>
+              <div name="uptime" class="col-sm-9 col-form-label">Unknown</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <img
+              class="w-100"
+              src="${CN_session.get("application", "cenozo_url")}/img/branding.png"
+              alt="${APP_TITLE}"
+            ></img>
+          </div>
+          <div class="mt-4 text-primary fs-4">System Messages</div>
+          <div name="system-messages"></div>
+        </div>
+      </div>
+    `);
+  }
+
+  /**
+   * Replace parent method
+   */
+  get_element() {
+    if (undefined === this.#element) {
+      this.#element = this._create_element();
+    }
     return this.#element;
   }
 

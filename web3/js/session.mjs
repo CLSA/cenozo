@@ -4,7 +4,6 @@ import { CN_base_object } from "./base_object.mjs"
 import { CN_common } from "./common.mjs"
 import { CN_element_breadcrumb_trail } from "./element/breadcrumb_trail.mjs"
 import { CN_error_model } from "./model/error.mjs"
-import { CN_home_model } from "./model/home.mjs"
 import { CN_modal_account } from "./element/modal/account.mjs"
 import { CN_modal_clock_settings } from "./element/modal/clock_settings.mjs"
 import { CN_modal_message } from "./element/modal/message.mjs"
@@ -75,7 +74,15 @@ class session extends CN_base_object {
 
       // determine the leaf model
       let leaf_model = this.#get_leaf_model();
-      if (null == leaf_model) leaf_model = new CN_home_model();
+      if (null == leaf_model) {
+        // check if the application has a home model and if not use the framework's model instead
+        let { CN_home_model } = await import(`${ROOT_URL}/js/model/home.mjs`);
+        if (!CN_home_model) {
+          const response = await import('./model/home.mjs');
+          CN_home_model = response.CN_home_model;
+        }
+        leaf_model = new CN_home_model();
+      }
 
       // first load all non-leaf models in parallel as their data may be needed by the leaf model
       await Promise.all(this.#path_model_list.slice(0, -1).map(model => model.get_action().on_load()));
