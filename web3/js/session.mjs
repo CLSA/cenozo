@@ -134,51 +134,47 @@ class session extends CN_base_object {
   }
 
   async set_timezone(timezone, am_pm) {
-    if (this.#data.user.timezone != timezone || this.#data.user.am_pm != am_pm) {
-      // show loading indicator in breadcrumb trail
-      this.#breadcrumb_trail.set_config("loading", true);
-      this.#breadcrumb_trail.update_element();
+    // ignore the request if the clock settings haven't changed
+    if (this.#data.user.timezone == timezone && this.#data.user.am_pm == am_pm) return;
 
-      this.#main_content_el.innerHTML = "";
-      this.#menu_btn_group_el.replaceChildren(CN_base_element.html(`
-        <div class="spinner-border text-light" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      `));
-      this.#set_loading_state(true);
+    // show loading indicator in breadcrumb trail
+    this.#breadcrumb_trail.set_config("loading", true);
+    this.#breadcrumb_trail.update_element();
 
-      // update the user then reload the UI so all datetimes are adjusted
-      try {
-        await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
-      } catch (error) {
-        if (409 == error.response.status) {
-          // a 409 error means the address, participant or alternate was not found
-          let type = null;
-          if (CN_common.is_object(timezone)) {
-            const keys = Object.keys(timezone);
-            if (0 < keys.length) type = keys[0].replace(/_id$/, "");
-          }
+    this.#main_content_el.innerHTML = "";
+    this.#menu_btn_group_el.replaceChildren(CN_base_element.html(`
+      <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    `));
+    this.#set_loading_state(true);
 
-          const params = { type: "danger" };
-          if (null == type) {
-            params.title = "";
-            params.message = "";
-          } else {
-            params.title = "No Timezone Available";
-            params.message = (
-              "address" == type ?
-              "The selected address was not found.  The page will now reload so you may try again." :
-              `The ${type} does not have an active address so there is no way determine their timezone.`
-            );
-          }
-
-          await CN_modal_message.create_and_open(params);
-        } else {
-          throw error;
-        }
-      } finally {
-        window.location.reload(); // do not use the session's reload function
+    // update the user then reload the UI so all datetimes are adjusted
+    try {
+      await CN_api.patch("self/0", { user: { timezone: timezone, use_12hour_clock: am_pm }});
+    } catch (error) {
+      let type = null;
+      if (CN_common.is_object(timezone)) {
+        const keys = Object.keys(timezone);
+        if (0 < keys.length) type = keys[0].replace(/_id$/, "");
       }
+
+      const params = { type: "danger" };
+      if (null == type) {
+        params.title = "Unknown Error";
+        params.message = "The server was not able to change your timezone.";
+      } else {
+        params.title = "No Timezone Available";
+        params.message = (
+          "address" == type ?
+          "The selected address was not found.  The page will now reload so you may try again." :
+          `The ${type} does not have an active address so there is no way determine their timezone.`
+        );
+      }
+
+      await CN_modal_message.create_and_open(params);
+    } finally {
+      window.location.reload(); // do not use the session's reload function
     }
   }
 
@@ -498,9 +494,16 @@ class session extends CN_base_object {
           ${CN_common.uc_words(this.#data.role.name)} @ ${this.#data.site.name}
         </button>
       `);
-      access_btn_el.addEventListener("click", () => {
+      access_btn_el.addEventListener("click", async () => {
         main_menu_offcanvas_bs.hide();
-        CN_modal_site_role.create_and_open();
+        const response = await CN_modal_site_role.create_and_open();
+        if (
+          null != response &&
+          (CN_session.get("site", "id") != response.site_id || CN_session.get("role", "id") != response.role_id)
+        ){
+          await CN_api.patch("self/0", { site: { id: response.site_id }, role: { id: response.role_id } });
+          CN_session.reload(true);
+        }
       });
       access_el.append(access_btn_el);
     }
@@ -520,24 +523,30 @@ class session extends CN_base_object {
 
     // wire up the clock and menu buttons
     const clock_el = this.#main_menu_header_el.querySelector("button[name=clock]");
-    clock_el.addEventListener("click", () => {
+    clock_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
-      CN_modal_clock_settings.create_and_open();
+      const response = await CN_modal_clock_settings.create_and_open();
+      if (null != response) await this.set_timezone(response.timezone, response.am_pm);
     });
     const account_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=account]");
     account_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
       const response = await CN_modal_account.create_and_open();
-      if (null != response) {
-        this.#data.user.first_name = response.first_name;
-        this.#data.user.last_name = response.last_name;
-        this.#data.user.email = response.email;
+      if (
+        null != response &&
+        this.#data.user.first_name != response.first_name &&
+        this.#data.user.last_name != response.last_name &&
+        this.#data.user.email != response.email
+      ) {
+        await CN_api.patch("self/0", { user: response });
+        this.#data.user = { ...this.#data.user, ...response };
       }
     });
     const timezone_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=timezone]");
-    timezone_btn_el.addEventListener("click", () => {
+    timezone_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
-      CN_modal_clock_settings.create_and_open();
+      const response = await CN_modal_clock_settings.create_and_open();
+      if (null != response) await this.set_timezone(response.timezone, response.am_pm);
     });
     const password_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=password]");
     password_btn_el.addEventListener("click", () => {

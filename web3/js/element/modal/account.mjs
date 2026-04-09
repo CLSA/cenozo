@@ -1,4 +1,3 @@
-import { CN_api } from "../../api.mjs"
 import { CN_common } from "../../common.mjs"
 import { CN_modal_base_form } from "./base_form.mjs"
 import { CN_session } from "../../session.mjs"
@@ -11,37 +10,33 @@ export class CN_modal_account extends CN_modal_base_form {
 
     super(config);
 
-    this.add_input("string", "first_name", "First Name", { get_default: () => CN_session.get("user", "first_name") });
-    this.add_input("string", "last_name", "Last Name", { get_default: () => CN_session.get("user", "last_name") });
-    this.add_input("email", "email", "Email", { get_default: () => CN_session.get("user", "email") });
+    this.add_input(
+      "string",
+      "first_name",
+      "First Name",
+      { get_default: () => CN_session.get("user", "first_name") }
+    );
+    this.add_input(
+      "string",
+      "last_name",
+      "Last Name",
+      { get_default: () => CN_session.get("user", "last_name") }
+    );
+    this.add_input(
+      "email",
+      "email",
+      "Email",
+      { get_default: () => CN_session.get("user", "email") }
+    );
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", () => this._resolve(null));
     this.add_resolve_button("success", "OK", async () => {
-      const data = {
-        user: {
-          first_name: await this.get_input_value_for_record("first_name"),
-          last_name: await this.get_input_value_for_record("last_name"),
-          email: await this.get_input_value_for_record("email"),
-        },
-      };
-      if (
-        CN_session.get("user", "first_name") != data.user.first_name ||
-        CN_session.get("user", "last_name") != data.user.last_name ||
-        CN_session.get("user", "email") != data.user.email
-      ) {
-        // update the server
-        try {
-          this.set_disabled(true);
-          await CN_api.patch("self/0", data);
-
-          // update the UI
-          this._resolve(data.user);
-        } finally {
-          this.set_disabled(null);
-        }
-      }
-      this._resolve(null);
+      this._resolve({
+        first_name: await this.get_input_value_for_record("first_name"),
+        last_name: await this.get_input_value_for_record("last_name"),
+        email: await this.get_input_value_for_record("email"),
+      });
     });
   }
 

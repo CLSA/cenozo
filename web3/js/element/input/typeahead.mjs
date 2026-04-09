@@ -302,8 +302,9 @@ export class CN_input_typeahead extends CN_base_input {
 
     // Make sure only matching items are included
     // (this is already done in get_list() but not when the list isn't dynamic)
-    return this.get_config("typeahead").list.filter(
+    const list = this.get_config("typeahead").list;
+    return CN_common.is_array(list) ? this.get_config("typeahead").list.filter(
       item => item.value.match(new RegExp(RegExp.escape(value), "i"))
-    );
+    ) : [];
   }
 }

@@ -43,10 +43,7 @@ export class CN_modal_password extends CN_modal_base_form {
         this._resolve(true);
       } catch (error) {
         if (CN_common.is_object(error) && "invalid password" == error.error_code) {
-          this.get_input("current_password").form_input.show_error(
-            "The password is incorrect",
-            0
-          );
+          this.get_input("current_password").form_input.show_error("The password is incorrect", 0);
         } else {
           throw error;
         }

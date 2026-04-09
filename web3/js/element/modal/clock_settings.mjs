@@ -23,19 +23,12 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
     this.add_input("boolean", "am_pm", "Use 12-Hour Clock", { get_default: () => CN_session.get("user", "am_pm") });
 
     // add the resolve buttons
-    this.add_resolve_button("light", "Cancel", () => this._resolve(false));
+    this.add_resolve_button("light", "Cancel", () => this._resolve(null));
     this.add_resolve_button("success", "OK", async () => {
-      const timezone = this.get_input_value_for_record("timezone");
-      const am_pm = this.get_input_value_for_record("am_pm");
-      if (CN_session.get("user", "timezone") != timezone || CN_session.get("user", "am_pm") != am_pm) {
-        try {
-          this.set_disabled(true);
-          await CN_session.set_timezone(timezone, am_pm);
-        } finally {
-          this.set_disabled(false);
-        }
-      }
-      this._resolve(true);
+      this._resolve({
+        timezone: await this.get_input_value_for_record("timezone"),
+        am_pm: await this.get_input_value_for_record("am_pm"),
+      });
     });
   }
 
