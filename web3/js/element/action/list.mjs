@@ -796,11 +796,19 @@ export class CN_action_list extends CN_base_action {
         <button name="report" type="button" class="btn btn-primary px-2 py-0" data-bs-toggle="dropdown">
           <i class="bi bi-cloud-download fs-5"></i>
         </button>
-        <ul class="dropdown-menu">
-          <li><div class="dropdown-header">Download List Data</div></li>
-          <li><button name="csv" class="dropdown-item" href="#">Comma Separated Values (.csv)</button></li>
-          <li><button name="xlsx" class="dropdown-item" href="#">Microsoft Excel (.xlsx)</button></li>
-          <li><button name="ods" class="dropdown-item" href="#">OpenDocument Spreadsheet (.ods)</button></li>
+        <ul class="dropdown-menu bg-secondary">
+          <li>
+            <div class="dropdown-header text-bg-secondary">Download List Data</div>
+          </li>
+          <li class="bg-body">
+            <button name="csv" class="dropdown-item" href="#">Comma Separated Values (.csv)</button>
+          </li>
+          <li class="bg-body">
+            <button name="xlsx" class="dropdown-item" href="#">Microsoft Excel (.xlsx)</button>
+          </li>
+          <li class="bg-body">
+            <button name="ods" class="dropdown-item" href="#">OpenDocument Spreadsheet (.ods)</button>
+          </li>
         </ul>
       </div>
     `);
