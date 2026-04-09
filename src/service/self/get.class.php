@@ -84,18 +84,6 @@ class get extends \cenozo\service\service
     $pseudo_record['application']['build'] = sprintf( '%s-%s', CENOZO_BUILD, APP_BUILD );
     $pseudo_record['application']['cenozo_url'] = $session->version3 ? CENOZO3_URL : CENOZO_URL;
 
-    if( $session->version3 )
-    {
-      $uptime = 'Unknown';
-      try
-      {
-        $response = $util_class_name::exec_timeout( 'uptime -p', 1 );
-        $uptime = preg_replace( '/^up (.*)\n/', '\1', $response['output'] );
-      }
-      catch ( \cenozo\exception\runtime $e ) {} // ignore errors and report an unknown time
-      $pseudo_record['application']['uptime'] = $uptime;
-    }
-
     // the following details are only provided if the user has access to the application
     if( !is_null( $db_user ) && !is_null( $db_role ) )
     {
@@ -222,24 +210,21 @@ class get extends \cenozo\service\service
       $pseudo_record['application']['type'] = $db_application_type->name;
       $pseudo_record['application']['application_type_id'] = $db_application_type->id;
 
-      if( !$session->version3 )
-      {
-        // include the last (closed) activity for this user
-        $activity_sel = lib::create( 'database\select' );
-        $activity_sel->add_column( 'start_datetime' );
-        $activity_sel->add_column( 'end_datetime' );
-        $activity_sel->add_table_column( 'site', 'name', 'site_name' );
-        $activity_sel->add_table_column( 'role', 'name', 'role_name' );
-        $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->join( 'site', 'activity.site_id', 'site.id' );
-        $activity_mod->join( 'role', 'activity.role_id', 'role.id' );
-        $activity_mod->where( 'end_datetime', '!=', NULL );
-        $activity_mod->order_desc( 'start_datetime' );
-        $activity_mod->limit( 1 );
-        $activity_list = $db_user->get_activity_list( $activity_sel, $activity_mod );
-        $last_activity = current( $activity_list );
-        $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
-      }
+      // include the last (closed) activity for this user
+      $activity_sel = lib::create( 'database\select' );
+      $activity_sel->add_column( 'start_datetime' );
+      $activity_sel->add_column( 'end_datetime' );
+      $activity_sel->add_table_column( 'site', 'name', 'site_name' );
+      $activity_sel->add_table_column( 'role', 'name', 'role_name' );
+      $activity_mod = lib::create( 'database\modifier' );
+      $activity_mod->join( 'site', 'activity.site_id', 'site.id' );
+      $activity_mod->join( 'role', 'activity.role_id', 'role.id' );
+      $activity_mod->where( 'end_datetime', '!=', NULL );
+      $activity_mod->order_desc( 'start_datetime' );
+      $activity_mod->limit( 1 );
+      $activity_list = $db_user->get_activity_list( $activity_sel, $activity_mod );
+      $last_activity = current( $activity_list );
+      $pseudo_record['user']['last_activity'] = $last_activity ? $last_activity : NULL;
 
       // if the interview module is on then indicate whether the user is in an open assignment
       if( $sm->get_setting( 'module', 'interview' ) )

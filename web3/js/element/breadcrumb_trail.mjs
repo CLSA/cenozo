@@ -47,7 +47,7 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       `);
       el.append(home_crumb_el);
       home_crumb_el.addEventListener("click", CN_session.navigate_to.bind(CN_session, ""));
-    
+
       (async () => {
         const response = await CN_api.count("self/0/system_message", {
           no_activity: 1,

@@ -24,6 +24,29 @@ class query extends \cenozo\service\query
   /**
    * Extend parent method
    */
+  protected function execute()
+  {
+    $util_class_name = lib::get_class_name( 'util' );
+
+    parent::execute();
+
+    // when not counting messages add the uptime to the headers
+    if( !$this->get_argument( 'count', false ) && lib::create( 'business\session' )->version3 )
+    {
+      $uptime = 'Unknown';
+      try
+      {
+        $response = $util_class_name::exec_timeout( 'uptime -p', 1 );
+        $uptime = preg_replace( '/^up (.*)\n/', '\1', $response['output'] );
+      }
+      catch ( \cenozo\exception\runtime $e ) {} // ignore errors and report an unknown time
+      $this->headers['X-Uptime'] = $uptime;
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   protected function get_record_count()
   {
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
