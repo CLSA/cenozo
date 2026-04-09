@@ -145,9 +145,9 @@ export class CN_state extends CN_base_object {
   /**
    * ADD DOCS
    */
-  is_commited() {
+  is_committed() {
     const len = this.#stack.length;
-    return 0 < len ? this.#stack[len-1].commited : false;
+    return 0 < len ? this.#stack[len-1].committed : false;
   }
 
   /**

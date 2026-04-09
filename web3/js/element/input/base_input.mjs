@@ -295,9 +295,9 @@ export class CN_base_input extends CN_base_element {
    * ADD DOCS
    */
   undo_value(committed = false) {
-    const data = { was_committed: this.#state.is_commited() };
+    const data = { was_committed: this.#state.is_committed() };
     this.#state.undo(committed);
-    data.is_committed = this.#state.is_commited();
+    data.is_committed = this.#state.is_committed();
 
     if (this.get_config("undo") && this.#undo_btn_el) {
       if (this.#state.can_undo()) {
