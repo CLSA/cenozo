@@ -1,3 +1,4 @@
+import { CN_api } from "../api.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_country_model } from "./country.mjs"
 import { CN_session } from "../session.mjs"
@@ -105,8 +106,48 @@ export class CN_address_model extends CN_traceable_model {
   }
 }
 
-export class CN_address_add extends CN_traceable_add {}
+export class CN_address_add extends CN_traceable_add {
+  /**
+   * Add operations to the footer element
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
+
+    // add the activate/deactivate month buttons
+    left_btn_group_el.append(this.constructor.html(`
+      <div class="btn-group" role="group">
+        <button
+          name="months"
+          type="button"
+          class="btn btn-light btn-outline-primary dropdown-toggle"
+          data-bs-toggle="dropdown"
+        >Months</button>
+        <ul class="dropdown-menu">
+          <li><button name="activate" type="button" class="dropdown-item">Activate All</button></li>
+          <li><button name="deactivate" type="button" class="dropdown-item">Deactivate All</button></li>
+        </ul>
+      </div>
+    `));
+
+    const set_months = async (active) => {
+      await Promise.all(
+        CN_common.get_month().map(month => month.toLowerCase()).map(month => {
+          this.set_property_value(month, active);
+          return this.on_set_property(month);
+        })
+      );
+    };
+
+    left_btn_group_el.querySelector("button[name=activate]").addEventListener("click", () => set_months(true));
+    left_btn_group_el.querySelector("button[name=deactivate]").addEventListener("click", () => set_months(false));
+
+    return footer_el;
+  }
+}
+
 export class CN_address_list extends CN_traceable_list {}
+
 export class CN_address_view extends CN_traceable_view {
   /**
    * Extends the parent method
@@ -139,6 +180,43 @@ export class CN_address_view extends CN_traceable_view {
       );
     });
     left_btn_group_el.append(timezone_btn_el);
+
+    // add the activate/deactivate month buttons
+    left_btn_group_el.append(this.constructor.html(`
+      <div class="btn-group" role="group">
+        <button
+          name="months"
+          type="button"
+          class="btn btn-light btn-outline-primary dropdown-toggle"
+          data-bs-toggle="dropdown"
+        >Months</button>
+        <ul class="dropdown-menu">
+          <li><button name="activate" type="button" class="dropdown-item">Activate All</button></li>
+          <li><button name="deactivate" type="button" class="dropdown-item">Deactivate All</button></li>
+        </ul>
+      </div>
+    `));
+
+    const set_months = async (active) => {
+      // determine which months need to be changed
+      const data = {};
+      CN_common.get_month().map(month => month.toLowerCase()).forEach(month => {
+        if (active != this.get_property_value(month)) data[month] = active ? 1 : 0;
+      });
+
+      if (0 < Object.keys(data).length) {
+        // update the server
+        await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
+
+        // update the client
+        for (const month in data) {
+          this.set_property_value(month, active);
+        }
+      }
+    };
+
+    left_btn_group_el.querySelector("button[name=activate]").addEventListener("click", () => set_months(true));
+    left_btn_group_el.querySelector("button[name=deactivate]").addEventListener("click", () => set_months(false));
 
     return footer_el;
   }
