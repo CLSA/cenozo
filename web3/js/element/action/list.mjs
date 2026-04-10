@@ -226,6 +226,14 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
+   * Returns the record count
+   * @return integer
+   */
+  get_record_count() {
+    return this.#total_records;
+  }
+
+  /**
    * Returns the formatted record count (eg: [num] followed by * if the table is filtered)
    * @return string
    */

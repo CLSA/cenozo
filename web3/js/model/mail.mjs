@@ -19,6 +19,7 @@ export class CN_mail_model extends CN_base_model {
         sent: { title: "Sent", type: "boolean" },
         subject: { title: "Subject" },
       },
+      get_default_order: () => ({ column: "sent_datetime", desc: true }),
       properties: {
         from_name: {
           title: "From Name",
@@ -133,9 +134,11 @@ export class CN_mail_model extends CN_base_model {
    */
   allow_delete() {
     // Only allow email to be deleted if it hasn't been sent
+    const leaf_model = CN_session.get_leaf_model();
     return (
       super.allow_delete() &&
-      "view" == this.get_action_name() &&
+      "mail" == leaf_model.get_name() &&
+      "view" == leaf_model.get_action_name() &&
       "(empty)" == this.get_action().get_property_value("sent_datetime")
     );
   }

@@ -47,6 +47,22 @@ class session extends CN_base_object {
   get_module(name) { return this.#module_map.get(name); }
 
   /**
+   * Returns the last model in the path (model currently showing on screen)
+   * @return model
+   */
+  get_leaf_model() {
+    return 0 == this.#path_model_list.length ? null : this.#path_model_list[this.#path_model_list.length-1];
+  }
+
+  /**
+   * Returns the first model in the path
+   * @return model
+   */
+  get_root_model() {
+    return 0 == this.#path_model_list.length ? null : this.#path_model_list[0];
+  }
+
+  /**
    * ADD DOCS
    */
   has_data() { return null !== this.#data; }
@@ -73,7 +89,7 @@ class session extends CN_base_object {
       await this.#load();
 
       // determine the leaf model
-      let leaf_model = this.#get_leaf_model();
+      let leaf_model = this.get_leaf_model();
       if (null == leaf_model) {
         // check if the application has a home model and if not use the framework's model instead
         let { CN_home_model } = await import(`${ROOT_URL}/js/model/home.mjs`);
@@ -201,22 +217,6 @@ class session extends CN_base_object {
    */
   update_breadcrumbs() {
     this.#breadcrumb_trail.update_element();
-  }
-
-  /**
-   * Returns the last model in the path (model currently showing on screen)
-   * @return model
-   */
-  #get_leaf_model() {
-    return 0 == this.#path_model_list.length ? null : this.#path_model_list[this.#path_model_list.length-1];
-  }
-
-  /**
-   * Returns the first model in the path
-   * @return model
-   */
-  #get_root_model() {
-    return 0 == this.#path_model_list.length ? null : this.#path_model_list[0];
   }
 
   /**
@@ -397,7 +397,7 @@ class session extends CN_base_object {
       let name = this.#get_root_action_name();
       // reports all have the same action name, so add the report-type identifier
       if ("report_type.view" == this.#get_root_action_name()) {
-        name += '.' + this.#get_root_model().get_identifier();
+        name += '.' + this.get_root_model().get_identifier();
       }
 
       let menu_btn_el = this.#menu_el.querySelector(`button[name="${name}"]`);

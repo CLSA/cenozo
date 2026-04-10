@@ -199,7 +199,7 @@ export class CN_api extends CN_base_object {
     } else if (CN_common.is_string(params) && 0 < params.length) {
       params += "&count=true";
     } else {
-      params = { params: true };
+      params = { count: true };
     }
 
     const response = await this.get(path, params, true);
