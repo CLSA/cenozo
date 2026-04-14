@@ -224,7 +224,7 @@ export class CN_action_view extends CN_action_base_record {
       // go through the button list and update or remove buttons based on the selector model list
       button_list.forEach(btn_el => {
         let index = selector_model_list.findIndex(child => btn_el.name == child.model.get_name());
-        if (index) {
+        if (0 <= index) {
           // update the title and remove it from the missing list
           const child = selector_model_list[index];
           child.innerHTML = `${child.title} ${child.model.get_action().get_formatted_record_count()}`;

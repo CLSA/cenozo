@@ -178,7 +178,7 @@ export class CN_action_base_record extends CN_base_action {
     if (!CN_common.is_function(prop.is_hidden)) {
       prop.is_hidden = (model) => {
         const parent_model = model.get_parent_model();
-        return parent_model && prop.name.match(`${parent_model.get_name()}_id`);
+        return parent_model && prop.name == `^${parent_model.get_name()}_id$`;
       };
     }
     if (!CN_common.is_function(prop.get_default)) {
@@ -187,7 +187,7 @@ export class CN_action_base_record extends CN_base_action {
         const module_prop = module.get_property(prop_name);
         const parent_model = model.get_parent_model();
         return (
-          parent_model && prop.name.match(`${parent_model.get_name()}_id`) ?
+          parent_model && prop.name == `${parent_model.get_name()}_id` ?
           parent_model.get_identifier() :
           (module_prop ? module_prop.default : null)
         );
