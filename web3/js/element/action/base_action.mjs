@@ -152,7 +152,11 @@ export class CN_base_action extends CN_base_element {
    */
   async on_navigate_to_parent() {
     const parent_model = this.#model.get_parent_model();
-    await CN_session.navigate_to(parent_model ? parent_model.get_view_url() : this.#model.get_list_url());
+    await CN_session.navigate_to(
+      parent_model ?
+      `${parent_model.get_view_url()}?tab=${this.#model.get_name()}` :
+      this.#model.get_list_url()
+    );
   }
 
   /**
