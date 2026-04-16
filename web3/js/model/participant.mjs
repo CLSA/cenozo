@@ -253,6 +253,28 @@ export class CN_participant_model extends CN_base_person_model {
   }
 
   /**
+   * Extend parent method
+   */
+  clone_properties() {
+    const properties = super.clone_properties();
+
+    // add the relation columns if enabled
+    if (CN_session.get("application", "use_relation")) {
+      properties["full_relation_type"] = {
+        title: "Relationship Type",
+        meta: {},
+        is_constant: () => true,
+      };
+      properties["is_primary_relation"] = {
+        meta: {},
+        is_hidden: () => true, // used by the relation model to know when to allow adding relations
+      };
+    }
+
+    return properties;
+  }
+
+  /**
    * Returns a typeahead object for models that have a typeahead property referencing this model
    * @return object
    * @static
