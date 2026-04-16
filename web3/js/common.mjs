@@ -446,6 +446,45 @@ export class CN_common extends CN_base_object {
   }
 
   /**
+   * ADD DOCS
+   */
+  static parse_csv(str) {
+    const data = [];
+    let inside_quote = false;
+
+    // loop over each character in the string
+    let row = 0, col = 0;
+    for (let index = 0; index < str.length; index++) {
+      let current_char = str[index], next_char = str[index+1];
+      if (!data[row]) data[row] = [];
+      if (!data[row][col]) data[row][col] = "";
+
+      // check for double-quotes (an escaped double-quote)
+      if (inside_quote && '"' == current_char && '"' == next_char) {
+        data[row][col] += '"';
+        index++; // skip the next double-quote character
+      } else if (current_char == '"') {
+        // quotes will start or finish a quoted field
+        inside_quote = !inside_quote;
+      } else if (!inside_quote && [",", "\n", "\r"].includes(current_char)) {
+        if (current_char == ",") {
+          // commas outside of a quoted field denote a new column
+          col++;
+        } else if (["\n", "\r"].includes(current_char)) {
+          // end of line characters denote a new row
+          row++;
+          col = 0;
+          // ignore CRLF end-of-lines
+          if (current_char == "\r" && next_char == "\n") index++;
+        }
+      } else {
+        data[row][col] += current_char;
+      }
+    }
+    return data;
+  }
+
+  /**
    * Returns an array of all timezones
    * @return []
    */
