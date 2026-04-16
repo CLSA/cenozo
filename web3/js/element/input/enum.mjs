@@ -107,9 +107,8 @@ export class CN_input_enum extends CN_base_input {
       const action = this.get_action();
       if (action) {
         const module_prop = action.get_model().get_module().get_property(control_el.getAttribute("name"));
-        const matches = module_prop ? module_prop.type.match(/^enum\('(.+)'\)$/) : null;
-        if (null != matches) {
-          enum_obj.values = matches[1].split("','").map(v => ({ key: v, value: v, disabled: false }));
+        if (CN_common.is_array(module_prop.enum_list)) {
+          enum_obj.values = module_prop.enum_list.map(v => ({ key: v, value: v, disabled: false }));
         } else {
           new_values = false;
         }

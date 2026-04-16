@@ -34,21 +34,21 @@ export class CN_module extends CN_base_object {
     if (params.hasOwnProperty("properties")) {
       this.#properties = params.properties;
 
-      // cast boolean, int and float column defaults from strings to boolean/numbers
       if (CN_common.is_object(this.#properties)) {
-        this.get_property_names()
-          .filter(prop_name =>
-            this.#properties[prop_name].data_type.match(/int|float/) &&
-            null != this.#properties[prop_name].default
-          )
-          .forEach(prop_name => {
+        this.get_property_names().forEach(prop_name => {
+          const data_type = this.#properties[prop_name].data_type;
+          if (data_type.match(/int|float/) && null != this.#properties[prop_name].default) {
+            // cast boolean, int and float column defaults from strings to boolean/numbers
             const value = this.#properties[prop_name].default;
-            this.#properties[prop_name].default = (
-              "tinyint" == this.#properties[prop_name].data_type ?
-              "1" == value :
-              Number(value)
-            );
-          });
+            this.#properties[prop_name].default = "tinyint" == data_type ?  "1" == value : Number(value);
+          } else if ("enum" == data_type) {
+            // get enum lists
+            const matches = this.#properties[prop_name].type.match(/^enum\('(.+)'\)$/);
+            if (null != matches) {
+              this.#properties[prop_name].enum_list = matches[1].split("','");
+            }
+          }
+        });
       }
     }
     if (params.hasOwnProperty("children")) this.#child_modules.push.apply(this.#child_modules, params.children);
