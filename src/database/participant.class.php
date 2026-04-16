@@ -765,6 +765,8 @@ class participant extends record
     $db_participant = new static();
     $db_participant->uid = static::get_new_uid();
 
+    if( is_null( $db_participant->uid ) ) return 'No unique identifiers left in the pool.';
+
     if( array_key_exists( 'source', $data ) && !is_null( $data['source'] ) )
     {
       $db_source = $source_class_name::get_unique_record( 'name', $data['source'] );
@@ -1425,7 +1427,7 @@ class participant extends record
     // get deleted)
     $row = static::db()->get_row( 'SELECT MIN( id ) AS min, MAX( id ) AS max FROM unique_identifier_pool' );
 
-    if( count( $row ) )
+    if( count( $row ) && !is_null( $row['min'] ) && !is_null( $row['max'] ) )
     {
       $select = lib::create( 'database\select' );
       $select->add_column( 'uid' );
