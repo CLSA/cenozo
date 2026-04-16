@@ -50,3 +50,11 @@ div[name=app_bg].loading:before {
 @keyframes barberpole {
   100% { background-position: 100% 100%; }
 }
+
+.allow-select {
+  -webkit-touch-callout: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor: text;
+}

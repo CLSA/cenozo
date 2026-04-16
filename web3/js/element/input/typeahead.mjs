@@ -142,16 +142,19 @@ export class CN_input_typeahead extends CN_base_input {
 
     el.addEventListener("keydown", (event) => {
       const typeahead = this.get_config("typeahead");
+
+      if (typeahead.open && ["Escape", "ArrowUp", "ArrowDown", "Enter", "Tab"].includes(event.key)) {
+        event.preventDefault();
+      }
+
       if ("Escape" == event.key) {
         if (typeahead.open) {
           if (CN_common.is_function(typeahead.on_cancel)) typeahead.on_cancel();
           this.#dropdown_bs.hide();
         }
       } else if ("ArrowUp" == event.key) {
-        event.preventDefault();
         this.select_previous();
       } else if ("ArrowDown" == event.key) {
-        event.preventDefault();
         this.select_next();
       } else if ("Enter" == event.key) {
         const value = this.get_value();
@@ -171,9 +174,6 @@ export class CN_input_typeahead extends CN_base_input {
             typeahead.on_select(this, { key: undefined, value: value });
           }
         }
-      } else if ("Tab" == event.key) {
-        // disable the tab button when the list is open
-        if (typeahead.open) event.preventDefault();
       }
     });
 

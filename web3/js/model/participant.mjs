@@ -11,6 +11,9 @@ import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input } from "../element/input/input.mjs"
+import { CN_input_boolean } from "../element/input/boolean.mjs"
+import { CN_input_enum } from "../element/input/enum.mjs"
+import { CN_input_text } from "../element/input/text.mjs"
 import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 import { CN_modal_message } from "../element/modal/message.mjs"
 import { CN_session } from "../session.mjs"
@@ -481,10 +484,6 @@ export class CN_participant_multiedit extends CN_base_action {
   #participant_selection = new CN_participant_selection();
   #selected_participant_properties = {};
 
-  /**
-   * Constructor
-   * @param base_model model: The model that the action belongs to
-   */
   constructor(parent_el, model) {
     super("multiedit", parent_el, model);
   }
@@ -686,7 +685,7 @@ export class CN_participant_multiedit extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input.append( "boolean", sticky_row_el, {
+          CN_input_boolean.append(sticky_row_el, {
             id: sticky_prop_id,
             action: this,
             required: true,
@@ -706,7 +705,7 @@ export class CN_participant_multiedit extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input.append( "text", note_row_el, {
+          CN_input_text.append(note_row_el, {
             id: note_prop_id,
             action: this,
             required: true,
@@ -730,7 +729,7 @@ export class CN_participant_multiedit extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input.append( "enum", op_row_el, {
+          CN_input_enum.append(op_row_el, {
             id: op_prop_id,
             action: this,
             required: true,
@@ -756,7 +755,7 @@ export class CN_participant_multiedit extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input.append( "enum", item_row_el, {
+          CN_input_enum.append(item_row_el, {
             id: item_prop_id,
             action: this,
             required: true,
@@ -794,7 +793,8 @@ export class CN_participant_multiedit extends CN_base_action {
               params.max_length = module_prop.max_length;
             }
 
-            CN_input.append(params.type, row_el, params);
+            const form_input = CN_input.create_input(params.type, row_el, params);
+            row_el.append(form_input.get_element());
             fields_el.append(row_el);
           }
         }
@@ -987,10 +987,6 @@ export class CN_participant_scripts extends CN_base_action {
       "By selecting yes you are confirming that the participant has re-consented to participate in the study.",
   };
 
-  /**
-   * Constructor
-   * @param base_model model: The model that the action belongs to
-   */
   constructor(parent_el, model) {
     super("scripts", parent_el, model);
   }
