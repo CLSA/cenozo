@@ -23,11 +23,13 @@ export class CN_export_restriction_model extends CN_base_model {
           title: "Rank",
           type: "rank",
           on_change: async (form_input, valid) => {
+            const action = form_input.get_action();
+
             // run the default behaviour
-            await form_input.get_action().on_property_change("rank", valid);
+            await action.on_property_change("rank", valid);
 
             // re-run the action so the changed property is applied in the view and all child lists
-            if (valid) this.form_input.get_action().run(true);
+            if (valid) action.run(true);
           },
         },
         logic: {

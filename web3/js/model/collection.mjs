@@ -34,11 +34,13 @@ export class CN_collection_model extends CN_base_model {
           is_hidden: (model) => "add" == model.get_action_name(),
           help: "If locked then only users in the access list will be able to make changes to the collection.",
           on_change: async (form_input, valid) => {
+            const action = form_input.get_action();
+
             // run the default behaviour
-            await this.get_action().on_property_change("locked", valid);
+            await action.on_property_change("locked", valid);
 
             // re-run the action so the changed property is applied in the view and all child lists
-            if (valid) this.get_action().run(true);
+            if (valid) action.run(true);
           },
         },
         description: { title: "Description", type: "text" },
