@@ -134,11 +134,13 @@ export class CN_export_model extends CN_base_model {
           value: CN_common.pretty_print("table", name),
         })) },
         on_change: async (form_input, valid) => {
+          const action = form_input.get_action();
+
           // run the default behaviour
-          await form_input.get_action().on_property_change("table_name", valid);
+          await action.on_property_change("table_name", valid);
 
           // re-run the action so the changed property is applied in the view and all child lists
-          if (valid) form_input.get_action().run(true);
+          if (valid) action.run(true);
         }
       },
       subtype: {
@@ -187,6 +189,8 @@ export class CN_export_model extends CN_base_model {
           get_enums: (model) => {
             const table = model.get_action().get_property_value("table_name");
             return (
+              "auxiliary" == table ?
+              [{ key: "is_in_collection", value: "Is In Collection" }] :
               table ?
               CN_session.get_module(table).get_property_names().sort().map( name => ({
                 key: name,
