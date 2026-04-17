@@ -326,43 +326,43 @@ export class CN_base_input extends CN_base_element {
     if ([undefined, null, ""].includes(value)) {
       // the value is empty, so just make sure it isn't required
       if (this.get_config("required")) error = "Can't be empty";
-    }
-
-    // check the value's length
-    if (null == error && this.has_config("min_length")) {
-      const min_length = this.get_config("min_length");
-      if (String(value).length < min_length) {
-        error = `Must be at least ${min_length} characters long`;
+    } else {
+      // check the value's length
+      if (null == error && this.has_config("min_length")) {
+        const min_length = this.get_config("min_length");
+        if (String(value).length < min_length) {
+          error = `Must be at least ${min_length} characters long`;
+        }
       }
-    }
 
-    if (null == error && this.has_config("max_length")) {
-      const max_length = this.get_config("max_length");
-      if (String(value).length > max_length) {
-        error = `Must be at no more than ${max_length} character${1 == max_length ? "" : "s"} long`;
+      if (null == error && this.has_config("max_length")) {
+        const max_length = this.get_config("max_length");
+        if (String(value).length > max_length) {
+          error = `Must be at no more than ${max_length} character${1 == max_length ? "" : "s"} long`;
+        }
       }
-    }
 
-    // test the implicit regex
-    if (null == error && this.has_config("format")) {
-      let re = null;
-      const format = this.get_config("format");
-      if ("alphanum" == format) re = /^[a-zA-Z0-9]+$/;
-      else if ("alpha_num" == format) re = /^[a-zA-Z0-9_]+$/;
-      else if ("identifier" == format) re = /^[^;=\/]+$/;
-      if (re && !re.test(value)) error = "Invalid format";
-    }
+      // test the implicit regex
+      if (null == error && this.has_config("format")) {
+        let re = null;
+        const format = this.get_config("format");
+        if ("alphanum" == format) re = /^[a-zA-Z0-9]+$/;
+        else if ("alpha_num" == format) re = /^[a-zA-Z0-9_]+$/;
+        else if ("identifier" == format) re = /^[^;=\/]+$/;
+        if (re && !re.test(value)) error = "Invalid format";
+      }
 
-    // test the explicit regex
-    if (null == error && this.has_config("regex")) {
-      const regex = this.get_config("regex");
-      // the regex may be a string or array of strings
-      let regex_list = CN_common.is_array(regex) ? regex : [regex];
-      for (let i = 0; i < regex_list.length; i++) {
-        let re = new RegExp(regex_list[i]);
-        if (!re.test(value)) {
-          error = "Invalid format";
-          break;
+      // test the explicit regex
+      if (null == error && this.has_config("regex")) {
+        const regex = this.get_config("regex");
+        // the regex may be a string or array of strings
+        let regex_list = CN_common.is_array(regex) ? regex : [regex];
+        for (let i = 0; i < regex_list.length; i++) {
+          let re = new RegExp(regex_list[i]);
+          if (!re.test(value)) {
+            error = "Invalid format";
+            break;
+          }
         }
       }
     }
