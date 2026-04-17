@@ -322,21 +322,23 @@ export class CN_action_base_record extends CN_base_action {
         }
       } else if ("rank" == prop.type) {
         // define the max rank
-        input_config.max_rank = async () => {
-          const model = this.get_model();
-          const response = await CN_api.get(model.get_base_path("api"), {
-            select: { column: {
-              column: `max(${model.get_name()}.rank)`,
-              alias: "max_rank",
-              table_prefix: false
-            } },
-          });
-          return (
-            Number(null == response[0].max_rank ? 0 : response[0].max_rank) +
-            // if this is the add action then add an additional rank
-            ("add" == this.get_type() ? 1 : 0)
-          );
-        };
+        if (!CN_common.is_function(input_config.max_rank)) {
+          input_config.max_rank = async (form_input) => {
+            const model = form_input.get_action().get_model();
+            const response = await CN_api.get(model.get_base_path("api"), {
+              select: { column: {
+                column: `max(${model.get_name()}.rank)`,
+                alias: "max_rank",
+                table_prefix: false
+              } },
+            });
+            return (
+              Number(null == response[0].max_rank ? 0 : response[0].max_rank) +
+              // if this is the add action then add an additional rank
+              ("add" == this.get_type() ? 1 : 0)
+            );
+          };
+        }
       }
       prop.form_input = CN_input.create_input(prop.type, null, input_config);
       prop.form_input.add_event_listener("undovalue", (input, data) => {
