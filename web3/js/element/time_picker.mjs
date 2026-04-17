@@ -1,7 +1,7 @@
 import { CN_base_element } from "./base_element.mjs";
 import { CN_common } from "../common.mjs"
 import { CN_element_label } from "./label.mjs";
-import { CN_input_range } from "./input/range.mjs";
+import { CN_input_range } from "../input/range.mjs";
 import { CN_session } from "../session.mjs"
 
 export class CN_element_time_picker extends CN_base_element {

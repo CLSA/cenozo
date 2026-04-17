@@ -1,12 +1,8 @@
-import { CN_action_view } from "../element/action/view.mjs"
+import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_base_action } from "../element/action/base_action.mjs"
+import { CN_base_action } from "../action/base_action.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
-import { CN_element_label } from "../element/label.mjs"
-import { CN_input_string } from "../element/input/string.mjs"
-import { CN_input_text } from "../element/input/text.mjs"
-import { CN_modal_confirm } from "../element/modal/confirm.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_base_person_model extends CN_base_model {

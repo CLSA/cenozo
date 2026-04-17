@@ -1,4 +1,4 @@
-import { CN_action_report_view } from "../element/action/report_view.mjs"
+import { CN_action_report_view } from "../action/report_view.mjs"
 import { CN_base_model } from "./base_model.mjs"
 
 export class CN_export_file_model extends CN_base_model {

@@ -1,5 +1,5 @@
-import { CN_action_add } from "../element/action/add.mjs"
-import { CN_action_report_view } from "../element/action/report_view.mjs"
+import { CN_action_add } from "../action/add.mjs"
+import { CN_action_report_view } from "../action/report_view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"

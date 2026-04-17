@@ -1,0 +1,45 @@
+import { CN_common } from "../common.mjs"
+import { CN_input_enum } from "./enum.mjs"
+
+export class CN_input_boolean extends CN_input_enum {
+  constructor(parent_el, config = {}) {
+    if (!CN_common.is_object(config)) {
+      throw new Error("Non-object config argument passed to CN_input_boolean constructor");
+    }
+
+    const values = [
+      {key: true, value: "Yes", disabled: false},
+      {key: false, value: "No", disabled: false}
+    ];
+
+    // don't replace the enum property in the config if it's an object, merge it with the default instead
+    if (CN_common.is_object(config.enum) && !CN_common.is_array(config.enum.values)) {
+      config.enum.values = values;
+    }
+
+    super(parent_el, {
+      ...{
+        // default config
+        enum: { values: values },
+      },
+      ...config
+    });
+  }
+
+  /**
+   * Extends parent method
+   */
+  get_value() {
+    // cast non null values as a boolean
+    const value = super.get_value();
+    return ["", null].includes(value) ? null : [1, true, "true"].includes(value);
+  }
+
+  /**
+   * Extends parent method
+   */
+  async _calculate_value_for_record(value) {
+    value = await super._calculate_value_for_record(value);
+    return null == value ? null : ([1, true, "true"].includes(value) ? 1 : 0);
+  }
+}

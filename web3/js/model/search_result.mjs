@@ -1,7 +1,7 @@
-import { CN_action_list } from "../element/action/list.mjs"
+import { CN_action_list } from "../action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_element_label } from "../element/label.mjs"
-import { CN_input_string } from "../element/input/string.mjs"
+import { CN_input_string } from "../input/string.mjs"
 
 export class CN_search_result_model extends CN_base_model {
   constructor() {

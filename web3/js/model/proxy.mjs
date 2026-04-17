@@ -1,7 +1,7 @@
-import { CN_action_add } from "../element/action/add.mjs"
-import { CN_action_view } from "../element/action/view.mjs"
+import { CN_action_add } from "../action/add.mjs"
+import { CN_action_view } from "../action/view.mjs"
 import { CN_base_model } from "./base_model.mjs"
-import { CN_modal_confirm } from "../element/modal/confirm.mjs"
+import { CN_modal_confirm } from "../modal/confirm.mjs"
 
 export class CN_proxy_model extends CN_base_model {
   constructor() {

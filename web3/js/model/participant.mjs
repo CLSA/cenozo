@@ -1,6 +1,7 @@
-import { CN_action_notes } from "../element/action/notes.mjs"
+import { CN_action_list } from "../action/list.mjs"
+import { CN_action_notes } from "../action/notes.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_base_action } from "../element/action/base_action.mjs"
+import { CN_base_action } from "../action/base_action.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
 import {
   CN_base_person_model,
@@ -10,12 +11,12 @@ import {
 import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
-import { CN_input } from "../element/input/input.mjs"
-import { CN_input_boolean } from "../element/input/boolean.mjs"
-import { CN_input_enum } from "../element/input/enum.mjs"
-import { CN_input_text } from "../element/input/text.mjs"
-import { CN_modal_confirm } from "../element/modal/confirm.mjs"
-import { CN_modal_message } from "../element/modal/message.mjs"
+import { CN_input } from "../input/input.mjs"
+import { CN_input_boolean } from "../input/boolean.mjs"
+import { CN_input_enum } from "../input/enum.mjs"
+import { CN_input_text } from "../input/text.mjs"
+import { CN_modal_confirm } from "../modal/confirm.mjs"
+import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_participant_model extends CN_base_person_model {
@@ -317,6 +318,27 @@ export class CN_participant_model extends CN_base_person_model {
       super.allow_edit() &&
       !("view" == this.get_action_name() && "Yes" != this.get_action().get_property_value("exclusion"))
     );
+  }
+}
+
+export class CN_participant_list extends CN_action_list {
+  /**
+   * Extends the parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    if ("participant" == CN_session.get_leaf_model().get_name()) {
+      const search_btn_el = this.constructor.html(
+        '<button name="search" class="btn btn-light btn-outline-primary">Search</button>'
+      );
+      search_btn_el.addEventListener("click", () => {
+        CN_session.navigate_to("search_result/list");
+      });
+      footer_el.querySelector("div.btn-group").append(search_btn_el);
+    }
+
+    return footer_el;
   }
 }
 

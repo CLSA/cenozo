@@ -1,4 +1,4 @@
-import { CN_action_notes } from "../element/action/notes.mjs"
+import { CN_action_notes } from "../action/notes.mjs"
 import { CN_api } from "../api.mjs"
 import {
   CN_base_person_model,
