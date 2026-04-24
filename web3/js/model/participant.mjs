@@ -354,6 +354,13 @@ export class CN_participant_view extends CN_base_person_view {
   }
 
   /**
+   * Extends the parent method
+   */
+  get_selector_child_list() {
+    return super.get_selector_child_list().map(title => "Applciation" == title ? "Release" : title);
+  }
+
+  /**
    * Add operation to the footer element
    */
   create_footer_element() {

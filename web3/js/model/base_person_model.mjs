@@ -480,7 +480,7 @@ export class CN_base_person_history extends CN_base_action {
    * Extend parent method
    */
   create_placeholder_element() {
-    const card_list = Array.from(Array(10).keys()).map((e,index) => `
+    const card_list = CN_common.get_list_of_numbers(10).map(() => `
       <div class="card">
         <div class="card-body row p-2">
           <div class="col-4 placeholder-glow">

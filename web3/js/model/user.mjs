@@ -21,14 +21,98 @@ export class CN_user_model extends CN_base_model {
         email: { title: "Email", },
       },
       properties: {
-        active: { title: "Active", type: "boolean", },
-        name: { title: "Name", is_constant: (model) => "view" == model.get_action_name() },
-        first_name: { title: "First Name", },
-        last_name: { title: "Last Name", },
-        email: { title: "Email", },
-        timezone: { title: "Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },
-        use_12hour_clock: { title: "Use 12-hour Clock", type: "boolean" },
-        login_failures: { title: "Login Failures", is_hidden: (model) => "add" == model.get_action_name() },
+        active: {
+          title: "Active",
+          type: "boolean",
+          help: `
+            Inactive users will not be able to log in.
+            When activating a user their login failures count will automatically be reset back to 0.
+          `,
+        },
+        login_failures: {
+          title: "Login Failures",
+          is_constant: () => true,
+          is_hidden: (model) => "add" == model.get_action_name(),
+          help: "Every time an invalid password is used to log in as this user this counter will go up.",
+        },
+        name: {
+          title: "Name",
+          format: "alpha_num",
+          is_constant: (model) => "view" == model.get_action_name(),
+          help: "May only contain numbers, letters and underscores. Can only be defined when creating a new user.",
+        },
+        first_name: { title: "First Name" },
+        last_name: { title: "Last Name" },
+        email: {
+          title: "Email",
+          format: "email",
+          help: `
+            Must be in the format "account@domain.name"
+            (if not provided then the user will be prompted for an email address the next time they login)
+          `,
+        },
+        timezone: {
+          title: "Timezone",
+          type: "typeahead",
+          typeahead: { list: CN_common.get_timezones() },
+          help: "Which timezone the user displays times in",
+        },
+        use_12hour_clock: {
+          title: "Use 12-hour Clock",
+          type: "boolean",
+          help: "Whether to display times using the 12-hour clock (am/pm)",
+        },
+        site_id: {
+          title: "Initial Site",
+          meta: {},
+          type: "enum",
+          enum: {
+            get_enums: async (model) => {
+              return (await CN_api.get("site", {
+                select: { column: "name" },
+                modifier: { order: "name" },
+                granting: true, // only return sites which we can grant access to
+              })).map(record => ({
+                key: record.id,
+                value: record.name,
+                disabled: false,
+              }));
+            },
+          },
+          help: "Which site to assign the user to",
+          is_hidden: (model) => "view" == model.get_action_name(),
+        },
+        role_id: {
+          title: "Initial Role",
+          meta: {},
+          type: "enum",
+          enum: {
+            get_enums: async (model) => {
+              return (await CN_api.get("role", {
+                select: { column: "name" },
+                modifier: { order: "name" },
+                granting: true, // only return roles which we can grant access to
+              })).map(record => ({
+                key: record.id,
+                value: record.name,
+                disabled: false,
+              }));
+            },
+          },
+          help: "Which role to assign the user to",
+          is_hidden: (model) => "view" == model.get_action_name(),
+        },
+        language_id: {
+          title: "Restrict to Language",
+          meta: {},
+          type: "enum",
+          enum: { path: "language" },
+          help: `
+            If the user can only speak a single language you can define it here (this can be changed in the
+            user's record after they have been created)
+          `,
+          is_hidden: (model) => "view" == model.get_action_name(),
+        },
       },
     });
   }

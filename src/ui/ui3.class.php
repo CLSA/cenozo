@@ -64,7 +64,6 @@ class ui3 extends \cenozo\base_object
    */
   public function get_interface()
   {
-    $util_class_name = lib::get_class_name( 'util' );
     $session = lib::create( 'business\session' );
 
     $this->add_base_libs();
@@ -118,6 +117,7 @@ class ui3 extends \cenozo\base_object
 
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
+    $db_site = $session->get_site();
     $db_application = $session->get_application();
     $db_application_type = $db_application->get_application_type();
     $extended = in_array( $db_role->name, [ 'administrator', 'curator', 'helpline' ] );
@@ -295,7 +295,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'callback' == $module->get_subject() )
       {
-        $module->add_action( 'calendar', '/{identifier}' );
+        $module->add_action( 'calendar', '/{identifier}?{calendar}' );
       }
       else if( 'collection' == $module->get_subject() )
       {
@@ -582,9 +582,8 @@ class ui3 extends \cenozo\base_object
     {
       $menu['utilities']['Callback Calendar'] = [
         'subject' => 'callback',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $session->get_site()->name )
+        'action' => sprintf( 'calendar/name=%s', $db_site->name ),
+        'query' => '/{identifier}?{calendar}'
       ];
     }
 

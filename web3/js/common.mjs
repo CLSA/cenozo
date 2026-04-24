@@ -108,12 +108,21 @@ export class CN_common extends CN_base_object {
   static is_integer(x) { return this.is_type(x, "integer"); }
 
   /**
+   * Returns a 0-indexed list of numbers
+   * @param integer total: The total number of elements in the array
+   * @return []
+   */
+  static get_list_of_numbers(total) {
+    return Array.from(Array(total).keys());
+  }
+
+  /**
    * Returns a random identifier made up of hexidecimal digits
    * @param integer length: The number of digits
    * @return string
    */
   static get_random_hex_identifier(length = 4) {
-    return [...Array(length)].map(() => Math.floor(Math.random()*16).toString(16)).join('');
+    return this.get_list_of_numbers(length).map(() => Math.floor(Math.random()*16).toString(16)).join('');
   }
 
   /**
@@ -162,7 +171,7 @@ export class CN_common extends CN_base_object {
   /**
    * ADD DOCS
    */
-  static get_month(index = null, loc = "en") {
+  static get_month(index = null, loc = "en", type = "long") {
     if (null != index) {
       const m = Number(index);
       if (!this.is_integer(m) || 0 > m || 11 < m) throw new Error("Tried to get month with invalid index.");
@@ -172,11 +181,11 @@ export class CN_common extends CN_base_object {
       date.setUTCMonth(m);
       date.setUTCDate(2);
       date.setUTCHours(12);
-      return date.toLocaleString(loc, { month: "long" });
+      return date.toLocaleString(loc, { month: type });
     }
 
     // return the full list
-    return new Array(12).fill(0).map((zero, i) => this.get_month(i, loc));
+    return this.get_list_of_numbers(12).map(i => this.get_month(i, loc));
   }
 
   /**
@@ -195,7 +204,7 @@ export class CN_common extends CN_base_object {
     }
 
     // return the full list
-    return new Array(7).fill(0).map((zero, i) => this.get_weekday(i, loc, type));
+    return this.get_list_of_numbers(7).map(i => this.get_weekday(i, loc, type));
   }
 
   /**
@@ -397,10 +406,7 @@ export class CN_common extends CN_base_object {
 
     for (let offset = 0; offset < byte_characters.length; offset += slice_size) {
       const slice = byte_characters.slice(offset, offset + slice_size);
-      const byte_numbers = new Array(slice.length);
-      for (let i = 0; i < slice.length; i++) byte_numbers[i] = slice.charCodeAt(i);
-      const byte_array = new Uint8Array(byte_numbers);
-      byte_arrays.push(byte_array);
+      byte_arrays.push(new Uint8Array(this.get_list_of_numbers(slice.length).map(i => slice.charCodeAt(i))));
     }
 
     return new Blob(byte_arrays, {type: content_type});

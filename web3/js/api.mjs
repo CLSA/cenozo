@@ -393,7 +393,7 @@ export class CN_api extends CN_base_object {
    * @return object
    */
   static shorten_select(select) {
-    if (Array.isArray(select)) {
+    if (CN_common.is_array(select)) {
       return select.map(item => this.shorten_select(item));
     } else if (CN_common.is_object(select)) {
       let new_select = {};
@@ -419,7 +419,7 @@ export class CN_api extends CN_base_object {
    * @return object
    */
   static lengthen_select(select) {
-    if (Array.isArray(select)) {
+    if (CN_common.is_array(select)) {
       return select.map(item => this.lengthen_select(item));
     } else if (CN_common.is_object(select)) {
       let new_select = {};
@@ -445,7 +445,7 @@ export class CN_api extends CN_base_object {
    * @return object
    */
   static shorten_modifier(modifier) {
-    if (Array.isArray(modifier)) {
+    if (CN_common.is_array(modifier)) {
       return modifier.map(item => this.shorten_modifier(item));
     } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};
@@ -471,7 +471,7 @@ export class CN_api extends CN_base_object {
    * @return object
    */
   static lengthen_modifier(modifier) {
-    if (Array.isArray(modifier)) {
+    if (CN_common.is_array(modifier)) {
       return modifier.map(item => this.lengthen_modifier(item));
     } else if (CN_common.is_object(modifier)) {
       let new_modifier = {};

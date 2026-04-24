@@ -2,9 +2,12 @@ import { CN_action_add } from "../action/add.mjs"
 import { CN_action_report_view } from "../action/report_view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_report_model extends CN_base_model {
+  #current_report_type_id = null;
+
   constructor() {
     super({
       wording: {
@@ -79,76 +82,79 @@ export class CN_report_model extends CN_base_model {
       },
     });
   }
-}
 
-// A private function used by both report_add and report_view
-async function create_restriction_inputs(action) {
-  const report_type_id = action.get_model().get_parent_model().get_identifier();
-  if (report_type_id != action.current_report_type_id) {
-    action.current_report_type_id = report_type_id;
+  /**
+   * Called by the report_type view action in order to add report-type specific restrictions
+   */
+  async create_restriction_inputs() {
+    const action = this.get_action();
+    const report_type_id = this.get_parent_model().get_identifier();
+    if (report_type_id != this.#current_report_type_id) {
+      this.#current_report_type_id = report_type_id;
 
-    // re-define the report's restrictions
-    const response = await CN_api.get(
-      `report_type/${action.current_report_type_id}/report_restriction`,
-      {
-        select: { column: [
-          "name",
-          "title",
-          "mandatory",
-          "null_allowed",
-          "restriction_type",
-          "subject",
-          "operator",
-          "enum_list",
-          "description",
-        ] },
-        modifier: { order: "rank" },
-      },
-    );
+      // re-define the report's restrictions
+      const response = await CN_api.get(
+        `report_type/${this.#current_report_type_id}/report_restriction`,
+        {
+          select: { column: [
+            "name",
+            "title",
+            "mandatory",
+            "null_allowed",
+            "restriction_type",
+            "subject",
+            "operator",
+            "enum_list",
+            "description",
+          ] },
+          modifier: { order: "rank" },
+        },
+      );
 
-    if (0 < response.length) {
-      action.add_property_group("restrictions", { title: "Report Parameters", open: true });
-      response.forEach(prop => {
-        // determine the parameters for each restriction type
-        const params = {
-          title: prop.title,
-          meta: {}, // predefined by the service
-          required: prop.mandatory,
-          is_constant: () => "view" == action.get_type(),
-        };
-        if (["enum", "table"].includes(prop.restriction_type)) {
-          params.type = "enum";
-          params.enum = {
-            get_enums: async () => {
-              const enum_list = (
-                "enum" == prop.restriction_type ?
-                JSON.parse(`[${prop.enum_list}]`).map(item => ({ key: item, value: item, disabled: false })) :
-                await CN_api.get(prop.subject, {
-                  select: { column: [{ column: "id", alias: "key" }, { column: "name", alias: "value" }] },
-                  modifier: { order: "name", limit: 1000000 },
-                })
-              );
-              if (prop.null_allowed) {
-                enum_list.unshift({
-                  key: "_NULL_",
-                  value: (
-                    "table" == prop.restriction_type && "identifier" == prop.subject ?
-                    "UID" :
-                    (prop.mandatory ? "(empty)" : "(all)")
-                  ),
-                });
-              }
-              return enum_list;
-            }
+      if (0 < response.length) {
+        action.add_property_group("restrictions", { title: "Report Parameters", open: true });
+        response.forEach(prop => {
+          // determine the parameters for each restriction type
+          const params = {
+            title: prop.title,
+            meta: {}, // predefined by the service
+            required: prop.mandatory,
+            is_constant: () => "view" == action.get_type(),
           };
-        } else if ("identifier_list" == prop.restriction_type) {
-          params.type = "text";
-        } else {
-          params.type = prop.restriction_type;
-        }
+          if (["enum", "table"].includes(prop.restriction_type)) {
+            params.type = "enum";
+            params.enum = {
+              get_enums: async () => {
+                const enum_list = (
+                  "enum" == prop.restriction_type ?
+                  JSON.parse(`[${prop.enum_list}]`).map(item => ({ key: item, value: item, disabled: false })) :
+                  await CN_api.get(prop.subject, {
+                    select: { column: [{ column: "id", alias: "key" }, { column: "name", alias: "value" }] },
+                    modifier: { order: "name", limit: 1000000 },
+                  })
+                );
+                if (prop.null_allowed) {
+                  enum_list.unshift({
+                    key: "_NULL_",
+                    value: (
+                      "table" == prop.restriction_type && "identifier" == prop.subject ?
+                      "UID" :
+                      (prop.mandatory ? "(empty)" : "(all)")
+                    ),
+                  });
+                }
+                return enum_list;
+              }
+            };
+          } else if ("identifier_list" == prop.restriction_type) {
+            params.type = "text";
+          } else {
+            params.type = prop.restriction_type;
+          }
 
-        action.add_property("restrictions", `restrict_${prop.name}`, params);
-      });
+          action.add_property("restrictions", `restrict_${prop.name}`, params);
+        });
+      }
     }
   }
 }
@@ -157,11 +163,18 @@ export class CN_report_add extends CN_action_add {
   current_report_type_id; // used in the custom create_restriction_inputs function (above)
 
   /**
-   * Extends parent method
+   * Extend parent method
    */
-  async run(children = false) {
-    await create_restriction_inputs(this); // use private function above to load restrictions
-    await super.run(children);
+  async get_text(type) {
+    if ("crumb" == type) {
+      return "Run";
+    }
+
+    if ("header" == type) {
+      return `Run ${CN_common.uc_words(this.get_model().get_singular())}`;
+    }
+
+    return super.get_text(type);
   }
 
   /**
@@ -172,14 +185,4 @@ export class CN_report_add extends CN_action_add {
   }
 }
 
-export class CN_report_view extends CN_action_report_view {
-  current_report_type_id; // used in the custom create_restriction_inputs function (above)
-
-  /**
-   * Extends parent method
-   */
-  async run(children = false) {
-    await create_restriction_inputs(this); // use private function above to load restrictions
-    await super.run(children);
-  }
-}
+export class CN_report_view extends CN_action_report_view {}

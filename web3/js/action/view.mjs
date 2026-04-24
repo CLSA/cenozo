@@ -244,23 +244,30 @@ export class CN_action_view extends CN_action_base_record {
           <button
             name="${child.model.get_name()}"
             type="button"
-            class="col btn ${selected ? "btn-light fw-bold" : "btn-primary"} text-nowrap mx-1"
+            class="col btn ${selected ? "btn-primary fw-bold" : "btn-light"} text-nowrap mx-1"
           >${title}</button>
         `);
 
         child_btn_el.addEventListener("click", async () => {
-          const selected_btn_el = btn_group_el.querySelector("button.btn-light");
+          // first unselect whichever child is already selected
+          const selected_btn_el = btn_group_el.querySelector("button.btn-primary");
           if (selected_btn_el) {
-            selected_btn_el.classList.replace("btn-light", "btn-primary");
+            selected_btn_el.classList.replace("btn-primary", "btn-light");
             selected_btn_el.classList.remove("fw-bold");
           }
-          child_btn_el.classList.replace("btn-primary", "btn-light");
-          child_btn_el.classList.add("fw-bold");
 
-          this.set_query_parameter("tab", child.model.get_name());
+          // now select this child unless it is already selected
+          let tab = child.model.get_name();
+          if (child.model.get_name() == this.get_query_parameter("tab")) {
+            tab = null;
+          } else {
+            child_btn_el.classList.replace("btn-light", "btn-primary");
+            child_btn_el.classList.add("fw-bold");
+          }
+          this.set_query_parameter("tab", tab);
 
           this.get_selector_child_list().forEach(sub_child => {
-            if (sub_child.model.get_name() == child.model.get_name()) {
+            if (sub_child.model.get_name() == tab) {
               this.#child_lists_el.append(sub_child.model.get_element());
             } else {
               sub_child.model.get_element().remove();

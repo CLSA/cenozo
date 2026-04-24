@@ -9,11 +9,7 @@ export class CN_element_date_picker extends CN_base_element {
   #start_year;
   #year_range = 20;
   #table_el;
-  #previous_btn_el;
   #mode_btn_el;
-  #next_btn_el;
-  #previous_listeners;
-  #next_listeners;
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
@@ -29,45 +25,6 @@ export class CN_element_date_picker extends CN_base_element {
       },
       ...config
     });
-
-    // create listeners for all previous/next buttons
-    this.#previous_listeners = {
-      day: () => {
-        this.#month -= 1;
-        if (this.#month < 0) {
-          this.#month = 11;
-          this.#year--;
-        }
-        this.update_element();
-      },
-      month: () => {
-        this.#year -= 1;
-        this.update_element();
-      },
-      year: () => {
-        this.#start_year -= this.#year_range;
-        this.update_element();
-      },
-    };
-
-    this.#next_listeners = {
-      day: () => {
-        this.#month = this.#month + 1;
-        if (this.#month % 12 == 0) {
-          this.#month = 0;
-          this.#year++;
-        }
-        this.update_element();
-      },
-      month: () => {
-        this.#year += 1;
-        this.update_element();
-      },
-      year: () => {
-        this.#start_year += this.#year_range;
-        this.update_element();
-      },
-    };
 
     const date = this.get_config("date");
     this.set_date(CN_common.is_date(date) ? date : new Date());
@@ -92,9 +49,24 @@ export class CN_element_date_picker extends CN_base_element {
     this.#start_year = Math.floor(this.#year / this.#year_range) * this.#year_range;
   }
 
-  set_to_today() {
-    this.set_date(new Date());
-    this.update_element();
+  /**
+   * ADD DOCS
+   */
+  move_date(forward, unit) {
+    if (this.#mode == "day") {
+      this.#month += forward ? 1 : -1;
+      if (0 == this.#month) {
+        this.#month = 11;
+        this.#year--;
+      } else if (12 == this.#month) {
+        this.#month = 0;
+        this.#year++;
+      }
+    } else if (this.#mode == "month") {
+      this.#year += forward ? 1 : -1;
+    } else if (this.#mode == "year") {
+      this.#start_year += forward ? this.#year_range : -this.#year_range;
+    }
   }
 
   /**
@@ -102,19 +74,6 @@ export class CN_element_date_picker extends CN_base_element {
    */
   update_element() {
     super.update_element();
-
-    // remove all button events and re-add the day listeners
-    for (const name in this.#previous_listeners) {
-      const listener = this.#previous_listeners[name];
-      this.#previous_btn_el.removeEventListener("click", listener);
-      if (name == this.#mode) this.#previous_btn_el.addEventListener("click", listener);
-    }
-
-    for (const name in this.#next_listeners) {
-      const listener = this.#next_listeners[name];
-      this.#next_btn_el.removeEventListener("click", listener);
-      if (name == this.#mode) this.#next_btn_el.addEventListener("click", listener);
-    }
 
     if (this.#mode == "day") {
       this.#display_day();
@@ -133,22 +92,24 @@ export class CN_element_date_picker extends CN_base_element {
   _create_element() {
     const el = this.constructor.html(`
       <div class="row w-100">
-        <button name="previous" class="btn btn-sm btn-primary col-1">
-          <i class="bi bi-caret-left-fill"></i>
-        </button>
-        <button name="mode" class="btn btn-light rounded-0 fw-bold text-center col-10 m-0"></button>
-        <button name="next" class="btn btn-sm btn-primary col-1">
-          <i class="bi bi-caret-right-fill"></i>
-        </button>
+        <div class="btn-group px-0">
+          <button type="button" name="previous" class="btn btn-sm btn-outline-primary col-1">
+            <i class="bi bi-caret-left-fill"></i>
+          </button>
+          <button type="button" name="mode" class="btn btn-light mx-1 col-10"></button>
+          <button type="button" name="next" class="btn btn-sm btn-outline-primary col-1">
+            <i class="bi bi-caret-right-fill"></i>
+          </button>
+        </div>
         <table class="table table-responsive"></table>
       </div>
     `);
 
     this.#table_el = el.querySelector("table");
-    this.#previous_btn_el = el.querySelector("button[name=previous]");
     this.#mode_btn_el = el.querySelector("button[name=mode]");
-    this.#next_btn_el = el.querySelector("button[name=next]");
-    el.querySelector("button[name=mode]").addEventListener("click", () => {
+
+    // wire up the buttons
+    this.#mode_btn_el.addEventListener("click", () => {
       if (this.#mode === "day") {
         this.#mode = "month";
       } else if (this.#mode === "month") {
@@ -156,6 +117,16 @@ export class CN_element_date_picker extends CN_base_element {
       } else if (this.#mode === "year") {
         this.#mode = "day";
       }
+      this.update_element();
+    });
+
+    el.querySelector("button[name=previous]").addEventListener("click", () => {
+      this.move_date(false, this.#mode);
+      this.update_element();
+    });
+
+    el.querySelector("button[name=next]").addEventListener("click", () => {
+      this.move_date(true, this.#mode);
       this.update_element();
     });
 
@@ -212,7 +183,7 @@ export class CN_element_date_picker extends CN_base_element {
       const restricted = this.get_config("is_restricted")(date);
       const date_td_el = this.constructor.html('<td class="text-center p-0"></td>');
       const date_btn_el = this.constructor.html(
-        `<button class="btn btn-light w-100 rounded-0">${day}</button>`
+        `<button type="button" class="btn btn-light w-100 rounded-0">${day}</button>`
       );
       date_td_el.append(date_btn_el);
       if (restricted || month != this.#month) this.constructor.set_disabled(date_btn_el, true);
@@ -229,9 +200,9 @@ export class CN_element_date_picker extends CN_base_element {
 
       date_td_el.addEventListener("click", (event) => {
         if (year < this.#year || month < this.#month) {
-          this.#previous_listeners.day();
+          this.move_date(false, "day");
         } else if (year > this.#year || month > this.#month) {
-          this.#next_listeners.day();
+          this.move_date(true, "day");
         }
         if (!restricted) this.set_date(date);
         this.update_element();
@@ -273,7 +244,7 @@ export class CN_element_date_picker extends CN_base_element {
 
       const month_btn = this.constructor.html(`
         <td class="text-center p-0">
-          <button class="btn btn-light w-100 rounded-0">${month}</button>
+          <button type="button" class="btn btn-light w-100 rounded-0">${month}</button>
         </td>
       `);
 
@@ -312,7 +283,7 @@ export class CN_element_date_picker extends CN_base_element {
       for (let col = 0; col < 5; col++) {
         const td_el = this.constructor.html(`<td class="text-center p-0"></td>`);
         const btn_el = this.constructor.html(
-          `<button class="btn btn-light col-12 rounded-0" value="${row + col}">${row + col}</button>`
+          `<button type="button" class="btn btn-light col-12 rounded-0" value="${row + col}">${row + col}</button>`
         );
         btn_el.addEventListener("click", () => {
           this.#mode = "month";

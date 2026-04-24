@@ -25,6 +25,14 @@ export class CN_report_type_model extends CN_base_model {
 }
 
 export class CN_report_type_view extends CN_action_view {
+  async on_load() {
+    await super.on_load();
+    const leaf_model = CN_session.get_leaf_model();
+    if ("report" == leaf_model.get_name()) {
+      await leaf_model.create_restriction_inputs();
+    }
+  }
+
   /**
    * Add operation to footer element
    */

@@ -38,16 +38,11 @@ export class CN_input_size extends CN_input_float {
   }
 
   /**
-   * Extend parent method
+   * ADD DOCS
    */
-  _create_element() {
-    const el = super._create_element();
-
-    const postfix_div_el = this.get_postfix_div_element();
-    this.#size_form_input.set_parent_element(postfix_div_el);
-    postfix_div_el.append(this.#size_form_input.get_element());
-
-    return el;
+  set_disabled(disabled) {
+    super.set_disabled(disabled);
+    this.#size_form_input.set_disabled(disabled);
   }
 
   /**
@@ -61,6 +56,19 @@ export class CN_input_size extends CN_input_float {
       super.set_value(size);
       this.#size_form_input.set_value(unit ? unit : "Bytes");
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  _create_element() {
+    const el = super._create_element();
+
+    const postfix_div_el = this.get_postfix_div_element();
+    this.#size_form_input.set_parent_element(postfix_div_el);
+    postfix_div_el.append(this.#size_form_input.get_element());
+
+    return el;
   }
 
   /**

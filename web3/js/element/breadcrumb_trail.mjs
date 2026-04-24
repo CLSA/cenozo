@@ -3,11 +3,6 @@ import { CN_api } from "../api.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
-/**
- * Base class for all elements
- * @event domadd: ran when the element is added to the DOM
- * @event domremove: ran when the element is removed from the DOM
- */
 export class CN_element_breadcrumb_trail extends CN_base_element {
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {

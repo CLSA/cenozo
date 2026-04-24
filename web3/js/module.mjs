@@ -1,4 +1,5 @@
 import { CN_action_add } from "./action/add.mjs"
+import { CN_action_calendar } from "./action/calendar.mjs"
 import { CN_action_list } from "./action/list.mjs"
 import { CN_action_notes } from "./action/notes.mjs"
 import { CN_action_view } from "./action/view.mjs"
@@ -201,6 +202,7 @@ export class CN_module extends CN_base_object {
       const prefix = `CN_${this.#name}`;
       this.#classes = { model: null };
       if (this.action_allowed("add")) this.#classes.add = CN_action_add;
+      if (this.action_allowed("calendar")) this.#classes.calendar = CN_action_calendar;
       if (this.action_allowed("list")) this.#classes.list = CN_action_list;
       if (this.action_allowed("notes")) this.#classes.notes = CN_action_notes;
       if (this.action_allowed("view")) this.#classes.view = CN_action_view;

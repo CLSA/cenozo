@@ -119,9 +119,8 @@ export class CN_action_base_record extends CN_base_action {
    *       path: the API path to get enum values
    *       select: a select property to be used when calling the API for enum values
    *       modifier: a modifier property to be used when calling the API for enum values
-   *     enum values returned by a user-defined function:
-   *       get_enums: an async function that returns enum values, with arguments:
-   *         model: the model of the action that the property belongs to
+   *     get_enums: an async function that returns enum values, with arguments:
+   *       model: the model of the action that the property belongs to
    *
    *   Mandatory property for the "typeahead" type:
    *   typeahead: an object with one of the two sets of properties:
@@ -459,7 +458,7 @@ export class CN_action_base_record extends CN_base_action {
    * Extends parent method
    */
   create_placeholder_element() {
-    const prop_list = Array.from(Array(7).keys()).map(() => `
+    const prop_list = CN_common.get_list_of_numbers(7).map(() => `
       <div class="row mb-3">
         <label class="col-sm-3 col-form-label text-end placeholder-glow">
           <span class="placeholder placeholder-lg col-${Math.ceil(Math.random()*6)+6}"></span>

@@ -121,7 +121,7 @@ export class CN_modal_datetime extends CN_base_modal {
     const value = this.get_config("value");
 
     const date_picker_el = body_el.querySelector('[name="date-picker"]');
-    this.#date_picker = new CN_element_date_picker(date_picker_el, {
+    this.#date_picker = CN_element_date_picker.append(date_picker_el, {
       date: value,
       is_restricted: (date) => {
         const min = CN_common.clone(this.get_config("min"));
@@ -147,11 +147,10 @@ export class CN_modal_datetime extends CN_base_modal {
         if (this.#time_picker) this.#time_picker.on_time_change();
       },
     });
-    date_picker_el.append(this.#date_picker.get_element());
 
     if (["datetime", "datetimesecond"].includes(mode)) {
       const time_picker_el = body_el.querySelector('[name="time-picker"]');
-      this.#time_picker = new CN_element_time_picker(time_picker_el, {
+      this.#time_picker = CN_element_time_picker.append(time_picker_el, {
         hours: value.getHours(),
         minutes: value.getMinutes(),
         seconds: value.getSeconds(),
@@ -165,7 +164,6 @@ export class CN_modal_datetime extends CN_base_modal {
           return CN_common.is_date(max) && max < this.get_date() ? max : null;
         },
       });
-      time_picker_el.append(this.#time_picker.get_element());
     }
 
     return body_el;

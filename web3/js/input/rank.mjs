@@ -19,7 +19,7 @@ export class CN_input_rank extends CN_input_enum {
     cnf.enum = {
       get_enums: async () => {
         const max_rank = Number(CN_common.is_function(cnf.max_rank) ? (await cnf.max_rank(this)) : cnf.max_rank);
-        return [...Array(max_rank).keys()].map(i => ({
+        return CN_common.get_list_of_numbers(max_rank).map(i => ({
           key: i+1,
           value: CN_common.ordinal_suffix(i+1),
           disabled: false,
