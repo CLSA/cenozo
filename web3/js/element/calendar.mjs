@@ -2,7 +2,7 @@ import { CN_base_element } from "./base_element.mjs";
 import { CN_common } from "../common.mjs"
 
 export class CN_element_calendar extends CN_base_element {
-  #mode = "month";
+  #mode;
   #date;
   #month;
   #year;
@@ -19,6 +19,7 @@ export class CN_element_calendar extends CN_base_element {
         // default config
         is_restricted: (date) => false,
         date: null,
+        mode: "month",
         on_date_selected: (date) => {},
       },
       ...config
@@ -26,6 +27,24 @@ export class CN_element_calendar extends CN_base_element {
 
     const date = this.get_config("date");
     this.set_date(CN_common.is_date(date) ? date : new Date());
+    this.#mode = this.get_config("mode");
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_mode() {
+    return this.#mode;
+  }
+
+  /**
+   * Sets the view mode
+   * @param string mode: either "month", "week" or "day"
+   */
+  set_mode(mode) {
+    this.#mode = mode;
+    this.update_element();
+    this.run_event_listeners("modechanged");
   }
 
   /**
@@ -43,6 +62,7 @@ export class CN_element_calendar extends CN_base_element {
     this.#date = CN_common.clone(date);
     this.#month = this.#date.getMonth();
     this.#year = this.#date.getFullYear();
+    this.run_event_listeners("datechanged");
   }
 
   /**
@@ -143,7 +163,7 @@ export class CN_element_calendar extends CN_base_element {
             <i class="bi bi-fast-forward-fill"></i>
           </button>
         </div>
-        <table class="table table-bordered"></table>
+        <table class="table m-0"></table>
       </div>
     `);
 
@@ -172,10 +192,7 @@ export class CN_element_calendar extends CN_base_element {
     });
 
     el.querySelectorAll("li a").forEach(a_el => {
-      a_el.addEventListener("click", () => {
-        this.#mode = a_el.getAttribute("name");
-        this.update_element();
-      });
+      a_el.addEventListener("click", () => this.set_mode(a_el.getAttribute("name")));
     });
 
     return el;
@@ -185,14 +202,17 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_month() {
+    const today_string = (new Date()).toDateString();
+
     // set the mode button text
     this.#mode_btn_el.innerHTML = [CN_common.get_month(this.#month), this.#year].join(" ");
 
+    this.#table_el.classList.add("table-bordered");
     this.#table_el.replaceChildren(this.constructor.html(`
       <thead>
         <tr>
           ${CN_common.get_weekday(null, "en", "short").map(
-            day => `<th width="14.286%" class="text-center" scope="col">${day}</th>`
+            day => `<th class="text-bg-secondary text-center" scope="col" width="14.286%">${day}</th>`
           ).join("\n")}
         </tr>
       </thead>
@@ -243,8 +263,7 @@ export class CN_element_calendar extends CN_base_element {
       if (restricted || month != this.#month) date_td_el.classList.add("table-light");
 
       // highlight today's date
-      const today = new Date();
-      if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+      if (date.toDateString() == today_string) {
         date_td_el.classList.remove("table-light");
         date_td_el.classList.add("table-warning");
       }
@@ -272,86 +291,122 @@ export class CN_element_calendar extends CN_base_element {
   #display_week() {
     const jan_one = new Date(this.#date.getFullYear(), 0, 1);
     const week = Math.ceil((((this.#date - jan_one) / 86400000) + jan_one.getDay() + 1) / 7);
+    const today_string = (new Date()).toDateString();
 
     // set the mode button text
     this.#mode_btn_el.innerHTML = `${this.#year} (week ${week})`;
 
-    // backup the current day to the start of the week (Sunday)
-    const d = CN_common.clone(this.#date);
-    d.setDate(d.getDate() - this.#date.getDay());
-
     const date_index = this.#date.getDay();
-    this.#table_el.replaceChildren(this.constructor.html(`
+    this.#table_el.classList.remove("table-bordered");
+
+    const thead_el = this.constructor.html(`
       <thead>
-        <tr>
-          <th scope="col"></th>
-          ${CN_common.get_weekday(null, "en", "short").map((day, index) => {
-            // need to add (Mon/Day) after ${day}
-            const title = `${CN_common.get_month(d.getMonth(), "en", "short")} ${d.getDate()}`;
-            d.setDate(d.getDate() + 1);
-            return `<th width="14.286%" class="text-center" scope="col">${day} (${title})</th>`;
-          }).join("\n")}
+        <tr class="border">
+          <th class="text-bg-secondary" scope="col"></th>
         </tr>
       </thead>
-    `));
-
+    `);
+    this.#table_el.replaceChildren(thead_el);
     const tbody_el = this.constructor.html("<tbody></tbody>");
     this.#table_el.append(tbody_el);
-    /*
-    CN_common.get_list_of_numbers(10).forEach(index =>
-    this.#table_el.append(this.constructor.html(`
-      <tbody>
+
+    const header_tr_el = thead_el.querySelector("tr");
+    CN_common.get_list_of_numbers(48).forEach(hour_index => {
+      // add the body rows
+      let time_string = "&nbsp;";
+      if (0 == hour_index % 2) {
+        const d = new Date();
+        d.setHours(hour_index/2);
+        d.setMinutes(0);
+        time_string = CN_common.format_time(d).replace(/:00/, "").replace(/ (.)\.m\./, "$1");
+      }
+      const body_tr_el = this.constructor.html(`
         <tr>
-          ${CN_common.get_weekday(null, "en", "short").map(day => `
-            <td class="p-0 pe-1">
-              <div class="w-100 p-0" style="min-height: 30em">
-              </div>
-            </td>
-          `).join("\n")}
+          <td class="text-bg-secondary px-1 py-0 fw-bold">
+            ${time_string}
+          </td>
         </tr>
-      </tbody>
-    `));
-    */
+      `);
+      tbody_el.append(body_tr_el);
+
+      // get the date for the start of the week based on the current date (Sunday)
+      const d = CN_common.clone(this.#date);
+      d.setDate(d.getDate() - this.#date.getDay());
+
+      CN_common.get_weekday(null, "en", "short").forEach(day => {
+        // add the header columns
+        if (0 == hour_index) {
+          header_tr_el.append(this.constructor.html(`
+            <th class="text-bg-secondary border text-center" scope="col" width="14.286%">
+              ${day}
+              (${CN_common.get_month(d.getMonth(), "en", "short")} ${d.getDate()})
+            </th>
+          `));
+        }
+
+        body_tr_el.append(this.constructor.html(`
+          <td
+            class="
+              border-start
+              border-end
+              ${today_string == d.toDateString() ? "table-warning" : ""}
+              ${0 == hour_index % 2 ? "border-top-0 border-bottom-0" : ""}
+              p-0
+            "
+          ></td>
+        `));
+
+        // move to the next day of the week
+        d.setDate(d.getDate() + 1);
+      });
+    });
   }
 
   /**
    * ADD DOCS
    */
   #display_day() {
-    /*
+    const today_string = (new Date()).toDateString();
+
     // set the mode button text
-    this.#mode_btn_el.innerHTML = `${this.#start_year} - ${this.#start_year + this.#year_range - 1}`;
+    this.#mode_btn_el.innerHTML = CN_common.format_datetime(this.#date, "date", true);
 
-    this.#table_el.replaceChildren(this.constructor.html(`
-      <thead>
-        <tr>
-          <th class="text-center" scope="col"></th>
-          <th class="text-center" scope="col"></th>
-          <th class="text-center" scope="col"></th>
-          <th class="text-center" scope="col"></th>
-          <th class="text-center" scope="col"></th>
-        </tr>
-      </thead>
-    `));
+    const date_index = this.#date.getDay();
+    this.#table_el.classList.remove("table-bordered");
 
-    // loop through all year ranges
-    for (let row = this.#start_year; row < this.#start_year + this.#year_range; row += 5) {
-      const tr_el = this.constructor.html("<tr></tr>");
-      for (let col = 0; col < 5; col++) {
-        const td_el = this.constructor.html(`<td class="text-center p-0"></td>`);
-        const btn_el = this.constructor.html(
-          `<button type="button" class="btn btn-light col-12 rounded-0" value="${row + col}">${row + col}</button>`
-        );
-        btn_el.addEventListener("click", () => {
-          this.#mode = "month";
-          this.#year = row + col;
-          this.update_element();
-        });
-        td_el.append(btn_el);
-        tr_el.append(td_el);
+    const tbody_el = this.constructor.html("<tbody></tbody>");
+    this.#table_el.replaceChildren(tbody_el);
+
+    CN_common.get_list_of_numbers(48).forEach(hour_index => {
+      // add the body rows
+      let time_string = "&nbsp;";
+      if (0 == hour_index % 2) {
+        const d = new Date();
+        d.setHours(hour_index/2);
+        d.setMinutes(0);
+        time_string = CN_common.format_time(d).replace(/:00/, "").replace(/ (.)\.m\./, "$1");
       }
-      this.#table_el.append(tr_el);
-    }
-    */
+      const body_tr_el = this.constructor.html(`
+        <tr>
+          <td class="text-bg-secondary px-1 py-0 fw-bold">
+            ${time_string}
+          </td>
+        </tr>
+      `);
+      tbody_el.append(body_tr_el);
+
+      body_tr_el.append(this.constructor.html(`
+        <td
+          class="
+            border-start
+            border-end
+            ${today_string == this.#date.toDateString() ? "table-warning" : ""}
+            ${0 == hour_index % 2 ? "border-top-0 border-bottom-0" : ""}
+            p-0
+          "
+          width="100%"
+        ></td>
+      `));
+    });
   }
 }
