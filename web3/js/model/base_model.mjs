@@ -9,6 +9,7 @@ export class CN_base_model extends CN_base_object {
   #wording;
   #properties_template;
   #columns_template;
+  #calendar_template;
   #get_default_order;
   #element;
   #parent_model = null;
@@ -20,8 +21,10 @@ export class CN_base_model extends CN_base_object {
   /**
    * Constructor
    *
-   * @param object params: An object with the properties defining the model (wording, columns and properties)
+   * @param object params: An object with the properties defining the model
+   *                       (wording, columns, calendar and properties)
    * For documentation on the columns property look in the action/list.mjs file.
+   * For documentation on the calendar property look in the action/calendar.mjs file.
    * For documentation on the properties property look in the action/base_record.mjs file.
    */
   constructor(params) {
@@ -46,6 +49,7 @@ export class CN_base_model extends CN_base_object {
     // Note that the properties and columns props are only used when configuring the model.
     this.#properties_template = params.properties;
     this.#columns_template = params.columns;
+    this.#calendar_template = params.calendar;
     this.#get_default_order = params.get_default_order;
   }
 
@@ -237,6 +241,12 @@ export class CN_base_model extends CN_base_object {
    * @return object
    */
   clone_columns() { return CN_common.clone(this.#columns_template); }
+
+  /**
+   * Creates a clone of the calendar template object (defined by implementing classes)
+   * @return object
+   */
+  clone_calendar() { return CN_common.clone(this.#calendar_template); }
 
   /**
    * Determines whether the add, delete, edit or view actions are permitted

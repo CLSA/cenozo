@@ -1,11 +1,15 @@
 import { CN_base_element } from "./base_element.mjs";
 import { CN_common } from "../common.mjs"
 
+/**
+ * @event modechanged: ran when the calendar's mode is changed
+ * @event eventsset: ran when the calendar's events are set
+ * @event datechanged: ran when the calendar's date is changed
+ */
 export class CN_element_calendar extends CN_base_element {
   #mode;
   #date;
-  #month;
-  #year;
+  #events = [];
   #table_el;
   #mode_btn_el;
 
@@ -20,7 +24,6 @@ export class CN_element_calendar extends CN_base_element {
         is_restricted: (date) => false,
         date: null,
         mode: "month",
-        on_date_selected: (date) => {},
       },
       ...config
     });
@@ -50,6 +53,65 @@ export class CN_element_calendar extends CN_base_element {
   /**
    * ADD DOCS
    */
+  get_events() {
+    return this.#events;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_events(events) {
+    // always dispose of all tooltips when changing the events
+    this.#events.filter(event => event.tooltip).forEach(event => event.tooltip.dispose());
+
+    // sort the events
+    this.#events = events.sort((a,b) => a.date > b.date);
+
+    // determine which events overlap
+    let last_event = null, overlap_event = null;
+    this.#events.forEach((event, index) => {
+      // convert the duration to a number
+      event.duration = Number(event.duration);
+
+      event.overlap = null;
+      if (null == overlap_event) {
+        // there's no overlapping event, so check to see if this event overlaps with the last
+        if (null != last_event) {
+          const end_date = CN_common.clone(last_event.date);
+          end_date.setMinutes(end_date.getMinutes() + last_event.duration);
+          if (event.date < end_date) {
+            // we've found a new overlap group
+            overlap_event = last_event;
+            overlap_event.overlap = { index: 0, total: 2 };
+            event.overlap = { index: 1, total: 2 };
+          }
+        }
+      } else {
+        // there's an overlapping event, so check to see if this event still overlaps with it
+        const end_date = CN_common.clone(overlap_event.date);
+        end_date.setMinutes(end_date.getMinutes() + overlap_event.duration);
+        if (event.date >= end_date) {
+          // no longer overlapping
+          overlap_event = null;
+        } else {
+          // add another event to the overlap group
+          event.overlap = { ...last_event.overlap };
+          event.overlap.index++;
+
+          // now increment the total for all events in the overlap group
+          for (let i = 0; i <= event.overlap.index; i++) this.#events[index - i].overlap.total++;
+        }
+      }
+      last_event = event;
+    });
+
+    this.update_element();
+    this.run_event_listeners("eventschanged");
+  }
+
+  /**
+   * ADD DOCS
+   */
   get_date() {
     return this.#date;
   }
@@ -60,8 +122,6 @@ export class CN_element_calendar extends CN_base_element {
    */
   set_date(date) {
     this.#date = CN_common.clone(date);
-    this.#month = this.#date.getMonth();
-    this.#year = this.#date.getFullYear();
     this.run_event_listeners("datechanged");
   }
 
@@ -71,37 +131,95 @@ export class CN_element_calendar extends CN_base_element {
   move_date(forward, unit, fast) {
     if ("day" == unit && !fast) {
       // move one day
-      const d = CN_common.clone(this.#date);
-      d.setDate(d.getDate() + (forward ? 1 : -1));
-      this.set_date(d);
+      const date = CN_common.clone(this.#date);
+      date.setDate(date.getDate() + (forward ? 1 : -1));
+      this.set_date(date);
     } else if (("week" == unit && !fast) || ("day" == unit && fast)) {
       // move one week
-      const d = CN_common.clone(this.#date);
-      d.setDate(d.getDate() + (forward ? 7 : -7));
-      this.set_date(d);
+      const date = CN_common.clone(this.#date);
+      date.setDate(date.getDate() + (forward ? 7 : -7));
+      this.set_date(date);
     } else if (("month" == unit && !fast) || ("week" == unit && fast)) {
       // move one month
-      if (forward) {
-        this.#month += 1;
-        if (12 == this.#month) {
-          this.#month = 0;
-          this.#year++;
-        }
-      } else {
-        this.#month -= 1;
-        if (-1 == this.#month) {
-          this.#month = 11;
-          this.#year--;
-        }
-      }
+      const date = CN_common.clone(this.#date);
+      const month = this.#date.getMonth() + (forward ? 1 : -1);
+      date.setMonth(month);
+      const correct_month = 0 > month ? 11 : 11 < month ? 0 : month;
+
+      // backup one day at a time until we're in the correct month
+      while (date.getMonth() != correct_month) date.setDate(date.getDate() - 1);
+      this.set_date(date);
     } else if ("month" == unit && fast) {
       // move one year
-      if (forward) {
-        this.#year++;
-      } else {
-        this.#year--;
-      }
+      const date = CN_common.clone(this.#date);
+      date.setFullYear(this.#date.getFullYear() + (forward ? 1 : -1));
+
+      // backup one day at a time until we're in the same month
+      while (date.getMonth() != this.#date.getMonth()) date.setDate(date.getDate() - 1);
+      this.set_date(date);
     }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_min_date() {
+    let date = null;
+    if ("month" == this.#mode) {
+      const first_day_of_month = new Date(this.#date.getFullYear(), this.#date.getMonth(), 1);
+      let days = first_day_of_month.getDay();
+      if (0 == days) days = 7;
+      date = new Date(this.#date.getFullYear(), this.#date.getMonth(), 1 - days);
+    } else if ("week" == this.#mode) {
+      date = new Date(
+        this.#date.getFullYear(),
+        this.#date.getMonth(),
+        this.#date.getDate() - this.#date.getDay()
+      );
+    } else if ("day" == this.#mode) {
+      date = CN_common.clone(this.#date);
+    }
+
+    if (null != date) {
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+    }
+    return date;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_max_date() {
+    let date = null;
+    if ("month" == this.#mode) {
+      const first_day_of_month = new Date(this.#date.getFullYear(), this.#date.getMonth(), 1);
+      let days = first_day_of_month.getDay();
+      if (0 == days) days = 7;
+
+      date = new Date(this.#date.getFullYear(), this.#date.getMonth() + 1, 0);
+      days += date.getDate();
+      date.setDate(date.getDate() + 43 - days);
+    } else if ("week" == this.#mode) {
+      date = new Date(
+        this.#date.getFullYear(),
+        this.#date.getMonth(),
+        this.#date.getDate() - this.#date.getDay() + 7
+      );
+    } else if ("day" == this.#mode) {
+      date = new Date(this.#date.getFullYear(), this.#date.getMonth(), this.#date.getDate() + 1);
+    }
+
+    if (null != date) {
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+      date.setSeconds(-1);
+    }
+    return date;
   }
 
   /**
@@ -203,9 +321,11 @@ export class CN_element_calendar extends CN_base_element {
    */
   #display_month() {
     const today_string = (new Date()).toDateString();
+    const current_year = this.#date.getFullYear();
+    const current_month = this.#date.getMonth();
 
     // set the mode button text
-    this.#mode_btn_el.innerHTML = [CN_common.get_month(this.#month), this.#year].join(" ");
+    this.#mode_btn_el.innerHTML = [CN_common.get_month(current_month), current_year].join(" ");
 
     this.#table_el.classList.add("table-bordered");
     this.#table_el.replaceChildren(this.constructor.html(`
@@ -220,9 +340,9 @@ export class CN_element_calendar extends CN_base_element {
 
     // get a list of all days in the current month
     const day_list = [];
-    const days_in_month = new Date(this.#year, this.#month + 1, 0).getDate();
+    const days_in_month = new Date(current_year, current_month + 1, 0).getDate();
     for (let day = 1; day <= days_in_month; day++) {
-      day_list.push(new Date(this.#year, this.#month, day));
+      day_list.push(new Date(current_year, current_month, day));
     }
 
     // get the starting days of the first week from the previous month
@@ -230,12 +350,12 @@ export class CN_element_calendar extends CN_base_element {
     // if the first day starts on a Sunday then add the whole week
     if (0 == days_prev) days_prev = 7;
     for (let i = 0; i < days_prev; i++) {
-      day_list.unshift(new Date(this.#year, this.#month, -i));
+      day_list.unshift(new Date(current_year, current_month, -i));
     }
     // fill the day_list so that it always contains 42 days (6 weeks)
     const days_next = 42 - day_list.length;
     for (let i = 0; i < days_next; i++) {
-      day_list.push(new Date(this.#year, this.#month + 1, i + 1));
+      day_list.push(new Date(current_year, current_month + 1, i + 1));
     }
 
     const tbody_el = this.constructor.html('<tbody></tbody>');
@@ -249,18 +369,16 @@ export class CN_element_calendar extends CN_base_element {
 
       const year = date.getFullYear();
       const month = date.getMonth();
-      const day = date.getDate();
       const restricted = this.get_config("is_restricted")(date);
       const date_td_el = this.constructor.html('<td class="p-0 pe-1"></td>');
       const date_div_el = this.constructor.html(`
         <div class="w-100 p-0" style="min-height: 5em">
-          <div class="text-end">${day}</div>
-          <div class="w-100">
-          </div>
+          <div class="text-end">${date.getDate()}</div>
+          <div name="events" class="w-100"></div>
         </div>
       `);
       date_td_el.append(date_div_el);
-      if (restricted || month != this.#month) date_td_el.classList.add("table-light");
+      if (restricted || month != current_month) date_td_el.classList.add("table-light");
 
       // highlight today's date
       if (date.toDateString() == today_string) {
@@ -268,18 +386,25 @@ export class CN_element_calendar extends CN_base_element {
         date_td_el.classList.add("table-warning");
       }
 
-      date_td_el.addEventListener("click", (event) => {
-        if (year < this.#year || month < this.#month) {
-          this.move_date(false, "month", false);
-        } else if (year > this.#year || month > this.#month) {
-          this.move_date(true, "month", false);
-        }
-        if (!restricted) this.set_date(date);
-        this.update_element();
+      // clicking on days outside of the current month will transition to that month
+      if (month != current_month) {
+        date_td_el.addEventListener("click", (event) => {
+          if (year < current_year || month < current_month) {
+            this.move_date(false, "month", false);
+          } else if (year > current_year || month > current_month) {
+            this.move_date(true, "month", false);
+          }
+          this.update_element();
+        });
+      }
 
-        // call the date selected listener
-        if (!restricted) this.get_config("on_date_selected")(this.#date);
-      });
+      // add this day's events
+      const events_div_el = date_div_el.querySelector("div[name=events]");
+      this.#events.filter(event =>
+        event.date.getFullYear() == date.getFullYear() &&
+        event.date.getMonth() == date.getMonth() &&
+        event.date.getDate() == date.getDate()
+      ).forEach(event => events_div_el.append(this.#create_event_element(event)));
 
       tr_el.append(date_td_el);
     });
@@ -294,7 +419,7 @@ export class CN_element_calendar extends CN_base_element {
     const today_string = (new Date()).toDateString();
 
     // set the mode button text
-    this.#mode_btn_el.innerHTML = `${this.#year} (week ${week})`;
+    this.#mode_btn_el.innerHTML = `${this.#date.getFullYear()} (week ${week})`;
 
     const date_index = this.#date.getDay();
     this.#table_el.classList.remove("table-bordered");
@@ -302,64 +427,74 @@ export class CN_element_calendar extends CN_base_element {
     const thead_el = this.constructor.html(`
       <thead>
         <tr class="border">
-          <th class="text-bg-secondary" scope="col"></th>
+          <th class="text-bg-secondary" scope="col" width="2%"></th>
         </tr>
       </thead>
     `);
     this.#table_el.replaceChildren(thead_el);
-    const tbody_el = this.constructor.html("<tbody></tbody>");
+    const tbody_el = this.constructor.html('<tbody class="position-relative"></tbody>');
     this.#table_el.append(tbody_el);
 
     const header_tr_el = thead_el.querySelector("tr");
     CN_common.get_list_of_numbers(48).forEach(hour_index => {
+      // get the date for the start of the week based on the current date (Sunday)
+      const date = CN_common.clone(this.#date);
+      date.setDate(date.getDate() - this.#date.getDay());
+      date.setHours(Math.floor(hour_index/2));
+      date.setMinutes(0 == hour_index % 2 ? 0 : 30);
+      date.setSeconds(0);
+
       // add the body rows
-      let time_string = "&nbsp;";
-      if (0 == hour_index % 2) {
-        const d = new Date();
-        d.setHours(hour_index/2);
-        d.setMinutes(0);
-        time_string = CN_common.format_time(d).replace(/:00/, "").replace(/ (.)\.m\./, "$1");
-      }
       const body_tr_el = this.constructor.html(`
-        <tr>
-          <td class="text-bg-secondary px-1 py-0 fw-bold">
-            ${time_string}
-          </td>
+        <tr name="${hour_index}">
+          <td
+            class="text-bg-secondary px-1 py-0 fw-bold"
+            style="background-clip: padding-box; line-height: 29px;"
+          >${
+            0 == hour_index % 2 ?
+            CN_common.format_time(date).replace(/:00/, "").replace(/ (.)\.m\./, "$1") :
+            "&nbsp;"
+          }</td>
         </tr>
       `);
       tbody_el.append(body_tr_el);
 
-      // get the date for the start of the week based on the current date (Sunday)
-      const d = CN_common.clone(this.#date);
-      d.setDate(d.getDate() - this.#date.getDay());
-
-      CN_common.get_weekday(null, "en", "short").forEach(day => {
+      CN_common.get_weekday(null, "en", "short").forEach((day, day_index) => {
         // add the header columns
         if (0 == hour_index) {
           header_tr_el.append(this.constructor.html(`
-            <th class="text-bg-secondary border text-center" scope="col" width="14.286%">
+            <th class="text-bg-secondary border text-center" scope="col" width="14%">
               ${day}
-              (${CN_common.get_month(d.getMonth(), "en", "short")} ${d.getDate()})
+              (${CN_common.get_month(date.getMonth(), "en", "short")} ${date.getDate()})
             </th>
           `));
         }
 
         body_tr_el.append(this.constructor.html(`
           <td
+            name="${day_index}"
             class="
               border-start
               border-end
-              ${today_string == d.toDateString() ? "table-warning" : ""}
+              ${today_string == date.toDateString() ? "table-warning" : ""}
               ${0 == hour_index % 2 ? "border-top-0 border-bottom-0" : ""}
               p-0
             "
+            style="background-clip: padding-box"
           ></td>
         `));
 
         // move to the next day of the week
-        d.setDate(d.getDate() + 1);
+        date.setDate(date.getDate() + 1);
       });
     });
+
+    // add this week's events
+    const min_date = this.get_min_date();
+    const max_date = this.get_max_date();
+    this.#events
+      .filter(event => min_date <= event.date && event.date <= max_date)
+      .forEach(event => tbody_el.append(this.#create_event_element(event)));
   }
 
   /**
@@ -381,14 +516,14 @@ export class CN_element_calendar extends CN_base_element {
       // add the body rows
       let time_string = "&nbsp;";
       if (0 == hour_index % 2) {
-        const d = new Date();
-        d.setHours(hour_index/2);
-        d.setMinutes(0);
-        time_string = CN_common.format_time(d).replace(/:00/, "").replace(/ (.)\.m\./, "$1");
+        const date = new Date();
+        date.setHours(hour_index/2);
+        date.setMinutes(0);
+        time_string = CN_common.format_time(date).replace(/:00/, "").replace(/ (.)\.m\./, "$1");
       }
       const body_tr_el = this.constructor.html(`
         <tr>
-          <td class="text-bg-secondary px-1 py-0 fw-bold">
+          <td class="text-bg-secondary px-1 py-0 fw-bold" width="2%">
             ${time_string}
           </td>
         </tr>
@@ -404,9 +539,93 @@ export class CN_element_calendar extends CN_base_element {
             ${0 == hour_index % 2 ? "border-top-0 border-bottom-0" : ""}
             p-0
           "
-          width="100%"
+          width="98%"
         ></td>
       `));
     });
+
+    // add the day's events
+    const min_date = this.get_min_date();
+    const max_date = this.get_max_date();
+    this.#events
+      .filter(event => min_date <= event.date && event.date <= max_date)
+      .forEach(event => tbody_el.append(this.#create_event_element(event)));
+  }
+
+  /**
+   * ADD DOCS
+   */
+  #create_event_element(event) {
+    const event_btn_el = this.constructor.html(`
+      <button class="btn btn-sm btn-${event.type} m-0 p-0">
+        ${CN_common.format_time(event.date)}: ${event.title}
+      </button>
+    `);
+
+    if ("month" == this.#mode) {
+      event_btn_el.classList.add("w-100");
+    } else {
+      const time_fraction = (event.date.getHours() + event.date.getMinutes()/60) / 24;
+      if ("week" == this.#mode) {
+        event_btn_el.style.cssText = `
+          top: ${time_fraction * 100}%;
+          left: ${
+            2.5 +
+            event.date.getDay() * 14 +
+            (null == event.overlap ?  0 : event.overlap.index * 6.5 / (event.overlap.total - 1))
+          }%;
+          width: ${null == event.overlap ? 13 : 6.5}%;
+          height: ${event.duration * 0.0694333}%;
+          outline: 1px solid white;
+          z-index: ${null == event.overlap ? 0 : event.overlap.index};
+        `;
+      } else if ("day" == this.#mode) {
+        event_btn_el.style.cssText = `
+          top: ${time_fraction * 100}%;
+          left: ${3 + (null == event.overlap ?  0 : event.overlap.index * 70 / (event.overlap.total - 1))}%;
+          width: ${null == event.overlap ? 96 : 24.5}%;
+          height: ${event.duration * 0.0694333}%;
+          outline: 1px solid white;
+          z-index: ${null == event.overlap ? 0 : event.overlap.index};
+        `;
+      }
+
+      event_btn_el.classList.add("position-absolute");
+      event_btn_el.classList.add(30 >= event.duration ? "badge" : "fw-bold");
+      event_btn_el.classList.add("text-wrap");
+      event_btn_el.classList.add("m-0");
+      event_btn_el.classList.add("p-0");
+      event_btn_el.innerHTML = `
+        ${CN_common.format_time(event.date)}
+        ${20 < event.duration ? "<br/>" : ""}
+        ${event.title}
+      `;
+
+      // temporarily raise events that the mouse is hovering over
+      event_btn_el.addEventListener("mouseover", () => {
+        event_btn_el.style["z-index"] = 1000;
+      });
+      event_btn_el.addEventListener("mouseout", () => {
+        event_btn_el.style["z-index"] = null == event.overlap ? 0 : event.overlap.index;
+      });
+    }
+
+    // add the tooltip if help text exists
+    if (event.help) {
+      event_btn_el.setAttribute("data-bs-toggle", "tooltip");
+      event_btn_el.setAttribute("data-bs-html", "true");
+      event_btn_el.setAttribute("data-bs-title", event.help);
+      event.tooltip = new bootstrap.Tooltip(event_btn_el);
+    }
+
+    // add the on_click event if it exists
+    if (CN_common.is_function(event.on_click)) {
+      event_btn_el.addEventListener("click", (e) => {
+        e.stopPropagation(); // stop the day-click event when clicking an event
+        event.on_click(event)
+      });
+    }
+
+    return event_btn_el;
   }
 }

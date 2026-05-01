@@ -100,7 +100,14 @@ export class CN_base_action extends CN_base_element {
       body_el.replaceChildren(placeholder_el);
     } else {
       const card_header_el = model_el.querySelector(":scope > div > div.card > .card-header");
-      card_header_el.innerHTML = "Loading...";
+      card_header_el.replaceChildren(this.constructor.html(`
+        <div class="d-flex">
+          <div class="flex-grow-1">Loading...</div>
+          <button name="refresh" class="btn btn-primary disabled px-2 py-0">
+            <i class="bi bi-arrow-clockwise fs-5"></i>
+          </button>
+        </div>
+      `));
 
       if (this.#footer_at_top) {
         const card_topfooter_el = model_el.querySelector(":scope > div > div.card > .card-topfooter");
@@ -254,9 +261,8 @@ export class CN_base_action extends CN_base_element {
       new bootstrap.Tooltip(notation_btn_el, {
         title: "Documentation",
         trigger: "hover",
-        delay: { "show": 500, "hide": 100 },
+        delay: { "show": 1000, "hide": 100 },
       });
-    } else {
     }
 
     // add a data refresh button
@@ -270,7 +276,7 @@ export class CN_base_action extends CN_base_element {
     new bootstrap.Tooltip(refresh_btn_el, {
       title: "Refresh Data",
       trigger: "hover",
-      delay: { "show": 500, "hide": 100 },
+      delay: { "show": 1000, "hide": 100 },
     });
 
     return el;
@@ -324,7 +330,14 @@ export class CN_base_action extends CN_base_element {
       el.append(div_el);
     } else {
       CN_element_card.append(el, {
-        header: "Loading...",
+        header: this.constructor.html(`
+          <div class="d-flex">
+            <div class="flex-grow-1">Loading...</div>
+            <button name="refresh" class="btn btn-primary disabled px-2 py-0">
+              <i class="bi bi-arrow-clockwise fs-5"></i>
+            </button>
+          </div>
+        `),
         body: placeholder_el ? placeholder_el : "",
         footer: "",
       });

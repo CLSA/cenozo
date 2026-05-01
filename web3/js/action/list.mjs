@@ -668,8 +668,7 @@ export class CN_action_list extends CN_base_action {
       });
     }
 
-    const summary_el = this.get_footer_element().querySelector("div[name=summary]");
-    summary_el.innerHTML = [
+    this.get_footer_element().querySelector("div[name=summary]").innerHTML = [
       this.#total_records,
       1 == this.#total_records ? model.get_singular() : model.get_plural(),
       "total",
@@ -970,9 +969,7 @@ export class CN_action_list extends CN_base_action {
     `));
 
     footer_el.append(this.constructor.html('<div name="summary" class="text-center fs-6">Loading...</div>'));
-
-    const btn_group_el = this.constructor.html('<div class="btn-group" role="group"></div>');
-    footer_el.append(btn_group_el);
+    footer_el.append(this.constructor.html('<div class="btn-group" role="group"></div>'));
 
     return footer_el;
   }
