@@ -1,6 +1,11 @@
 import { CN_base_element } from "./base_element.mjs";
 import { CN_common } from "../common.mjs"
 
+/**
+ * @event modechanged: ran when the calendar's mode is changed
+ * @event eventsset: ran when the calendar's events are set
+ * @event datechanged: ran when the calendar's date is changed
+ */
 export class CN_element_calendar extends CN_base_element {
   #mode;
   #date;
@@ -56,12 +61,14 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   set_events(events) {
-    let last_event = null, overlap_event = null;
+    // always dispose of all tooltips when changing the events
+    this.#events.filter(event => event.tooltip).forEach(event => event.tooltip.dispose());
 
     // sort the events
     this.#events = events.sort((a,b) => a.date > b.date);
 
     // determine which events overlap
+    let last_event = null, overlap_event = null;
     this.#events.forEach((event, index) => {
       // convert the duration to a number
       event.duration = Number(event.duration);
@@ -99,6 +106,7 @@ export class CN_element_calendar extends CN_base_element {
     });
 
     this.update_element();
+    this.run_event_listeners("eventschanged");
   }
 
   /**
@@ -607,12 +615,15 @@ export class CN_element_calendar extends CN_base_element {
       event_btn_el.setAttribute("data-bs-toggle", "tooltip");
       event_btn_el.setAttribute("data-bs-html", "true");
       event_btn_el.setAttribute("data-bs-title", event.help);
-      new bootstrap.Tooltip(event_btn_el);
+      event.tooltip = new bootstrap.Tooltip(event_btn_el);
     }
 
     // add the on_click event if it exists
     if (CN_common.is_function(event.on_click)) {
-      event_btn_el.addEventListener("click", () => event.on_click(event));
+      event_btn_el.addEventListener("click", (e) => {
+        e.stopPropagation(); // stop the day-click event when clicking an event
+        event.on_click(event)
+      });
     }
 
     return event_btn_el;

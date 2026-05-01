@@ -19,6 +19,9 @@ import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
 
+/**
+ * @event selectionchanged: ran when the participant selection has changed
+ */
 export class CN_participant_model extends CN_base_person_model {
   constructor() {
     const columns = {
