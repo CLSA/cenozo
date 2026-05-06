@@ -70,9 +70,16 @@ class session extends CN_base_object {
   /**
    * Navigates the browser to the given path
    */
-  async navigate_to(path) {
+  async navigate_to(path, query_params = null) {
     if (this.#data.application.development_mode) console.info(`navigating to /${path}`);
-    window.history.pushState({}, "", `${ROOT_URL}/${path}`);
+
+    // only include query parameters if there are any
+    const query = (
+      CN_common.is_object(query_params) && 0 < Object.keys(query_params).length ?
+      "?" + (new URLSearchParams(query_params)).toString() :
+      ""
+    );
+    window.history.pushState({}, "", `${ROOT_URL}/${path}${query}`);
     await this.render();
   }
 
