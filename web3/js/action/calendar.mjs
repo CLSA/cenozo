@@ -23,6 +23,7 @@ export class CN_action_calendar extends CN_base_action {
     let calendar = JSON.parse(this.get_query_parameter("calendar"));
     if (null == calendar) calendar = { mode: "month", date: new Date() };
     if (CN_common.is_string(calendar.date)) calendar.date = new Date(`${calendar.date} 12:00:00`);
+    if (CN_common.is_function(this.#params.on_select)) calendar.allow_selection = true;
     this.#calendar_element = new CN_element_calendar(null, calendar);
     this.#placeholder_calendar_element = new CN_element_calendar(null, calendar);
   }
@@ -62,6 +63,10 @@ export class CN_action_calendar extends CN_base_action {
 
     this.set_query_parameter("calendar", null == calendar ? null : JSON.stringify(calendar));
   }
+
+  // getters
+  get_mode() { return this.#calendar_element.get_mode(); }
+  get_date() { return this.#calendar_element.get_date(); }
 
   /**
    * Returns the record count
@@ -164,17 +169,26 @@ export class CN_action_calendar extends CN_base_action {
 
     this.#calendar_element.set_parent_element(body_el);
     body_el.append(this.#calendar_element.get_element());
+
     this.#calendar_element.add_event_listener("modechanged", async () => {
       this.#placeholder_calendar_element.set_mode(this.#calendar_element.get_mode());
       this.#placeholder_calendar_element.update_element();
       this.write_query_parameters();
+      await this.run();
     });
+
     this.#calendar_element.add_event_listener("datechanged", async () => {
       this.#placeholder_calendar_element.set_date(this.#calendar_element.get_date());
       this.#placeholder_calendar_element.update_element();
       this.write_query_parameters();
       await this.run();
     });
+
+    if (CN_common.is_function(this.#params.on_select)) {
+      this.#calendar_element.add_event_listener("selectionchanged", async (e, dates, events) => {
+        await this.#params.on_select(this.get_model(), dates, events);
+      });
+    }
 
     return body_el;
   }
@@ -264,13 +278,28 @@ export class CN_action_calendar extends CN_base_action {
       '<div class="d-flex align-items-center justify-content-between"></div>'
     );
 
-    footer_el.append(this.constructor.html('<div></div>'));
+    footer_el.append(this.constructor.html('<div class="btn-group" role="group" name="left-btn-group"></div>'));
     footer_el.append(this.constructor.html('<div name="summary" class="text-center fs-6">Loading...</div>'));
+    footer_el.append(this.constructor.html('<div class="btn-group" role="group" name="right-btn-group"></div>'));
+
+    // add a button that brings the calendar to today's date
     const today_btn_el = this.constructor.html(
       '<button name="today" class="btn btn-light btn-outline-primary">Today</button>'
     );
-    footer_el.append(today_btn_el);
+    footer_el.querySelector("div[name=left-btn-group]").append(today_btn_el);
     today_btn_el.addEventListener("click", () => this.#calendar_element.set_date(new Date()));
+
+    // add a view list button (if listing is allowed)
+    const model = this.get_model();
+    if (model.allow_list()) {
+      const list_btn_el = this.constructor.html(`
+        <button name="list" class="btn btn-primary">
+          View ${CN_common.uc_words(model.get_singular())} List
+        </button>
+      `);
+      footer_el.querySelector("div[name=right-btn-group]").append(list_btn_el);
+      list_btn_el.addEventListener("click", () => CN_session.navigate_to(model.get_list_url()));
+    }
 
     return footer_el;
   }

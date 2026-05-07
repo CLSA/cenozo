@@ -5,13 +5,23 @@ import { CN_common } from "../common.mjs"
  * @event modechanged: ran when the calendar's mode is changed
  * @event eventsset: ran when the calendar's events are set
  * @event datechanged: ran when the calendar's date is changed
+ * @event selectionchanged: run when the selected date span has changed
  */
 export class CN_element_calendar extends CN_base_element {
   #mode;
   #date;
   #events = [];
+
   #table_el;
+  #table_cell_list;
   #mode_btn_el;
+
+  #selecting = false;
+  #select_x = null;
+  #select_y = null;
+  #selection_el = null;
+  #selected_cell_list = [];
+  #pending_animation = false;
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
@@ -21,9 +31,9 @@ export class CN_element_calendar extends CN_base_element {
     super(parent_el, {
       ...{
         // default config
-        is_restricted: (date) => false,
         date: null,
         mode: "month",
+        allow_selection: false,
       },
       ...config
     });
@@ -70,6 +80,9 @@ export class CN_element_calendar extends CN_base_element {
     // determine which events overlap
     let last_event = null, overlap_event = null;
     this.#events.forEach((event, index) => {
+      // initialize the selected parameter
+      event.selected = false;
+
       // convert the duration to a number
       event.duration = Number(event.duration);
 
@@ -251,6 +264,8 @@ export class CN_element_calendar extends CN_base_element {
    * Updates the DOM according to current state
    */
   _create_element() {
+    this.#pending_animation = false;
+
     const el = this.constructor.html(`
       <div class="row">
         <div class="btn-group px-0">
@@ -281,14 +296,17 @@ export class CN_element_calendar extends CN_base_element {
             <i class="bi bi-fast-forward-fill"></i>
           </button>
         </div>
-        <table class="table m-0"></table>
+        <table class="table m-0">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
       </div>
     `);
 
     this.#table_el = el.querySelector("table");
     this.#mode_btn_el = el.querySelector("button[name=mode]");
 
-    // wire up the buttons
+    // wire up the forward/reverse and mode buttons
     el.querySelector("button[name=previous-fast]").addEventListener("click", () => {
       this.move_date(false, this.#mode, true);
       this.update_element();
@@ -313,6 +331,108 @@ export class CN_element_calendar extends CN_base_element {
       a_el.addEventListener("click", () => this.set_mode(a_el.getAttribute("name")));
     });
 
+    // implement the selection box and mouse events
+    if (this.get_config("allow_selection")) {
+      const tbody_el = this.#table_el.querySelector("tbody");
+      this.#selection_el = this.constructor.html('<div class="position-absolute pe-none"></div>');
+      document.body.append(this.#selection_el);
+
+      tbody_el.addEventListener("mousedown", (e) => {
+        if (0 == e.button) {
+          this.#selecting = true;
+          this.#select_x = e.clientX;
+          this.#select_y = e.clientY;
+        }
+      });
+
+      tbody_el.addEventListener("mouseup", (e) => {
+        if (0 == e.button && this.#selecting) {
+          this.#selecting = false;
+          this.#select_x = null;
+          this.#select_y = null;
+          this.#selection_el.style.cssText = "";
+
+
+          this.run_event_listeners(
+            "selectionchanged",
+            this.#table_cell_list.filter(el => el.selected).map(el => el.date).sort((a, b) => a > b),
+            this.#events.filter(event => event.selected).sort((a, b) => a.date > b.date),
+          );
+        }
+      });
+
+      tbody_el.addEventListener("mouseleave", (e) => {
+        if (this.#selecting) {
+          this.#selecting = false;
+          this.#select_x = null;
+          this.#select_y = null;
+          this.#selection_el.style.cssText = "";
+        }
+      });
+
+      tbody_el.addEventListener("mousemove", (e) => {
+        if (this.#selecting) {
+          if (!this.#pending_animation) {
+            this.#pending_animation = true;
+            window.requestAnimationFrame(() => {
+              // make sure we're still selecting by the time the animation frame is ready
+              if (this.#selecting) {
+                const bbox = {
+                  left: Math.min(this.#select_x, e.clientX),
+                  top: Math.min(this.#select_y, e.clientY),
+                  right: Math.max(this.#select_x, e.clientX),
+                  bottom: Math.max(this.#select_y, e.clientY),
+                };
+
+                this.#selection_el.style.cssText = `
+                  left: ${bbox.left}px;
+                  top: ${bbox.top}px;
+                  width: ${bbox.right - bbox.left}px;
+                  height: ${bbox.bottom - bbox.top}px;
+                  outline: 2px solid rgb(var(--bs-primary-rgb));
+                  z-index: 1000;
+                `;
+
+                // highlight events under the selection
+                let events_selected = false;
+                this.#events.forEach(event => {
+                  const r = event.element.getBoundingClientRect();
+                  if (r.left < bbox.right && r.right > bbox.left && r.top < bbox.bottom && r.bottom > bbox.top) {
+                    event.element.classList.remove(`btn-${event.type}`);
+                    event.element.classList.add("btn-info");
+                    event.selected = true;
+                    events_selected = true;
+                  } else {
+                    event.element.classList.remove("btn-info");
+                    event.element.classList.add(`btn-${event.type}`);
+                    event.selected = false;
+                  }
+                });
+
+                // highlight table cells under the selection
+                this.#table_cell_list.forEach(el => {
+                  if (events_selected) {
+                    el.classList.remove("bg-info-subtle");
+                    el.selected = false;
+                  } else {
+                    const r = el.getBoundingClientRect();
+                    if (r.left < bbox.right && r.right > bbox.left && r.top < bbox.bottom && r.bottom > bbox.top) {
+                      el.classList.add("bg-info-subtle");
+                      el.selected = true;
+                    } else {
+                      el.classList.remove("bg-info-subtle");
+                      el.selected = false;
+                    }
+                  }
+                });
+              }
+              this.#pending_animation = false;
+            });
+          }
+        }
+      });
+    }
+
     return el;
   }
 
@@ -320,7 +440,9 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_month() {
-    const today_string = (new Date()).toDateString();
+    // rebuild the table cell list
+    this.#table_cell_list = [];
+
     const current_year = this.#date.getFullYear();
     const current_month = this.#date.getMonth();
 
@@ -328,14 +450,12 @@ export class CN_element_calendar extends CN_base_element {
     this.#mode_btn_el.innerHTML = [CN_common.get_month(current_month), current_year].join(" ");
 
     this.#table_el.classList.add("table-bordered");
-    this.#table_el.replaceChildren(this.constructor.html(`
-      <thead>
-        <tr>
-          ${CN_common.get_weekday(null, "en", "short").map(
-            day => `<th class="text-bg-secondary text-center" scope="col" width="14.286%">${day}</th>`
-          ).join("\n")}
-        </tr>
-      </thead>
+    this.#table_el.querySelector("thead").replaceChildren(this.constructor.html(`
+      <tr>
+        ${CN_common.get_weekday(null, "en", "short").map(
+          day => `<th class="text-bg-secondary text-center" scope="col" width="14.286%">${day}</th>`
+        ).join("\n")}
+      </tr>
     `));
 
     // get a list of all days in the current month
@@ -358,8 +478,10 @@ export class CN_element_calendar extends CN_base_element {
       day_list.push(new Date(current_year, current_month + 1, i + 1));
     }
 
-    const tbody_el = this.constructor.html('<tbody></tbody>');
-    this.#table_el.append(tbody_el);
+    // fill in each day of the month
+    const tbody_el = this.#table_el.querySelector("tbody");
+    tbody_el.classList.remove("position-relative");
+    tbody_el.innerHTML = "";
     let tr_el = null;
     day_list.forEach((date, index) => {
       if (0 == index % 7) {
@@ -367,28 +489,24 @@ export class CN_element_calendar extends CN_base_element {
         tbody_el.append(tr_el);
       }
 
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const restricted = this.get_config("is_restricted")(date);
-      const date_td_el = this.constructor.html('<td class="p-0 pe-1"></td>');
+      const cell_td_el = this.#create_cell_element(date);
+      cell_td_el.classList.add("pe-1");
+      tr_el.append(cell_td_el);
       const date_div_el = this.constructor.html(`
         <div class="w-100 p-0" style="min-height: 5em">
           <div class="text-end">${date.getDate()}</div>
           <div name="events" class="w-100"></div>
         </div>
       `);
-      date_td_el.append(date_div_el);
-      if (restricted || month != current_month) date_td_el.classList.add("table-light");
+      cell_td_el.append(date_div_el);
 
-      // highlight today's date
-      if (date.toDateString() == today_string) {
-        date_td_el.classList.remove("table-light");
-        date_td_el.classList.add("table-warning");
-      }
-
-      // clicking on days outside of the current month will transition to that month
+      const year = date.getFullYear();
+      const month = date.getMonth();
       if (month != current_month) {
-        date_td_el.addEventListener("click", (event) => {
+        cell_td_el.classList.add("table-light");
+
+        // clicking on days outside of the current month will transition to that month
+        cell_td_el.addEventListener("click", (event) => {
           if (year < current_year || month < current_month) {
             this.move_date(false, "month", false);
           } else if (year > current_year || month > current_month) {
@@ -405,8 +523,6 @@ export class CN_element_calendar extends CN_base_element {
         event.date.getMonth() == date.getMonth() &&
         event.date.getDate() == date.getDate()
       ).forEach(event => events_div_el.append(this.#create_event_element(event)));
-
-      tr_el.append(date_td_el);
     });
   }
 
@@ -414,28 +530,28 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_week() {
+    // rebuild the table cell list
+    this.#table_cell_list = [];
+
     const jan_one = new Date(this.#date.getFullYear(), 0, 1);
     const week = Math.ceil((((this.#date - jan_one) / 86400000) + jan_one.getDay() + 1) / 7);
-    const today_string = (new Date()).toDateString();
 
     // set the mode button text
     this.#mode_btn_el.innerHTML = `${this.#date.getFullYear()} (week ${week})`;
 
     const date_index = this.#date.getDay();
     this.#table_el.classList.remove("table-bordered");
-
-    const thead_el = this.constructor.html(`
-      <thead>
-        <tr class="border">
-          <th class="text-bg-secondary" scope="col" width="2%"></th>
-        </tr>
-      </thead>
+    const header_tr_el = this.constructor.html(`
+      <tr class="border">
+        <th class="text-bg-secondary" scope="col" width="2%"></th>
+      </tr>
     `);
-    this.#table_el.replaceChildren(thead_el);
-    const tbody_el = this.constructor.html('<tbody class="position-relative"></tbody>');
-    this.#table_el.append(tbody_el);
+    this.#table_el.querySelector("thead").replaceChildren(header_tr_el);
+    const tbody_el = this.#table_el.querySelector("tbody");
+    tbody_el.classList.add("position-relative");
+    tbody_el.innerHTML = "";
 
-    const header_tr_el = thead_el.querySelector("tr");
+    // fill in each hour block of the week
     CN_common.get_list_of_numbers(48).forEach(hour_index => {
       // get the date for the start of the week based on the current date (Sunday)
       const date = CN_common.clone(this.#date);
@@ -459,6 +575,7 @@ export class CN_element_calendar extends CN_base_element {
       `);
       tbody_el.append(body_tr_el);
 
+      // go over each day of the week
       CN_common.get_weekday(null, "en", "short").forEach((day, day_index) => {
         // add the header columns
         if (0 == hour_index) {
@@ -470,19 +587,15 @@ export class CN_element_calendar extends CN_base_element {
           `));
         }
 
-        body_tr_el.append(this.constructor.html(`
-          <td
-            name="${day_index}"
-            class="
-              border-start
-              border-end
-              ${today_string == date.toDateString() ? "table-warning" : ""}
-              ${0 == hour_index % 2 ? "border-top-0 border-bottom-0" : ""}
-              p-0
-            "
-            style="background-clip: padding-box"
-          ></td>
-        `));
+        const cell_td_el = this.#create_cell_element(date);
+        cell_td_el.classList.add("border-start");
+        cell_td_el.classList.add("border-end");
+        if (0 == hour_index % 2) {
+          cell_td_el.classList.add("border-top-0");
+          cell_td_el.classList.add("border-bottom-0");
+        }
+        cell_td_el.style["background-clip"] = "padding-box";
+        body_tr_el.append(cell_td_el);
 
         // move to the next day of the week
         date.setDate(date.getDate() + 1);
@@ -501,24 +614,31 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_day() {
-    const today_string = (new Date()).toDateString();
+    // rebuild the table cell list
+    this.#table_cell_list = [];
 
     // set the mode button text
     this.#mode_btn_el.innerHTML = CN_common.format_datetime(this.#date, "date", true);
 
     const date_index = this.#date.getDay();
     this.#table_el.classList.remove("table-bordered");
+    this.#table_el.querySelector("thead").innerHTML = "";
 
-    const tbody_el = this.constructor.html("<tbody></tbody>");
-    this.#table_el.replaceChildren(tbody_el);
+    const tbody_el = this.#table_el.querySelector("tbody");
+    tbody_el.classList.add("position-relative");
+    tbody_el.innerHTML = "";
 
+    const date = CN_common.clone(this.#date);
+
+    // fill in each hour block of the day
     CN_common.get_list_of_numbers(48).forEach(hour_index => {
+      date.setHours(Math.floor(hour_index/2));
+      date.setMinutes(0 == hour_index % 2 ? 0 : 30);
+      date.setSeconds(0);
+
       // add the body rows
       let time_string = "&nbsp;";
       if (0 == hour_index % 2) {
-        const date = new Date();
-        date.setHours(hour_index/2);
-        date.setMinutes(0);
         time_string = CN_common.format_time(date).replace(/:00/, "").replace(/ (.)\.m\./, "$1");
       }
       const body_tr_el = this.constructor.html(`
@@ -530,18 +650,16 @@ export class CN_element_calendar extends CN_base_element {
       `);
       tbody_el.append(body_tr_el);
 
-      body_tr_el.append(this.constructor.html(`
-        <td
-          class="
-            border-start
-            border-end
-            ${today_string == this.#date.toDateString() ? "table-warning" : ""}
-            ${0 == hour_index % 2 ? "border-top-0 border-bottom-0" : ""}
-            p-0
-          "
-          width="98%"
-        ></td>
-      `));
+      const cell_td_el = this.#create_cell_element(date);
+      cell_td_el.setAttribute("width", "98%");
+      cell_td_el.classList.add("border-start");
+      cell_td_el.classList.add("border-end");
+      if (0 == hour_index % 2) {
+        cell_td_el.classList.add("border-top-0");
+        cell_td_el.classList.add("border-bottom-0");
+      }
+      cell_td_el.style["background-clip"] = "padding-box";
+      body_tr_el.append(cell_td_el);
     });
 
     // add the day's events
@@ -555,19 +673,42 @@ export class CN_element_calendar extends CN_base_element {
   /**
    * ADD DOCS
    */
+  #create_cell_element(date) {
+    const today_string = (new Date()).toDateString();
+    const el = this.constructor.html('<td class="p-0"></td>');
+
+    // attach properties to the cell element to track it's date and whether it has been selected
+    el.date = CN_common.clone(date);
+    el.selected = false;
+
+    // highlight today's date
+    if (date.toDateString() == today_string) {
+      el.classList.remove("table-light");
+      el.classList.add("table-warning");
+    }
+
+    // add the cell to the cached cell list for easy access when in selection mode
+    this.#table_cell_list.push(el);
+
+    return el;
+  }
+
+  /**
+   * ADD DOCS
+   */
   #create_event_element(event) {
-    const event_btn_el = this.constructor.html(`
-      <button class="btn btn-sm btn-${event.type} m-0 p-0">
+    event.element = this.constructor.html(`
+      <button type="button" class="btn btn-sm btn-${event.type} m-0 p-0">
         ${CN_common.format_time(event.date)}: ${event.title}
       </button>
     `);
 
     if ("month" == this.#mode) {
-      event_btn_el.classList.add("w-100");
+      event.element.classList.add("w-100");
     } else {
       const time_fraction = (event.date.getHours() + event.date.getMinutes()/60) / 24;
       if ("week" == this.#mode) {
-        event_btn_el.style.cssText = `
+        event.element.style.cssText = `
           top: ${time_fraction * 100}%;
           left: ${
             2.5 +
@@ -580,7 +721,7 @@ export class CN_element_calendar extends CN_base_element {
           z-index: ${null == event.overlap ? 0 : event.overlap.index};
         `;
       } else if ("day" == this.#mode) {
-        event_btn_el.style.cssText = `
+        event.element.style.cssText = `
           top: ${time_fraction * 100}%;
           left: ${3 + (null == event.overlap ?  0 : event.overlap.index * 70 / (event.overlap.total - 1))}%;
           width: ${null == event.overlap ? 96 : 24.5}%;
@@ -590,42 +731,45 @@ export class CN_element_calendar extends CN_base_element {
         `;
       }
 
-      event_btn_el.classList.add("position-absolute");
-      event_btn_el.classList.add(30 >= event.duration ? "badge" : "fw-bold");
-      event_btn_el.classList.add("text-wrap");
-      event_btn_el.classList.add("m-0");
-      event_btn_el.classList.add("p-0");
-      event_btn_el.innerHTML = `
+      event.element.classList.add("position-absolute");
+      event.element.classList.add(30 >= event.duration ? "badge" : "fw-bold");
+      event.element.classList.add("text-wrap");
+      event.element.classList.add("m-0");
+      event.element.classList.add("p-0");
+      event.element.innerHTML = `
         ${CN_common.format_time(event.date)}
         ${20 < event.duration ? "<br/>" : ""}
         ${event.title}
       `;
 
       // temporarily raise events that the mouse is hovering over
-      event_btn_el.addEventListener("mouseover", () => {
-        event_btn_el.style["z-index"] = 1000;
+      event.element.addEventListener("mouseenter", () => {
+        event.element.style["z-index"] = 100;
       });
-      event_btn_el.addEventListener("mouseout", () => {
-        event_btn_el.style["z-index"] = null == event.overlap ? 0 : event.overlap.index;
+      event.element.addEventListener("mouseleave", () => {
+        event.element.style["z-index"] = null == event.overlap ? 0 : event.overlap.index;
       });
     }
 
     // add the tooltip if help text exists
     if (event.help) {
-      event_btn_el.setAttribute("data-bs-toggle", "tooltip");
-      event_btn_el.setAttribute("data-bs-html", "true");
-      event_btn_el.setAttribute("data-bs-title", event.help);
-      event.tooltip = new bootstrap.Tooltip(event_btn_el);
+      event.element.setAttribute("data-bs-toggle", "tooltip");
+      event.element.setAttribute("data-bs-html", "true");
+      event.element.setAttribute("data-bs-title", event.help);
+      event.tooltip = new bootstrap.Tooltip(event.element);
     }
 
     // add the on_click event if it exists
     if (CN_common.is_function(event.on_click)) {
-      event_btn_el.addEventListener("click", (e) => {
-        e.stopPropagation(); // stop the day-click event when clicking an event
+      event.element.addEventListener("mousedown", (e) => {
+        e.stopPropagation(); // do not propagate to the day mousedown event
+      });
+      event.element.addEventListener("click", (e) => {
+        e.stopPropagation(); // do not propagate to the day click event
         event.on_click(event)
       });
     }
 
-    return event_btn_el;
+    return event.element;
   }
 }
