@@ -367,6 +367,18 @@ export class CN_element_calendar extends CN_base_element {
           this.#select_x = null;
           this.#select_y = null;
           this.#selection_el.style.cssText = "";
+
+          // unselect events and cells
+          this.#events.filter(event => event.selected).forEach(event => {
+            event.element.classList.remove("btn-info");
+            event.element.classList.add(`btn-${event.type}`);
+            event.selected = false;
+          });
+
+          this.#table_cell_list.filter(el => el.selected).forEach(el => {
+            el.classList.remove("bg-info-subtle");
+            el.selected = false;
+          });
         }
       });
 
