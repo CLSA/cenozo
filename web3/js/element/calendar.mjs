@@ -311,8 +311,7 @@ export class CN_element_calendar extends CN_base_element {
         <div name="table-header" class="row flex-nowrap m-0">
         </div>
         <div style="overflow-y: auto; max-height: 80vh;">
-          <table class="table mb-0" style="width: 100%, border-collapse: collapse;">
-          </table>
+          <table class="table mb-0"></table>
         </div>
       </div>
     `);
@@ -574,12 +573,8 @@ export class CN_element_calendar extends CN_base_element {
     const jan_one = new Date(this.#date.getFullYear(), 0, 1);
     const week = Math.ceil((((this.#date - jan_one) / 86400000) + jan_one.getDay() + 1) / 7);
 
-    // set the mode button text
     this.#mode_btn_el.innerHTML = `${this.#date.getFullYear()} (week ${week})`;
-
     this.#table_header_el.innerHTML = "";
-
-    const date_index = this.#date.getDay();
     this.#table_el.classList.add("position-relative");
     this.#table_el.innerHTML = "";
 
@@ -647,19 +642,13 @@ export class CN_element_calendar extends CN_base_element {
     // rebuild the table cell list
     this.#table_cell_list = [];
 
-    // set the mode button text
     this.#mode_btn_el.innerHTML = CN_common.format_datetime(this.#date, "date", true);
-
     this.#table_header_el.innerHTML = "";
-
-    const date_index = this.#date.getDay();
-
     this.#table_el.classList.add("position-relative");
     this.#table_el.innerHTML = "";
 
-    const date = CN_common.clone(this.#date);
-
     // fill in each hour block of the day
+    const date = CN_common.clone(this.#date);
     CN_common.get_list_of_numbers(48).forEach(hour_index => {
       date.setHours(Math.floor(hour_index/2));
       date.setMinutes(0 == hour_index % 2 ? 0 : 30);
