@@ -257,16 +257,16 @@ export class CN_common extends CN_base_object {
     }
 
     if ("record" == format) {
-      return value.toISOString().substr(0, 10) + " " + value.toTimeString().substr(0, 8);
+      return value.toLocaleDateString("en-CA") + " " + value.toTimeString().substr(0, 8);
     }
 
     let options = {};
     let include_date = true;
     let include_time = false;
     if ("dob" == format || "dod" == format) {
-      options = { ...options, year: "numeric", month: "short", day: "numeric" };
+      options = { year: "numeric", month: "short", day: "numeric" };
     } else if (this.is_datetime_type(format, "date")) {
-      options = { ...options, year: "numeric", month: long_form ? "long" : "short", day: "numeric" };
+      options = { year: "numeric", month: long_form ? "long" : "short", day: "numeric" };
       if (long_form) options.weekday = "long";
       include_time = "date" != format;
     } else if (this.is_datetime_type(format, "time")) {
