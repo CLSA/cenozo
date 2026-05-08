@@ -20,10 +20,16 @@ export class CN_action_calendar extends CN_base_action {
     super("calendar", parent_el, model);
 
     this.#params = model.clone_calendar();
-    let calendar = JSON.parse(this.get_query_parameter("calendar"));
-    if (null == calendar) calendar = { mode: "month", date: new Date() };
+    const calendar = {
+      ...{
+        mode: this.#params.mode ? this.#params.mode : "month",
+        date: this.#params.date ? this.#params.date : new Date(),
+        allow_selection: CN_common.is_function(this.#params.on_select),
+      },
+      ...JSON.parse(this.get_query_parameter("calendar"))
+    };
+
     if (CN_common.is_string(calendar.date)) calendar.date = new Date(`${calendar.date} 12:00:00`);
-    if (CN_common.is_function(this.#params.on_select)) calendar.allow_selection = true;
     this.#calendar_element = new CN_element_calendar(null, calendar);
     this.#placeholder_calendar_element = new CN_element_calendar(null, calendar);
   }
@@ -50,7 +56,8 @@ export class CN_action_calendar extends CN_base_action {
     let calendar = null;
 
     const mode = this.#calendar_element.get_mode();
-    if ("month" != mode) {
+    const default_mode = this.#params.mode ? this.#params.mode : "month";
+    if (default_mode != mode) {
       if (null == calendar) calendar = {};
       calendar.mode = mode;
     }
@@ -165,7 +172,7 @@ export class CN_action_calendar extends CN_base_action {
    * Extends parent method
    */
   create_body_element() {
-    const body_el = this.constructor.html('<div class="container-fluid"></div>');
+    const body_el = this.constructor.html('<div></div>');
 
     this.#calendar_element.set_parent_element(body_el);
     body_el.append(this.#calendar_element.get_element());

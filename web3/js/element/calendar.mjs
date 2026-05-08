@@ -12,6 +12,7 @@ export class CN_element_calendar extends CN_base_element {
   #date;
   #events = [];
 
+  #table_header_el;
   #table_el;
   #table_cell_list;
   #mode_btn_el;
@@ -21,6 +22,7 @@ export class CN_element_calendar extends CN_base_element {
   #select_y = null;
   #selection_el = null;
   #selected_cell_list = [];
+  #pending_resize = false;
   #pending_animation = false;
 
   constructor(parent_el, config = {}) {
@@ -253,8 +255,10 @@ export class CN_element_calendar extends CN_base_element {
       this.#display_month();
     } else if ("week" == this.#mode) {
       this.#display_week()
+      this.#repaint_events();
     } else if ("day" == this.#mode) {
       this.#display_day();
+      this.#repaint_events();
     } else {
       throw new Error(`Unsupported mode: ${this.#mode}`);
     }
@@ -263,12 +267,20 @@ export class CN_element_calendar extends CN_base_element {
   /**
    * Updates the DOM according to current state
    */
+  async on_dom_add() {
+    if ("month" != this.#mode) this.#repaint_events();
+  }
+
+  /**
+   * Updates the DOM according to current state
+   */
   _create_element() {
+    this.#pending_resize = false;
     this.#pending_animation = false;
 
     const el = this.constructor.html(`
-      <div class="row">
-        <div class="btn-group px-0">
+      <div>
+        <div class="btn-group w-100 px-0">
           <button type="button" name="previous-fast" class="btn btn-outline-primary rounded-0 col-1">
             <i class="bi bi-rewind-fill"></i>
           </button>
@@ -296,13 +308,16 @@ export class CN_element_calendar extends CN_base_element {
             <i class="bi bi-fast-forward-fill"></i>
           </button>
         </div>
-        <table class="table m-0">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
+        <div name="table-header" class="row flex-nowrap m-0">
+        </div>
+        <div style="overflow-y: auto; max-height: 80vh;">
+          <table class="table mb-0" style="width: 100%, border-collapse: collapse;">
+          </table>
+        </div>
       </div>
     `);
 
+    this.#table_header_el = el.querySelector("div[name=table-header]");
     this.#table_el = el.querySelector("table");
     this.#mode_btn_el = el.querySelector("button[name=mode]");
 
@@ -331,13 +346,25 @@ export class CN_element_calendar extends CN_base_element {
       a_el.addEventListener("click", () => this.set_mode(a_el.getAttribute("name")));
     });
 
+    // due to the vertical scroll bar day and week mode need events re-painted every time the window changes size
+    window.addEventListener("resize", () => {
+      if ("month" != this.#mode) {
+        if (!this.#pending_resize) {
+          this.#pending_resize = true;
+          window.requestAnimationFrame(() => {
+            this.#repaint_events();
+            this.#pending_resize = false;
+          });
+        }
+      }
+    });
+
     // implement the selection box and mouse events
     if (this.get_config("allow_selection")) {
-      const tbody_el = this.#table_el.querySelector("tbody");
       this.#selection_el = this.constructor.html('<div class="position-absolute pe-none"></div>');
       document.body.append(this.#selection_el);
 
-      tbody_el.addEventListener("mousedown", (e) => {
+      this.#table_el.addEventListener("mousedown", (e) => {
         if (0 == e.button) {
           this.#selecting = true;
           this.#select_x = e.clientX;
@@ -345,7 +372,7 @@ export class CN_element_calendar extends CN_base_element {
         }
       });
 
-      tbody_el.addEventListener("mouseup", (e) => {
+      this.#table_el.addEventListener("mouseup", (e) => {
         if (0 == e.button && this.#selecting) {
           this.#selecting = false;
           this.#select_x = null;
@@ -361,7 +388,7 @@ export class CN_element_calendar extends CN_base_element {
         }
       });
 
-      tbody_el.addEventListener("mouseleave", (e) => {
+      this.#table_el.addEventListener("mouseleave", (e) => {
         if (this.#selecting) {
           this.#selecting = false;
           this.#select_x = null;
@@ -382,7 +409,7 @@ export class CN_element_calendar extends CN_base_element {
         }
       });
 
-      tbody_el.addEventListener("mousemove", (e) => {
+      this.#table_el.addEventListener("mousemove", (e) => {
         if (this.#selecting) {
           if (!this.#pending_animation) {
             this.#pending_animation = true;
@@ -407,7 +434,7 @@ export class CN_element_calendar extends CN_base_element {
 
                 // highlight events under the selection
                 let events_selected = false;
-                this.#events.forEach(event => {
+                this.#events.filter(event => event.element).forEach(event => {
                   const r = event.element.getBoundingClientRect();
                   if (r.left < bbox.right && r.right > bbox.left && r.top < bbox.bottom && r.bottom > bbox.top) {
                     event.element.classList.remove(`btn-${event.type}`);
@@ -461,14 +488,13 @@ export class CN_element_calendar extends CN_base_element {
     // set the mode button text
     this.#mode_btn_el.innerHTML = [CN_common.get_month(current_month), current_year].join(" ");
 
-    this.#table_el.classList.add("table-bordered");
-    this.#table_el.querySelector("thead").replaceChildren(this.constructor.html(`
-      <tr>
-        ${CN_common.get_weekday(null, "en", "short").map(
-          day => `<th class="text-bg-secondary text-center" scope="col" width="14.286%">${day}</th>`
-        ).join("\n")}
-      </tr>
-    `));
+    // add each day of the week to the table header
+    this.#table_header_el.innerHTML = "";
+    CN_common.get_weekday(null, "en", "short").forEach(day => {
+      this.#table_header_el.append(this.constructor.html(
+        `<div class="col text-bg-secondary text-center" style="outline: 1px solid white">${day}</div>`
+      ));
+    });
 
     // get a list of all days in the current month
     const day_list = [];
@@ -491,21 +517,21 @@ export class CN_element_calendar extends CN_base_element {
     }
 
     // fill in each day of the month
-    const tbody_el = this.#table_el.querySelector("tbody");
-    tbody_el.classList.remove("position-relative");
-    tbody_el.innerHTML = "";
+    this.#table_el.classList.remove("position-relative");
+    this.#table_el.innerHTML = "";
     let tr_el = null;
     day_list.forEach((date, index) => {
       if (0 == index % 7) {
         tr_el = this.constructor.html("<tr></tr>");
-        tbody_el.append(tr_el);
+        this.#table_el.append(tr_el);
       }
 
       const cell_td_el = this.#create_cell_element(date);
-      cell_td_el.classList.add("pe-1");
+      cell_td_el.setAttribute("width", "14.286%");
+      cell_td_el.classList.add("align-top");
       tr_el.append(cell_td_el);
       const date_div_el = this.constructor.html(`
-        <div class="w-100 p-0" style="min-height: 5em">
+        <div class="w-100 p-0 pe-1" style="min-height: 5em">
           <div class="text-end">${date.getDate()}</div>
           <div name="events" class="w-100"></div>
         </div>
@@ -515,7 +541,7 @@ export class CN_element_calendar extends CN_base_element {
       const year = date.getFullYear();
       const month = date.getMonth();
       if (month != current_month) {
-        cell_td_el.classList.add("table-light");
+        cell_td_el.classList.add("bg-light");
 
         // clicking on days outside of the current month will transition to that month
         cell_td_el.addEventListener("click", (event) => {
@@ -551,17 +577,11 @@ export class CN_element_calendar extends CN_base_element {
     // set the mode button text
     this.#mode_btn_el.innerHTML = `${this.#date.getFullYear()} (week ${week})`;
 
+    this.#table_header_el.innerHTML = "";
+
     const date_index = this.#date.getDay();
-    this.#table_el.classList.remove("table-bordered");
-    const header_tr_el = this.constructor.html(`
-      <tr class="border">
-        <th class="text-bg-secondary" scope="col" width="2%"></th>
-      </tr>
-    `);
-    this.#table_el.querySelector("thead").replaceChildren(header_tr_el);
-    const tbody_el = this.#table_el.querySelector("tbody");
-    tbody_el.classList.add("position-relative");
-    tbody_el.innerHTML = "";
+    this.#table_el.classList.add("position-relative");
+    this.#table_el.innerHTML = "";
 
     // fill in each hour block of the week
     CN_common.get_list_of_numbers(48).forEach(hour_index => {
@@ -571,42 +591,44 @@ export class CN_element_calendar extends CN_base_element {
       date.setHours(Math.floor(hour_index/2));
       date.setMinutes(0 == hour_index % 2 ? 0 : 30);
       date.setSeconds(0);
+      const time_string = (
+        0 == hour_index % 2 ?
+        CN_common.format_time(date).replace(/:00/, "").replace(/ (.)\.m\./, "$1") :
+        "&nbsp;"
+      );
 
       // add the body rows
       const body_tr_el = this.constructor.html(`
-        <tr name="${hour_index}">
-          <td
-            class="text-bg-secondary px-1 py-0 fw-bold"
-            style="background-clip: padding-box; line-height: 29px;"
-          >${
-            0 == hour_index % 2 ?
-            CN_common.format_time(date).replace(/:00/, "").replace(/ (.)\.m\./, "$1") :
-            "&nbsp;"
-          }</td>
+        <tr>
+          <td class="text-bg-secondary px-1 py-0 fw-bold" style="line-height: 29px;">${time_string}</td>
         </tr>
       `);
-      tbody_el.append(body_tr_el);
+      this.#table_el.append(body_tr_el);
 
       // go over each day of the week
+      if (0 == hour_index) {
+        this.#table_header_el.append(this.constructor.html(`
+          <div class="col flex-grow-0 text-bg-secondary px-1 fw-bold">
+            <span style="visibility: hidden">${time_string}</span>
+          </div>
+        `));
+      }
+
       CN_common.get_weekday(null, "en", "short").forEach((day, day_index) => {
-        // add the header columns
         if (0 == hour_index) {
-          header_tr_el.append(this.constructor.html(`
-            <th class="text-bg-secondary border text-center" scope="col" width="14%">
+          const day_el = this.constructor.html(`
+            <div class="col text-bg-secondary text-center fw-bold">
               ${day}
               (${CN_common.get_month(date.getMonth(), "en", "short")} ${date.getDate()})
-            </th>
-          `));
+            </div>
+          `);
+          if (0 < day_index) day_el.style.outline = "1px solid white";
+          this.#table_header_el.append(day_el);
         }
 
         const cell_td_el = this.#create_cell_element(date);
-        cell_td_el.classList.add("border-start");
-        cell_td_el.classList.add("border-end");
-        if (0 == hour_index % 2) {
-          cell_td_el.classList.add("border-top-0");
-          cell_td_el.classList.add("border-bottom-0");
-        }
-        cell_td_el.style["background-clip"] = "padding-box";
+        cell_td_el.setAttribute("width", "14.286%");
+        cell_td_el.classList.add(0 == hour_index % 2 ? "border-bottom-0" : "border-top-0");
         body_tr_el.append(cell_td_el);
 
         // move to the next day of the week
@@ -614,12 +636,8 @@ export class CN_element_calendar extends CN_base_element {
       });
     });
 
-    // add this week's events
-    const min_date = this.get_min_date();
-    const max_date = this.get_max_date();
-    this.#events
-      .filter(event => min_date <= event.date && event.date <= max_date)
-      .forEach(event => tbody_el.append(this.#create_event_element(event)));
+    // Note that the events won't yet be visible (this must wait until after the calendar is added to the DOM)
+    this.#events.forEach(event => this.#table_el.append(this.#create_event_element(event)));
   }
 
   /**
@@ -632,13 +650,12 @@ export class CN_element_calendar extends CN_base_element {
     // set the mode button text
     this.#mode_btn_el.innerHTML = CN_common.format_datetime(this.#date, "date", true);
 
-    const date_index = this.#date.getDay();
-    this.#table_el.classList.remove("table-bordered");
-    this.#table_el.querySelector("thead").innerHTML = "";
+    this.#table_header_el.innerHTML = "";
 
-    const tbody_el = this.#table_el.querySelector("tbody");
-    tbody_el.classList.add("position-relative");
-    tbody_el.innerHTML = "";
+    const date_index = this.#date.getDay();
+
+    this.#table_el.classList.add("position-relative");
+    this.#table_el.innerHTML = "";
 
     const date = CN_common.clone(this.#date);
 
@@ -660,26 +677,54 @@ export class CN_element_calendar extends CN_base_element {
           </td>
         </tr>
       `);
-      tbody_el.append(body_tr_el);
+      this.#table_el.append(body_tr_el);
 
       const cell_td_el = this.#create_cell_element(date);
       cell_td_el.setAttribute("width", "98%");
-      cell_td_el.classList.add("border-start");
-      cell_td_el.classList.add("border-end");
-      if (0 == hour_index % 2) {
-        cell_td_el.classList.add("border-top-0");
-        cell_td_el.classList.add("border-bottom-0");
-      }
-      cell_td_el.style["background-clip"] = "padding-box";
+      cell_td_el.classList.add(0 == hour_index % 2 ? "border-bottom-0" : "border-top-0");
       body_tr_el.append(cell_td_el);
     });
 
-    // add the day's events
+    // Note that the events won't yet be visible (this must wait until after the calendar is added to the DOM)
+    this.#events.forEach(event => this.#table_el.append(this.#create_event_element(event)));
+  }
+
+  /**
+   * ADD DOCS
+   * Note that this method is only used when in day or week mode
+   */
+  #repaint_events() {
+    // event placement depends on the side of the calendar rows/columns
+    const td_el = this.#table_el.querySelector("tr td");
+    const time_height = td_el.clientHeight;// + 1 - 0.15; // Why subtract 0.15? Because that makes it line up :(
+    const time_width = td_el.clientWidth + 1;
+    const day_width = td_el.nextElementSibling.clientWidth + 1;
+
+    // add this week's events
     const min_date = this.get_min_date();
     const max_date = this.get_max_date();
-    this.#events
-      .filter(event => min_date <= event.date && event.date <= max_date)
-      .forEach(event => tbody_el.append(this.#create_event_element(event)));
+    this.#events.forEach(event => {
+      if (event => min_date <= event.date && event.date <= max_date) {
+        const left_overlap =
+          null == event.overlap ? 0 : event.overlap.index * day_width / (event.overlap.total - 1);
+        const width_overlap = null == event.overlap ? 1 : ("week" == this.#mode ? 2 : 4);
+
+        event.element.style.left = (
+          ("week" == this.#mode ? (time_width + event.date.getDay() * day_width) : time_width) +
+          ("week" == this.#mode ? 0.5 : 0.75) * left_overlap
+        ) + "px";
+        event.element.style.top = (time_height * (2 * event.date.getHours() + event.date.getMinutes()/30)) + "px";
+        event.element.style.width = (day_width * 0.95 / width_overlap) + "px";
+        event.element.style.height = (time_height * event.duration / 30 - 1) + "px";
+        event.element.style.display = "";
+      } else {
+        event.element.style.left = "0px";
+        event.element.style.top = "0px";
+        event.element.style.width = "0px";
+        event.element.style.height = "0px";
+        event.element.style.display = "none";
+      }
+    });
   }
 
   /**
@@ -687,7 +732,7 @@ export class CN_element_calendar extends CN_base_element {
    */
   #create_cell_element(date) {
     const today_string = (new Date()).toDateString();
-    const el = this.constructor.html('<td class="p-0"></td>');
+    const el = this.constructor.html('<td class="p-0" style="border: 1px solid #ccc;"></td>');
 
     // attach properties to the cell element to track it's date and whether it has been selected
     el.date = CN_common.clone(date);
@@ -710,7 +755,7 @@ export class CN_element_calendar extends CN_base_element {
    */
   #create_event_element(event) {
     event.element = this.constructor.html(`
-      <button type="button" class="btn btn-sm btn-${event.type} m-0 p-0">
+      <button type="button" name="event" class="btn btn-sm btn-${event.type} badge m-0">
         ${CN_common.format_time(event.date)}: ${event.title}
       </button>
     `);
@@ -718,30 +763,13 @@ export class CN_element_calendar extends CN_base_element {
     if ("month" == this.#mode) {
       event.element.classList.add("w-100");
     } else {
-      const time_fraction = (event.date.getHours() + event.date.getMinutes()/60) / 24;
-      if ("week" == this.#mode) {
-        event.element.style.cssText = `
-          top: ${time_fraction * 100}%;
-          left: ${
-            2.5 +
-            event.date.getDay() * 14 +
-            (null == event.overlap ?  0 : event.overlap.index * 6.5 / (event.overlap.total - 1))
-          }%;
-          width: ${null == event.overlap ? 13 : 6.5}%;
-          height: ${event.duration * 0.0694333}%;
-          outline: 1px solid white;
-          z-index: ${null == event.overlap ? 0 : event.overlap.index};
-        `;
-      } else if ("day" == this.#mode) {
-        event.element.style.cssText = `
-          top: ${time_fraction * 100}%;
-          left: ${3 + (null == event.overlap ?  0 : event.overlap.index * 70 / (event.overlap.total - 1))}%;
-          width: ${null == event.overlap ? 96 : 24.5}%;
-          height: ${event.duration * 0.0694333}%;
-          outline: 1px solid white;
-          z-index: ${null == event.overlap ? 0 : event.overlap.index};
-        `;
-      }
+      // Week and day events are displayed absolutely, so more work needs to be done.
+      // Note that placement is determined in the repaint_events() method
+      event.element.style.cssText = `
+        outline: 1px solid white;
+        z-index: ${null == event.overlap ? 0 : event.overlap.index};
+        display: none;
+      `;
 
       event.element.classList.add("position-absolute");
       event.element.classList.add(30 >= event.duration ? "badge" : "fw-bold");
@@ -750,7 +778,7 @@ export class CN_element_calendar extends CN_base_element {
       event.element.classList.add("p-0");
       event.element.innerHTML = `
         ${CN_common.format_time(event.date)}
-        ${20 < event.duration ? "<br/>" : ""}
+        ${30 < event.duration ? "<br/>" : ""}
         ${event.title}
       `;
 
