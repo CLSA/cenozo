@@ -513,10 +513,10 @@ class session extends CN_base_object {
         const response = await CN_modal_site_role.create_and_open();
         if (
           null != response &&
-          (CN_session.get("site", "id") != response.site_id || CN_session.get("role", "id") != response.role_id)
+          (this.#data.site.id != response.site_id || this.#data.role.id != response.role_id)
         ){
           await CN_api.patch("self/0", { site: { id: response.site_id }, role: { id: response.role_id } });
-          CN_session.reload(true);
+          this.reload(true);
         }
       });
       access_el.append(access_btn_el);
@@ -525,7 +525,11 @@ class session extends CN_base_object {
     // keep the clock running
     const time_el = this.#main_menu_header_el.querySelector("span[name=time]");
     const update_clock = () => {
-      const datetime = CN_common.format_time(new Date());
+      // If the user's selected TZ does not match their computer then offset the time
+      const date = new Date();
+      const tz_offset = date.getTimezoneOffset() + this.#data.user.tz_offset * 60;
+      if (tz_offset) date.setMinutes(date.getMinutes() + tz_offset);
+      const datetime = CN_common.format_time(date);
       const tz = Intl.DateTimeFormat(
         'en-CA',
         { timeZone: this.#data.user.timezone, timeZoneName: "short" }

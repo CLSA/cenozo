@@ -22,7 +22,7 @@ export class CN_action_calendar extends CN_base_action {
     this.#params = model.clone_calendar();
     const calendar = {
       ...{
-        mode: this.#params.mode ? this.#params.mode : "month",
+        mode: this.#params.mode ? this.#params.mode : "week",
         date: this.#params.date ? this.#params.date : new Date(),
         allow_selection: CN_common.is_function(this.#params.on_select),
       },
@@ -56,7 +56,7 @@ export class CN_action_calendar extends CN_base_action {
     let calendar = null;
 
     const mode = this.#calendar_element.get_mode();
-    const default_mode = this.#params.mode ? this.#params.mode : "month";
+    const default_mode = this.#params.mode ? this.#params.mode : "week";
     if (default_mode != mode) {
       if (null == calendar) calendar = {};
       calendar.mode = mode;

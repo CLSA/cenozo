@@ -36,6 +36,7 @@ export class CN_element_calendar extends CN_base_element {
         date: null,
         mode: "month",
         allow_selection: false,
+        scroll_time: 7, // scroll to 7 am when in week or day mode
       },
       ...config
     });
@@ -59,6 +60,7 @@ export class CN_element_calendar extends CN_base_element {
   set_mode(mode) {
     this.#mode = mode;
     this.update_element();
+    this.#scroll_to_time(this.get_config("scroll_time"));
     this.run_event_listeners("modechanged");
   }
 
@@ -268,7 +270,10 @@ export class CN_element_calendar extends CN_base_element {
    * Updates the DOM according to current state
    */
   async on_dom_add() {
-    if ("month" != this.#mode) this.#repaint_events();
+    if ("month" != this.#mode) {
+      this.#scroll_to_time(this.get_config("scroll_time"));
+      this.#repaint_events();
+    }
   }
 
   /**
@@ -310,7 +315,7 @@ export class CN_element_calendar extends CN_base_element {
         </div>
         <div name="table-header" class="row flex-nowrap m-0">
         </div>
-        <div style="overflow-y: auto; max-height: 80vh;">
+        <div name="scroll" style="overflow-y: auto; max-height: 80vh;">
           <table class="table mb-0"></table>
         </div>
       </div>
@@ -477,7 +482,24 @@ export class CN_element_calendar extends CN_base_element {
   /**
    * ADD DOCS
    */
+  #scroll_to_time(time) {
+    // only apply when in week or day mode
+    if ("month" != this.#mode) {
+      const td_el = this.#table_el.querySelector("tr td");
+      const time_height = td_el.clientHeight;
+      this.get_element().querySelector("div[name=scroll]").scrollBy({
+        top: 2 * time * time_height,
+        behavior: "instant",
+      });
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
   #display_month() {
+    const today_string = (new Date()).toDateString();
+
     // rebuild the table cell list
     this.#table_cell_list = [];
 
@@ -529,10 +551,12 @@ export class CN_element_calendar extends CN_base_element {
       cell_td_el.setAttribute("width", "14.286%");
       cell_td_el.classList.add("align-top");
       tr_el.append(cell_td_el);
+
+      const today_class = date.toDateString() == today_string ? "bg-warning-subtle fw-bold" : "";
       const date_div_el = this.constructor.html(`
-        <div class="w-100 p-0 pe-1" style="min-height: 5em">
-          <div class="text-end">${date.getDate()}</div>
-          <div name="events" class="w-100"></div>
+        <div class="w-100 p-0" style="min-height: 5em">
+          <div class="${today_class} text-end pe-1">${date.getDate()}</div>
+          <div name="events" class="w-100 p-1 pt-0"></div>
         </div>
       `);
       cell_td_el.append(date_div_el);
@@ -567,6 +591,8 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_week() {
+    const today_string = (new Date()).toDateString();
+
     // rebuild the table cell list
     this.#table_cell_list = [];
 
@@ -611,8 +637,9 @@ export class CN_element_calendar extends CN_base_element {
 
       CN_common.get_weekday(null, "en", "short").forEach((day, day_index) => {
         if (0 == hour_index) {
+          const today_class = date.toDateString() == today_string ? "text-bg-warning" : "text-bg-secondary";
           const day_el = this.constructor.html(`
-            <div class="col text-bg-secondary text-center fw-bold">
+            <div class="col ${today_class} text-center fw-bold">
               ${day}
               (${CN_common.get_month(date.getMonth(), "en", "short")} ${date.getDate()})
             </div>
@@ -685,7 +712,7 @@ export class CN_element_calendar extends CN_base_element {
   #repaint_events() {
     // event placement depends on the side of the calendar rows/columns
     const td_el = this.#table_el.querySelector("tr td");
-    const time_height = td_el.clientHeight;// + 1 - 0.15; // Why subtract 0.15? Because that makes it line up :(
+    const time_height = td_el.clientHeight;
     const time_width = td_el.clientWidth + 1;
     const day_width = td_el.nextElementSibling.clientWidth + 1;
 
@@ -720,18 +747,11 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #create_cell_element(date) {
-    const today_string = (new Date()).toDateString();
     const el = this.constructor.html('<td class="p-0" style="border: 1px solid #ccc;"></td>');
 
     // attach properties to the cell element to track it's date and whether it has been selected
     el.date = CN_common.clone(date);
     el.selected = false;
-
-    // highlight today's date
-    if (date.toDateString() == today_string) {
-      el.classList.remove("table-light");
-      el.classList.add("table-warning");
-    }
 
     // add the cell to the cached cell list for easy access when in selection mode
     this.#table_cell_list.push(el);

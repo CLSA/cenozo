@@ -278,7 +278,7 @@ export class CN_common extends CN_base_object {
       parts.push(new Intl.DateTimeFormat('en-CA', options).format(value));
     }
     if (include_time) {
-      parts.push(this.format_time(value, am_pm, this.is_datetime_type(format, "second"), long_form));
+      parts.push(this.format_time(value, this.is_datetime_type(format, "second"), am_pm));
     }
     return parts.join(" @ ");
   }
