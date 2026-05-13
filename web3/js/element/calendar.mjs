@@ -403,6 +403,7 @@ export class CN_element_calendar extends CN_base_element {
           this.#events.filter(event => event.selected).forEach(event => {
             event.element.classList.remove("btn-info");
             event.element.classList.add(`btn-${event.type}`);
+            if (event.type.match(/^outline-/)) event.element.classList.add("text-dark");
             event.selected = false;
           });
 
@@ -442,12 +443,14 @@ export class CN_element_calendar extends CN_base_element {
                   const r = event.element.getBoundingClientRect();
                   if (r.left < bbox.right && r.right > bbox.left && r.top < bbox.bottom && r.bottom > bbox.top) {
                     event.element.classList.remove(`btn-${event.type}`);
+                    if (event.type.match(/^outline-/)) event.element.classList.remove("text-dark");
                     event.element.classList.add("btn-info");
                     event.selected = true;
                     events_selected = true;
                   } else {
                     event.element.classList.remove("btn-info");
                     event.element.classList.add(`btn-${event.type}`);
+                    if (event.type.match(/^outline-/)) event.element.classList.add("text-dark");
                     event.selected = false;
                   }
                 });
@@ -764,9 +767,11 @@ export class CN_element_calendar extends CN_base_element {
    */
   #create_event_element(event) {
     event.element = this.constructor.html(`
-      <button type="button" name="event" class="btn btn-sm btn-${event.type} badge m-0">
-        ${CN_common.format_time(event.date)}: ${event.title}
-      </button>
+      <button
+        type="button"
+        name="event"
+        class="btn btn-sm btn-${event.type} ${event.type.match(/^outline-/) ? "text-dark" : ""} badge m-0"
+      >${CN_common.format_time(event.date)}: ${event.title}</button>
     `);
 
     if ("month" == this.#mode) {
