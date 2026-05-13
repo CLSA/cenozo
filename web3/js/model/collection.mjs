@@ -1,8 +1,8 @@
 import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 
-export class CN_collection_model extends CN_base_model {
+export class CN_model_collection extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -67,7 +67,7 @@ export class CN_collection_model extends CN_base_model {
   }
 }
 
-export class CN_collection_list extends CN_action_list {
+export class CN_list_collection extends CN_action_list {
   /**
    * Extend parent method to change the user's child title
    */
@@ -77,7 +77,7 @@ export class CN_collection_list extends CN_action_list {
   }
 }
 
-export class CN_collection_view extends CN_action_view {
+export class CN_view_collection extends CN_action_view {
   /**
    * Extend parent method to change the user's child title
    */

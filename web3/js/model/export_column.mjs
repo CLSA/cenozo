@@ -1,8 +1,8 @@
 import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
-import { CN_export_model } from "./export.mjs"
+import { CN_model_base } from "./base_model.mjs"
+import { CN_model_export } from "./export.mjs"
 
-export class CN_export_column_model extends CN_base_model {
+export class CN_model_export_column extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -13,19 +13,19 @@ export class CN_export_column_model extends CN_base_model {
       columns: {
         export: { column: "export.title", title: "Export Type" },
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.get_export_columns(),
+        ...CN_model_export.get_export_columns(),
         include: { title: "Visible", type: "boolean" },
       },
       properties: {
         rank: { title: "Rank", type: "rank" },
-        ...CN_export_model.get_export_properties(),
+        ...CN_model_export.get_export_properties(),
         include: { title: "Visible", type: "boolean" },
       },
     });
   }
 }
 
-export class CN_export_column_view extends CN_action_view {
+export class CN_view_export_column extends CN_action_view {
   /**
    * Extend parent method
    */

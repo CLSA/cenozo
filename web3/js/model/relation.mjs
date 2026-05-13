@@ -1,9 +1,9 @@
 import { CN_action_list } from "../action/list.mjs"
-import { CN_base_model } from "./base_model.mjs"
-import { CN_participant_model } from "./participant.mjs"
+import { CN_model_base } from "./base_model.mjs"
+import { CN_model_participant } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_relation_model extends CN_base_model {
+export class CN_model_relation extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -56,13 +56,13 @@ export class CN_relation_model extends CN_base_model {
           table_prefix: false,
           is_hidden: (model) => false,
         },
-        participant_id: { is_hidden: () => true } // used in CN_relation_list.on_row_click method below
+        participant_id: { is_hidden: () => true } // used in CN_list_relation.on_row_click method below
       },
       properties: {
         participant_id: {
           title: "Related Participant",
           type: "typeahead",
-          typeahead: CN_participant_model.get_typeahead(),
+          typeahead: CN_model_participant.get_typeahead(),
           get_default: () => null,
         },
         relation_type_id: {
@@ -90,7 +90,7 @@ export class CN_relation_model extends CN_base_model {
   }
 }
 
-export class CN_relation_list extends CN_action_list {
+export class CN_list_relation extends CN_action_list {
   /**
    * Extend parent method to make clicking on relation bring you to the participant
    */

@@ -1,16 +1,16 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_action } from "../action/base_action.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input_enum } from "../input/enum.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
-import { CN_participant_selection } from "./participant.mjs"
+import { CN_element_participant_selection } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_stratum_model extends CN_base_model {
+export class CN_model_stratum extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -95,7 +95,7 @@ export class CN_stratum_model extends CN_base_model {
   }
 }
 
-export class CN_stratum_view extends CN_action_view {
+export class CN_view_stratum extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
@@ -121,7 +121,7 @@ export class CN_stratum_view extends CN_action_view {
   }
 }
 
-export class CN_stratum_mass_participant extends CN_base_action {
+export class CN_mass_participant_stratum extends CN_base_action {
   #stratum = null;
   #operation = "add";
   #participant_selection;
@@ -133,7 +133,7 @@ export class CN_stratum_mass_participant extends CN_base_action {
   constructor(parent_el, model) {
     super("mass_participant", parent_el, model);
 
-    this.#participant_selection = new CN_participant_selection(null, {
+    this.#participant_selection = new CN_element_participant_selection(null, {
       path: `stratum/${this.get_model().get_identifier()}/participant`,
     });
   }

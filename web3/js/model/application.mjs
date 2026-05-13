@@ -1,11 +1,11 @@
 import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
-import { CN_country_model } from "./country.mjs"
+import { CN_model_country } from "./country.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_application_model extends CN_base_model {
+export class CN_model_application extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -122,7 +122,7 @@ export class CN_application_model extends CN_base_model {
           type: "text",
           help: "A footer which is added to all emails sent out by the application.  This text may contain HTML markup.",
         },
-        country_id: { title: "Country", type: "typeahead", typeahead: CN_country_model.get_typeahead() },
+        country_id: { title: "Country", type: "typeahead", typeahead: CN_model_country.get_typeahead() },
         timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },
         participant_count: { title: "Participants", meta: {}, is_constant: () => true },
         site_count: { title: "Sites", meta: {}, is_constant: () => true },
@@ -139,7 +139,7 @@ export class CN_application_model extends CN_base_model {
   }
 }
 
-export class CN_application_view extends CN_action_view {
+export class CN_view_application extends CN_action_view {
   /**
    * Extend the parent method to remove the collection and role list for all applications except the current one.
    * This is because only the current application can get collections and roles from the server.
@@ -153,7 +153,7 @@ export class CN_application_view extends CN_action_view {
   }
 }
 
-export class CN_application_list extends CN_action_list {
+export class CN_list_application extends CN_action_list {
   /**
    * Extend the parent method
    */

@@ -1,8 +1,8 @@
 import { CN_action_list } from "../action/list.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_form_model extends CN_base_model {
+export class CN_model_form extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -21,7 +21,7 @@ export class CN_form_model extends CN_base_model {
         },
         date: { title: "Date", type: "date" },
 
-        // needed by the CN_form_list.on_row_click() method below
+        // needed by the CN_list_form.on_row_click() method below
         form_type_id: { is_hidden: () => true }
       },
       properties: {
@@ -36,7 +36,7 @@ export class CN_form_model extends CN_base_model {
   }
 }
 
-export class CN_form_list extends CN_action_list {
+export class CN_list_form extends CN_action_list {
   async on_row_click(record) {
     if (!this.is_choosing() && this.get_model().allow_view()) {
       // always view forms using the form_type as the parent

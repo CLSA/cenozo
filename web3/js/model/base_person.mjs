@@ -1,16 +1,16 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_action } from "../action/base_action.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_base_person_model extends CN_base_model {
+export class CN_model_base_person extends CN_model_base {
   constructor(params) {
     super(params);
 
-    if ("CN_base_person_model" == this.constructor) {
-      throw new Error("Abstract class CN_base_person_model can't be instantiated.");
+    if ("CN_model_base_person" == this.constructor) {
+      throw new Error("Abstract class CN_model_base_person can't be instantiated.");
     }
   }
 
@@ -22,12 +22,12 @@ export class CN_base_person_model extends CN_base_model {
   }
 }
 
-export class CN_base_person_view extends CN_action_view {
+export class CN_view_base_person extends CN_action_view {
   constructor(type, parent_el, model) {
     super(type, parent_el, model);
 
-    if ("CN_base_person_view" == this.constructor) {
-      throw new Error("Abstract class CN_base_person_view can't be instantiated.");
+    if ("CN_view_base_person" == this.constructor) {
+      throw new Error("Abstract class CN_view_base_person can't be instantiated.");
     }
   }
 
@@ -73,7 +73,7 @@ export class CN_base_person_view extends CN_action_view {
   }
 }
 
-export class CN_base_person_history extends CN_base_action {
+export class CN_history_base_person extends CN_base_action {
   #category_list = [];
   #data_list = [];
 

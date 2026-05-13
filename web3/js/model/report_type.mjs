@@ -1,8 +1,8 @@
 import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_report_type_model extends CN_base_model {
+export class CN_model_report_type extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -24,7 +24,7 @@ export class CN_report_type_model extends CN_base_model {
   }
 }
 
-export class CN_report_type_view extends CN_action_view {
+export class CN_view_report_type extends CN_action_view {
   async on_load() {
     await super.on_load();
     const leaf_model = CN_session.get_leaf_model();

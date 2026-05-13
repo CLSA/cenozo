@@ -1,8 +1,8 @@
 import { CN_base_element } from "../element/base_element.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_element_card } from "../element/card.mjs"
 
-export class CN_error_model extends CN_base_model {
+export class CN_model_error extends CN_model_base {
   #error;
   #element;
 

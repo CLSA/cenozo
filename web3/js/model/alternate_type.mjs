@@ -1,8 +1,8 @@
 import { CN_action_list } from "../action/list.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_alternate_type_model extends CN_base_model {
+export class CN_model_alternate_type extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -18,7 +18,7 @@ export class CN_alternate_type_model extends CN_base_model {
         alternate_count: { title: "Alternates", table_prefix: false },
         description: { title: "Description", type: "text" },
 
-        // used in the CN_alternate_type_list.is_choose_disabled method below
+        // used in the CN_list_alternate_type.is_choose_disabled method below
         access: { table_prefix: false, is_hidden: () => true },
         role_count: { table_prefix: false, is_hidden: () => true },
       },
@@ -40,7 +40,7 @@ export class CN_alternate_type_model extends CN_base_model {
   }
 }
 
-export class CN_alternate_type_list extends CN_action_list {
+export class CN_list_alternate_type extends CN_action_list {
   /**
    * Extends the parent method
    */

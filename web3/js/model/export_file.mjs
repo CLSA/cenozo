@@ -1,7 +1,7 @@
 import { CN_action_report_view } from "../action/report_view.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 
-export class CN_export_file_model extends CN_base_model {
+export class CN_model_export_file extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -56,4 +56,4 @@ export class CN_export_file_model extends CN_base_model {
   allow_add() { return false; }
 }
 
-export class CN_export_file_view extends CN_action_report_view {}
+export class CN_view_export_file extends CN_action_report_view {}

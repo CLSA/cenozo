@@ -1,15 +1,15 @@
 import { CN_action_notes } from "../action/notes.mjs"
 import { CN_api } from "../api.mjs"
 import {
-  CN_base_person_model,
-  CN_base_person_view,
-  CN_base_person_history,
-} from "./base_person_model.mjs"
+  CN_model_base_person,
+  CN_view_base_person,
+  CN_history_base_person,
+} from "./base_person.mjs"
 import { CN_common } from "../common.mjs"
-import { CN_participant_model } from "./participant.mjs"
+import { CN_model_participant } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_alternate_model extends CN_base_person_model {
+export class CN_model_alternate extends CN_model_base_person {
   constructor() {
     super({
       wording: {
@@ -38,7 +38,7 @@ export class CN_alternate_model extends CN_base_person_model {
         participant_id: {
           title: "Participant",
           type: "typeahead",
-          typeahead: CN_participant_model.get_typeahead(),
+          typeahead: CN_model_participant.get_typeahead(),
         },
         active: { title: "Active", type: "boolean" },
         first_name: { title: "First Name" },
@@ -98,7 +98,7 @@ export class CN_alternate_model extends CN_base_person_model {
   }
 }
 
-export class CN_alternate_view extends CN_base_person_view {
+export class CN_view_alternate extends CN_view_base_person {
   /**
    * Extends the parent method
    */
@@ -113,9 +113,9 @@ export class CN_alternate_view extends CN_base_person_view {
   }
 }
 
-export class CN_alternate_history extends CN_base_person_history {}
+export class CN_history_alternate extends CN_history_base_person {}
 
-export class CN_alternate_notes extends CN_action_notes {
+export class CN_notes_alternate extends CN_action_notes {
   /**
    * Extend parent method
    */

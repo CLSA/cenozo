@@ -1,9 +1,9 @@
 import { CN_api } from "../api.mjs"
-import { CN_base_model } from "./base_model.mjs"
-import { CN_participant_model } from "./participant.mjs"
+import { CN_model_base } from "./base_model.mjs"
+import { CN_model_participant } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_equipment_model extends CN_base_model {
+export class CN_model_equipment extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -50,7 +50,7 @@ export class CN_equipment_model extends CN_base_model {
           meta: { table: "participant", column: "id" },
           title: "On Loan To",
           type: "typeahead",
-          typeahead: CN_participant_model.get_typeahead(),
+          typeahead: CN_model_participant.get_typeahead(),
           is_constant: () => true,
           is_hidden: (model) => "add" == model.get_action_name(),
         },

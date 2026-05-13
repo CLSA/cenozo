@@ -1,9 +1,9 @@
 import { CN_action_list } from "../action/list.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_trace_model extends CN_base_model {
+export class CN_model_trace extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -23,7 +23,7 @@ export class CN_trace_model extends CN_base_model {
         user: { column: "user.name", title: "User" },
         note: { title: "Note", type: "text" },
 
-        // used in the CN_trace_list.on_row_click method below
+        // used in the CN_list_trace.on_row_click method below
         participant_id: { is_hidden: () => true },
       },
       properties: {
@@ -48,7 +48,7 @@ export class CN_trace_model extends CN_base_model {
   }
 }
 
-export class CN_trace_list extends CN_action_list {
+export class CN_list_trace extends CN_action_list {
   /**
    * Extends the parent method
    */

@@ -1,6 +1,6 @@
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 
-export class CN_log_entry_model extends CN_base_model {
+export class CN_model_log_entry extends CN_model_base {
   constructor() {
     super({
       wording: {

@@ -4,10 +4,10 @@ import { CN_api } from "../api.mjs"
 import { CN_base_action } from "../action/base_action.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
 import {
-  CN_base_person_model,
-  CN_base_person_view,
-  CN_base_person_history,
-} from "./base_person_model.mjs"
+  CN_model_base_person,
+  CN_view_base_person,
+  CN_history_base_person,
+} from "./base_person.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
@@ -22,7 +22,7 @@ import { CN_session } from "../session.mjs"
 /**
  * @event selectionchanged: ran when the participant selection has changed
  */
-export class CN_participant_model extends CN_base_person_model {
+export class CN_model_participant extends CN_model_base_person {
   constructor() {
     const columns = {
       uid: { title: "UID" },
@@ -324,7 +324,7 @@ export class CN_participant_model extends CN_base_person_model {
   }
 }
 
-export class CN_participant_list extends CN_action_list {
+export class CN_list_participant extends CN_action_list {
   /**
    * Extends the parent method
    */
@@ -345,7 +345,7 @@ export class CN_participant_list extends CN_action_list {
   }
 }
 
-export class CN_participant_view extends CN_base_person_view {
+export class CN_view_participant extends CN_view_base_person {
   /**
    * Extends the parent method
    */
@@ -388,9 +388,9 @@ export class CN_participant_view extends CN_base_person_view {
   }
 }
 
-export class CN_participant_history extends CN_base_person_history {}
+export class CN_history_participant extends CN_history_base_person {}
 
-export class CN_participant_notes extends CN_action_notes {
+export class CN_notes_participant extends CN_action_notes {
   /**
    * Extend parent method
    */
@@ -456,7 +456,7 @@ export class CN_participant_notes extends CN_action_notes {
   }
 }
 
-export class CN_participant_multiedit extends CN_base_action {
+export class CN_multiedit_participant extends CN_base_action {
   #module_list = {
     participant: {
       module: null,
@@ -535,7 +535,7 @@ export class CN_participant_multiedit extends CN_base_action {
     },
   };
 
-  #participant_selection = new CN_participant_selection();
+  #participant_selection = new CN_element_participant_selection();
   #selected_participant_properties = {};
 
   constructor(parent_el, model) {
@@ -1030,7 +1030,7 @@ export class CN_participant_multiedit extends CN_base_action {
   }
 }
 
-export class CN_participant_scripts extends CN_base_action {
+export class CN_scripts_participant extends CN_base_action {
   #script_list = [];
   #reverse_messages = {
     Proxy:
@@ -1252,7 +1252,7 @@ export class CN_participant_scripts extends CN_base_action {
  * A class used to create a participant selection element
  * @event selectionchanged: ran when the participant selection has changed
  */
-export class CN_participant_selection extends CN_base_element {
+export class CN_element_participant_selection extends CN_base_element {
   #created = false;
   #disabled = false;
   #validated = false;

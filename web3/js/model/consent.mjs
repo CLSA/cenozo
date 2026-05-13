@@ -1,7 +1,7 @@
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_consent_model extends CN_base_model {
+export class CN_model_consent extends CN_model_base {
   constructor() {
     super({
       wording: {

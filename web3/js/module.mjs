@@ -199,7 +199,6 @@ export class CN_module extends CN_base_object {
   async load_classes() {
     // only load if the classes haven't already been loaded
     if (!CN_common.is_object(this.#classes)) {
-      const prefix = `CN_${this.#name}`;
       this.#classes = { model: null };
       if (this.action_allowed("add")) this.#classes.add = CN_action_add;
       if (this.action_allowed("calendar")) this.#classes.calendar = CN_action_calendar;
@@ -211,7 +210,7 @@ export class CN_module extends CN_base_object {
       if (this.#framework) {
         let exports = await import(`./model/${this.#name}.mjs`);
         for (const name in exports) {
-          const re = new RegExp(`^${prefix}_([a-z][a-z0-9_]*)`);
+          const re = new RegExp(`^CN_([a-z][a-z0-9_]*)_${this.#name}`);
           const matches = name.match(re);
           if (null == matches) {
             console.warn(`Found unexpected export "${name}" in framework ${this.#name} model.`);
@@ -227,9 +226,10 @@ export class CN_module extends CN_base_object {
       // now load the application classes and use any that are found
       let exports = await import(`${ROOT_URL}/js/model/${this.#name}.mjs`);
       for (const name in exports) {
-        const re = new RegExp(`^${prefix}_([a-z][a-z0-9_]*)`);
+        const re = new RegExp(`^CN_([a-z][a-z0-9_]*)_${this.#name}`);
         const matches = name.match(re);
         if (null == matches) {
+          console.log(`^CN_([a-z][a-z0-9_]*)_${this.#name}`);
           console.warn(`Found unexpected export "${name}" in application ${this.#name} model.`);
         } else if (!CN_common.is_class(exports[name])) {
           console.warn(`Found non-class export "${name}" in application ${this.#name} model.`);

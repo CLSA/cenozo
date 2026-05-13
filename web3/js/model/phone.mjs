@@ -1,6 +1,6 @@
-import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
+import { CN_model_traceable, CN_add_traceable, CN_list_traceable, CN_view_traceable } from "./traceable_model.mjs"
 
-export class CN_phone_model extends CN_traceable_model {
+export class CN_model_phone extends CN_model_traceable {
   constructor() {
     super({
       wording: {
@@ -51,9 +51,9 @@ export class CN_phone_model extends CN_traceable_model {
   }
 }
 
-export class CN_phone_add extends CN_traceable_add {}
-export class CN_phone_list extends CN_traceable_list {}
-export class CN_phone_view extends CN_traceable_view {
+export class CN_add_phone extends CN_add_traceable {}
+export class CN_list_phone extends CN_list_traceable {}
+export class CN_view_phone extends CN_view_traceable {
   /**
    * Extends the parent method
    */

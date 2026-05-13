@@ -1,10 +1,10 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
-import { CN_user_model } from "./user.mjs"
+import { CN_model_user } from "./user.mjs"
 
 /**
  * An object of table lookups used by the export_column and export_restriction models
@@ -26,7 +26,7 @@ const export_tables = {
   trace: "trace_type",
 };
 
-export class CN_export_model extends CN_base_model {
+export class CN_model_export extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -44,7 +44,7 @@ export class CN_export_model extends CN_base_model {
         user_id: {
           title: "Owner",
           type: "typeahead",
-          typeahead: CN_user_model.get_typeahead(),
+          typeahead: CN_model_user.get_typeahead(),
           is_hidden: model => "add" == model.get_action_name(),
         },
         participant_count: {
@@ -206,7 +206,7 @@ export class CN_export_model extends CN_base_model {
   }
 }
 
-export class CN_export_view extends CN_action_view {
+export class CN_view_export extends CN_action_view {
   /**
    * Manually determine the participant count after loading the record
    */

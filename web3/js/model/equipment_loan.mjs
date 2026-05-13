@@ -1,8 +1,8 @@
-import { CN_base_model } from "./base_model.mjs"
-import { CN_equipment_model } from "./equipment.mjs"
-import { CN_participant_model } from "./participant.mjs"
+import { CN_model_base } from "./base_model.mjs"
+import { CN_model_equipment } from "./equipment.mjs"
+import { CN_model_participant } from "./participant.mjs"
 
-export class CN_equipment_loan_model extends CN_base_model {
+export class CN_model_equipment_loan extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -22,13 +22,13 @@ export class CN_equipment_loan_model extends CN_base_model {
         participant_id: {
           title: "Participant",
           type: "typeahead",
-          typeahead: CN_participant_model.get_typeahead(),
+          typeahead: CN_model_participant.get_typeahead(),
           is_constant: (model) => "view" == model.get_action_name(),
         },
         equipment_id: {
           title: "Serial Number",
           type: "typeahead",
-          typeahead: CN_equipment_model.get_typeahead(),
+          typeahead: CN_model_equipment.get_typeahead(),
           help: "Type in the serial number of the device (do not include the device type).",
         },
         lost: {

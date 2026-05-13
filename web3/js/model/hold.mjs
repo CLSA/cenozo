@@ -1,10 +1,10 @@
 import { CN_action_add } from "../action/add.mjs"
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 
-export class CN_hold_model extends CN_base_model {
+export class CN_model_hold extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -77,7 +77,7 @@ export class CN_hold_model extends CN_base_model {
   }
 }
 
-export class CN_hold_add extends CN_action_add {
+export class CN_add_hold extends CN_action_add {
   /**
    * Extends the parent method
    */
@@ -115,7 +115,7 @@ export class CN_hold_add extends CN_action_add {
   }
 }
 
-export class CN_hold_view extends CN_action_view {
+export class CN_view_hold extends CN_action_view {
   /**
    * Extends the parent method
    */

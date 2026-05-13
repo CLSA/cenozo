@@ -1,10 +1,10 @@
 import { CN_action_upload } from "../action/upload.mjs"
 import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_identifier_model extends CN_base_model {
+export class CN_model_identifier extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -35,7 +35,7 @@ export class CN_identifier_model extends CN_base_model {
   }
 }
 
-export class CN_identifier_view extends CN_action_view {
+export class CN_view_identifier extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
@@ -59,7 +59,7 @@ export class CN_identifier_view extends CN_action_view {
   }
 }
 
-export class CN_identifier_upload extends CN_action_upload {
+export class CN_upload_identifier extends CN_action_upload {
   /**
    * Extend parent method
    */

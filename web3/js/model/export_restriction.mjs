@@ -1,8 +1,8 @@
 import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
-import { CN_export_model } from "./export.mjs"
+import { CN_model_base } from "./base_model.mjs"
+import { CN_model_export } from "./export.mjs"
 
-export class CN_export_restriction_model extends CN_base_model {
+export class CN_model_export_restriction extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -14,7 +14,7 @@ export class CN_export_restriction_model extends CN_base_model {
         export: { column: "export.title", title: "Export Type" },
         rank: { title: "Rank", type: "rank" },
         logic: { title: "Logic" },
-        ...CN_export_model.get_export_columns(),
+        ...CN_model_export.get_export_columns(),
         test: { title: "Test" },
         value: { title: "Value" },
       },
@@ -41,7 +41,7 @@ export class CN_export_restriction_model extends CN_base_model {
             return !rank || 1 == rank;
           },
         },
-        ...CN_export_model.get_export_properties(),
+        ...CN_model_export.get_export_properties(),
         test: { title: "Test", type: "enum" },
         value: { title: "Value" },
       },
@@ -49,7 +49,7 @@ export class CN_export_restriction_model extends CN_base_model {
   }
 }
 
-export class CN_export_restriction_view extends CN_action_view {
+export class CN_view_export_restriction extends CN_action_view {
   /**
    * Extend parent method
    */

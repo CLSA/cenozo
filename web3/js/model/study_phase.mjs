@@ -1,8 +1,8 @@
 import { CN_api } from "../api.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_study_phase_model extends CN_base_model {
+export class CN_model_study_phase extends CN_model_base {
   constructor() {
     super({
       wording: {

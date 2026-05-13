@@ -6,8 +6,8 @@ import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_action_calendar extends CN_base_action {
-  #calendar_element;
-  #placeholder_calendar_element;
+  #calendar;
+  #placeholder_calendar;
   #params;
   #records = [];
   #total_records = null;
@@ -30,8 +30,8 @@ export class CN_action_calendar extends CN_base_action {
     };
 
     if (CN_common.is_string(calendar.date)) calendar.date = new Date(`${calendar.date} 12:00:00`);
-    this.#calendar_element = new CN_element_calendar(null, calendar);
-    this.#placeholder_calendar_element = new CN_element_calendar(null, calendar);
+    this.#calendar = new CN_element_calendar(null, calendar);
+    this.#placeholder_calendar = new CN_element_calendar(null, calendar);
   }
 
   /**
@@ -55,14 +55,14 @@ export class CN_action_calendar extends CN_base_action {
   write_query_parameters() {
     let calendar = null;
 
-    const mode = this.#calendar_element.get_mode();
+    const mode = this.#calendar.get_mode();
     const default_mode = this.#params.mode ? this.#params.mode : "week";
     if (default_mode != mode) {
       if (null == calendar) calendar = {};
       calendar.mode = mode;
     }
     const today_string = CN_common.format_datetime(new Date(), "record").replace(/ .*/, "");
-    const date_string = CN_common.format_datetime(this.#calendar_element.get_date(), "record").replace(/ .*/, "");
+    const date_string = CN_common.format_datetime(this.#calendar.get_date(), "record").replace(/ .*/, "");
     if (today_string != date_string) {
       if (null == calendar) calendar = {};
       calendar.date = date_string;
@@ -72,8 +72,8 @@ export class CN_action_calendar extends CN_base_action {
   }
 
   // getters
-  get_mode() { return this.#calendar_element.get_mode(); }
-  get_date() { return this.#calendar_element.get_date(); }
+  get_mode() { return this.#calendar.get_mode(); }
+  get_date() { return this.#calendar.get_date(); }
 
   /**
    * Returns the record count
@@ -106,8 +106,8 @@ export class CN_action_calendar extends CN_base_action {
     return {
       select: this.#params.select,
       modifier: this.#params.modifier,
-      min_date: CN_common.format_datetime(this.#calendar_element.get_min_date(), "record").substr(0, 10),
-      max_date: CN_common.format_datetime(this.#calendar_element.get_max_date(), "record").substr(0, 10),
+      min_date: CN_common.format_datetime(this.#calendar.get_min_date(), "record").substr(0, 10),
+      max_date: CN_common.format_datetime(this.#calendar.get_max_date(), "record").substr(0, 10),
     };
   }
 
@@ -124,7 +124,7 @@ export class CN_action_calendar extends CN_base_action {
     // replace the records at the current page with the returned records
     this.#records = await response.json();
 
-    this.#calendar_element.set_events(
+    this.#calendar.set_events(
       this.#records.map(record => ({
         ...{
           type: "primary", // the default event type
@@ -148,7 +148,7 @@ export class CN_action_calendar extends CN_base_action {
 
     // For some reason the calendar element doesn't fire dom remove events.
     // To prevent event tooltips from staying open unset all events when this action is removed from the DOM
-    this.#calendar_element.set_events([]);
+    this.#calendar.set_events([]);
   }
 
   /**
@@ -158,7 +158,7 @@ export class CN_action_calendar extends CN_base_action {
     super.update_element();
 
     const model = this.get_model();
-    const date = this.#calendar_element.get_date();
+    const date = this.#calendar.get_date();
     this.get_footer_element().querySelector("div[name=summary]").innerHTML = [
       this.#total_records,
       1 == this.#total_records ? model.get_singular() : model.get_plural(),
@@ -174,25 +174,25 @@ export class CN_action_calendar extends CN_base_action {
   create_body_element() {
     const body_el = this.constructor.html('<div></div>');
 
-    this.#calendar_element.set_parent_element(body_el);
-    body_el.append(this.#calendar_element.get_element());
+    this.#calendar.set_parent_element(body_el);
+    body_el.append(this.#calendar.get_element());
 
-    this.#calendar_element.add_event_listener("modechanged", async () => {
-      this.#placeholder_calendar_element.set_mode(this.#calendar_element.get_mode());
-      this.#placeholder_calendar_element.update_element();
+    this.#calendar.add_event_listener("modechanged", async () => {
+      this.#placeholder_calendar.set_mode(this.#calendar.get_mode());
+      this.#placeholder_calendar.update_element();
       this.write_query_parameters();
       await this.run();
     });
 
-    this.#calendar_element.add_event_listener("datechanged", async () => {
-      this.#placeholder_calendar_element.set_date(this.#calendar_element.get_date());
-      this.#placeholder_calendar_element.update_element();
+    this.#calendar.add_event_listener("datechanged", async () => {
+      this.#placeholder_calendar.set_date(this.#calendar.get_date());
+      this.#placeholder_calendar.update_element();
       this.write_query_parameters();
       await this.run();
     });
 
     if (CN_common.is_function(this.#params.on_select)) {
-      this.#calendar_element.add_event_listener("selectionchanged", async (e, dates, events) => {
+      this.#calendar.add_event_listener("selectionchanged", async (e, dates, events) => {
         await this.#params.on_select(this.get_model(), dates, events);
       });
     }
@@ -205,8 +205,8 @@ export class CN_action_calendar extends CN_base_action {
    */
   create_placeholder_element() {
     const placeholder_el = this.constructor.html('<div class="container-fluid"></div>');
-    this.#placeholder_calendar_element.set_parent_element(placeholder_el);
-    placeholder_el.append(this.#placeholder_calendar_element.get_element());
+    this.#placeholder_calendar.set_parent_element(placeholder_el);
+    placeholder_el.append(this.#placeholder_calendar.get_element());
     return placeholder_el;
   }
 
@@ -294,7 +294,7 @@ export class CN_action_calendar extends CN_base_action {
       '<button name="today" class="btn btn-light btn-outline-primary">Today</button>'
     );
     footer_el.querySelector("div[name=left-btn-group]").append(today_btn_el);
-    today_btn_el.addEventListener("click", () => this.#calendar_element.set_date(new Date()));
+    today_btn_el.addEventListener("click", () => this.#calendar.set_date(new Date()));
 
     // add a view list button (if listing is allowed)
     const model = this.get_model();

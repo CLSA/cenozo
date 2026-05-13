@@ -3,7 +3,7 @@ import { CN_base_element } from "./element/base_element.mjs"
 import { CN_base_object } from "./base_object.mjs"
 import { CN_common } from "./common.mjs"
 import { CN_element_breadcrumb_trail } from "./element/breadcrumb_trail.mjs"
-import { CN_error_model } from "./model/error.mjs"
+import { CN_model_error } from "./model/error.mjs"
 import { CN_modal_account } from "./modal/account.mjs"
 import { CN_modal_clock_settings } from "./modal/clock_settings.mjs"
 import { CN_modal_message } from "./modal/message.mjs"
@@ -99,12 +99,12 @@ class session extends CN_base_object {
       let leaf_model = this.get_leaf_model();
       if (null == leaf_model) {
         // check if the application has a home model and if not use the framework's model instead
-        let { CN_home_model } = await import(`${ROOT_URL}/js/model/home.mjs`);
-        if (!CN_home_model) {
+        let { CN_model_home } = await import(`${ROOT_URL}/js/model/home.mjs`);
+        if (!CN_model_home) {
           const response = await import('./model/home.mjs');
-          CN_home_model = response.CN_home_model;
+          CN_model_home = response.CN_model_home;
         }
-        leaf_model = new CN_home_model();
+        leaf_model = new CN_model_home();
       }
 
       // first load all non-leaf models in parallel as their data may be needed by the leaf model
@@ -129,7 +129,7 @@ class session extends CN_base_object {
       this.#breadcrumb_trail.set_config("crumb_list", crumb_list);
       this.#breadcrumb_trail.update_element();
     } catch (error) {
-      const model = new CN_error_model(error);
+      const model = new CN_model_error(error);
       await model.run();
       this.#main_content_el.replaceChildren(model.get_element());
 

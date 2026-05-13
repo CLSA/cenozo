@@ -1,11 +1,11 @@
 import { CN_action_add } from "../action/add.mjs"
 import { CN_action_report_view } from "../action/report_view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_report_model extends CN_base_model {
+export class CN_model_report extends CN_model_base {
   #current_report_type_id = null;
 
   constructor() {
@@ -159,7 +159,7 @@ export class CN_report_model extends CN_base_model {
   }
 }
 
-export class CN_report_add extends CN_action_add {
+export class CN_add_report extends CN_action_add {
   current_report_type_id; // used in the custom create_restriction_inputs function (above)
 
   /**
@@ -185,4 +185,4 @@ export class CN_report_add extends CN_action_add {
   }
 }
 
-export class CN_report_view extends CN_action_report_view {}
+export class CN_view_report extends CN_action_report_view {}

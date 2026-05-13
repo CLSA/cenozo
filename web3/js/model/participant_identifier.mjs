@@ -1,7 +1,7 @@
-import { CN_base_model } from "./base_model.mjs"
-import { CN_participant_model } from "./participant.mjs"
+import { CN_model_base } from "./base_model.mjs"
+import { CN_model_participant } from "./participant.mjs"
 
-export class CN_participant_identifier_model extends CN_base_model {
+export class CN_model_participant_identifier extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -26,7 +26,7 @@ export class CN_participant_identifier_model extends CN_base_model {
           column: "participant_identifier.participant_id",
           title: "Participant",
           type: "typeahead",
-          typeahead: CN_participant_model.get_typeahead(),
+          typeahead: CN_model_participant.get_typeahead(),
         },
         value: {
           title: "Value",

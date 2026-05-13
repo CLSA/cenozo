@@ -2,7 +2,7 @@ import { CN_action_add } from "../action/add.mjs"
 import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_base_model } from "./base_model.mjs"
+import { CN_model_base } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
@@ -85,7 +85,7 @@ async function check_for_trace(type, action, identifier) {
 }
 
 
-export class CN_traceable_model extends CN_base_model {
+export class CN_model_traceable extends CN_model_base {
   async add_trace(trace_reason) {
     if (CN_common.is_string(trace_reason)) {
       // this happens after redirecting the browser, so don't await
@@ -102,7 +102,7 @@ export class CN_traceable_model extends CN_base_model {
   }
 }
 
-export class CN_traceable_add extends CN_action_add {
+export class CN_add_traceable extends CN_action_add {
   #trace_reason;
 
   /**
@@ -140,7 +140,7 @@ export class CN_traceable_add extends CN_action_add {
   }
 }
 
-export class CN_traceable_list extends CN_action_list {
+export class CN_list_traceable extends CN_action_list {
   /**
    * Extends the parent method
    */
@@ -171,7 +171,7 @@ export class CN_traceable_list extends CN_action_list {
   }
 }
 
-export class CN_traceable_view extends CN_action_view {
+export class CN_view_traceable extends CN_action_view {
   /**
    * Extends the parent method
    */

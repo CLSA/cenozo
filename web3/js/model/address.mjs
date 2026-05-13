@@ -1,10 +1,10 @@
 import { CN_api } from "../api.mjs"
 import { CN_common } from "../common.mjs"
-import { CN_country_model } from "./country.mjs"
+import { CN_model_country } from "./country.mjs"
 import { CN_session } from "../session.mjs"
-import { CN_traceable_model, CN_traceable_add, CN_traceable_list, CN_traceable_view } from "./traceable_model.mjs"
+import { CN_model_traceable, CN_add_traceable, CN_list_traceable, CN_view_traceable } from "./traceable_model.mjs"
 
-export class CN_address_model extends CN_traceable_model {
+export class CN_model_address extends CN_model_traceable {
   constructor() {
     super({
       wording: {
@@ -73,7 +73,7 @@ export class CN_address_model extends CN_traceable_model {
         international_country_id: {
           title: "Country",
           type: "typeahead",
-          typeahead: CN_country_model.get_typeahead(),
+          typeahead: CN_model_country.get_typeahead(),
           is_hidden: (model) => !model.get_action().get_property_value("international"),
         },
         postcode: {
@@ -108,7 +108,7 @@ export class CN_address_model extends CN_traceable_model {
   }
 }
 
-export class CN_address_add extends CN_traceable_add {
+export class CN_add_address extends CN_add_traceable {
   /**
    * Add operations to the footer element
    */
@@ -148,9 +148,9 @@ export class CN_address_add extends CN_traceable_add {
   }
 }
 
-export class CN_address_list extends CN_traceable_list {}
+export class CN_list_address extends CN_list_traceable {}
 
-export class CN_address_view extends CN_traceable_view {
+export class CN_view_address extends CN_view_traceable {
   /**
    * Extends the parent method
    */
