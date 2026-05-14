@@ -26,7 +26,6 @@
             'Please contact <a href="' + adminEmail + '">' + adminEmail + '</a> if you require assistance logging in.';
         }
 
-        // TODO: replace with feature detection
         $scope.browser = null;
         $scope.badVersion = false;
         var userAgent = navigator.userAgent;

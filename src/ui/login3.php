@@ -11,6 +11,7 @@
     const FIREFOX_MIN_VER = <?php echo $firefox_minimum_version; ?>;
     const CHROME_MIN_VER = <?php echo $chrome_minimum_version; ?>;
 
+    // TODO: replace with feature detection
     let browser = null, version = null, bad_version = false;
     if( navigator.userAgent.match( / Edge\// ) ) {
       browser = null;
