@@ -8,7 +8,6 @@ import { CN_session } from "../session.mjs"
 export class CN_action_calendar extends CN_base_action {
   #calendar;
   #placeholder_calendar;
-  #params;
   #records = [];
   #total_records = null;
 
@@ -19,19 +18,30 @@ export class CN_action_calendar extends CN_base_action {
   constructor(parent_el, model) {
     super("calendar", parent_el, model);
 
-    this.#params = model.clone_calendar();
+    const config = model.clone_calendar();
+    for (const prop in config) this.set_config(prop, config[prop]);
+
     const calendar = {
       ...{
-        mode: this.#params.mode ? this.#params.mode : "week",
-        date: this.#params.date ? this.#params.date : new Date(),
-        allow_selection: CN_common.is_function(this.#params.on_select),
+        mode: this.has_config("mode") ? this.get_config("mode") : "week",
+        date: this.has_config("date") ? this.get_config("date") : new Date(),
+        allow_selection: this.has_config("on_select"),
       },
       ...JSON.parse(this.get_query_parameter("calendar"))
     };
 
+    // pass through the scroll_time and on_click_cell configs to the calendar
+    if (this.has_config("scroll_time")) calendar.scroll_time = this.get_config("scroll_time");
+    if (this.has_config("on_click_cell")) calendar.on_click_cell = this.get_config("on_click_cell");
+
     if (CN_common.is_string(calendar.date)) calendar.date = new Date(`${calendar.date} 12:00:00`);
     this.#calendar = new CN_element_calendar(null, calendar);
-    this.#placeholder_calendar = new CN_element_calendar(null, calendar);
+
+    // the placeholder calendar can use the same config, just remove the interactions
+    const placeholder_calendar = CN_common.clone(calendar);
+    placeholder_calendar.allow_selection = false;
+    placeholder_calendar.on_click_cell = null;
+    this.#placeholder_calendar = new CN_element_calendar(null, placeholder_calendar);
   }
 
   /**
@@ -50,13 +60,33 @@ export class CN_action_calendar extends CN_base_action {
   }
 
   /**
+   * Extend parent method
+   */
+  set_config(name, value) {
+    super.set_config(name, value);
+
+    if (this.#calendar) {
+      // if changing the on_select config then also update the calendar's allow_selection config
+      if ("on_select" == name) {
+        this.#calendar.set_config("allow_selection", CN_common.is_function(this.get_config("on_select")));
+      } else if ("scroll_time" == name) {
+        // pass through the scroll_time config to the calendar
+        this.#calendar.set_config("scroll_time", this.get_config("scroll_time"));
+      } else if ("on_click_cell" == name) {
+        // pass through the on_click_cell config to the calendar
+        this.#calendar.set_config("on_click_cell", this.get_config("on_click_cell"));
+      }
+    }
+  }
+
+  /**
    * ADD DOCS
    */
   write_query_parameters() {
     let calendar = null;
 
     const mode = this.#calendar.get_mode();
-    const default_mode = this.#params.mode ? this.#params.mode : "week";
+    const default_mode = this.get_config("mode") ? this.get_config("mode") : "week";
     if (default_mode != mode) {
       if (null == calendar) calendar = {};
       calendar.mode = mode;
@@ -104,8 +134,8 @@ export class CN_action_calendar extends CN_base_action {
   get_on_load_parameters() {
     // Every event has: title, help, start, end, help, identifier, type (primary/secondary/etc)
     return {
-      select: this.#params.select,
-      modifier: this.#params.modifier,
+      select: this.get_config("select"),
+      modifier: this.get_config("modifier"),
       min_date: CN_common.format_datetime(this.#calendar.get_min_date(), "record").substr(0, 10),
       max_date: CN_common.format_datetime(this.#calendar.get_max_date(), "record").substr(0, 10),
     };
@@ -136,7 +166,7 @@ export class CN_action_calendar extends CN_base_action {
             record.duration :
             (new Date(record.end_datetime) - new Date(record.start_datetime)) / 60000
           ),
-          on_click: this.#params.on_click, // include the on_click listener defined in the parameters
+          on_click: this.get_config("on_click_event"), // include the on_click listener defined in the parameters
         },
         ...record,
       }))
@@ -191,9 +221,10 @@ export class CN_action_calendar extends CN_base_action {
       await this.run();
     });
 
-    if (CN_common.is_function(this.#params.on_select)) {
+    if (this.has_config("on_select")) {
       this.#calendar.add_event_listener("selectionchanged", async (e, dates, events) => {
-        await this.#params.on_select(this.get_model(), dates, events);
+        const on_select = this.get_config("on_select");
+        if (CN_common.is_function(on_select)) await on_select(this.get_model(), dates, events);
       });
     }
 

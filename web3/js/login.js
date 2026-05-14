@@ -115,7 +115,7 @@
 
                 submit_button_el.removeAttribute("disabled");
                 submit_button_el.classList.remove("disabled");
-                submit_button_el.innerHTML = "Submit";
+                submit_button_el.innerHTML = "Login";
               }
             }
           };

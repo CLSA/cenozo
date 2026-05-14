@@ -101,6 +101,13 @@ export class CN_base_element extends CN_base_object {
   }
 
   /**
+   * ADD DOCS
+   */
+  get_parent_element() {
+    return this.#parent_el;
+  }
+
+  /**
    * Sets the value of a configuration variable
    * @param string name: The name of the variable
    * @param mixed value: The value to set the variable to

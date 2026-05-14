@@ -37,6 +37,7 @@ export class CN_element_calendar extends CN_base_element {
         mode: "month",
         allow_selection: false,
         scroll_time: 7, // scroll to 7 am when in week or day mode
+        on_click_cell: null,
       },
       ...config
     });
@@ -123,6 +124,7 @@ export class CN_element_calendar extends CN_base_element {
     });
 
     this.update_element();
+    this.#scroll_to_time(this.get_config("scroll_time"));
     this.run_event_listeners("eventschanged");
   }
 
@@ -751,6 +753,10 @@ export class CN_element_calendar extends CN_base_element {
    */
   #create_cell_element(date) {
     const el = this.constructor.html('<td class="p-0" style="border: 1px solid #ccc;"></td>');
+
+    if (CN_common.is_function(this.get_config("on_click_cell"))) {
+      el.addEventListener("click", async () => await this.get_config("on_click_cell")(el));
+    }
 
     // attach properties to the cell element to track it's date and whether it has been selected
     el.date = CN_common.clone(date);

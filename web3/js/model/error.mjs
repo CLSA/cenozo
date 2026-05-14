@@ -25,14 +25,20 @@ export class CN_model_error extends CN_model_base {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      if (this.#error instanceof URIError) return "Page not found (404)";
-      else if (this.#error.name) return this.#error.name;
+      if (this.#error instanceof URIError) {
+        return this.#error.title ? this.#error.title : "Page not found (404)";
+      } else if (this.#error.name) {
+        return this.#error.name;
+      }
       return "Unknown error";
     }
 
     if ("message" == type) {
-      if (this.#error instanceof URIError) return "Sorry, the page you requested does not exist.";
-      else if (this.#error.message) return this.#error.message;
+      if (this.#error instanceof URIError) {
+        return this.#error.message ? this.#error.message : "Sorry, the page you requested does not exist.";
+      } else if (this.#error.message) {
+        return this.#error.message;
+      }
       return "Sorry, an unexpected error occurred."
     }
 

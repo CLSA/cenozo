@@ -21,7 +21,7 @@ export class CN_model_callback extends CN_model_base {
         modifier: {
           order: ["callback", "uid"],
         },
-        on_click: async (event) => {
+        on_click_event: async (event) => {
           await CN_session.navigate_to(`participant/view/${event.id}`);
         },
       },

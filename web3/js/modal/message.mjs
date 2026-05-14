@@ -12,7 +12,7 @@ export class CN_modal_message extends CN_base_modal {
         // default config
         title: "Attention",
         message: "This is a message.",
-        ok_text: "OK",
+        ok_text: "Close",
       },
       ...config
     });

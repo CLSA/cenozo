@@ -10,6 +10,19 @@
     const APP_TITLE = "<?php print APP_TITLE; ?>";
     const FIREFOX_MIN_VER = <?php echo $firefox_minimum_version; ?>;
     const CHROME_MIN_VER = <?php echo $chrome_minimum_version; ?>;
+
+    let browser = null, version = null, bad_version = false;
+    if( navigator.userAgent.match( / Edge\// ) ) {
+      browser = null;
+    } else if( navigator.userAgent.match( /Chrome\// ) ) {
+      browser = "Chrome";
+      version = navigator.userAgent.match( /Chrome\/([^.]+)/ )[1];
+      bad_version = CHROME_MIN_VER > version;
+    } else if( navigator.userAgent.match( /Firefox\// ) ) {
+      browser = "Firefox";
+      version = navigator.userAgent.match( /Firefox\/([^.]+)/ )[1];
+      bad_version = FIREFOX_MIN_VER > version;
+    }
   </script>
 
 <?php $this->print_libs(); ?>
@@ -28,7 +41,7 @@
       <div class="collapse navbar-collapse ms-2">
         <div>
           <i class="bi-chevron-compact-right text-light"></i>
-          <button class="home btn btn-primary px-1" disabled="true">Home</button>
+          <button class="home btn btn-primary px-1" disabled="true">Login</button>
         </div>
       </div>
       <div name="menu-btn-group" class="d-flex"></div>
@@ -49,18 +62,20 @@
           <div class="card-body">
             <div class="row g-3">
               <div>
-                <label for="username" class="form-label">Email address</label>
+                <label for="username" class="form-label">Username</label>
                 <input type="username" class="form-control" id="username" placeholder="Username" required>
               </div>
               <div>
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" placeholder="Password" required>
               </div>
+              <span name="login-message" class="text-danger fw-bold mx-3"></span>
             </div>
           </div>
-          <div class="card-footer text-bg-info p-3">
-            <button name="submit" type="button" class="btn btn-lg btn-primary" autofocus>Submit</button>
-            <span name="login-message" class="text-danger mx-3"></span>
+          <div class="card-footer text-bg-secondary">
+            <div class="d-flex flex-row-reverse w-100">
+              <button name="submit" type="button" class="btn btn-light" autofocus>Login</button>
+            </div>
           </div>
         </form>
       </div>
