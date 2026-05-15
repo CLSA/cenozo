@@ -2,7 +2,7 @@ import { CN_action_add } from "../action/add.mjs"
 import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
@@ -85,7 +85,7 @@ async function check_for_trace(type, action, identifier) {
 }
 
 
-export class CN_model_traceable extends CN_model_base {
+export class CN_model_traceable extends CN_base_model {
   async add_trace(trace_reason) {
     if (CN_common.is_string(trace_reason)) {
       // this happens after redirecting the browser, so don't await

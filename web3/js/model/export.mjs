@@ -1,7 +1,7 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 import { CN_model_user } from "./user.mjs"
@@ -26,7 +26,7 @@ const export_tables = {
   trace: "trace_type",
 };
 
-export class CN_model_export extends CN_model_base {
+export class CN_model_export extends CN_base_model {
   constructor() {
     super({
       wording: {

@@ -1,7 +1,7 @@
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_model_participant } from "./participant.mjs"
 
-export class CN_model_participant_identifier extends CN_model_base {
+export class CN_model_participant_identifier extends CN_base_model {
   constructor() {
     super({
       wording: {

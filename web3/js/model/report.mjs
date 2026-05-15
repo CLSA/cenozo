@@ -1,11 +1,11 @@
 import { CN_action_add } from "../action/add.mjs"
 import { CN_action_report_view } from "../action/report_view.mjs"
 import { CN_api } from "../api.mjs"
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_model_report extends CN_model_base {
+export class CN_model_report extends CN_base_model {
   #current_report_type_id = null;
 
   constructor() {

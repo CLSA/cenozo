@@ -1,7 +1,7 @@
 import { CN_api } from "../api.mjs"
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
-export class CN_model_country extends CN_model_base {
+export class CN_model_country extends CN_base_model {
   /**
    * Returns a typeahead object for models that have a typeahead property referencing this model
    * @return object

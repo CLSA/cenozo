@@ -1,9 +1,9 @@
 import { CN_action_list } from "../action/list.mjs"
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_element_label } from "../element/label.mjs"
 import { CN_input_string } from "../input/string.mjs"
 
-export class CN_model_search_result extends CN_model_base {
+export class CN_model_search_result extends CN_base_model {
   constructor() {
     super({
       wording: {

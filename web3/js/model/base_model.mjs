@@ -3,7 +3,7 @@ import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
-export class CN_model_base extends CN_base_object {
+export class CN_base_model extends CN_base_object {
   #unique_id;
   #module;
   #wording;
@@ -30,8 +30,8 @@ export class CN_model_base extends CN_base_object {
   constructor(params) {
     super();
 
-    if ("CN_model_base" == this.constructor) {
-      throw new Error("Abstract class CN_model_base can't be instantiated.");
+    if ("CN_base_model" == this.constructor) {
+      throw new Error("Abstract class CN_base_model can't be instantiated.");
     }
 
     const module_name = this.get_class_name().match(/CN_model_(.+)/)[1];

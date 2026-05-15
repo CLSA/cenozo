@@ -1,8 +1,8 @@
 import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
-import { CN_model_base } from "./base_model.mjs"
+import { CN_base_model } from "./base_model.mjs"
 
-export class CN_model_collection extends CN_model_base {
+export class CN_model_collection extends CN_base_model {
   constructor() {
     super({
       wording: {
