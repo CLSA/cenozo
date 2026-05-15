@@ -429,7 +429,7 @@ export class CN_notes_participant extends CN_action_notes {
     // wire-up the history button
     topfooter_el.querySelector("button[name=history]").addEventListener(
       "click",
-      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
+      () => CN_session.navigate_to(this.get_model().get_history_url()),
     );
 
     return topfooter_el;
@@ -448,7 +448,7 @@ export class CN_notes_participant extends CN_action_notes {
     // wire-up the history button
     history_btn_el.addEventListener(
       "click",
-      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
+      () => CN_session.navigate_to(this.get_model().get_history_url()),
     );
     footer_el.querySelector("div[name=left-btn-group]").append(history_btn_el);
 

@@ -73,7 +73,7 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       if (null == crumb.path) {
         this.constructor.set_disabled(crumb_el, true);
       } else {
-        crumb_el.addEventListener("click", CN_session.navigate_to.bind(CN_session, crumb.path));
+        crumb_el.addEventListener("click", () => CN_session.navigate_to(crumb.path));
       }
     });
 

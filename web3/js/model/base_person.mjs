@@ -44,7 +44,7 @@ export class CN_view_base_person extends CN_action_view {
     );
     notes_btn_el.addEventListener(
       "click",
-      CN_session.navigate_to.bind(CN_session, this.get_model().get_notes_url()),
+      () => CN_session.navigate_to(this.get_model().get_notes_url()),
     );
     left_btn_group_el.append(notes_btn_el);
 
@@ -54,7 +54,7 @@ export class CN_view_base_person extends CN_action_view {
     );
     history_btn_el.addEventListener(
       "click",
-      CN_session.navigate_to.bind(CN_session, this.get_model().get_history_url()),
+      () => CN_session.navigate_to(this.get_model().get_history_url()),
     );
     left_btn_group_el.append(history_btn_el);
 
@@ -581,7 +581,7 @@ export class CN_history_base_person extends CN_base_action {
     const notes_btn_el = el.querySelector("button[name=notes]");
     notes_btn_el.addEventListener(
       "click",
-      CN_session.navigate_to.bind(CN_session, this.get_model().get_notes_url()),
+      () => CN_session.navigate_to(this.get_model().get_notes_url()),
     );
   }
 
