@@ -663,14 +663,14 @@ class ui3 extends \cenozo\base_object
     $this->link_list[] = [
       'rel' => 'stylesheet',
       'path' => ROOT_URL,
-      'file' => sprintf( 'css/theme.%s', DEVELOPMENT ? 'css' : 'min.css' ),
+      'file' => 'css/theme.css',
       'build' => APP_BUILD,
     ];
 
     $this->link_list[] = [
       'rel' => 'stylesheet',
       'path' => CSS3_URL,
-      'file' => DEVELOPMENT ? 'app.css' : 'app.min.css',
+      'file' => 'app.css',
       'build' => CENOZO_BUILD,
     ];
 

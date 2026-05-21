@@ -53,7 +53,7 @@ export class CN_action_calendar extends CN_base_action {
     }
 
     if ("header" == type) {
-      return `${CN_common.uc_words(this.get_model().get_singular())} List`;
+      return `${CN_common.uc_words(this.get_model().get_singular())} Calendar`;
     }
 
     return await super.get_text(type);
@@ -86,7 +86,7 @@ export class CN_action_calendar extends CN_base_action {
     let calendar = null;
 
     const mode = this.#calendar.get_mode();
-    const default_mode = this.get_config("mode") ? this.get_config("mode") : "week";
+    const default_mode = this.has_config("mode") ? this.get_config("mode") : "week";
     if (default_mode != mode) {
       if (null == calendar) calendar = {};
       calendar.mode = mode;

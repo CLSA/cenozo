@@ -342,7 +342,6 @@ class session extends CN_base_object {
         if (!module) {
           // this is usually because the user does not have access to the module
           let error = new URIError();
-          error.error_code = null;
           error.name = "Invalid URL";
           error.message = `Error loading session: module "${module_name}" does not exist`;
           throw error;
@@ -355,7 +354,6 @@ class session extends CN_base_object {
         } else if (!module.is_root()) {
           // make sure that only root modules can be the root action
           let error = new URIError();
-          error.error_code = null;
           error.name = "Invalid URL";
           error.message = `Tried to load non-root module "${module.get_name()}" as root.`;
           throw error;

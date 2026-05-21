@@ -169,6 +169,28 @@ export class CN_common extends CN_base_object {
   }
 
   /**
+   * Inserts a new property into an objects after an existing property
+   */
+  static insert_property_after(object, after_prop, new_prop, value) {
+    if (!this.is_object(object) || !object[after_prop]) {
+      throw new Error(`
+        Tried to insert object new property "${new_prop}"
+        after existing property "${after_prop}" which doesn\'t exist.
+      `);
+    }
+
+    // make a copy of the object and remove all properties from the object
+    const object_copy = this.clone(object);
+    Object.keys(object).forEach(prop => delete object[prop]);
+
+    // now loop through the copied object and add the new property as we go
+    Object.keys(object_copy).forEach(prop => {
+      object[prop] = object_copy[prop];
+      if (after_prop === prop) object[new_prop] = value;
+    });
+  }
+
+  /**
    * ADD DOCS
    */
   static get_month(index = null, loc = "en", type = "long") {

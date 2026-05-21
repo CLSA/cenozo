@@ -38,7 +38,7 @@ export class CN_model_proxy extends CN_base_model {
         datetime: {
           title: "Date & Time",
           type: "datetime",
-          max: "now",
+          get_max: () => new Date(),
           is_hidden: (model) => "add" == model.get_action_name(),
         },
         user: {

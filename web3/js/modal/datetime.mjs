@@ -87,7 +87,7 @@ export class CN_modal_datetime extends CN_base_modal {
    */
   #on_now_clicked(event) {
     if (this.#time_picker) this.#time_picker.set_to_now();
-    this.#date_picker.set_to_today();
+    this.#date_picker.set_date(new Date());
   }
 
   /**
@@ -95,7 +95,7 @@ export class CN_modal_datetime extends CN_base_modal {
    * @param {*} event
    */
   #on_today_clicked(event) {
-    this.#date_picker.set_to_today();
+    this.#date_picker.set_date(new Date());
   }
 
   /**

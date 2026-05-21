@@ -145,14 +145,14 @@ export class CN_model_participant extends CN_model_base_person {
             date_of_birth: {
               title: "Date of Birth",
               type: "dob",
-              max: "now",
+              get_max: () => new Date(),
               is_constant: () => 3 <= CN_session.get("role", "tier"),
             },
             date_of_death: {
               title: "Date of Death",
               type: "dod",
-              min: "date_of_birth",
-              max: "now",
+              get_min: (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
+              get_max: () => new Date(),
             },
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
@@ -183,7 +183,7 @@ export class CN_model_participant extends CN_model_base_person {
         contact_details: {
           title: "Contact Details",
           properties: {
-            callback: { title: "Callback", type: "datetime", min: "now" },
+            callback: { title: "Callback", type: "datetime", get_min: () => new Date() },
             availability_type_id: {
               title: "Availability Preference",
               type: "enum",

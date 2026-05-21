@@ -13,7 +13,7 @@ export class CN_input_size extends CN_input_float {
     super(parent_el, {
       ...{
         // default config
-        min: 0,
+        get_min: () => 0,
       },
       ...config
     });

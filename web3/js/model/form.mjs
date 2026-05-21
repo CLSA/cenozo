@@ -30,7 +30,7 @@ export class CN_model_form extends CN_base_model {
           type: "enum",
           enum: { path: "form_type" },
         },
-        date: { title: "Date", type: "date", max: "now" },
+        date: { title: "Date", type: "date", get_max: () => new Date() },
       },
     });
   }

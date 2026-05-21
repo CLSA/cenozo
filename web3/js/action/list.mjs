@@ -586,7 +586,6 @@ export class CN_action_list extends CN_base_action {
     tbody_el.innerHTML = "";
 
     const cursor = model.allow_view() ? 'style="cursor: grab"' : "";
-    const start_index = (this.#current_page - 1) * 20;
     if (0 == this.#records.length) {
       let tr_el = this.constructor.html(`
         <tr>
@@ -595,6 +594,20 @@ export class CN_action_list extends CN_base_action {
       `);
       tbody_el.append(tr_el);
     } else {
+      const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
+      const last_col_name = 0 == visible_columns.length ? null : visible_columns[visible_columns.length-1];
+
+      const last_column_el = this.get_body_element().querySelector("thead th:last-child div.d-flex");
+      if (last_column_el) {
+        if ("choose" != this.#list_mode && model.allow_delete()) {
+          last_column_el.classList.add("pe-2");
+          last_column_el.classList.add("me-5");
+        } else {
+          last_column_el.classList.remove("pe-2");
+          last_column_el.classList.remove("me-5");
+        }
+      }
+
       this.#records.map(record => {
         let tr_el = this.constructor.html(`<tr ${cursor}></tr>`);
         if (this.#is_choosing) {
@@ -602,59 +615,57 @@ export class CN_action_list extends CN_base_action {
           if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
         }
         tr_el.addEventListener("click", this.on_row_click.bind(this, record));
-        const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
-        for (const col_name in this.#columns) {
-          // don't show hidden columns
-          const column = this.#columns[col_name];
-          if (!column.is_hidden(model)) {
-            let value = record[col_name];
-            if (null === value) {
-              value = "(empty)";
-            } else if ("boolean" == column.type) {
-              value = value ? "Yes" : "No";
-            } else if ("html" == column.type) {
-              // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
-              value = (new Option(value)).innerHTML
-            } else if ("size" == column.type) {
-              value = CN_common.format_filesize(value);
-            } else if (CN_common.is_datetime_type(column.type, "date")) {
-              value = CN_common.format_datetime(value, column.type);
-            } else if ("rank" == column.type) {
-              value = CN_common.ordinal_suffix(value);
-            } else if (CN_common.is_datetime_type(column.type, "time")) {
-              value = CN_common.format_time(value);
-            } else if (CN_common.is_string(value) && 0 < column.limit) {
-              if (value.length > column.limit) {
-                value = value.substring(0, column.limit) + " ...";
-              }
-            }
 
-            if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
-              tr_el.innerHTML += `
-                <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-                  <div class="d-flex">
-                    <div class="w-100">${value}</div>
-                    <div class="flex-shrink-1">
-                      <button name="delete" class="btn btn-sm btn-danger">
-                        <i class="bi bi-x-circle-fill"></i>
-                      </button>
-                    </div>
-                  </div>
-                </td>
-              `;
-              tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.on_delete(record);
-              });
-            } else {
-              tr_el.innerHTML += `
-                <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-                  ${value}
-                </td>
-              `;
+        visible_columns.forEach(col_name => {
+          const column = this.#columns[col_name];
+
+          let value = record[col_name];
+          if (null === value) {
+            value = "(empty)";
+          } else if ("boolean" == column.type) {
+            value = value ? "Yes" : "No";
+          } else if ("html" == column.type) {
+            // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
+            value = (new Option(value)).innerHTML
+          } else if ("size" == column.type) {
+            value = CN_common.format_filesize(value);
+          } else if (CN_common.is_datetime_type(column.type, "date")) {
+            value = CN_common.format_datetime(value, column.type);
+          } else if ("rank" == column.type) {
+            value = CN_common.ordinal_suffix(value);
+          } else if (CN_common.is_datetime_type(column.type, "time")) {
+            value = CN_common.format_time(value);
+          } else if (CN_common.is_string(value) && 0 < column.limit) {
+            if (value.length > column.limit) {
+              value = value.substring(0, column.limit) + " ...";
             }
           }
-        }
+
+          if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
+            tr_el.innerHTML += `
+              <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+                <div class="d-flex">
+                  <div class="w-100">${value}</div>
+                  <div class="flex-shrink-1">
+                    <button name="delete" class="btn btn-sm btn-danger">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                </div>
+              </td>
+            `;
+            tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
+              e.stopPropagation();
+              this.on_delete(record);
+            });
+          } else {
+            tr_el.innerHTML += `
+              <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+                ${value}
+              </td>
+            `;
+          }
+        });
 
         // remove the outer most white borders
         const td_el_list = tr_el.querySelectorAll("td");
@@ -879,18 +890,11 @@ export class CN_action_list extends CN_base_action {
     // build the header row
     let header_tr_el = this.constructor.html("<tr></tr>");
 
-    const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      if (!column.is_hidden(model)) {
-        const th_el = this.create_table_header_element(column);
-        if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
-          th_el.querySelector("div.d-flex").classList.add("pe-2");
-          th_el.querySelector("div.d-flex").classList.add("me-5");
-        }
-        header_tr_el.append(th_el);
-      }
-    }
+    const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
+    visible_columns.forEach(col_name => {
+      const th_el = this.create_table_header_element(this.#columns[col_name]);
+      header_tr_el.append(th_el);
+    });
 
     // remove the outer most white borders
     const th_el_list = header_tr_el.querySelectorAll("th");

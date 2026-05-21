@@ -67,7 +67,7 @@ export class CN_model_user extends CN_base_model {
           meta: {},
           type: "enum",
           enum: {
-            get_enums: async (model) => {
+            get_enums: async () => {
               return (await CN_api.get("site", {
                 select: { column: "name" },
                 modifier: { order: "name" },
@@ -87,7 +87,7 @@ export class CN_model_user extends CN_base_model {
           meta: {},
           type: "enum",
           enum: {
-            get_enums: async (model) => {
+            get_enums: async () => {
               return (await CN_api.get("role", {
                 select: { column: "name" },
                 modifier: { order: "name" },

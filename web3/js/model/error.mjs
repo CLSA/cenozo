@@ -35,7 +35,12 @@ export class CN_model_error extends CN_base_model {
 
     if ("message" == type) {
       if (this.#error instanceof URIError) {
-        return this.#error.message ? this.#error.message : "Sorry, the page you requested does not exist.";
+        return (
+          // only show the message when the title and message is set (no title means 404)
+          this.#error.title && this.#error.message ?
+          this.#error.message :
+          "Sorry, the page you requested does not exist."
+        );
       } else if (this.#error.message) {
         return this.#error.message;
       }

@@ -211,6 +211,7 @@ export class CN_base_model extends CN_base_object {
 
     if (problem) {
       const error = new URIError();
+      error.name = "Configuration Error";
       error.message = `Error configuring ${this.get_name()} model: "${action_name}" action ${problem}.`;
       throw error;
     }

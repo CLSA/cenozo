@@ -36,7 +36,7 @@ export class CN_model_alternate_consent extends CN_base_model {
           is_constant: (model) => "view" == model.get_action_name(),
           is_hidden: () => 3 > CN_session.get("role", "tier"),
         },
-        datetime: { title: "Date & Time", type: "datetimesecond", max: "now" },
+        datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => new Date() },
         note: { title: "Note", type: "text" },
       },
     });

@@ -198,18 +198,20 @@ export class CN_element_date_picker extends CN_base_element {
         date_btn_el.classList.add("btn-primary");
       }
 
-      date_td_el.addEventListener("click", (event) => {
-        if (year < this.#year || month < this.#month) {
-          this.move_date(false, "day");
-        } else if (year > this.#year || month > this.#month) {
-          this.move_date(true, "day");
-        }
-        if (!restricted) this.set_date(date);
-        this.update_element();
+      if (!restricted) {
+        date_td_el.addEventListener("click", (event) => {
+          if (year < this.#year || month < this.#month) {
+            this.move_date(false, "day");
+          } else if (year > this.#year || month > this.#month) {
+            this.move_date(true, "day");
+          }
+          this.set_date(date);
+          this.update_element();
 
-        // call the date selected listener
-        if (!restricted) this.get_config("on_date_selected")(this.#date);
-      });
+          // call the date selected listener
+          this.get_config("on_date_selected")(this.#date);
+        });
+      }
 
       tr_el.append(date_td_el);
     });
