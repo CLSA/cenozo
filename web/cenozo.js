@@ -4690,7 +4690,7 @@
             }
 
             // if the user's password isn't set then open the password dialog
-            if (response.data.no_password && !CnModalPasswordFactory.isOpen()) {
+            if (response.data.user.no_password && !CnModalPasswordFactory.isOpen()) {
               var subResponse = await CnModalPasswordFactory.instance({
                 confirm: false,
               }).show();
