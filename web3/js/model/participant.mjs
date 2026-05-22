@@ -360,7 +360,7 @@ export class CN_view_participant extends CN_view_base_person {
    * Extends the parent method
    */
   get_selector_child_list() {
-    return super.get_selector_child_list().map(title => "Applciation" == title ? "Release" : title);
+    return super.get_selector_child_list().map(title => "Application" == title ? "Release" : title);
   }
 
   /**

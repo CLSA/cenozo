@@ -34,7 +34,9 @@ export class CN_input_base_datetime extends CN_base_input {
    * Extend parent method
    */
   set_value(value) {
-    if (CN_common.is_string(value)) value = new Date(value);
+    if (CN_common.is_string(value)) {
+      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
+    }
     this.#date = value;
 
     // convert date object to string
@@ -75,7 +77,7 @@ export class CN_input_base_datetime extends CN_base_input {
     if ("now" == value) {
       value = new Date();
     } else if (CN_common.is_string(value)) {
-      value = new Date(value);
+      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
     }
 
     if (CN_common.is_date(value)) {

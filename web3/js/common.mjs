@@ -130,8 +130,17 @@ export class CN_common extends CN_base_object {
    * @param string x: The string to encode
    * @return string
    */
-  static escape_html(x) {
-    return new Option(x).innerHTML;
+  static encode_html(x) {
+    return (new Option(x).innerHTML).replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  /**
+   * Converts newlines to HTML <br/> elements
+   * @param string x: The string to encode
+   * @return string
+   */
+  static nl_to_br(x) {
+    return x.replace(/\r?\n/g, "<br/>$&");
   }
 
   /**
@@ -275,7 +284,7 @@ export class CN_common extends CN_base_object {
     if (null == value) {
       return null;
     } else if (this.is_string(value)) {
-      value = new Date(value);
+      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
     }
 
     if ("record" == format) {

@@ -8,9 +8,15 @@ export class CN_modal_password extends CN_modal_base_form {
       throw new Error("Non-object config argument passed to CN_modal_password constructor");
     }
 
-    super(config);
+    super({
+      ...{
+        title: "Change Password",
+        force: false,
+      },
+      ...config
+    });
 
-    this.add_input("password", "current_password", "Current Password");
+    if (!this.get_config("force")) this.add_input("password", "current_password", "Current Password");
     this.add_input(
       "password",
       "new_password",
@@ -25,12 +31,16 @@ export class CN_modal_password extends CN_modal_base_form {
     );
 
     // add the resolve buttons
-    this.add_resolve_button("light", "Cancel", () => this._resolve(false));
+    if (!this.get_config("force")) this.add_resolve_button("light", "Cancel", () => this._resolve(false));
     this.add_resolve_button("success", "OK", async () => {
       const data = {
         user: {
           password: {
-            current: await this.get_input_value_for_record("current_password"),
+            current: (
+              this.get_config("force") ?
+              null :
+              await this.get_input_value_for_record("current_password")
+            ),
             requested: await this.get_input_value_for_record("new_password"),
           },
         },

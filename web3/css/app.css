@@ -58,3 +58,7 @@ div[name=app_bg].loading:before {
   user-select: text;
   cursor: text;
 }
+
+.tooltip-inner {
+  text-align: left;
+}

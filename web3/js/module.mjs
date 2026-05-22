@@ -168,7 +168,11 @@ export class CN_module extends CN_base_object {
    * Updates a notation
    */
   async set_notation(type, description) {
-    if (CN_common.is_string(description) && 0 == description.length) description = null;
+    if (CN_common.is_string(description)) {
+      // trim whitespace
+      description = description.trim();
+      if (0 == description.length) description = null;
+    }
     const current_description = this.get_notation(type);
     if (description == current_description) return;
 

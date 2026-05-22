@@ -265,6 +265,16 @@ class session extends CN_base_object {
     this.#data.user.am_pm = this.#data.user.use_12hour_clock;
     delete this.#data.user.use_12hour_clock;
 
+    // check for mandatory password reset
+    if (this.#data.user.no_password) {
+      if (await CN_modal_password.create_and_open({ force: true })) {
+        await CN_modal_message.create_and_open({
+          title: "Password Changed",
+          message: "Your password has been successfully changed.",
+        });
+      }
+    }
+
     // prepare notations
     const notations = this.#data.notation.reduce((list, notation) => {
       if (!list.hasOwnProperty(notation.subject)) list[notation.subject] = {};
@@ -565,9 +575,14 @@ class session extends CN_base_object {
       if (null != response) await this.set_timezone(response.timezone, response.am_pm);
     });
     const password_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=password]");
-    password_btn_el.addEventListener("click", () => {
+    password_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
-      CN_modal_password.create_and_open();
+      if (await CN_modal_password.create_and_open()) {
+        await CN_modal_message.create_and_open({
+          title: "Password Changed",
+          message: "Your password has been successfully changed.",
+        });
+      }
     });
     const logout_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=logout]");
     logout_btn_el.addEventListener("click", async () => {

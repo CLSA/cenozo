@@ -434,7 +434,7 @@ export class CN_action_base_record extends CN_base_action {
 
     // we use <a> instead of <button> so that the the accordion can still be expanded when the action is disabled
     return this.constructor.html(`
-      <div name="${group_name}" class="accordion-item px-0">
+      <div name="${CN_common.encode_html(group_name)}" class="accordion-item px-0">
         <div class="accordion-header">
           <a
             href="#"

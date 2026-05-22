@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE notation.sql
 SOURCE trace_has_mail.sql
 SOURCE trace_type_mail.sql
 

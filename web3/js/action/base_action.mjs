@@ -214,6 +214,62 @@ export class CN_base_action extends CN_base_element {
   }
 
   /**
+   * ADD DOCS
+   */
+  async open_notation() {
+    const model = this.get_model();
+    const title = `${CN_common.uc_words(model.get_singular())} ${CN_common.uc_words(this.#type)} Documentation`;
+    const notation_module = CN_session.get_module("notation");
+    const notation = this.get_model().get_module().get_notation(this.#type);
+    if (notation_module && notation_module.action_allowed("edit")) {
+      // open an input modal to allow editing the notation
+      const response = await CN_modal_input.create_and_open({
+        title: title,
+        message:
+          "Provide documentation relevant to this page, or leave blank if no documentation is required.",
+        input: {
+          type: "text",
+          required: false,
+          rows: 5,
+          get_default: () => notation,
+        },
+      });
+
+      if (undefined !== response) {
+        await model.get_module().set_notation(this.#type, response);
+        this.update_element();
+      }
+    } else {
+      // display the notation
+      await CN_modal_message.create_and_open({
+        title: title,
+        message: CN_common.nl_to_br(notation),
+      });
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    const notation_btn_el = this.get_header_element().querySelector("button[name=notation]");
+    const notation_module = CN_session.get_module("notation");
+    const notation = this.get_model().get_module().get_notation(this.#type);
+    if (notation || (notation_module && notation_module.action_allowed("edit"))) {
+      notation_btn_el.classList.remove("d-none");
+      if (notation) {
+        notation_btn_el.querySelector("i").classList.add("text-warning");
+      } else {
+        notation_btn_el.querySelector("i").classList.remove("text-warning");
+      }
+    } else {
+      notation_btn_el.classList.add("d-none");
+    }
+  }
+
+  /**
    * Creates the action's element's header element
    * @return Element
    */
@@ -221,49 +277,19 @@ export class CN_base_action extends CN_base_element {
     const el = this.constructor.html('<div class="d-flex"><div class="flex-grow-1"></div></div>');
     (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
 
-    const model = this.get_model();
-    const module = model.get_module();
-    const notation_module = CN_session.get_module("notation");
-    const notation = module.get_notation(this.#type);
-    if (notation || (notation_module && notation_module.action_allowed("edit"))) {
-      const title = `${CN_common.uc_words(model.get_singular())} ${CN_common.uc_words(this.#type)} Documentation`;
-      // add a data notation button
-      const notation_btn_el = this.constructor.html(`
-        <button name="notation" class="btn btn-primary px-2 py-0">
-          <i class="bi bi-info-circle fs-5 ${notation ? "text-warning" : ""}"></i>
-        </button>
-      `);
-      notation_btn_el.addEventListener("click", async () => {
-        if (notation_module && notation_module.action_allowed("edit")) {
-          // open an input modal to allow editing the notation
-          const response = await CN_modal_input.create_and_open({
-            title: title,
-            message:
-              "Provide documentation relevant to this page, or leave blank if no documentation is required.",
-            input: {
-              type: "text",
-              required: false,
-              rows: 5,
-              get_default: () => notation,
-            },
-          });
-
-          if (undefined !== response) module.set_notation(this.#type, response);
-        } else {
-          // display the notation
-          await CN_modal_message.create_and_open({
-            title: title,
-            message: notation.replace(/\n/g, "<br/>\n"),
-          });
-        }
-      });
-      el.append(notation_btn_el);
-      new bootstrap.Tooltip(notation_btn_el, {
-        title: "Documentation",
-        trigger: "hover",
-        delay: { "show": 1000, "hide": 100 },
-      });
-    }
+    // add a data notation button (not shown until update_element() is called)
+    const notation_btn_el = this.constructor.html(`
+      <button name="notation" class="btn btn-primary px-2 py-0 d-none">
+        <i class="bi bi-info-circle fs-5"></i>
+      </button>
+    `);
+    notation_btn_el.addEventListener("click", this.open_notation.bind(this));
+    el.append(notation_btn_el);
+    new bootstrap.Tooltip(notation_btn_el, {
+      title: "Documentation",
+      trigger: "hover",
+      delay: { "show": 1000, "hide": 100 },
+    });
 
     // add a data refresh button
     const refresh_btn_el = this.constructor.html(`

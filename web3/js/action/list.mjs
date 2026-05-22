@@ -757,7 +757,7 @@ export class CN_action_list extends CN_base_action {
       `<i
         class="bi bi-info-circle-fill"
         data-bs-toggle="tooltip"
-        data-bs-title="${column.help}"
+        data-bs-title="${CN_common.encode_html(column.help)}"
       ></i>` :
       ""
     );
@@ -967,7 +967,9 @@ export class CN_action_list extends CN_base_action {
     );
 
     footer_el.append(this.constructor.html(`
-      <nav aria-label="${CN_common.uc_words(this.get_model().get_singular())} List navigation">
+      <nav
+        aria-label="${CN_common.encode_html(CN_common.uc_words(this.get_model().get_singular()))} List navigation"
+      >
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));

@@ -155,11 +155,10 @@ export class CN_base_modal extends CN_base_element {
 
     const right_btn_group = el.querySelector("[name=right-btn-group]");
     this.#resolve_button_list.forEach(button => {
-      const title = CN_common.escape_html(button.title);
       button.element = this.constructor.html(`
         <button
           type="button"
-          name="${title}"
+          name="${CN_common.encode_html(button.title)}"
           class="btn btn-${button.class_type}"
         >${button.title}</button>
       `);

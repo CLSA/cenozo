@@ -1,8 +1,11 @@
 import { CN_action_list } from "../action/list.mjs"
+import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
+import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
+import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_model_user extends CN_base_model {
@@ -33,10 +36,15 @@ export class CN_model_user extends CN_base_model {
           title: "Login Failures",
           is_constant: () => true,
           is_hidden: (model) => "add" == model.get_action_name(),
-          help: "Every time an invalid password is used to log in as this user this counter will go up.",
+          help: `
+            Every time an invalid password is used to log in as this user this counter will go up.
+            Once it reaches ${CN_session.get("application", "login_failure_limit")} the user will automatically
+            be deactivated.
+            Reactivating the user will reset the counter to 0.
+          `,
         },
         name: {
-          title: "Name",
+          title: "Username",
           format: "alpha_num",
           is_constant: (model) => "view" == model.get_action_name(),
           help: "May only contain numbers, letters and underscores. Can only be defined when creating a new user.",
@@ -275,5 +283,52 @@ export class CN_overview_user extends CN_action_list {
       value: null,
     });
     return params;
+  }
+}
+
+export class CN_view_user extends CN_action_view {
+  /**
+   * Extends the parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    const reset_password_btn_el = this.constructor.html(`
+      <button
+        name="reset-password"
+        type="button"
+        class="btn btn-light btn-outline-primary"
+      >Reset Password</button>
+    `);
+    reset_password_btn_el.addEventListener("click", async () => {
+      const username = this.get_property_value("name");
+      const response = await CN_modal_confirm.create_and_open({
+        title: "Reset Password",
+        message: `Are you sure you wish to reset the password for user "${username}"`,
+      });
+
+      if (response) {
+        try {
+          await CN_api.patch(this.get_model().get_view_url(null, "api"), { password: true });
+          await CN_modal_message.create_and_open({
+            title: "Password Reset",
+            message: `The password for user "${username}" has been successfully reset.`,
+          });
+        } catch (error) {
+          if (403 == error.response.status) {
+            await CN_modal_message.create_and_open({
+              type: "danger",
+              title: "Unable To Change Password",
+              message: `Sorry, you do not have access to resetting the password for user "${username}".`,
+            });
+          } else {
+            throw error;
+          }
+        }
+      }
+    });
+    footer_el.querySelector("div[name=left-btn-group]").append(reset_password_btn_el);
+
+    return footer_el;
   }
 }

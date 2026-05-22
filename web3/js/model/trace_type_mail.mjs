@@ -1,6 +1,7 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 import { CN_model_trace_type } from "./trace_type.mjs"
 import { CN_model_participant } from "./participant.mjs"
@@ -82,9 +83,9 @@ export class CN_view_trace_type_mail extends CN_action_view {
 
       let message = this.get_property_value("body");
       if (response.mail_header) {
-        // if the header has html bu tthe body doesn't then convert line breaks to elements
+        // if the header has html but the body doesn't then convert newlines to br elements
         if (response.mail_header.match(/<html>/) && !message.match(/<[^>]+>/)) {
-          message = message.replace(/\r?\n/g, "<br/>$&");
+          message = CN_common.nl_to_br(message);
         }
         message = response.mail_header + "\n" + message;
       }

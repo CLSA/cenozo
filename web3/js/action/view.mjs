@@ -26,7 +26,7 @@ export class CN_action_view extends CN_action_base_record {
     return this.get_model().get_child_model_list().reduce((list, model) => {
       if (null == model.get_element()) model.get_element();
       list.push({
-        title: CN_common.uc_words(model.get_plural()),
+        title: CN_common.uc_words(model.get_singular()),
         model: model,
       });
       return list;
@@ -110,8 +110,13 @@ export class CN_action_view extends CN_action_base_record {
         prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
         prop.form_input.set_value(record[`formatted_${prop.name}`], record[prop.name]);
       } else if (CN_common.is_datetime_type(prop.type, "date")) {
-        // convert string value to object
-        prop.form_input.set_value(record[prop.name] ? new Date(record[prop.name]) : null);
+        // convert string value to date object
+        const date_string = (
+          record[prop.name].match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
+          `${record[prop.name]} 12:00:00` :
+          record[prop.name]
+        );
+        prop.form_input.set_value(record[prop.name] ? new Date(date_string) : null);
       } else if (record.hasOwnProperty(prop.name)) {
         prop.form_input.set_value(record[prop.name]);
       }

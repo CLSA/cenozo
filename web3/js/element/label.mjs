@@ -38,7 +38,7 @@ export class CN_element_label extends CN_base_element {
         <i
           class="bi bi-info-circle-fill"
           data-bs-toggle="tooltip"
-          data-bs-title="${help}"
+          data-bs-title="${CN_common.encode_html(help)}"
         ></i> ${el.innerHTML}
       `;
       new bootstrap.Tooltip(el.querySelector(".bi-info-circle-fill"));
