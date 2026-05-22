@@ -15,7 +15,11 @@ export class CN_model_interview extends CN_base_model {
       },
       columns: {
         uid: { column: "participant.uid", title: "UID" },
-        site: { column: "site.name", title: "Credited Site" },
+        site: {
+          column: "site.name",
+          title: "Credited Site",
+          is_hidden: () => !CN_session.get("role", "all_sites"),
+        },
         start_datetime: { title: "Start", type: "datetimesecond" },
         end_datetime: { title: "End", type: "datetimesecond" },
       },

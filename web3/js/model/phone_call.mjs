@@ -18,4 +18,18 @@ export class CN_model_phone_call extends CN_base_model {
       },
     });
   }
+
+  /** 
+   * Extend parent method
+   */
+  allow_add() {
+    return false;
+  }
+
+  /** 
+   * Extend parent method
+   */
+  allow_delete() {
+    return false;
+  }  
 }
