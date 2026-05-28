@@ -51,9 +51,11 @@ export class CN_base_modal extends CN_base_element {
    * @param string class_type: The button's class type (primary, secondary, success, danger, warning, info or light)
    * @param string title: The button's title
    * @param mixed on_click: Fired when the button is clicked (typically calling this._resolve())
+   * @param boolean execute_on_enter: The on_click callback will be called when the enter key is pressed
+   *   Note that only the first button found with this property set to true will be run
    */
-  add_resolve_button(class_type, title, on_click) {
-    this.#resolve_button_list.push({ class_type, title, on_click });
+  add_resolve_button(class_type, title, on_click, execute_on_enter = false) {
+    this.#resolve_button_list.push({ class_type, title, on_click, execute_on_enter });
   }
 
   /**
@@ -62,7 +64,7 @@ export class CN_base_modal extends CN_base_element {
    * @return { class_type, title, value, element }
    */
   get_resolve_button(title) {
-    return this.#resolve_button_list.find(o => o.title == title);
+    return this.#resolve_button_list.find(button => button.title == title);
   }
 
   /**
@@ -184,6 +186,13 @@ export class CN_base_modal extends CN_base_element {
         </div>
       </div>
     `));
+
+    el.addEventListener("keydown", (event) => {
+      if ("Enter" == event.key) {
+        const button = this.#resolve_button_list.find(button => button.execute_on_enter);
+        if (button) button.on_click(event);
+      }
+    });
 
     el.querySelector("div.modal-header").append(this._create_header_element());
     el.querySelector("div.modal-body").append(this._create_body_element());

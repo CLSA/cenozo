@@ -13,7 +13,7 @@ export class CN_model_relation_type extends CN_base_model {
       columns: {
         rank: { title: "Rank", type: "rank" },
         name: { title: "Name" },
-        relation_count: { title: "Participants", type: "number", table_prefix: false },
+        relation_count: { title: "Participants", type: "integer", table_prefix: false },
       },
       properties: {
         name: { title: "Name", format: "identifier" },

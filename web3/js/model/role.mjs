@@ -11,7 +11,7 @@ export class CN_model_role extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        user_count: { title: "Users", type: "number", table_prefix: false },
+        user_count: { title: "Users", type: "integer", table_prefix: false },
       },
     });
   }

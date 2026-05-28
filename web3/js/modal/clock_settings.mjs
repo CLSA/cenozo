@@ -20,16 +20,24 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
         required: true,
       }
     );
-    this.add_input("boolean", "am_pm", "Use 12-Hour Clock", { get_default: () => CN_session.get("user", "am_pm") });
+    this.add_input(
+      "boolean",
+      "am_pm",
+      "Use 12-Hour Clock",
+      { get_default: () => CN_session.get("user", "am_pm") },
+    );
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", () => this._resolve(null));
-    this.add_resolve_button("success", "OK", async () => {
-      this._resolve({
+    this.add_resolve_button(
+      "success",
+      "OK",
+      async () => this._resolve({
         timezone: await this.get_input_value_for_record("timezone"),
         am_pm: await this.get_input_value_for_record("am_pm"),
-      });
-    });
+      }),
+      true, // submit on enter key
+    );
   }
 
   /**

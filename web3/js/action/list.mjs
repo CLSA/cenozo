@@ -14,6 +14,10 @@ export class CN_action_list extends CN_base_action {
   #current_page = 1;
   #is_choosing = false;
   #choose_list = {};
+  #valid_type_list = [
+    "boolean", "date", "datetime", "datetimesecond", "dob", "dod",
+    "email", "float", "integer", "rank", "size", "string", "text",
+  ];
 
   /**
    * Constructor
@@ -22,6 +26,9 @@ export class CN_action_list extends CN_base_action {
    */
   constructor(parent_el, model) {
     super("list", parent_el, model);
+
+    // we don't want a delay when showing the placeholder
+    this.set_placeholder_show_delay(0);
 
     // determine whether the list is in choosing mode
     const parent_model = this.get_model().get_parent_model();
@@ -40,6 +47,15 @@ export class CN_action_list extends CN_base_action {
       if (!column.type) column.type = "string";
       if (undefined === column.table_prefix) column.table_prefix = true;
       if (undefined === column.align) column.align = "left";
+
+      // make sure the column type is valid
+      if (!this.#valid_type_list.includes(column.type)) {
+        throw new Error(`
+          Column "${col_name}" in model ${model.get_name()}
+          has invalid type "${column.type}",
+          must be one of the following: ${this.#valid_type_list.join(", ")}
+        `);
+      }
 
       // determine the column's full name
       column.table_name = model.get_name();
@@ -941,21 +957,43 @@ export class CN_action_list extends CN_base_action {
 
     table_el.querySelector("thead").append(header_tr_el);
 
-    const tbody_el = table_el.querySelector("tbody");
-    for (let row = 0; row < 20; row++) {
+    return table_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  show_placeholder() {
+    // update how many rows the placeholder has based on the existing data (minimum 1)
+    const total_rows = null == this.#total_records ? 20 : 0 == this.#total_records ? 1 : this.#records.length;
+
+    const tbody_el = this.get_placeholder_element().querySelector("tbody");
+    tbody_el.innerHTML = "";
+    for (let row = 0; row < total_rows; row++) {
       const td_list = [];
       for (const col_name in this.#columns) {
-        let col = Math.ceil(Math.random() * 5) + 5;
+        const column = this.#columns[col_name];
         td_list.push(`
-          <td class="placeholder-glow">
-            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${col}"></span>
+          <td
+            class="text-${column.align} border border-light border-2 px-3 placeholder-glow"
+            style="line-height: 30.6px;"
+          >
+            <span
+              class="
+                placeholder
+                placeholder-lg
+                bg-dark
+                bg-opacity-50
+                col-${Math.ceil(Math.random() * 5) + 5}
+              "
+            ></span>
           </td>
         `);
       }
       tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
     }
 
-    return table_el;
+    super.show_placeholder();
   }
 
   /**

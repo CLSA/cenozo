@@ -1,5 +1,6 @@
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_model_participant } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 
@@ -64,10 +65,10 @@ export class CN_model_equipment extends CN_base_model {
    * @return object
    * @static
    */
-  static get_typeahead() {
+  static get_typeahead(params = {}) {
     return {
       get_list: async (value) => {
-        return await CN_api.get("equipment", {
+        const api_params = CN_common.merge_objects({
           select: {
             column: [{
               table: "equipment",
@@ -89,7 +90,8 @@ export class CN_model_equipment extends CN_base_model {
             order: 'CONCAT( equipment_type.name, ": ", equipment.serial_number )',
             limit: 20,
           },
-        });
+        }, params);
+        return await CN_api.get("equipment", api_params);
       },
     };
   }

@@ -10,7 +10,7 @@ export class CN_model_event_type extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        event_count: { title: "Events", type: "number", table_prefix: false },
+        event_count: { title: "Events", type: "integer", table_prefix: false },
         role_list: { title: "Roles", table_prefix: false },
         description: { title: "Description", type: "text" },
       },

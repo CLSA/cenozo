@@ -34,9 +34,12 @@ export class CN_modal_input extends CN_modal_base_form {
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
-    this.add_resolve_button("success", this.get_config("ok_text"), async () => {
-      this._resolve(this.get_input("input").form_input.get_value_for_record());
-    });
+    this.add_resolve_button(
+      "success",
+      this.get_config("ok_text"),
+      () => this._resolve(this.get_input("input").form_input.get_value_for_record()),
+      true, // submit on enter key
+    );
   }
 
   /**

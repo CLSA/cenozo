@@ -61,8 +61,16 @@ export class CN_model_alternate extends CN_model_base_person {
             },
           },
         },
-        email: { title: "Email", type: "email" },
-        email2: { title: "Alternate Email", type: "email" },
+        email: {
+          title: "Email",
+          type: "email",
+          help: 'Must be in the format "account@domain.name".',
+        },
+        email2: {
+          title: "Alternate Email",
+          type: "email",
+          help: 'Must be in the format "account@domain.name".',
+        },
         alternate_type_id: {
           meta: {}, // predefined by the service
           title: "Specific Role",

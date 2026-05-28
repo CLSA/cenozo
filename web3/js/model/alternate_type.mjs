@@ -14,8 +14,17 @@ export class CN_model_alternate_type extends CN_base_model {
         name: { title: "Name" },
         title: { title: "Title" },
         role_list: { title: "Roles", table_prefix: false },
-        has_alternate_consent_type: { title: "Has Consent", type: "boolean" },
-        alternate_count: { title: "Alternates", table_prefix: false },
+        has_alternate_consent_type: {
+          title: "Has Consent",
+          type: "boolean",
+          table_prefix: false,
+          is_hidden: () => "alternate" == CN_session.get_leaf_model().get_name(),
+        },
+        alternate_count: {
+          title: "Alternates",
+          table_prefix: false,
+          is_hidden: () => "alternate" == CN_session.get_leaf_model().get_name(),
+        },
         description: { title: "Description", type: "text" },
 
         // used in the CN_list_alternate_type.is_choose_disabled method below

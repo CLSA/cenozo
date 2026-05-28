@@ -21,6 +21,7 @@ export class CN_base_action extends CN_base_element {
   #is_loading = false;
   #is_placeholder = true;
   #placeholder_timeout_id = null;
+  #placeholder_show_delay = 200;
   #simple_mode = false;
   #footer_at_top = false;
 
@@ -44,9 +45,7 @@ export class CN_base_action extends CN_base_element {
   get_type() { return this.#type }
   get_model() { return this.#model }
   get_disabled() { return this.#disabled; }
-  set_disabled(disabled) {
-    this.#disabled = disabled;
-  }
+  set_disabled(disabled) { this.#disabled = disabled; }
   get_query_parameter(key) {
     return this.#model.get_module().get_action_query_parameter(this.#type, key);
   }
@@ -73,6 +72,8 @@ export class CN_base_action extends CN_base_element {
     if (!this.#topfooter_el) this.#topfooter_el = this.create_topfooter_element();
     return this.#topfooter_el;
   }
+  get_placeholder_show_delay() { return this.#placeholder_show_delay; }
+  set_placeholder_show_delay(placeholder_show_delay) { this.#placeholder_show_delay = placeholder_show_delay; }
   get_simple_mode() { return this.#simple_mode; }
   set_simple_mode(value) { this.#simple_mode = !!value; }
   get_footer_at_top() { return this.#footer_at_top; }
@@ -188,10 +189,12 @@ export class CN_base_action extends CN_base_element {
   on_pre_loading() {
     this.#is_loading = true;
 
-    // Show placeholder while loading data, but only if it takes longer than 200 ms
-    this.#placeholder_timeout_id = setTimeout(() => {
-      this.show_placeholder();
-    }, 200);
+    // Show placeholder while loading data
+    if (null == this.#placeholder_timeout_id) {
+      this.#placeholder_timeout_id = setTimeout(() => {
+        this.show_placeholder();
+      }, this.#placeholder_show_delay);
+    }
   }
 
   /**

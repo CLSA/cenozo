@@ -154,10 +154,10 @@ export class CN_model_user extends CN_base_model {
    * @return object
    * @static
    */
-  static get_typeahead() {
+  static get_typeahead(params = {}) {
     return {
       get_list: async (value) => {
-        return await CN_api.get("user", {
+        const api_params = CN_common.merge_objects({
           select: {
             column: [{
               table: "user",
@@ -172,14 +172,17 @@ export class CN_model_user extends CN_base_model {
           },
           modifier: {
             where: [
+              { bracket: true, open: true },
               { column: "user.first_name", operator: "like", value: `%${value}%`, },
               { column: "user.last_name", operator: "like", value: `%${value}%`, or: true },
               { column: "user.name", operator: "like", value: `%${value}%`, or: true },
+              { bracket: true, open: false },
             ],
             order: 'CONCAT(user.first_name," ",user.last_name," (",user.name,")")',
             limit: 20,
           },
-        });
+        }, params);
+        return await CN_api.get("user", api_params);
       },
     };
   }

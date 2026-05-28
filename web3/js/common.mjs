@@ -178,6 +178,49 @@ export class CN_common extends CN_base_object {
   }
 
   /**
+   * Returns an object that merges two objects.
+   * Note that objects take priority over arrays, and non-objects get appended to arrays.
+   * @param {} obj1
+   * @param {} obj2
+   */
+  static merge_objects(obj1, obj2) {
+    const merged_obj = { ...obj1 };
+
+    for (let key in obj2) {
+      if (obj2.hasOwnProperty(key)) {
+        if (this.is_object(obj1[key])) {
+          // when first object's property is an object...
+          if (this.is_object(obj2[key])) {
+            // merge second object's property if it is also an object
+            merged_obj[key] = this.merge_objects(obj1[key], obj2[key]);
+          }
+          // and otherwise ignore the second object's property
+        } else if (this.is_array(obj1[key])) {
+          // when the first object's property is an array...
+          if (this.is_array(obj2[key])) {
+            // append the second object's property if it is also an array
+            merged_obj[key] = [...obj1[key], ...obj2[key]];
+          } else {
+            // add the second object's property to the array
+            merged_obj[key].push(obj2[key]);
+          }
+        } else {
+          // when the first object's property isn't an object or array...
+          if (this.is_array(obj2[key])) {
+            // append the first object's property into the second property's array
+            merged_obj[key] = [...obj2[key], ...obj1[key]];
+          } else {
+            // use the second property's value
+            merged_obj[key] = obj2[key];
+          }
+        }
+      }
+    }
+
+    return merged_obj;
+  }
+
+  /**
    * Inserts a new property into an objects after an existing property
    */
   static insert_property_after(object, after_prop, new_prop, value) {

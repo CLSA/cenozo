@@ -1,3 +1,4 @@
+import { CN_api } from "../api.mjs"
 import { CN_base_element } from "../element/base_element.mjs"
 import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
@@ -286,5 +287,34 @@ export class CN_base_model extends CN_base_object {
   async run() {
     // run the model's action and its children
     if (null != this.#action) await this.#action.run(true);
+  }
+
+  /**
+   * Returns a typeahead object for models that have a typeahead property referencing this model
+   * @param {} params: API parameters to include when querying the server
+   * @return object
+   * @static
+   */
+  static get_typeahead(params = {}) {
+    return {
+      get_list: async (value) => {
+        // the default typeahead uses the model's subject from the class' name and assumes id and name columns
+        const subject = this.name.match(/CN_model_(.+)/)[1];
+        const api_params = CN_common.merge_objects({
+          select: {
+            column: [
+              { column: "id", alias: "key" },
+              { column: "name", alias: "value" },
+            ],
+          },
+          modifier: {
+            where: { column: "name", operator: "like", value: `%${value}%` },
+            order: 'name',
+            limit: 20,
+          },
+        }, params);
+        return await CN_api.get(subject, api_params);
+      },
+    };
   }
 }

@@ -15,15 +15,52 @@ export class CN_model_application extends CN_base_model {
       },
       columns: {
         title: { title: "Title" },
-        application_type: { column: "application_type.name", title: "Type" },
-        study_phase: { title: "Study Phase", table_prefix: false },
-        version: { title: "Version" },
-        active: { title: "Released", type: "boolean" },
-        release_based: { title: "Released", type: "boolean" },
-        site_based: { title: "Site Based", type: "boolean" },
-        update_queue: { title: "Queued", type: "boolean" },
-        participant_count: { title: "Participants", type: "number", table_prefix: false },
-        site_count: { title: "Sites", type: "number", table_prefix: false },
+        application_type: {
+          column: "application_type.name",
+          title: "Type",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        study_phase: {
+          title: "Study Phase",
+          table_prefix: false,
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        version: {
+          title: "Version",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        active: {
+          title: "Active",
+          type: "boolean",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        release_based: {
+          title: "Released",
+          type: "boolean",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        site_based: {
+          title: "Site Based",
+          type: "boolean",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        update_queue: {
+          title: "Queued",
+          type: "boolean",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        participant_count: {
+          title: "Participants",
+          type: "integer",
+          table_prefix: false,
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
+        site_count: {
+          title: "Sites",
+          type: "integer",
+          table_prefix: false,
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
       },
       properties: {
         name: { title: "Name", is_constant: () => true },
@@ -136,6 +173,25 @@ export class CN_model_application extends CN_base_model {
   allow_view() {
     const parent_model = this.get_parent_model();
     return parent_model && "participant" == parent_model.get_name() ? false : super.allow_view();
+  }
+
+  /**
+   * Extend parent method
+   */
+  clone_columns() {
+    const columns = super.clone_columns();
+
+    const parent_model = this.get_parent_model();
+    if (parent_model) {
+      if ("participant" == parent_model.get_name()) {
+        // add participant-specific columns
+        columns.default_site = { title: "Default Site", column: "default_site.name" };
+        columns.preferred_site = { title: "Preferred Site", column: "preferred_site.name" };
+        columns.datetime = { title: "Release Date & Time", type: "datetime" };
+      }
+    }
+
+    return columns;
   }
 }
 

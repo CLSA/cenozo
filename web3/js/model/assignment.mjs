@@ -26,7 +26,7 @@ export class CN_model_assignment extends CN_base_model {
         user: { column: "user.name", title: "User" },
         role: { column: "role.name", title: "Role" },
         site: { column: "site.name", title: "Site", is_hidden: () => !CN_session.get("role", "all_sites") },
-        phone_call_count: { title: "Calls", type: "number", table_prefix: false },
+        phone_call_count: { title: "Calls", type: "integer", table_prefix: false },
         status: { title: "Status", table_prefix: false },
         start_datetime: { title: "Start", type: "datetimesecond" },
         end_datetime: { title: "End", type: "datetimesecond" },

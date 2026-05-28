@@ -392,19 +392,20 @@ class session extends CN_base_object {
     // now load all necessary classes
     await Promise.all(promise_list);
 
-    // create and configure all models
+    // create all models based on the path
+    this.#path_model_list = model_data_list.map(model_data => model_data.module.create_model());
+
+    // now that they are all created we can configure them all
     let parent_model = null;
-    this.#path_model_list = model_data_list.map((model_data, index) => {
-      const model = model_data.module.create_model();
+    this.#path_model_list.forEach((model, index) => {
       model.configure(
         this.#main_content_el,
-        model_data.action,
-        model_data.identifier,
+        model_data_list[index].action,
+        model_data_list[index].identifier,
         parent_model,
         index == model_data_list.length-1
       );
       parent_model = model;
-      return model;
     });
 
     // highlight menu item corresponding with the path's first model

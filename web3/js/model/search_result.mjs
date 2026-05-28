@@ -12,7 +12,7 @@ export class CN_model_search_result extends CN_base_model {
         posessive: "search result's",
       },
       columns: {
-        hits: { title: "Hits", type: "number", table_prefix: false },
+        hits: { title: "Hits", type: "integer", table_prefix: false },
         uid: { column: "participant.uid", title: "UID" },
         full_name: { title: "Participant Name", table_prefix: false },
         result: { title: "Search Matches" },

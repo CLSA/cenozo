@@ -194,14 +194,23 @@ export class CN_model_participant extends CN_model_base_person {
               type: "boolean",
               help: "Whether the participant lives outside of the study's serviceable area",
             },
-            email: { title: "Email", type: "email" },
-            email2: { title: "Alternate Email", type: "email" },
+            email: {
+              title: "Email",
+              type: "email",
+              help: 'Must be in the format "account@domain.name".',
+            },
+            email2: {
+              title: "Alternate Email",
+              type: "email",
+              help: 'Must be in the format "account@domain.name".',
+            },
             mass_email: {
               title: "Mass Emails",
               type: "boolean",
-              help:
-          "Whether the participant wishes to be included in mass emails such as newsletters, " +
-          "holiday greetings, etc.",
+              help: `
+                Whether the participant wishes to be included in mass emails such as newsletters,
+                holiday greetings, etc.
+              `,
             },
           },
         },
@@ -283,10 +292,10 @@ export class CN_model_participant extends CN_model_base_person {
    * @return object
    * @static
    */
-  static get_typeahead() {
+  static get_typeahead(params = {}) {
     return {
       get_list: async (value) => {
-        return await CN_api.get("participant", {
+        const api_params = CN_common.merge_objects({
           select: {
             column: [{
               table: "participant",
@@ -308,7 +317,8 @@ export class CN_model_participant extends CN_model_base_person {
             order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
             limit: 20,
           },
-        });
+        }, params);
+        return await CN_api.get("participant", api_params);
       },
     };
   }

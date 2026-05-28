@@ -58,7 +58,7 @@ export class CN_modal_datetime extends CN_base_modal {
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("cancel_text"), () => this._resolve(undefined));
-    this.add_resolve_button("success", this.get_config("ok_text"), async () => this._resolve(this.get_date()));
+    this.add_resolve_button("success", this.get_config("ok_text"), () => this._resolve(this.get_date()), true);
   }
 
   /**
