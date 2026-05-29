@@ -18,12 +18,13 @@ export class CN_base_action extends CN_base_element {
   #placeholder_el;
   #footer_el;
   #topfooter_el;
-  #is_loading = false;
   #is_placeholder = true;
   #placeholder_timeout_id = null;
   #placeholder_show_delay = 200;
   #simple_mode = false;
   #footer_at_top = false;
+  #first_load_promise;
+  #first_load_resolve;
 
   /**
    * Constructor
@@ -39,6 +40,11 @@ export class CN_base_action extends CN_base_element {
 
     this.#type = type;
     this.#model = model;
+
+    // create the promise which will be resolved after the first time the on_post_loading() method is called
+    if (!this.#first_load_promise) {
+      this.#first_load_promise = new Promise(resolve => { this.#first_load_resolve = resolve; });
+    }
   }
 
   // access methods
@@ -187,8 +193,6 @@ export class CN_base_action extends CN_base_element {
    * When running the action this method is always called before on_load()
    */
   on_pre_loading() {
-    this.#is_loading = true;
-
     // Show placeholder while loading data
     if (null == this.#placeholder_timeout_id) {
       this.#placeholder_timeout_id = setTimeout(() => {
@@ -206,14 +210,21 @@ export class CN_base_action extends CN_base_element {
    * When running the action this method is always called after on_load()
    */
   on_post_loading() {
-    this.#is_loading = false;
-
     // Clear the timeout if we haven't fired it and hide the placeholder
     if (null != this.#placeholder_timeout_id) {
       clearTimeout(this.#placeholder_timeout_id);
       this.#placeholder_timeout_id = null;
     }
     if (this.#is_placeholder) this.hide_placeholder();
+    this.#first_load_resolve(true);
+  }
+
+  /**
+   * Returns a promise that resolves after the first time the action finishes loading
+   * @return Promise
+   */
+  async after_first_load() {
+    return this.#first_load_promise;
   }
 
   /**

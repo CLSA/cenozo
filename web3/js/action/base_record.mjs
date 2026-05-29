@@ -241,6 +241,8 @@ export class CN_action_base_record extends CN_base_action {
    * @return (dynamic)
    */
   async get_property_value_for_record(prop_name) {
+    // make sure the record has finished loading
+    await this.after_first_load();
     const prop = this.get_property(prop_name);
     return !prop || !prop.form_input ? undefined : await prop.form_input.get_value_for_record();
   }

@@ -145,6 +145,7 @@ export class CN_action_calendar extends CN_base_action {
    * Extends parent method
    */
   async on_load() {
+    await super.on_load();
     const model = this.get_model();
     const parent_model = model.get_parent_model();
 

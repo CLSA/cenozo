@@ -408,6 +408,7 @@ export class CN_action_list extends CN_base_action {
    * Extends parent method
    */
   async on_load() {
+    await super.on_load();
     const model = this.get_model();
     const parent_model = model.get_parent_model();
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);

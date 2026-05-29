@@ -6,7 +6,6 @@ export class CN_base_modal extends CN_base_element {
   #modal_event_listener_list = [];
   #bootstrap_modal;
   #resolve;
-  #reject;
 
   /**
    * Constructor
@@ -81,9 +80,8 @@ export class CN_base_modal extends CN_base_element {
    * @return Promise
    */
   async open() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.#resolve = resolve;
-      this.#reject = reject;
 
       if (!this.#bootstrap_modal) {
         const el = this.get_element();

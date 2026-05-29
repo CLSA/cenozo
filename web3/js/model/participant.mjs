@@ -77,7 +77,10 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Enrolled",
               meta: {}, // predefined by the service
               is_constant: () => true,
-              help: "Whether the participant has been enrolled into the study, and if not then the reason they have been excluded.",
+              help: `
+                Whether the participant has been enrolled into the study,
+                and if not then the reason they have been excluded.
+              `,
             },
             hold: {
               title: "Hold",
@@ -361,6 +364,7 @@ export class CN_view_participant extends CN_view_base_person {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
+      await this.after_first_load();
       return this.get_property_value("uid");
     }
     return await super.get_text(type);
@@ -578,6 +582,8 @@ export class CN_multiedit_participant extends CN_base_action {
    * Extend parent method
    */
   async on_load() {
+    await super.on_load();
+
     // reset the list and edit components
     this.#selected_participant_properties = {};
     await this.#participant_selection.reset();

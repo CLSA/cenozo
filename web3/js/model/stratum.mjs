@@ -164,6 +164,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
    * Extend parent method
    */
   async on_load() {
+    await super.on_load();
     const model = this.get_model();
 
     // load the stratum details

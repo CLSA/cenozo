@@ -156,6 +156,7 @@ export class CN_view_address extends CN_view_traceable {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
+      await this.after_first_load();
       return [
         this.get_property_value("rank"),
         this.get_property_value("city"),

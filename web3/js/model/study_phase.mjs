@@ -41,7 +41,7 @@ export class CN_model_study_phase extends CN_base_model {
   static get_typeahead(params = {}) {
     return {
       get_list: async (value) => {
-        const api_params = CN_common.merge_objects({ 
+        const api_params = CN_common.merge_objects({
           select: {
             column: [
               { column: "id", alias: "key" },
