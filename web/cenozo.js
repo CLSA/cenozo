@@ -4617,7 +4617,7 @@
                     const path = "notation/application_type_id=" + appTypeId +
                                  ";subject=" + this.subject.snake +
                                  ";type=" + type;
-                    if( 0 == notation.length ) {
+                    if( [null, ""].includes(notation) ) {
                       CnHttpFactory.instance({
                         path: path,
                         onError: function (error) {
@@ -4629,7 +4629,7 @@
                         },
                       }).delete();
                     } else {
-                      if( 0 == currentNotation.length ) {
+                      if( [null, ""].includes(currentNotation) ) {
                         CnHttpFactory.instance({
                           path: "notation",
                           data: {
