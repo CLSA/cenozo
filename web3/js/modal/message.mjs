@@ -18,7 +18,7 @@ export class CN_modal_message extends CN_base_modal {
     });
 
     // add the resolve buttons
-    this.add_resolve_button("primary", this.get_config("ok_text"), () => this._resolve(true));
+    this.add_resolve_button("primary", this.get_config("ok_text"), () => this._resolve(true), true);
   }
 
   /**

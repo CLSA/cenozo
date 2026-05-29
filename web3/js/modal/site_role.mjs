@@ -16,12 +16,15 @@ export class CN_modal_site_role extends CN_modal_base_form {
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", () => this._resolve(null));
-    this.add_resolve_button("success", "OK", async () => {
-      this._resolve({
+    this.add_resolve_button(
+      "success",
+      "OK",
+      async () => this._resolve({
         site_id: await this.get_input_value_for_record("site_id"),
         role_id: await this.get_input_value_for_record("role_id"),
-      });
-    });
+      }),
+      true, // submit on enter key
+    );
   }
 
   /**

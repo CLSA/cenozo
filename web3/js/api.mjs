@@ -203,7 +203,7 @@ export class CN_api extends CN_base_object {
     }
 
     const response = await this.get(path, params, true);
-    return response.headers.get('X-Total');
+    return Number(response.headers.get('X-Total'));
   }
 
   /**

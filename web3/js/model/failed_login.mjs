@@ -9,9 +9,10 @@ export class CN_model_failed_login extends CN_base_model {
         posessive: "failed login's",
       },
       columns: {
-        user: { column: "user.name", title: "User", },
-        address: { title: "Address", },
-        datetime: { title: "Date & Time", type: "datetime" },
+        user: { column: "user.name", title: "User" },
+        application: { column: "application.title", title: "Application" },
+        address: { title: "Address" },
+        datetime: { title: "Date & Time", type: "datetimesecond" },
       },
     });
   }

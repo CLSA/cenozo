@@ -77,7 +77,10 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Enrolled",
               meta: {}, // predefined by the service
               is_constant: () => true,
-              help: "Whether the participant has been enrolled into the study, and if not then the reason they have been excluded.",
+              help: `
+                Whether the participant has been enrolled into the study,
+                and if not then the reason they have been excluded.
+              `,
             },
             hold: {
               title: "Hold",
@@ -145,14 +148,14 @@ export class CN_model_participant extends CN_model_base_person {
             date_of_birth: {
               title: "Date of Birth",
               type: "dob",
-              max: "now",
+              get_max: () => new Date(),
               is_constant: () => 3 <= CN_session.get("role", "tier"),
             },
             date_of_death: {
               title: "Date of Death",
               type: "dod",
-              min: "date_of_birth",
-              max: "now",
+              get_min: (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
+              get_max: () => new Date(),
             },
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
@@ -183,7 +186,7 @@ export class CN_model_participant extends CN_model_base_person {
         contact_details: {
           title: "Contact Details",
           properties: {
-            callback: { title: "Callback", type: "datetime", min: "now" },
+            callback: { title: "Callback", type: "datetime", get_min: () => new Date() },
             availability_type_id: {
               title: "Availability Preference",
               type: "enum",
@@ -194,14 +197,23 @@ export class CN_model_participant extends CN_model_base_person {
               type: "boolean",
               help: "Whether the participant lives outside of the study's serviceable area",
             },
-            email: { title: "Email", type: "email" },
-            email2: { title: "Alternate Email", type: "email" },
+            email: {
+              title: "Email",
+              type: "email",
+              help: 'Must be in the format "account@domain.name".',
+            },
+            email2: {
+              title: "Alternate Email",
+              type: "email",
+              help: 'Must be in the format "account@domain.name".',
+            },
             mass_email: {
               title: "Mass Emails",
               type: "boolean",
-              help:
-          "Whether the participant wishes to be included in mass emails such as newsletters, " +
-          "holiday greetings, etc.",
+              help: `
+                Whether the participant wishes to be included in mass emails such as newsletters,
+                holiday greetings, etc.
+              `,
             },
           },
         },
@@ -283,10 +295,10 @@ export class CN_model_participant extends CN_model_base_person {
    * @return object
    * @static
    */
-  static get_typeahead() {
+  static get_typeahead(params = {}) {
     return {
       get_list: async (value) => {
-        return await CN_api.get("participant", {
+        const api_params = CN_common.merge_objects({
           select: {
             column: [{
               table: "participant",
@@ -308,7 +320,8 @@ export class CN_model_participant extends CN_model_base_person {
             order: 'CONCAT( participant.first_name, " ", participant.last_name, " (", uid, ")" )',
             limit: 20,
           },
-        });
+        }, params);
+        return await CN_api.get("participant", api_params);
       },
     };
   }
@@ -351,6 +364,7 @@ export class CN_view_participant extends CN_view_base_person {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
+      await this.after_first_load();
       return this.get_property_value("uid");
     }
     return await super.get_text(type);
@@ -360,7 +374,7 @@ export class CN_view_participant extends CN_view_base_person {
    * Extends the parent method
    */
   get_selector_child_list() {
-    return super.get_selector_child_list().map(title => "Applciation" == title ? "Release" : title);
+    return super.get_selector_child_list().map(title => "Application" == title ? "Release" : title);
   }
 
   /**
@@ -568,6 +582,8 @@ export class CN_multiedit_participant extends CN_base_action {
    * Extend parent method
    */
   async on_load() {
+    await super.on_load();
+
     // reset the list and edit components
     this.#selected_participant_properties = {};
     await this.#participant_selection.reset();

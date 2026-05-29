@@ -31,13 +31,16 @@ export class CN_modal_account extends CN_modal_base_form {
 
     // add the resolve buttons
     this.add_resolve_button("light", "Cancel", () => this._resolve(null));
-    this.add_resolve_button("success", "OK", async () => {
-      this._resolve({
+    this.add_resolve_button(
+      "success",
+      "OK",
+      async () => this._resolve({
         first_name: await this.get_input_value_for_record("first_name"),
         last_name: await this.get_input_value_for_record("last_name"),
         email: await this.get_input_value_for_record("email"),
-      });
-    });
+      }),
+      true, // submit on enter key
+    );
   }
 
   /**

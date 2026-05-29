@@ -1,6 +1,7 @@
 import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_model_collection extends CN_base_model {
   constructor() {
@@ -12,10 +13,18 @@ export class CN_model_collection extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        active: { title: "Active", type: "boolean" },
+        active: {
+          title: "Active",
+          type: "boolean",
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
         locked: { title: "Locked", type: "boolean" },
-        participant_count: { title: "Participants", type: "number", table_prefix: false },
-        user_list: { title: "Users", table_prefix: false },
+        participant_count: { title: "Participants", type: "integer", table_prefix: false },
+        user_list: {
+          title: "Users",
+          table_prefix: false,
+          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+        },
       },
       properties: {
         name: {

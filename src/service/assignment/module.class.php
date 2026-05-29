@@ -121,6 +121,9 @@ class module extends \cenozo\service\site_restricted_participant_module
     if( $select->has_table_columns( 'site' ) )
       $modifier->left_join( 'site', 'assignment.site_id', 'site.id' );
 
+    if( $select->has_table_columns( 'role' ) )
+      $modifier->left_join( 'role', 'assignment.role_id', 'role.id' );
+
     if( $select->has_table_columns( 'participant' ) )
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
 

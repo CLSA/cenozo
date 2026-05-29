@@ -32,7 +32,8 @@ export class CN_modal_column_filter extends CN_base_modal {
     this.add_resolve_button(
       "success",
       this.get_config("ok_text"),
-      () => this._resolve(this.#condition_list.map(c => ({ operator: c.operator, value: c.value, or: c.or })))
+      () => this._resolve(this.#condition_list.map(c => ({ operator: c.operator, value: c.value, or: c.or }))),
+      true, // submit on enter key
     );
 
     // determine the operator list based on the type
@@ -42,7 +43,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       { key: "=", value: "is" },
       { key: "!=", value: "is not" },
     ];
-    if (is_datetime || ["number", "size"].includes(column.type)) {
+    if (is_datetime || ["integer", "float", "size"].includes(column.type)) {
       this.#operator_list = [
         ...this.#operator_list,
         { key: "<", value: is_datetime ? "is before" : "is less than" },

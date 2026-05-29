@@ -11,7 +11,7 @@ export class CN_model_hold_type extends CN_base_model {
       columns: {
         type: { title: "Type" },
         name: { title: "Name" },
-        participant_count: { title: "Participants", type: "number", table_prefix: false },
+        participant_count: { title: "Participants", type: "integer", table_prefix: false },
         role_list: { title: "Roles", table_prefix: false },
         description: { title: "Description", type: "text" },
       },

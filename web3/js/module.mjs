@@ -168,7 +168,11 @@ export class CN_module extends CN_base_object {
    * Updates a notation
    */
   async set_notation(type, description) {
-    if (CN_common.is_string(description) && 0 == description.length) description = null;
+    if (CN_common.is_string(description)) {
+      // trim whitespace
+      description = description.trim();
+      if (0 == description.length) description = null;
+    }
     const current_description = this.get_notation(type);
     if (description == current_description) return;
 
@@ -229,7 +233,6 @@ export class CN_module extends CN_base_object {
         const re = new RegExp(`^CN_([a-z][a-z0-9_]*)_${this.#name}`);
         const matches = name.match(re);
         if (null == matches) {
-          console.log(`^CN_([a-z][a-z0-9_]*)_${this.#name}`);
           console.warn(`Found unexpected export "${name}" in application ${this.#name} model.`);
         } else if (!CN_common.is_class(exports[name])) {
           console.warn(`Found non-class export "${name}" in application ${this.#name} model.`);

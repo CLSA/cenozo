@@ -12,10 +12,24 @@ export class CN_model_phone_call extends CN_base_model {
       columns: {
         person: { title: "Person", is_hidden: () => !CN_session.get("setting", "proxy"), table_prefix: false },
         phone: { column: "phone.type", title: "Phone" },
-        start_datetime: { title: "Start", type: "datetimesecond", max: "now" },
-        end_datetime: { title: "End", type: "datetimesecond", max: "now" },
+        start_datetime: { title: "Start", type: "datetimesecond", get_max: () => new Date() },
+        end_datetime: { title: "End", type: "datetimesecond", get_max: () => new Date() },
         status: { title: "Status" },
       },
     });
+  }
+
+  /**
+   * Extend parent method
+   */
+  allow_add() {
+    return false;
+  }
+
+  /**
+   * Extend parent method
+   */
+  allow_delete() {
+    return false;
   }
 }

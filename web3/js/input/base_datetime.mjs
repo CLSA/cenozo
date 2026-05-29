@@ -34,7 +34,9 @@ export class CN_input_base_datetime extends CN_base_input {
    * Extend parent method
    */
   set_value(value) {
-    if (CN_common.is_string(value)) value = new Date(value);
+    if (CN_common.is_string(value)) {
+      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
+    }
     this.#date = value;
 
     // convert date object to string
@@ -49,13 +51,13 @@ export class CN_input_base_datetime extends CN_base_input {
     const input_type = this.get_class_name().replace(/^CN_input_/, "");
 
     if (CN_common.is_date(this.#date)) {
-      const min = this._determine_min_max(this.get_config("get_min")());
+      const min = this._determine_min_max(await this.get_config("get_min")());
       if (CN_common.is_date(min) && this.#date < min) {
         this.show_error(`Must not come before ${CN_common.format_datetime(min, input_type)}`);
         return false;
       }
 
-      const max = this._determine_min_max(this.get_config("get_max")());
+      const max = this._determine_min_max(await this.get_config("get_max")());
       if (CN_common.is_date(max) && this.#date > max) {
         this.show_error(`Must not come after ${CN_common.format_datetime(max, input_type)}`);
         return false;
@@ -75,11 +77,17 @@ export class CN_input_base_datetime extends CN_base_input {
     if ("now" == value) {
       value = new Date();
     } else if (CN_common.is_string(value)) {
-      value = new Date(value);
+      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
     }
 
     if (CN_common.is_date(value)) {
-      if (!CN_common.is_datetime_type(input_type, "second")) value.setSeconds(0);
+      if ("date" == input_type) {
+        value.setHours(0);
+        value.setMinutes(0);
+        value.setSeconds(0);
+      } else if (!CN_common.is_datetime_type(input_type, "second")) {
+        value.setSeconds(0);
+      }
       value.setMilliseconds(0);
     }
 
@@ -94,9 +102,9 @@ export class CN_input_base_datetime extends CN_base_input {
     const control_el = this.constructor.html('<input class="form-control"></input>');
     control_el.addEventListener("click", async () => {
       const config = { mode: input_type, value: this.#date };
-      const min = this._determine_min_max(this.get_config("get_min")());
+      const min = this._determine_min_max(await this.get_config("get_min")());
       if (CN_common.is_date(min)) config.min = min;
-      const max = this._determine_min_max(this.get_config("get_max")());
+      const max = this._determine_min_max(await this.get_config("get_max")());
       if (CN_common.is_date(max)) config.max = max;
 
       const response = await CN_modal_datetime.create_and_open(config);

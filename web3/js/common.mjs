@@ -130,8 +130,17 @@ export class CN_common extends CN_base_object {
    * @param string x: The string to encode
    * @return string
    */
-  static escape_html(x) {
-    return new Option(x).innerHTML;
+  static encode_html(x) {
+    return (new Option(x).innerHTML).replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  /**
+   * Converts newlines to HTML <br/> elements
+   * @param string x: The string to encode
+   * @return string
+   */
+  static nl_to_br(x) {
+    return x.replace(/\r?\n/g, "<br/>$&");
   }
 
   /**
@@ -166,6 +175,71 @@ export class CN_common extends CN_base_object {
     }
 
     return new_obj;
+  }
+
+  /**
+   * Returns an object that merges two objects.
+   * Note that objects take priority over arrays, and non-objects get appended to arrays.
+   * @param {} obj1
+   * @param {} obj2
+   */
+  static merge_objects(obj1, obj2) {
+    const merged_obj = { ...obj1 };
+
+    for (let key in obj2) {
+      if (obj2.hasOwnProperty(key)) {
+        if (this.is_object(obj1[key])) {
+          // when first object's property is an object...
+          if (this.is_object(obj2[key])) {
+            // merge second object's property if it is also an object
+            merged_obj[key] = this.merge_objects(obj1[key], obj2[key]);
+          }
+          // and otherwise ignore the second object's property
+        } else if (this.is_array(obj1[key])) {
+          // when the first object's property is an array...
+          if (this.is_array(obj2[key])) {
+            // append the second object's property if it is also an array
+            merged_obj[key] = [...obj1[key], ...obj2[key]];
+          } else {
+            // add the second object's property to the array
+            merged_obj[key].push(obj2[key]);
+          }
+        } else {
+          // when the first object's property isn't an object or array...
+          if (this.is_array(obj2[key])) {
+            // append the first object's property into the second property's array
+            merged_obj[key] = [...obj2[key], ...obj1[key]];
+          } else {
+            // use the second property's value
+            merged_obj[key] = obj2[key];
+          }
+        }
+      }
+    }
+
+    return merged_obj;
+  }
+
+  /**
+   * Inserts a new property into an objects after an existing property
+   */
+  static insert_property_after(object, after_prop, new_prop, value) {
+    if (!this.is_object(object) || !object[after_prop]) {
+      throw new Error(`
+        Tried to insert object new property "${new_prop}"
+        after existing property "${after_prop}" which doesn\'t exist.
+      `);
+    }
+
+    // make a copy of the object and remove all properties from the object
+    const object_copy = this.clone(object);
+    Object.keys(object).forEach(prop => delete object[prop]);
+
+    // now loop through the copied object and add the new property as we go
+    Object.keys(object_copy).forEach(prop => {
+      object[prop] = object_copy[prop];
+      if (after_prop === prop) object[new_prop] = value;
+    });
   }
 
   /**
@@ -253,7 +327,7 @@ export class CN_common extends CN_base_object {
     if (null == value) {
       return null;
     } else if (this.is_string(value)) {
-      value = new Date(value);
+      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
     }
 
     if ("record" == format) {

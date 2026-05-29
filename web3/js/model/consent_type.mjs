@@ -10,8 +10,8 @@ export class CN_model_consent_type extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        accept_count: { title: "Accepts", type: "number", table_prefix: false },
-        deny_count: { title: "Denies", type: "number", table_prefix: false },
+        accept_count: { title: "Accepts", type: "integer", table_prefix: false },
+        deny_count: { title: "Denies", type: "integer", table_prefix: false },
         role_list: { title: "Roles", table_prefix: false },
         description: { title: "Description", type: "text" },
       },

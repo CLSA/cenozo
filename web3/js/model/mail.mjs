@@ -1,6 +1,7 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
 
@@ -87,7 +88,7 @@ export class CN_model_mail extends CN_base_model {
         schedule_datetime: {
           title: "Scheduled Date & Time",
           type: "datetime",
-          min: "now",
+          get_min: () => new Date(),
           is_constant: (model) => (
             "view" == model.get_action_name() &&
             "(empty)" != model.get_action().get_property_value("sent_datetime")
@@ -165,7 +166,7 @@ export class CN_view_mail extends CN_action_view {
       if (response.mail_header) {
         // if the header has html bu tthe body doesn't then convert line breaks to elements
         if (response.mail_header.match(/<html>/) && !message.match(/<[^>]+>/)) {
-          message = message.replace(/\r?\n/g, "<br/>$&");
+          message = CN_common.nl_to_br(message);
         }
         message = response.mail_header + "\n" + message;
       }

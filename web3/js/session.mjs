@@ -265,6 +265,16 @@ class session extends CN_base_object {
     this.#data.user.am_pm = this.#data.user.use_12hour_clock;
     delete this.#data.user.use_12hour_clock;
 
+    // check for mandatory password reset
+    if (this.#data.user.no_password) {
+      if (await CN_modal_password.create_and_open({ force: true })) {
+        await CN_modal_message.create_and_open({
+          title: "Password Changed",
+          message: "Your password has been successfully changed.",
+        });
+      }
+    }
+
     // prepare notations
     const notations = this.#data.notation.reduce((list, notation) => {
       if (!list.hasOwnProperty(notation.subject)) list[notation.subject] = {};
@@ -342,7 +352,6 @@ class session extends CN_base_object {
         if (!module) {
           // this is usually because the user does not have access to the module
           let error = new URIError();
-          error.error_code = null;
           error.name = "Invalid URL";
           error.message = `Error loading session: module "${module_name}" does not exist`;
           throw error;
@@ -355,7 +364,6 @@ class session extends CN_base_object {
         } else if (!module.is_root()) {
           // make sure that only root modules can be the root action
           let error = new URIError();
-          error.error_code = null;
           error.name = "Invalid URL";
           error.message = `Tried to load non-root module "${module.get_name()}" as root.`;
           throw error;
@@ -384,19 +392,20 @@ class session extends CN_base_object {
     // now load all necessary classes
     await Promise.all(promise_list);
 
-    // create and configure all models
+    // create all models based on the path
+    this.#path_model_list = model_data_list.map(model_data => model_data.module.create_model());
+
+    // now that they are all created we can configure them all
     let parent_model = null;
-    this.#path_model_list = model_data_list.map((model_data, index) => {
-      const model = model_data.module.create_model();
+    this.#path_model_list.forEach((model, index) => {
       model.configure(
         this.#main_content_el,
-        model_data.action,
-        model_data.identifier,
+        model_data_list[index].action,
+        model_data_list[index].identifier,
         parent_model,
         index == model_data_list.length-1
       );
       parent_model = model;
-      return model;
     });
 
     // highlight menu item corresponding with the path's first model
@@ -567,9 +576,14 @@ class session extends CN_base_object {
       if (null != response) await this.set_timezone(response.timezone, response.am_pm);
     });
     const password_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=password]");
-    password_btn_el.addEventListener("click", () => {
+    password_btn_el.addEventListener("click", async () => {
       main_menu_offcanvas_bs.hide();
-      CN_modal_password.create_and_open();
+      if (await CN_modal_password.create_and_open()) {
+        await CN_modal_message.create_and_open({
+          title: "Password Changed",
+          message: "Your password has been successfully changed.",
+        });
+      }
     });
     const logout_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=logout]");
     logout_btn_el.addEventListener("click", async () => {

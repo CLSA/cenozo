@@ -14,6 +14,10 @@ export class CN_action_list extends CN_base_action {
   #current_page = 1;
   #is_choosing = false;
   #choose_list = {};
+  #valid_type_list = [
+    "boolean", "date", "datetime", "datetimesecond", "dob", "dod",
+    "email", "float", "integer", "rank", "size", "string", "text",
+  ];
 
   /**
    * Constructor
@@ -22,6 +26,9 @@ export class CN_action_list extends CN_base_action {
    */
   constructor(parent_el, model) {
     super("list", parent_el, model);
+
+    // we don't want a delay when showing the placeholder
+    this.set_placeholder_show_delay(0);
 
     // determine whether the list is in choosing mode
     const parent_model = this.get_model().get_parent_model();
@@ -40,6 +47,15 @@ export class CN_action_list extends CN_base_action {
       if (!column.type) column.type = "string";
       if (undefined === column.table_prefix) column.table_prefix = true;
       if (undefined === column.align) column.align = "left";
+
+      // make sure the column type is valid
+      if (!this.#valid_type_list.includes(column.type)) {
+        throw new Error(`
+          Column "${col_name}" in model ${model.get_name()}
+          has invalid type "${column.type}",
+          must be one of the following: ${this.#valid_type_list.join(", ")}
+        `);
+      }
 
       // determine the column's full name
       column.table_name = model.get_name();
@@ -392,6 +408,7 @@ export class CN_action_list extends CN_base_action {
    * Extends parent method
    */
   async on_load() {
+    await super.on_load();
     const model = this.get_model();
     const parent_model = model.get_parent_model();
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
@@ -586,7 +603,6 @@ export class CN_action_list extends CN_base_action {
     tbody_el.innerHTML = "";
 
     const cursor = model.allow_view() ? 'style="cursor: grab"' : "";
-    const start_index = (this.#current_page - 1) * 20;
     if (0 == this.#records.length) {
       let tr_el = this.constructor.html(`
         <tr>
@@ -595,6 +611,20 @@ export class CN_action_list extends CN_base_action {
       `);
       tbody_el.append(tr_el);
     } else {
+      const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
+      const last_col_name = 0 == visible_columns.length ? null : visible_columns[visible_columns.length-1];
+
+      const last_column_el = this.get_body_element().querySelector("thead th:last-child div.d-flex");
+      if (last_column_el) {
+        if ("choose" != this.#list_mode && model.allow_delete()) {
+          last_column_el.classList.add("pe-2");
+          last_column_el.classList.add("me-5");
+        } else {
+          last_column_el.classList.remove("pe-2");
+          last_column_el.classList.remove("me-5");
+        }
+      }
+
       this.#records.map(record => {
         let tr_el = this.constructor.html(`<tr ${cursor}></tr>`);
         if (this.#is_choosing) {
@@ -602,59 +632,57 @@ export class CN_action_list extends CN_base_action {
           if (this.is_choose_disabled(record)) tr_el.style.cursor = "not-allowed";
         }
         tr_el.addEventListener("click", this.on_row_click.bind(this, record));
-        const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
-        for (const col_name in this.#columns) {
-          // don't show hidden columns
-          const column = this.#columns[col_name];
-          if (!column.is_hidden(model)) {
-            let value = record[col_name];
-            if (null === value) {
-              value = "(empty)";
-            } else if ("boolean" == column.type) {
-              value = value ? "Yes" : "No";
-            } else if ("html" == column.type) {
-              // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
-              value = (new Option(value)).innerHTML
-            } else if ("size" == column.type) {
-              value = CN_common.format_filesize(value);
-            } else if (CN_common.is_datetime_type(column.type, "date")) {
-              value = CN_common.format_datetime(value, column.type);
-            } else if ("rank" == column.type) {
-              value = CN_common.ordinal_suffix(value);
-            } else if (CN_common.is_datetime_type(column.type, "time")) {
-              value = CN_common.format_time(value);
-            } else if (CN_common.is_string(value) && 0 < column.limit) {
-              if (value.length > column.limit) {
-                value = value.substring(0, column.limit) + " ...";
-              }
-            }
 
-            if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
-              tr_el.innerHTML += `
-                <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-                  <div class="d-flex">
-                    <div class="w-100">${value}</div>
-                    <div class="flex-shrink-1">
-                      <button name="delete" class="btn btn-sm btn-danger">
-                        <i class="bi bi-x-circle-fill"></i>
-                      </button>
-                    </div>
-                  </div>
-                </td>
-              `;
-              tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.on_delete(record);
-              });
-            } else {
-              tr_el.innerHTML += `
-                <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-                  ${value}
-                </td>
-              `;
+        visible_columns.forEach(col_name => {
+          const column = this.#columns[col_name];
+
+          let value = record[col_name];
+          if (null === value) {
+            value = "(empty)";
+          } else if ("boolean" == column.type) {
+            value = value ? "Yes" : "No";
+          } else if ("html" == column.type) {
+            // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
+            value = (new Option(value)).innerHTML
+          } else if ("size" == column.type) {
+            value = CN_common.format_filesize(value);
+          } else if (CN_common.is_datetime_type(column.type, "date")) {
+            value = CN_common.format_datetime(value, column.type);
+          } else if ("rank" == column.type) {
+            value = CN_common.ordinal_suffix(value);
+          } else if (CN_common.is_datetime_type(column.type, "time")) {
+            value = CN_common.format_time(value);
+          } else if (CN_common.is_string(value) && 0 < column.limit) {
+            if (value.length > column.limit) {
+              value = value.substring(0, column.limit) + " ...";
             }
           }
-        }
+
+          if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
+            tr_el.innerHTML += `
+              <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+                <div class="d-flex">
+                  <div class="w-100">${value}</div>
+                  <div class="flex-shrink-1">
+                    <button name="delete" class="btn btn-sm btn-danger">
+                      <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                  </div>
+                </div>
+              </td>
+            `;
+            tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
+              e.stopPropagation();
+              this.on_delete(record);
+            });
+          } else {
+            tr_el.innerHTML += `
+              <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+                ${value}
+              </td>
+            `;
+          }
+        });
 
         // remove the outer most white borders
         const td_el_list = tr_el.querySelectorAll("td");
@@ -746,7 +774,7 @@ export class CN_action_list extends CN_base_action {
       `<i
         class="bi bi-info-circle-fill"
         data-bs-toggle="tooltip"
-        data-bs-title="${column.help}"
+        data-bs-title="${CN_common.encode_html(column.help)}"
       ></i>` :
       ""
     );
@@ -879,18 +907,11 @@ export class CN_action_list extends CN_base_action {
     // build the header row
     let header_tr_el = this.constructor.html("<tr></tr>");
 
-    const last_col_name = Object.keys(this.#columns)[Object.keys(this.#columns).length-1];
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      if (!column.is_hidden(model)) {
-        const th_el = this.create_table_header_element(column);
-        if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
-          th_el.querySelector("div.d-flex").classList.add("pe-2");
-          th_el.querySelector("div.d-flex").classList.add("me-5");
-        }
-        header_tr_el.append(th_el);
-      }
-    }
+    const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
+    visible_columns.forEach(col_name => {
+      const th_el = this.create_table_header_element(this.#columns[col_name]);
+      header_tr_el.append(th_el);
+    });
 
     // remove the outer most white borders
     const th_el_list = header_tr_el.querySelectorAll("th");
@@ -937,21 +958,43 @@ export class CN_action_list extends CN_base_action {
 
     table_el.querySelector("thead").append(header_tr_el);
 
-    const tbody_el = table_el.querySelector("tbody");
-    for (let row = 0; row < 20; row++) {
+    return table_el;
+  }
+
+  /**
+   * Extends parent method
+   */
+  show_placeholder() {
+    // update how many rows the placeholder has based on the existing data (minimum 1)
+    const total_rows = null == this.#total_records ? 20 : 0 == this.#total_records ? 1 : this.#records.length;
+
+    const tbody_el = this.get_placeholder_element().querySelector("tbody");
+    tbody_el.innerHTML = "";
+    for (let row = 0; row < total_rows; row++) {
       const td_list = [];
       for (const col_name in this.#columns) {
-        let col = Math.ceil(Math.random() * 5) + 5;
+        const column = this.#columns[col_name];
         td_list.push(`
-          <td class="placeholder-glow">
-            <span class="placeholder placeholder-lg bg-dark bg-opacity-50 col-${col}"></span>
+          <td
+            class="text-${column.align} border border-light border-2 px-3 placeholder-glow"
+            style="line-height: 30.6px;"
+          >
+            <span
+              class="
+                placeholder
+                placeholder-lg
+                bg-dark
+                bg-opacity-50
+                col-${Math.ceil(Math.random() * 5) + 5}
+              "
+            ></span>
           </td>
         `);
       }
       tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
     }
 
-    return table_el;
+    super.show_placeholder();
   }
 
   /**
@@ -963,7 +1006,9 @@ export class CN_action_list extends CN_base_action {
     );
 
     footer_el.append(this.constructor.html(`
-      <nav aria-label="${CN_common.uc_words(this.get_model().get_singular())} List navigation">
+      <nav
+        aria-label="${CN_common.encode_html(CN_common.uc_words(this.get_model().get_singular()))} List navigation"
+      >
         <ul name="pagination" class="pagination mb-0"></ul>
       </nav>
     `));

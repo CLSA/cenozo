@@ -1,5 +1,6 @@
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_model_study_phase extends CN_base_model {
@@ -37,10 +38,10 @@ export class CN_model_study_phase extends CN_base_model {
    * @return object
    * @static
    */
-  static get_typeahead() {
+  static get_typeahead(params = {}) {
     return {
       get_list: async (value) => {
-        return await CN_api.get("study_phase", {
+        const api_params = CN_common.merge_objects({
           select: {
             column: [
               { column: "id", alias: "key" },
@@ -55,7 +56,8 @@ export class CN_model_study_phase extends CN_base_model {
             order: 'CONCAT( study.name, ": ", study_phase.name )',
             limit: 20,
           },
-        });
+        }, params);
+        return await CN_api.get("study_phase", api_params);
       },
     };
   }

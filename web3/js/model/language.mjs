@@ -12,8 +12,8 @@ export class CN_model_language extends CN_base_model {
         name: { title: "Name" },
         code: { title: "Code" },
         active: { column: "language.active", title: "Active", type: "boolean" },
-        participant_count: { title: "Participants", type: "number", table_prefix: false },
-        user_count: { title: "Users", type: "number", table_prefix: false },
+        participant_count: { title: "Participants", type: "integer", table_prefix: false },
+        user_count: { title: "Users", type: "integer", table_prefix: false },
       },
       properties: {
         name: { title: "Name", is_constant: () => true },

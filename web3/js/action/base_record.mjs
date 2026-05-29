@@ -105,13 +105,13 @@ export class CN_action_base_record extends CN_base_action {
    *     (the default is undefined - this is not a sub-group)
    *
    * The following properties are only used for certain property types:
-   *   Optional properties for the numeric types (integer, float):
-   *   min: restricts the property's minimum value
-   *     (the default is undefined - there is no minimum value)
-   *   max: restricts the property's maximum value
-   *     (the default is undefined - there is no maximum value)
+   *   Optional properties for the numeric types (integer, float, date, datetime, datetimesecond):
+   *     get_min: an async function that returns the minimum number or Date object, with arguments:
+   *       model: the model of the action that the property belongs to
+   *     get_max: an async function that returns the maximum number or Date object, with arguments:
+   *       model: the model of the action that the property belongs to
    *
-   *   Mandatory property for the "enum" type:
+   * Mandatory property for the "enum" type:
    *   enum: an object with one of three sets of properties:
    *     static list of enum values:
    *       values: an array containing all possible enum values (each having a key, value and disabled property)
@@ -122,7 +122,7 @@ export class CN_action_base_record extends CN_base_action {
    *     get_enums: an async function that returns enum values, with arguments:
    *       model: the model of the action that the property belongs to
    *
-   *   Mandatory property for the "typeahead" type:
+   * Mandatory property for the "typeahead" type:
    *   typeahead: an object with one of the two sets of properties:
    *     pre-defined typeahead values:
    *       list: an array of all possible typeahead values
@@ -132,7 +132,7 @@ export class CN_action_base_record extends CN_base_action {
    *         form_input: the property's form_input object
    *       Note that this function is often provided by a get_typeahead() function in the related model
    *
-   *   Mandatory property for the "file" type:
+   * Mandatory property for the "file" type:
    *   file: an object with the following properties:
    *     encoding: how the file is encoded ("base64", "text", etc)
    *     mime_type: the file's mime-type ("application/pdf", "text/csv", etc)
@@ -194,7 +194,7 @@ export class CN_action_base_record extends CN_base_action {
     }
 
     // now create the form_input associated with this property
-    this.create_property_form_input(prop);
+    this.#create_property_form_input(prop);
 
     // finally, add the property to the appropriate group ($main being the default group)
     this.#property_groups[!group_name ? "$main" : group_name].properties[prop_name] = prop;
@@ -241,6 +241,8 @@ export class CN_action_base_record extends CN_base_action {
    * @return (dynamic)
    */
   async get_property_value_for_record(prop_name) {
+    // make sure the record has finished loading
+    await this.after_first_load();
     const prop = this.get_property(prop_name);
     return !prop || !prop.form_input ? undefined : await prop.form_input.get_value_for_record();
   }
@@ -251,100 +253,6 @@ export class CN_action_base_record extends CN_base_action {
   set_property_value(prop_name, value) {
     const prop = this.get_property(prop_name);
     if (prop && prop.form_input) prop.form_input.set_value(value);
-  }
-
-  /**
-   * Creates a property's form input
-   * @param {}: prop
-   */
-  create_property_form_input(prop) {
-    if (!prop.form_input) {
-      // determine the property's UI element based on the type
-      const module_prop = this.get_model().get_module().get_property(prop.name);
-      const input_config = CN_common.clone(prop);
-      delete input_config.type;
-      if (undefined === input_config.required) input_config.required = module_prop ? module_prop.required : false;
-      if (undefined === input_config.max_length && module_prop && module_prop.max_length) {
-        input_config.max_length = module_prop.max_length;
-      }
-
-      // if the prop doesn't have a custom on_change() function then implement the default behaviour
-      if (!CN_common.is_function(input_config.on_change)) {
-        input_config.on_change = async (form_input, valid) => await this.on_property_change(prop.name, valid);
-      }
-
-      input_config.action = this;
-      input_config.class = "col-sm-9";
-      input_config.undo = true;
-
-      // make errors in the view action go away after 4 seconds
-      input_config.error_timeout = "view" == this.get_type() ? 4000 : 0;
-
-      if (CN_common.is_datetime_type(prop.type, "date")) {
-        // convert min/max values to get_min() and get_max() functions
-        if (input_config.min) {
-          if (["now", "today"].includes(input_config.min)) {
-            input_config.get_min = () => new Date();
-          } else if (
-            CN_common.is_string(input_config.min) &&
-            this.get_all_properties().some(prop => prop.name == input_config.min)
-          ) {
-            // if the min value is the name of an input then use the input's value as the min
-            input_config.get_min = () => {
-              const min_prop = this.get_property(input_config.min);
-              return (
-                CN_common.is_datetime_type(min_prop.type, "date") ?
-                min_prop.form_input.get_date() :
-                this.get_property_value(input_config.min)
-              );
-            };
-          }
-        }
-
-        if (input_config.max) {
-          if (["now", "today"].includes(input_config.max)) {
-            input_config.get_max = () => new Date();
-          } else if (
-            CN_common.is_string(input_config.max) &&
-            this.get_all_properties().find(prop => prop.name == input_config.max)
-          ) {
-            // if the max value is the name of an input then use the input's value as the max
-            input_config.get_max = () => {
-              const max_prop = this.get_property(input_config.max);
-              return (
-                CN_common.is_datetime_type(max_prop.type, "date") ?
-                max_prop.form_input.get_date() :
-                this.get_property_value(input_config.max)
-              );
-            };
-          }
-        }
-      } else if ("rank" == prop.type) {
-        // define the max rank
-        if (!CN_common.is_function(input_config.max_rank)) {
-          input_config.max_rank = async (form_input) => {
-            const model = form_input.get_action().get_model();
-            const response = await CN_api.get(model.get_base_path("api"), {
-              select: { column: {
-                column: `max(${model.get_name()}.rank)`,
-                alias: "max_rank",
-                table_prefix: false
-              } },
-            });
-            return (
-              Number(null == response[0].max_rank ? 0 : response[0].max_rank) +
-              // if this is the add action then add an additional rank
-              ("add" == this.get_type() ? 1 : 0)
-            );
-          };
-        }
-      }
-      prop.form_input = CN_input.create_input(prop.type, null, input_config);
-      prop.form_input.add_event_listener("undovalue", (input, data) => {
-        // only update the property if we're undoing from a committed value to a committed value
-        if (data.was_committed && data.is_committed) this.on_set_property(prop.name);
-      });
-    }
   }
 
   /**
@@ -403,6 +311,7 @@ export class CN_action_base_record extends CN_base_action {
           }
 
           // disable any properties that evaluate to constant
+          prop.form_input.set_config("undo", !prop.is_constant(this.get_model()));
           prop.form_input.set_disabled(prop.is_constant(this.get_model()));
 
           // now update the property element (this varies in the child action_add and action_view classes)
@@ -424,7 +333,7 @@ export class CN_action_base_record extends CN_base_action {
       form_el.querySelector("fieldset").append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
         const prop = this.#property_groups.$main.properties[prop_name];
-        this.create_property_element(prop);
+        this.#create_property_element(prop);
         parent_el.append(prop.element);
       }
     }
@@ -438,12 +347,12 @@ export class CN_action_base_record extends CN_base_action {
           accordion_el = this.constructor.html(`<div class="accordion accordion-flush"></div>`);
         }
 
-        const group_el = this.create_property_group_element(group_name);
+        const group_el = this.#create_property_group_element(group_name);
         accordion_el.append(group_el);
         const group_body_el = group_el.querySelector("div.accordion-body");
         for (const prop_name in this.#property_groups[group_name].properties) {
           const prop = this.#property_groups[group_name].properties[prop_name];
-          this.create_property_element(prop);
+          this.#create_property_element(prop);
           group_body_el.append(prop.element);
         }
       }
@@ -470,75 +379,6 @@ export class CN_action_base_record extends CN_base_action {
     `);
 
     return this.constructor.html(`<div>${prop_list.join("")}</div>`);
-  }
-
-  /**
-   * Creates a property group's element
-   * @param string group_name
-   * @return Element
-   */
-  create_property_group_element(group_name) {
-    const group = this.#property_groups[group_name];
-    const group_id = [this.get_model().get_unique_id(), group_name].join("-");
-
-    // we use <a> instead of <button> so that the the accordion can still be expanded when the action is disabled
-    return this.constructor.html(`
-      <div name="${group_name}" class="accordion-item px-0">
-        <div class="accordion-header">
-          <a
-            href="#"
-            class="
-              accordion-button
-              link-underline
-              link-underline-opacity-0
-              ${group.open ? "" : "collapsed"}
-              fw-bold py-2
-            "
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#${group_id}"
-            aria-expanded="${group.open ? "true" : "false"}"
-            aria-controls="${group_id}"
-          >${group.title}</a>
-        </div>
-        <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
-          <div class="accordion-body"></div>
-        </div>
-      </div>
-    `);
-  }
-
-  /**
-   * Creates a property's element, storing it in the prop parameter as a new "element" property
-   * @param {}: prop
-   */
-  create_property_element(prop) {
-    prop.element = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
-
-    // add the label to the property
-    CN_element_label.append(prop.element, {
-      for: prop.id,
-      value: prop.title,
-      help: prop.help,
-      class: "col-sm-3"
-    });
-
-    prop.form_input.set_parent_element(prop.element);
-    prop.element.append(prop.form_input.get_element());
-  }
-
-  /**
-   * Extends parent method
-   */
-  _create_element() {
-    // remove the card body's padding to make better use of space
-    const el = super._create_element();
-    el.querySelector(
-      this.get_simple_mode() ?
-      ":scope > div" :
-      ":scope > div > div.card > .card-body"
-    ).classList.add("pb-0", "px-0");
-    return el;
   }
 
   /**
@@ -569,5 +409,137 @@ export class CN_action_base_record extends CN_base_action {
     });
 
     super.on_dom_remove();
+  }
+
+  /**
+   * Extends parent method
+   */
+  _create_element() {
+    // remove the card body's padding to make better use of space
+    const el = super._create_element();
+    el.querySelector(
+      this.get_simple_mode() ?
+      ":scope > div" :
+      ":scope > div > div.card > .card-body"
+    ).classList.add("pb-0", "px-0");
+    return el;
+  }
+
+  /**
+   * Creates a property group's element
+   * @param string group_name
+   * @return Element
+   */
+  #create_property_group_element(group_name) {
+    const group = this.#property_groups[group_name];
+    const group_id = [this.get_model().get_unique_id(), group_name].join("-");
+
+    // we use <a> instead of <button> so that the the accordion can still be expanded when the action is disabled
+    return this.constructor.html(`
+      <div name="${CN_common.encode_html(group_name)}" class="accordion-item px-0">
+        <div class="accordion-header">
+          <a
+            href="#"
+            class="
+              accordion-button
+              link-underline
+              link-underline-opacity-0
+              ${group.open ? "" : "collapsed"}
+              fw-bold py-2
+            "
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#${group_id}"
+            aria-expanded="${group.open ? "true" : "false"}"
+            aria-controls="${group_id}"
+          >${group.title}</a>
+        </div>
+        <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+    `);
+  }
+
+  /**
+   * Creates a property's element, storing it in the prop parameter as a new "element" property
+   * @param {}: prop
+   */
+  #create_property_element(prop) {
+    prop.element = this.constructor.html(`<div name="${prop.id}" class="row mb-3"></div>`);
+
+    // add the label to the property
+    CN_element_label.append(prop.element, {
+      for: prop.id,
+      value: prop.title,
+      help: prop.help,
+      class: "col-sm-3"
+    });
+
+    prop.form_input.set_parent_element(prop.element);
+    prop.element.append(prop.form_input.get_element());
+  }
+
+  /**
+   * Creates a property's form input
+   * @param {}: prop
+   */
+  #create_property_form_input(prop) {
+    if (!prop.form_input) {
+      // determine the property's UI element based on the type
+      const module_prop = this.get_model().get_module().get_property(prop.name);
+      const input_config = CN_common.clone(prop);
+      delete input_config.type;
+      if (undefined === input_config.required) input_config.required = module_prop ? module_prop.required : false;
+      if (undefined === input_config.max_length && module_prop && module_prop.max_length) {
+        input_config.max_length = module_prop.max_length;
+      }
+
+      // if the prop doesn't have a custom on_change() function then implement the default behaviour
+      if (!CN_common.is_function(input_config.on_change)) {
+        input_config.on_change = async (form_input, valid) => await this.on_property_change(prop.name, valid);
+      }
+
+      input_config.action = this;
+      input_config.class = "col-sm-9";
+      input_config.undo = true;
+
+      // make errors in the view action go away after 4 seconds
+      input_config.error_timeout = "view" == this.get_type() ? 4000 : 0;
+
+      if (CN_common.is_datetime_type(prop.type, "date")) {
+        // pass the get_min/max functions from the property to the input
+        if (CN_common.is_function(input_config.get_min)) {
+          input_config.get_min = async () => await prop.get_min(this.get_model());
+        }
+        if (CN_common.is_function(input_config.get_max)) {
+          input_config.get_max = async () => await prop.get_max(this.get_model());
+        }
+      } else if ("rank" == prop.type) {
+        // define the max rank
+        if (!CN_common.is_function(input_config.max_rank)) {
+          input_config.max_rank = async (form_input) => {
+            const model = form_input.get_action().get_model();
+            const response = await CN_api.get(model.get_base_path("api"), {
+              select: { column: {
+                column: `max(${model.get_name()}.rank)`,
+                alias: "max_rank",
+                table_prefix: false
+              } },
+            });
+            return (
+              Number(null == response[0].max_rank ? 0 : response[0].max_rank) +
+              // if this is the add action then add an additional rank
+              ("add" == this.get_type() ? 1 : 0)
+            );
+          };
+        }
+      }
+      prop.form_input = CN_input.create_input(prop.type, null, input_config);
+      prop.form_input.add_event_listener("undovalue", (input, data) => {
+        // only update the property if we're undoing from a committed value to a committed value
+        if (data.was_committed && data.is_committed) this.on_set_property(prop.name);
+      });
+    }
   }
 }

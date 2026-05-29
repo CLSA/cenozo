@@ -62,7 +62,7 @@ export class CN_action_upload extends CN_base_action {
    * Extends parent method
    */
   async on_load() {
-    const model = this.get_model();
+    await super.on_load();
 
     // load the parent record details
     this.#parent_record = await CN_api.get(this.get_model().get_view_url(null, "api"));

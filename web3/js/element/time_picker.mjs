@@ -66,7 +66,7 @@ export class CN_element_time_picker extends CN_base_element {
     const max = this.get_config("get_max")();
 
     if (CN_common.is_date(min)) {
-      const date = new Date();
+      const date = CN_common.clone(min);
       date.setHours(Number(this.#hours_input.get_value()));
       date.setMinutes(Number(this.#minutes_input.get_value()));
       if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));
@@ -76,8 +76,10 @@ export class CN_element_time_picker extends CN_base_element {
         this.#minutes_input.set_value(min.getMinutes());
         if (this.get_config("show_seconds")) this.#seconds_input.set_value(min.getSeconds());
       }
-    } else if (CN_common.is_date(max)) {
-      const date = new Date();
+    }
+
+    if (CN_common.is_date(max)) {
+      const date = CN_common.clone(max);
       date.setHours(Number(this.#hours_input.get_value()));
       date.setMinutes(Number(this.#minutes_input.get_value()));
       if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));

@@ -14,11 +14,11 @@ export class CN_model_equipment_type extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        equipment_count: { title: "Inventory", type: "number" },
-        equipment_new_count: { title: "new", type: "number" },
-        equipment_loaned_count: { title: "loaned", type: "number" },
-        equipment_returned_count: { title: "returned", type: "number" },
-        equipment_lost_count: { title: "lost", type: "number" },
+        equipment_count: { title: "Inventory", type: "integer" },
+        equipment_new_count: { title: "new", type: "integer" },
+        equipment_loaned_count: { title: "loaned", type: "integer" },
+        equipment_returned_count: { title: "returned", type: "integer" },
+        equipment_lost_count: { title: "lost", type: "integer" },
         description: { title: "Description", align: "left" },
       },
       properties: {

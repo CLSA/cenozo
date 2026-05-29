@@ -124,7 +124,7 @@ export class CN_model_home extends CN_base_model {
             <img
               class="w-100"
               src="${CN_session.get("application", "cenozo_url")}/img/branding.png"
-              alt="${APP_TITLE}"
+              alt="${CN_common.encode_html(APP_TITLE)}"
             ></img>
           </div>
           <div class="mt-4 text-primary fs-4">System Messages</div>

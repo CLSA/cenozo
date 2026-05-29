@@ -61,8 +61,16 @@ export class CN_model_alternate extends CN_model_base_person {
             },
           },
         },
-        email: { title: "Email", type: "email" },
-        email2: { title: "Alternate Email", type: "email" },
+        email: {
+          title: "Email",
+          type: "email",
+          help: 'Must be in the format "account@domain.name".',
+        },
+        email2: {
+          title: "Alternate Email",
+          type: "email",
+          help: 'Must be in the format "account@domain.name".',
+        },
         alternate_type_id: {
           meta: {}, // predefined by the service
           title: "Specific Role",
@@ -104,6 +112,7 @@ export class CN_view_alternate extends CN_view_base_person {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
+      await this.after_first_load();
       return [
         this.get_property_value("last_name"),
         this.get_property_value("first_name"),

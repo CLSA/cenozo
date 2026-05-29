@@ -39,12 +39,12 @@ export class CN_model_equipment_loan extends CN_base_model {
         start_datetime: {
           title: "Loan Date & Time",
           type: "datetime",
-          max: "now",
+          get_max: () => new Date(),
         },
         end_datetime: {
           title: "Return Date & Time",
           type: "datetime",
-          max: "now",
+          get_max: () => new Date(),
           is_hidden: (model) => "add" == model.get_action_name(),
         },
         note: { title: "Note", type: "text" },

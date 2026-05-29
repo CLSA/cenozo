@@ -129,7 +129,7 @@ export class CN_model_export extends CN_base_model {
       table_name: {
         title: "Table",
         type: "enum",
-        enum: { get_enums: (model) => this.get_export_table_names().map(name => ({
+        enum: { get_enums: () => this.get_export_table_names().map(name => ({
           key: name,
           value: CN_common.pretty_print("table", name),
         })) },
@@ -147,9 +147,9 @@ export class CN_model_export extends CN_base_model {
         title: "Sub-Type",
         type: "enum",
         enum: {
-          get_enums: async (model) => {
+          get_enums: async (form_input) => {
             let enums = [];
-            const table_name = model.get_action().get_property_value("table_name");
+            const table_name = form_input.get_action().get_property_value("table_name");
             if ("site" == table_name) {
               enums = [
                 { key: "default", value: "Default" },
@@ -186,8 +186,8 @@ export class CN_model_export extends CN_base_model {
         title: "Column",
         type: "enum",
         enum: {
-          get_enums: (model) => {
-            const table = model.get_action().get_property_value("table_name");
+          get_enums: (form_input) => {
+            const table = form_input.get_action().get_property_value("table_name");
             return (
               "auxiliary" == table ?
               [{ key: "is_in_collection", value: "Is In Collection" }] :

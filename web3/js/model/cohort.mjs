@@ -11,7 +11,7 @@ export class CN_model_cohort extends CN_base_model {
       },
       columns: {
         name: { title: "Name" },
-        participant_count: { title: "Participants", type: "number", table_prefix: false },
+        participant_count: { title: "Participants", type: "integer", table_prefix: false },
       },
     });
   }

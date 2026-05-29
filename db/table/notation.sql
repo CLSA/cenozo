@@ -5,7 +5,7 @@ CREATE TABLE notation (
   application_type_id INT(10) UNSIGNED NULL DEFAULT NULL,
   subject VARCHAR(45) NOT NULL,
   type VARCHAR(45) NOT NULL,
-  description TEXT NULL DEFAULT NULL,
+  description TEXT NOT NULL,
   PRIMARY KEY (id),
   INDEX fk_application_type_id (application_type_id ASC),
   UNIQUE INDEX uq_application_type_id_subject_type (application_type_id ASC, subject ASC, type ASC),

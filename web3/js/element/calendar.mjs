@@ -815,7 +815,7 @@ export class CN_element_calendar extends CN_base_element {
     if (event.help) {
       event.element.setAttribute("data-bs-toggle", "tooltip");
       event.element.setAttribute("data-bs-html", "true");
-      event.element.setAttribute("data-bs-title", event.help);
+      event.element.setAttribute("data-bs-title", CN_common.nl_to_br(CN_common.encode_html(event.help)));
       event.tooltip = new bootstrap.Tooltip(event.element);
     }
 

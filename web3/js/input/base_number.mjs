@@ -7,7 +7,13 @@ export class CN_input_base_number extends CN_input_base_string {
       throw new Error("Non-object config argument passed to CN_input_base_number constructor");
     }
 
-    super(parent_el, config);
+    super(parent_el, {
+      ...{
+        get_min: () => null,
+        get_max: () => null,
+      },
+      ...config
+    });
 
     if ("CN_input_base_number" == this.constructor) {
       throw new Error("Abstract class CN_input_base_number can't be instantiated.");
@@ -20,20 +26,16 @@ export class CN_input_base_number extends CN_input_base_string {
   async validate() {
     const value = this.get_value();
 
-    if (this.has_config("min")) {
-      const min = this.get_config("min");
-      if (null != min && value < min) {
-        this.show_error(`The minimum number allowed is ${this.get_config("min")}`);
-        return false;
-      }
+    const min = await this.get_config("get_min")();
+    if (null != min && value < min) {
+      this.show_error(`The minimum number allowed is ${min}`);
+      return false;
     }
 
-    if (this.has_config("max")) {
-      const max = this.get_config("max");
-      if (null != max && value > max) {
-        this.show_error(`The maximum number allowed is ${this.get_config("max")}`);
-        return false;
-      }
+    const max = await this.get_config("get_max")();
+    if (null != max && value < max) {
+      this.show_error(`The maximum number allowed is ${max}`);
+      return false;
     }
 
     return await super.validate();

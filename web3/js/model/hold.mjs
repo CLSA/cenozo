@@ -45,7 +45,7 @@ export class CN_model_hold extends CN_base_model {
         datetime: {
           title: "Date & Time",
           type: "datetime",
-          max: "now",
+          get_max: () => new Date(),
           is_hidden: (model) => "add" == model.get_action_name(),
         },
         user: {
@@ -121,6 +121,7 @@ export class CN_view_hold extends CN_action_view {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
+      await this.after_first_load();
       const hold_type = this.get_property("hold_type_id").form_input.get_config("enum").values.find(
         e => e.key == this.get_property_value("hold_type_id")
       );

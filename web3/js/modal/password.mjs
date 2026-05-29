@@ -8,9 +8,15 @@ export class CN_modal_password extends CN_modal_base_form {
       throw new Error("Non-object config argument passed to CN_modal_password constructor");
     }
 
-    super(config);
+    super({
+      ...{
+        title: "Change Password",
+        force: false,
+      },
+      ...config
+    });
 
-    this.add_input("password", "current_password", "Current Password");
+    if (!this.get_config("force")) this.add_input("password", "current_password", "Current Password");
     this.add_input(
       "password",
       "new_password",
@@ -25,32 +31,41 @@ export class CN_modal_password extends CN_modal_base_form {
     );
 
     // add the resolve buttons
-    this.add_resolve_button("light", "Cancel", () => this._resolve(false));
-    this.add_resolve_button("success", "OK", async () => {
-      const data = {
-        user: {
-          password: {
-            current: await this.get_input_value_for_record("current_password"),
-            requested: await this.get_input_value_for_record("new_password"),
+    if (!this.get_config("force")) this.add_resolve_button("light", "Cancel", () => this._resolve(false));
+    this.add_resolve_button(
+      "success",
+      "OK",
+      async () => {
+        const data = {
+          user: {
+            password: {
+              current: (
+                this.get_config("force") ?
+                null :
+                await this.get_input_value_for_record("current_password")
+              ),
+              requested: await this.get_input_value_for_record("new_password"),
+            },
           },
-        },
-      };
+        };
 
-      // update the server
-      try {
-        this.set_disabled(true);
-        await CN_api.patch("self/0", data);
-        this._resolve(true);
-      } catch (error) {
-        if (CN_common.is_object(error) && "invalid password" == error.error_code) {
-          this.get_input("current_password").form_input.show_error("The password is incorrect", 0);
-        } else {
-          throw error;
+        // update the server
+        try {
+          this.set_disabled(true);
+          await CN_api.patch("self/0", data);
+          this._resolve(true);
+        } catch (error) {
+          if (CN_common.is_object(error) && "invalid password" == error.error_code) {
+            this.get_input("current_password").form_input.show_error("The password is incorrect", 0);
+          } else {
+            throw error;
+          }
+        } finally {
+          this.set_disabled(false);
         }
-      } finally {
-        this.set_disabled(false);
-      }
-    });
+      },
+      true, // submit on enter key
+    );
   }
 
   /**

@@ -30,8 +30,7 @@ export class CN_model_event extends CN_base_model {
             ]},
           },
         },
-        datetime: { title: "Date & Time", type: "datetimesecond", max: "now" },
-
+        datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => new Date() },
         site_user: {
           title: "Site/User",
           is_hidden: (model) => "add" == model.get_action_name(),

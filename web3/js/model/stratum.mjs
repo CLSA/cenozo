@@ -22,31 +22,31 @@ export class CN_model_stratum extends CN_base_model {
         name: { title: "Name" },
         participant_count: {
           title: "Participants",
-          type: "number",
+          type: "integer",
           table_prefix: false,
           help: "The number of participants who belong to the stratum.",
         },
         eligible_count: {
           title: "Eligible",
-          type: "number",
+          type: "integer",
           table_prefix: false,
           help: "The number of stratum participants who are eligible for the study.",
         },
         refused_count: {
           title: "Refused",
-          type: "number",
+          type: "integer",
           table_prefix: false,
           help: "The number of stratum participants who refused the extra consent type.",
         },
         consented_count: {
           title: "Consented",
-          type: "number",
+          type: "integer",
           table_prefix: false,
           help: "The number of stratum participants who accepted the extra consent type.",
         },
         completed_count: {
           title: "Completed",
-          type: "number",
+          type: "integer",
           table_prefix: false,
           help: "The number of stratum participants who are eligible for and have completed the study.",
         },
@@ -164,6 +164,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
    * Extend parent method
    */
   async on_load() {
+    await super.on_load();
     const model = this.get_model();
 
     // load the stratum details

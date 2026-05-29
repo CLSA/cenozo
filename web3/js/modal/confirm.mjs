@@ -20,7 +20,7 @@ export class CN_modal_confirm extends CN_base_modal {
 
     // add the resolve buttons
     this.add_resolve_button("light", this.get_config("no_text"), () => this._resolve(false));
-    this.add_resolve_button("success", this.get_config("yes_text"), () => this._resolve(true));
+    this.add_resolve_button("success", this.get_config("yes_text"), () => this._resolve(true), true);
   }
 
   /**
