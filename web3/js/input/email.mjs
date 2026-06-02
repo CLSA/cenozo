@@ -18,7 +18,7 @@ export class CN_input_email extends CN_input_base_string {
     );
 
     const value = this.get_value();
-    if (CN_common.is_string(value) && !value.match(re)) {
+    if (CN_common.is_string(value) && 0 < value.length && !value.match(re)) {
       this.show_error(`"${value}" is not a valid email address`);
       return false;
     }
