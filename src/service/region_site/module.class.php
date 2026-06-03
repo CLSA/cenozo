@@ -41,6 +41,10 @@ class module extends \cenozo\service\site_restricted_module
 
     $db_application = lib::create( 'business\session' )->get_application();
 
+    $modifier->join( 'site', 'region_site.site_id', 'site.id' );
+    $modifier->join( 'region', 'region_site.region_id', 'region.id' );
+    $modifier->join( 'language', 'region_site.language_id', 'language.id' );
+
     // only include region_sites which belong to this application
     $modifier->join( 'application_has_site', 'region_site.site_id', 'application_has_site.site_id' );
     $modifier->where( 'application_has_site.application_id', '=', $db_application->id );
