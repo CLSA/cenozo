@@ -38,7 +38,7 @@ export class CN_modal_column_filter extends CN_base_modal {
 
     // determine the operator list based on the type
     const column = this.get_config("column");
-    const is_datetime = CN_common.is_datetime_type(column.type, "date");
+    const is_datetime = CN_common.is_datetime_type(column.type);
     this.#operator_list = [
       { key: "=", value: "is" },
       { key: "!=", value: "is not" },

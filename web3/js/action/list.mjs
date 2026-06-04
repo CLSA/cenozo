@@ -15,8 +15,8 @@ export class CN_action_list extends CN_base_action {
   #is_choosing = false;
   #choose_list = {};
   #valid_type_list = [
-    "boolean", "date", "datetime", "datetimesecond", "dob", "dod",
-    "email", "float", "integer", "rank", "size", "string", "text",
+    "boolean", "date", "datetime", "datetimesecond", "dob", "dod", "email",
+    "float", "integer", "rank", "size", "string", "text", "time"
   ];
 
   /**
@@ -641,7 +641,7 @@ export class CN_action_list extends CN_base_action {
             value = "(empty)";
           } else if ("boolean" == column.type) {
             value = value ? "Yes" : "No";
-          } else if ("html" == column.type) {
+          } else if (["string", "text"].includes(column.type) && column.html) {
             // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
             value = (new Option(value)).innerHTML
           } else if ("size" == column.type) {
@@ -651,7 +651,11 @@ export class CN_action_list extends CN_base_action {
           } else if ("rank" == column.type) {
             value = CN_common.ordinal_suffix(value);
           } else if (CN_common.is_datetime_type(column.type, "time")) {
-            value = CN_common.format_time(value);
+            value = CN_common.format_time(
+              CN_common.is_string(value) ?
+              new Date(`${CN_common.format_datetime(new Date(), "date")} ${value}`) :
+              value
+            );
           } else if (CN_common.is_string(value) && 0 < column.limit) {
             if (value.length > column.limit) {
               value = value.substring(0, column.limit) + " ...";

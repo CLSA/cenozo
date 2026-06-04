@@ -292,7 +292,7 @@ export class CN_common extends CN_base_object {
     if ("date" == subtype) {
       type_list = ["datetimesecond", "datetime", "date", "dob", "dod"];
     } else if ("time" == subtype) {
-      type_list = ["timesecond", "time"];
+      type_list = ["time", "timesecond"];
     } else if ("second" == subtype) {
       type_list = ["datetimesecond", "timesecond"];
     } else {
@@ -344,6 +344,7 @@ export class CN_common extends CN_base_object {
       if (long_form) options.weekday = "long";
       include_time = "date" != format;
     } else if (this.is_datetime_type(format, "time")) {
+      include_date = false;
       include_time = true;
     }
 

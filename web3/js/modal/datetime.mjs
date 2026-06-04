@@ -27,7 +27,7 @@ export class CN_modal_datetime extends CN_base_modal {
     });
 
     const mode = this.get_config("mode");
-    if (!CN_common.is_datetime_type(mode, "date")) {
+    if (!CN_common.is_datetime_type(mode)) {
       throw new Error(`CN_modal_datetime: ${mode} is not supported`);
     }
 
@@ -51,7 +51,7 @@ export class CN_modal_datetime extends CN_base_modal {
       value.setHours(0);
       value.setMinutes(0);
       value.setSeconds(0);
-    } else if ("datetime" === mode) {
+    } else if (["datetime", "time"].includes(mode)) {
       value.setSeconds(0);
     }
     value.setMilliseconds(0);
@@ -65,7 +65,7 @@ export class CN_modal_datetime extends CN_base_modal {
    * ADD DOCS
    */
   get_date() {
-    const date = this.#date_picker.get_date();
+    const date = this.#date_picker ? this.#date_picker.get_date() : new Date();
     if (this.#time_picker) {
       const time = this.#time_picker.get_time();
       date.setHours(time.hours);
@@ -87,7 +87,7 @@ export class CN_modal_datetime extends CN_base_modal {
    */
   #on_now_clicked(event) {
     if (this.#time_picker) this.#time_picker.set_to_now();
-    this.#date_picker.set_date(new Date());
+    if (this.#date_picker) this.#date_picker.set_date(new Date());
   }
 
   /**
@@ -120,35 +120,37 @@ export class CN_modal_datetime extends CN_base_modal {
     const mode = this.get_config("mode");
     const value = this.get_config("value");
 
-    const date_picker_el = body_el.querySelector('[name="date-picker"]');
-    this.#date_picker = CN_element_date_picker.append(date_picker_el, {
-      date: value,
-      is_restricted: (date) => {
-        const min = CN_common.clone(this.get_config("min"));
-        if (CN_common.is_date(min)) {
-          min.setHours(0);
-          min.setMinutes(0);
-          min.setSeconds(0);
-          min.setMilliseconds(0);
-        }
+    if (CN_common.is_datetime_type(mode, "date")) {
+      const date_picker_el = body_el.querySelector('[name="date-picker"]');
+      this.#date_picker = CN_element_date_picker.append(date_picker_el, {
+        date: value,
+        is_restricted: (date) => {
+          const min = CN_common.clone(this.get_config("min"));
+          if (CN_common.is_date(min)) {
+            min.setHours(0);
+            min.setMinutes(0);
+            min.setSeconds(0);
+            min.setMilliseconds(0);
+          }
 
-        const max = CN_common.clone(this.get_config("max"));
-        if (CN_common.is_date(max)) {
-          max.setHours(23);
-          max.setMinutes(59);
-          max.setSeconds(59);
-          max.setMilliseconds(0);
-        }
+          const max = CN_common.clone(this.get_config("max"));
+          if (CN_common.is_date(max)) {
+            max.setHours(23);
+            max.setMinutes(59);
+            max.setSeconds(59);
+            max.setMilliseconds(0);
+          }
 
-        return (CN_common.is_date(min) && date < min) || (CN_common.is_date(max) && date > max);
-      },
-      on_date_selected: (date) => {
-        // run the time picker's time change function (incase it is now out of bounds)
-        if (this.#time_picker) this.#time_picker.on_time_change();
-      },
-    });
+          return (CN_common.is_date(min) && date < min) || (CN_common.is_date(max) && date > max);
+        },
+        on_date_selected: (date) => {
+          // run the time picker's time change function (incase it is now out of bounds)
+          if (this.#time_picker) this.#time_picker.on_time_change();
+        },
+      });
+    }
 
-    if (["datetime", "datetimesecond"].includes(mode)) {
+    if (["datetime", "datetimesecond", "time", "timesecond"].includes(mode)) {
       const time_picker_el = body_el.querySelector('[name="time-picker"]');
       this.#time_picker = CN_element_time_picker.append(time_picker_el, {
         hours: value.getHours(),
@@ -163,6 +165,7 @@ export class CN_modal_datetime extends CN_base_modal {
           const max = this.get_config("max");
           return CN_common.is_date(max) && max < this.get_date() ? max : null;
         },
+        tz: CN_common.is_datetime_type(mode, "date"),
       });
     }
 

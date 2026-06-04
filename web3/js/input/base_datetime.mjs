@@ -35,7 +35,13 @@ export class CN_input_base_datetime extends CN_base_input {
    */
   set_value(value) {
     if (CN_common.is_string(value)) {
-      value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
+      value = new Date(
+        value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
+        `${value} 12:00:00` :
+        value.match(/^[0-9]{2}:[0-9]{2}:[0-9]{2}$/) ?
+        `${CN_common.format_datetime(new Date(), "date")} ${value}` :
+        value
+      );
     }
     this.#date = value;
 
@@ -102,6 +108,7 @@ export class CN_input_base_datetime extends CN_base_input {
     const control_el = this.constructor.html('<input class="form-control"></input>');
     control_el.addEventListener("click", async () => {
       const config = { mode: input_type, value: this.#date };
+      if (this.has_config("title")) config.title = `Select ${this.get_config("title")}`;
       const min = this._determine_min_max(await this.get_config("get_min")());
       if (CN_common.is_date(min)) config.min = min;
       const max = this._determine_min_max(await this.get_config("get_max")());
@@ -124,6 +131,10 @@ export class CN_input_base_datetime extends CN_base_input {
    * Extends the parent method
    */
   async _calculate_value_for_record(value) {
-    return CN_common.format_datetime(this.#date, "record");
+    const input_type = this.get_class_name().replace(/^CN_input_/, "");
+    return CN_common.format_datetime(
+      this.#date,
+      CN_common.is_datetime_type(input_type, "time") ? input_type : "record",
+    );
   }
 }

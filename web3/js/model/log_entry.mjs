@@ -14,7 +14,7 @@ export class CN_model_log_entry extends CN_base_model {
         user: { title: "User", },
         site: { title: "Site", },
         role: { title: "Role", },
-        description: { title: "Description", type: "html", limit: 500 },
+        description: { title: "Description", type: "text", limit: 500 },
       },
       properties: {
         datetime: { title: "Date & Time", type: "datetimesecond" },

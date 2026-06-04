@@ -24,6 +24,7 @@ export class CN_element_time_picker extends CN_base_element {
         hours: 12,
         minutes: 0,
         seconds: 0,
+        tz: true,
       },
       ...config,
     });
@@ -104,11 +105,14 @@ export class CN_element_time_picker extends CN_base_element {
     date.setMinutes(Number(this.#minutes_input.get_value()));
     if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));
     date.setMilliseconds(0);
-    const tz = Intl.DateTimeFormat(
-      'en-CA',
-      { timeZone: CN_session.get("user", "timezone"), timeZoneName: "short" }
-    ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
-    this.#time_el.innerHTML = CN_common.format_time(date, this.get_config("show_seconds")) + ` ${tz}`;
+    this.#time_el.innerHTML = CN_common.format_time(date, this.get_config("show_seconds"));
+    if (this.get_config("tz")) {
+      const tz = Intl.DateTimeFormat(
+        'en-CA',
+        { timeZone: CN_session.get("user", "timezone"), timeZoneName: "short" }
+      ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
+      this.#time_el.innerHTML += ` ${tz}`;
+    }
   }
 
   /**
