@@ -4,12 +4,17 @@ import { CN_modal_base_form } from "./base_form.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_modal_site_role extends CN_modal_base_form {
-  constructor(config = { title: "Select Site & Role" }) {
+  constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_modal_site_role constructor");
     }
 
-    super(config);
+    super({
+      ...{
+        title: "Select Site & Role",
+      },
+      ...config,
+    });
 
     this.add_input("enum", "site_id", "Site", { get_default: () => CN_session.get("site", "id") });
     this.add_input("enum", "role_id", "Role", { get_default: () => CN_session.get("role", "id") });

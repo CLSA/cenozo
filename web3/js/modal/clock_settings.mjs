@@ -3,12 +3,17 @@ import { CN_modal_base_form } from "./base_form.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_modal_clock_settings extends CN_modal_base_form {
-  constructor(config = { title: "Clock Settings" }) {
+  constructor(config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_modal_clock_settings constructor");
     }
 
-    super(config);
+    super({
+      ...{
+        title: "Clock Settings",
+      },
+      ...config,
+    });
 
     this.add_input(
       "typeahead",
