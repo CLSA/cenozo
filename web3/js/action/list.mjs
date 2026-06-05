@@ -409,33 +409,18 @@ export class CN_action_list extends CN_base_action {
    */
   async on_load() {
     await super.on_load();
-    const model = this.get_model();
-    const parent_model = model.get_parent_model();
     const response = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true);
 
     this.#total_records = Number(response.headers.get("X-Total"));
     const filters = this.has_column_filters();
-
-    // update the parent's child list record count
-    if (parent_model && "view" == parent_model.get_action_name()) {
-      const child_lists_el = parent_model.get_element().querySelector("div[name=child-lists]");
-      if (child_lists_el) {
-        const btn_el = child_lists_el.querySelector(`button[name=${model.get_name()}]`);
-        if (btn_el) {
-          btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\].*/, ` ${this.get_formatted_record_count()}`);
-        }
-      }
-    }
 
     // replace the records at the current page with the returned records
     this.#records = await response.json();
 
     // when in choose mode, update record chosen state based on the choose list
     if (this.#is_choosing) {
-      this.#records.forEach(record => {
-        if (this.#choose_list[record.id]) {
-          record.chosen = "add" == this.chooseList[record.id];
-        }
+      this.#records.filter(record => this.#choose_list[record.id]).forEach(record => {
+        record.chosen = "add" == this.chooseList[record.id];
       });
     }
   }
@@ -525,6 +510,18 @@ export class CN_action_list extends CN_base_action {
     super.update_element();
 
     const model = this.get_model();
+    const parent_model = model.get_parent_model();
+
+    // update the parent's child list record count
+    if (parent_model && "view" == parent_model.get_action_name()) {
+      const child_lists_el = parent_model.get_element().querySelector("div[name=child-lists]");
+      if (child_lists_el) {
+        const btn_el = child_lists_el.querySelector(`button[name=${model.get_name()}]`);
+        if (btn_el) {
+          btn_el.innerHTML = btn_el.innerHTML.replace(/ \[[0-9.]+\].*/, ` ${this.get_formatted_record_count()}`);
+        }
+      }
+    }
 
     // set the column sort and filter icons
     for (const col_name in this.#columns) {
@@ -827,8 +824,8 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_header_element() {
-    const header_el = super.create_header_element();
+  _create_header_element() {
+    const header_el = super._create_header_element();
 
     const report_div_el = this.constructor.html(`
       <div class="dropdown" name="report">
@@ -894,7 +891,7 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_body_element() {
+  _create_body_element() {
     if (this.#columns.length <= 0) throw new Error("Number of table columns must be > 0");
 
     const model = this.get_model();
@@ -932,7 +929,7 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     const table_el = this.constructor.html(`
       <div class="table-responsive">
         <table class="table table-striped m-0">
@@ -1004,7 +1001,7 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(
       '<div class="d-flex align-items-center justify-content-between"></div>'
     );

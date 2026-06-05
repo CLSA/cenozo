@@ -107,8 +107,10 @@ class session extends CN_base_object {
         leaf_model = new CN_model_home();
       }
 
-      // first load all non-leaf models in parallel as their data may be needed by the leaf model
-      await Promise.all(this.#path_model_list.slice(0, -1).map(model => model.get_action().on_load()));
+      // first run all non-leaf models in parallel as their data may be needed by the leaf model
+      await Promise.all(this.#path_model_list.slice(0, -1).map(async (model) => {
+        model.get_action().run();
+      }));
 
       // now add the model's element to the DOM and run the leaf module
       this.#main_content_el.append(leaf_model.get_element());
@@ -129,6 +131,7 @@ class session extends CN_base_object {
       this.#breadcrumb_trail.set_config("crumb_list", crumb_list);
       this.#breadcrumb_trail.update_element();
     } catch (error) {
+      console.error(error);
       const model = new CN_model_error(error);
       await model.run();
       this.#main_content_el.replaceChildren(model.get_element());
@@ -403,7 +406,7 @@ class session extends CN_base_object {
         model_data_list[index].action,
         model_data_list[index].identifier,
         parent_model,
-        index == model_data_list.length-1
+        index == model_data_list.length-1 // only the last model is rendered
       );
       parent_model = model;
     });

@@ -58,24 +58,75 @@ export class CN_base_action extends CN_base_element {
   set_query_parameter(key, value) {
     return this.#model.get_module().set_action_query_parameter(this.#type, key, value);
   }
+  get_element() {
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to get the element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
+    return super.get_element();
+  }
   get_header_element() {
-    if (!this.#header_el) this.#header_el = this.create_header_element();
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to get the header element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
+    if (!this.#header_el) this.#header_el = this._create_header_element();
     return this.#header_el;
   }
   get_body_element() {
-    if (!this.#body_el) this.#body_el = this.create_body_element();
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to get the body element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
+    if (!this.#body_el) this.#body_el = this._create_body_element();
     return this.#body_el;
   }
   get_placeholder_element() {
-    if (!this.#placeholder_el) this.#placeholder_el = this.create_placeholder_element();
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to get the placeholder element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
+    if (!this.#placeholder_el) this.#placeholder_el = this._create_placeholder_element();
     return this.#placeholder_el;
   }
   get_footer_element() {
-    if (!this.#footer_el) this.#footer_el = this.create_footer_element();
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to get the footer element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
+    if (!this.#footer_el) this.#footer_el = this._create_footer_element();
     return this.#footer_el;
   }
   get_topfooter_element() {
-    if (!this.#topfooter_el) this.#topfooter_el = this.create_topfooter_element();
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to get the topfooter element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
+    if (!this.#topfooter_el) this.#topfooter_el = this._create_topfooter_element();
     return this.#topfooter_el;
   }
   get_placeholder_show_delay() { return this.#placeholder_show_delay; }
@@ -193,16 +244,20 @@ export class CN_base_action extends CN_base_element {
    * When running the action this method is always called before on_load()
    */
   on_pre_loading() {
-    // Show placeholder while loading data
-    if (null == this.#placeholder_timeout_id) {
-      this.#placeholder_timeout_id = setTimeout(() => {
-        this.show_placeholder();
-      }, this.#placeholder_show_delay);
+    if (this.#model.is_rendered()) {
+      // Show placeholder while loading data
+      if (null == this.#placeholder_timeout_id) {
+        this.#placeholder_timeout_id = setTimeout(() => {
+          this.show_placeholder();
+        }, this.#placeholder_show_delay);
+      }
     }
   }
 
   /**
    * Is called whenever the action is run and is responsible for loading the action's dynamic data
+   * Note that elements should never be created, updated or referenced in the on_load() method,
+   * use update_element() instead.
    */
   async on_load() {}
 
@@ -210,12 +265,15 @@ export class CN_base_action extends CN_base_element {
    * When running the action this method is always called after on_load()
    */
   on_post_loading() {
-    // Clear the timeout if we haven't fired it and hide the placeholder
-    if (null != this.#placeholder_timeout_id) {
-      clearTimeout(this.#placeholder_timeout_id);
-      this.#placeholder_timeout_id = null;
+    if (this.#model.is_rendered()) {
+      // Clear the timeout if we haven't fired it and hide the placeholder
+      if (null != this.#placeholder_timeout_id) {
+        clearTimeout(this.#placeholder_timeout_id);
+        this.#placeholder_timeout_id = null;
+      }
+      if (this.#is_placeholder) this.hide_placeholder();
     }
-    if (this.#is_placeholder) this.hide_placeholder();
+
     this.#first_load_resolve(true);
   }
 
@@ -266,6 +324,14 @@ export class CN_base_action extends CN_base_element {
    * Extend parent method
    */
   update_element() {
+    // make sure the model is configured for rendering
+    if (!this.#model.is_rendered()) {
+      throw new Error(`
+        Tried to update the element for the ${this.#type}-${this.#model.get_name()}
+        action but the model has not been configured for rendering.
+      `);
+    }
+
     super.update_element();
 
     const notation_btn_el = this.get_header_element().querySelector("button[name=notation]");
@@ -284,10 +350,24 @@ export class CN_base_action extends CN_base_element {
   }
 
   /**
+   * Runs the dynamic parts of the action (loading data) and updates the element once ready
+   * @param boolean children: Whether to also run the action's childern (if any)
+   */
+  async run(children = false) {
+    if (null == this.#model.get_action_name()) return;
+
+    this.on_pre_loading();
+    await this.on_load();
+    this.on_post_loading();
+
+    if (this.#model.is_rendered()) this.update_element();
+  }
+
+  /**
    * Creates the action's element's header element
    * @return Element
    */
-  create_header_element() {
+  _create_header_element() {
     const el = this.constructor.html('<div class="d-flex"><div class="flex-grow-1"></div></div>');
     (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
 
@@ -326,7 +406,7 @@ export class CN_base_action extends CN_base_element {
    * Creates the action's element's topfooter element
    * @return Element
    */
-  create_topfooter_element() {
+  _create_topfooter_element() {
     return this.get_footer_element().cloneNode(true);
   }
 
@@ -334,7 +414,7 @@ export class CN_base_action extends CN_base_element {
    * Creates the action's element's body element
    * @return Element
    */
-  create_body_element() {
+  _create_body_element() {
     return "";
   }
 
@@ -342,7 +422,7 @@ export class CN_base_action extends CN_base_element {
    * Creates the action's element's body element
    * @return Element
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     return CN_element_loading_box.create();
   }
 
@@ -350,7 +430,7 @@ export class CN_base_action extends CN_base_element {
    * Creates the action's element's footer element
    * @return Element
    */
-  create_footer_element() {
+  _create_footer_element() {
     return "";
   }
 
@@ -396,19 +476,5 @@ export class CN_base_action extends CN_base_element {
     }
 
     return el;
-  }
-
-  /**
-   * Runs the dynamic parts of the action (loading data) and updates the element once ready
-   * @param boolean children: Whether to also run the action's childern (if any)
-   */
-  async run(children = false) {
-    if (null == this.#model.get_action_name()) return;
-
-    this.on_pre_loading();
-    await this.on_load();
-    this.on_post_loading();
-
-    this.update_element();
   }
 }

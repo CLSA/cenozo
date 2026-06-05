@@ -24,7 +24,6 @@ export class CN_action_view extends CN_action_base_record {
    */
   get_selector_child_list() {
     return this.get_model().get_child_model_list().reduce((list, model) => {
-      if (null == model.get_element()) model.get_element();
       list.push({
         title: CN_common.uc_words(model.get_singular()),
         model: model,
@@ -311,7 +310,7 @@ export class CN_action_view extends CN_action_base_record {
   /**
    * Extends parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="left-btn-group"></div>
@@ -372,17 +371,20 @@ export class CN_action_view extends CN_action_base_record {
    * @param boolean children: Whether to also run the action's childern (if any)
    */
   async run(children = false) {
-    if (null == this.get_model().get_action_name()) return;
+    const model = this.get_model();
+    if (null == model.get_action_name()) return;
 
-    // Make sure the body has been created before running the action so that the record values can
-    // be stored in the property form_inputs.
-    this.get_body_element();
+    if (model.is_rendered()) {
+      // Make sure the body has been created before running the action so that the record values can
+      // be stored in the property form_inputs.
+      this.get_body_element();
+    }
 
     await super.run(children);
 
-    if (children) {
+    if (model.is_rendered() && children) {
       // run all children as well
-      this.get_model().get_child_model_list().forEach(model => model.run());
+      model.get_child_model_list().forEach(model => model.run());
     }
   }
 }

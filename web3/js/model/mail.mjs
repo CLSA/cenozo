@@ -149,8 +149,8 @@ export class CN_view_mail extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     const preview_btn_el = this.constructor.html(

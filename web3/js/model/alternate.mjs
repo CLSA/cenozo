@@ -156,8 +156,8 @@ export class CN_notes_alternate extends CN_action_notes {
   /**
    * Extend parent method
    */
-  create_topfooter_element() {
-    const topfooter_el = super.create_topfooter_element();
+  _create_topfooter_element() {
+    const topfooter_el = super._create_topfooter_element();
 
     // wire-up the history button
     topfooter_el.querySelector("button[name=history]").addEventListener(
@@ -171,8 +171,8 @@ export class CN_notes_alternate extends CN_action_notes {
   /**
    * Extend parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     const history_btn_el = this.constructor.html(
       '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'

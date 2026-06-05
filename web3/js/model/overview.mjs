@@ -39,6 +39,8 @@ export class CN_view_overview extends CN_action_view {
    * Extend parent method
    */
   async on_load() {
+    await super.on_load();
+
     // we don't need states since all data will be static
     this.#record = await CN_api.get(this.get_on_load_path());
   }
@@ -46,7 +48,7 @@ export class CN_view_overview extends CN_action_view {
   /**
    * Override this method to create an overview-specific placeholder
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     const el = this.constructor.html('<div></div>');
     const card = CN_element_card.append(el, {
       header: this.constructor.html(`<span class="placeholder col-${Math.ceil(Math.random()*3)+3}"></span>`),
@@ -83,14 +85,14 @@ export class CN_view_overview extends CN_action_view {
   /**
    * Override this method to display the overview instead of viewing it as a record
    */
-  create_body_element() {
+  _create_body_element() {
     return this.constructor.html("<div></div>");
   }
 
   /**
    * Do not display a footer
    */
-  create_footer_element() {
+  _create_footer_element() {
     return null;
   }
 

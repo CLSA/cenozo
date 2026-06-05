@@ -36,8 +36,8 @@ export class CN_view_report_type extends CN_action_view {
   /**
    * Add operation to footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the download action

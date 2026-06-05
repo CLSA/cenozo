@@ -34,8 +34,8 @@ export class CN_view_equipment_type extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     if (this.get_model().get_module().action_allowed("upload")) {
@@ -108,8 +108,8 @@ export class CN_upload_equipment_type extends CN_action_upload {
   /**
    * Extend parent method
    */
-  create_body_element() {
-    const body_el = super.create_body_element();
+  _create_body_element() {
+    const body_el = super._create_body_element();
 
     body_el.prepend(this.constructor.html(`
       <div class="container-fluid text-info-emphasis">

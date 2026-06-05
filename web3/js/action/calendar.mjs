@@ -202,7 +202,7 @@ export class CN_action_calendar extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_body_element() {
+  _create_body_element() {
     const body_el = this.constructor.html('<div></div>');
 
     this.#calendar.set_parent_element(body_el);
@@ -235,7 +235,7 @@ export class CN_action_calendar extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     const placeholder_el = this.constructor.html('<div class="container-fluid"></div>');
     this.#placeholder_calendar.set_parent_element(placeholder_el);
     placeholder_el.append(this.#placeholder_calendar.get_element());
@@ -245,8 +245,8 @@ export class CN_action_calendar extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_header_element() {
-    const header_el = super.create_header_element();
+  _create_header_element() {
+    const header_el = super._create_header_element();
 
     const report_div_el = this.constructor.html(`
       <div class="dropdown" name="report">
@@ -312,7 +312,7 @@ export class CN_action_calendar extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(
       '<div class="d-flex align-items-center justify-content-between"></div>'
     );

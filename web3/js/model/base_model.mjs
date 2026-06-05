@@ -12,6 +12,7 @@ export class CN_base_model extends CN_base_object {
   #columns_template;
   #calendar_template;
   #get_default_order;
+  #is_rendered = false;
   #element;
   #parent_model = null;
   #child_model_list = [];
@@ -55,6 +56,7 @@ export class CN_base_model extends CN_base_object {
   }
 
   // access methods
+  is_rendered() { return this.#is_rendered; }
   get_module() { return this.#module; }
   get_unique_id() { return this.#unique_id; }
   get_parent_model() { return this.#parent_model; }
@@ -183,10 +185,11 @@ export class CN_base_model extends CN_base_object {
   /**
    * Configures the model's action
    */
-  configure(parent_el, action_name, identifier=null, parent_model=null, leaf=false) {
+  configure(parent_el, action_name, identifier=null, parent_model=null, is_rendered=false) {
     this.#action_name = action_name;
     this.#identifier = identifier;
     this.#parent_model = parent_model;
+    this.#is_rendered = is_rendered;
 
     // validate and create the action, if possible
     const allow_fn = `allow_${action_name}`;
@@ -218,7 +221,7 @@ export class CN_base_model extends CN_base_object {
     }
 
     // if we've configured the view action and this is the leaf model then configure the model's children as well
-    if ("view" == action_name && leaf) {
+    if ("view" == action_name && this.#is_rendered) {
       this.#child_model_list = this.#module.get_child_modules().map(m => this.configure_child(m.get_name()));
     }
   }
@@ -228,7 +231,7 @@ export class CN_base_model extends CN_base_object {
    */
   configure_child(name) {
     const child_model = CN_session.get_module(name).create_model();
-    child_model.configure(null, "list", null, this);
+    child_model.configure(null, "list", null, this, true);
     return child_model;
   }
 
@@ -271,22 +274,30 @@ export class CN_base_model extends CN_base_object {
    * @return Element
    */
   get_element() {
-    if (undefined === this.#element) {
-      this.#element = (
-        null == this.#action ?
-        this.#element = CN_base_element.html(`<div id="${this.#unique_id}"></div>`) :
-        this.#element = this.#action.get_element()
-      );
+    if (this.#is_rendered) {
+      if (undefined === this.#element) {
+        this.#element = (
+          null == this.#action ?
+          this.#element = CN_base_element.html(`<div id="${this.#unique_id}"></div>`) :
+          this.#element = this.#action.get_element()
+        );
+      }
+    } else {
+      throw new Error(`
+        Tried to get element for "${this.#module.get_name()}" model
+        but it has not been configured for rendering.
+      `);
     }
+
     return this.#element;
   }
 
   /**
-   * Runs the dynamic parts of the model (loading data) and updates the element once ready
+   * Runs the dynamic parts of the model (loading data)
    */
   async run() {
-    // run the model's action and its children
-    if (null != this.#action) await this.#action.run(true);
+    // run the model's action and, if it is being rendered, its children as well
+    if (null != this.#action) await this.#action.run(this.#is_rendered);
   }
 
   /**

@@ -8,8 +8,8 @@ export class CN_action_report_view extends CN_action_view {
   /**
    * Extends parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the download button
@@ -56,33 +56,35 @@ export class CN_action_report_view extends CN_action_view {
   async run(children = false) {
     await super.run(children);
 
-    const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
-    const download_btn_el = this.get_footer_element().querySelector("button[name=download]");
+    if (this.get_model().is_rendered()) {
+      const card_header_el = this.get_element().querySelector(":scope > div > div.card > .card-header");
+      const download_btn_el = this.get_footer_element().querySelector("button[name=download]");
 
-    const stage = this.get_property_value("stage");
-    if ("completed" == stage) {
-      this.constructor.set_disabled(download_btn_el, false);
-    } else if (!["completed", "failed"].includes(stage)) {
-      card_header_el.classList.add("bg-loading");
+      const stage = this.get_property_value("stage");
+      if ("completed" == stage) {
+        this.constructor.set_disabled(download_btn_el, false);
+      } else if (!["completed", "failed"].includes(stage)) {
+        card_header_el.classList.add("bg-loading");
 
-      // keep reloading the page until the report is either completed of failed
-      let loading = false;
-      this.#refresh_interval = setInterval(async () => {
-        if (!loading) {
-          loading = true;
-          await super.run(children);
+        // keep reloading the page until the report is either completed of failed
+        let loading = false;
+        this.#refresh_interval = setInterval(async () => {
+          if (!loading) {
+            loading = true;
+            await super.run(children);
 
-          const stage = this.get_property_value("stage");
-          if (["completed", "failed"].includes(stage)) {
-            if ("completed" == stage) {
-              this.constructor.set_disabled(download_btn_el, false);
+            const stage = this.get_property_value("stage");
+            if (["completed", "failed"].includes(stage)) {
+              if ("completed" == stage) {
+                this.constructor.set_disabled(download_btn_el, false);
+              }
+              card_header_el.classList.remove("bg-loading");
+              clearInterval(this.#refresh_interval);
             }
-            card_header_el.classList.remove("bg-loading");
-            clearInterval(this.#refresh_interval);
+            loading = false;
           }
-          loading = false;
-        }
-      }, 3000);
+        }, 3000);
+      }
     }
   }
 }

@@ -324,7 +324,7 @@ export class CN_action_base_record extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_body_element() {
+  _create_body_element() {
     const form_el = this.constructor.html("<form><fieldset></fieldset></form>");
 
     // create the main group above all others
@@ -366,7 +366,7 @@ export class CN_action_base_record extends CN_base_action {
   /**
    * Extends parent method
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     const prop_list = CN_common.get_list_of_numbers(7).map(() => `
       <div class="row mb-3">
         <label class="col-sm-3 col-form-label text-end placeholder-glow">

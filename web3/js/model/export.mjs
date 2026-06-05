@@ -220,8 +220,8 @@ export class CN_view_export extends CN_action_view {
   /**
    * Add operations to the footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the generate action

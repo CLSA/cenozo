@@ -213,8 +213,8 @@ export class CN_list_application extends CN_action_list {
   /**
    * Extend the parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     // add the manage applications action view when participant is the parent model
     const parent_model = this.get_model().get_parent_model();

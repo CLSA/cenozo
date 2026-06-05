@@ -99,8 +99,8 @@ export class CN_view_stratum extends CN_action_view {
   /**
    * Add extra operations to the footer
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     if (this.get_model().get_module().action_allowed("mass_participant")) {
@@ -213,7 +213,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_body_element() {
+  _create_body_element() {
     const body_el = this.constructor.html(`
       <div class="container-fluid text-info-emphasis">
         <div class="pb-2">
@@ -293,7 +293,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
         `,
       });
 
-      await this.on_load();
+      await this.run();
     });
 
     // add the confirm card
@@ -309,7 +309,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="right-btn-group"></div>

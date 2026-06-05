@@ -74,8 +74,8 @@ export class CN_view_assignment extends CN_action_view {
   /**
    * Extend parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the notes action

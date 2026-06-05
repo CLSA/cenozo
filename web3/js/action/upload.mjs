@@ -104,7 +104,7 @@ export class CN_action_upload extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_body_element() {
+  _create_body_element() {
     const body_el = this.constructor.html('<div></div>');
 
     // add the file input
@@ -140,7 +140,7 @@ export class CN_action_upload extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="left-btn-group"></div>

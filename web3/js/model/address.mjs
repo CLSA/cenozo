@@ -112,8 +112,8 @@ export class CN_add_address extends CN_add_traceable {
   /**
    * Add operations to the footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the activate/deactivate month buttons
@@ -168,8 +168,8 @@ export class CN_view_address extends CN_view_traceable {
   /**
    * Add operations to the footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the timezone action

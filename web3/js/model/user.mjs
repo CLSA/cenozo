@@ -206,8 +206,8 @@ export class CN_list_user extends CN_action_list {
   /**
    * Extends the parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     // add the find action when viewing the base user list
     if (null == this.get_model().get_parent_model()) {
@@ -293,8 +293,8 @@ export class CN_view_user extends CN_action_view {
   /**
    * Extends the parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     const reset_password_btn_el = this.constructor.html(`
       <button

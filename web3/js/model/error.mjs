@@ -19,6 +19,11 @@ export class CN_model_error extends CN_base_model {
   }
 
   /**
+   * Replace parent method (this model is always rendered)
+   */
+  is_rendered() { return true; }
+
+  /**
    * Gets UI text values by type
    * @param string type
    * @return string

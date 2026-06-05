@@ -341,8 +341,8 @@ export class CN_list_participant extends CN_action_list {
   /**
    * Extends the parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     if ("participant" == CN_session.get_leaf_model().get_name()) {
       const search_btn_el = this.constructor.html(
@@ -380,8 +380,8 @@ export class CN_view_participant extends CN_view_base_person {
   /**
    * Add operation to the footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     // add the scripts action
@@ -437,8 +437,8 @@ export class CN_notes_participant extends CN_action_notes {
   /**
    * Extend parent method
    */
-  create_topfooter_element() {
-    const topfooter_el = super.create_topfooter_element();
+  _create_topfooter_element() {
+    const topfooter_el = super._create_topfooter_element();
 
     // wire-up the history button
     topfooter_el.querySelector("button[name=history]").addEventListener(
@@ -452,8 +452,8 @@ export class CN_notes_participant extends CN_action_notes {
   /**
    * Extend parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     const history_btn_el = this.constructor.html(
       '<button name="history" type="button" class="btn btn-light btn-outline-primary">History</button>'
@@ -875,7 +875,7 @@ export class CN_multiedit_participant extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_body_element() {
+  _create_body_element() {
     const body_el = this.constructor.html(`
       <div class="container-fluid">
         <div class="container-fluid text-info-emphasis">
@@ -1032,7 +1032,7 @@ export class CN_multiedit_participant extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="right-btn-group"></div>
@@ -1212,7 +1212,7 @@ export class CN_scripts_participant extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     return this.constructor.html(`
       <div>
         <div class="text-info-emphasis pb-2">
@@ -1236,7 +1236,7 @@ export class CN_scripts_participant extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_body_element() {
+  _create_body_element() {
     return this.constructor.html(`
       <div>
         <div class="text-info-emphasis pb-2">
@@ -1250,7 +1250,7 @@ export class CN_scripts_participant extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="right-btn-group"></div>

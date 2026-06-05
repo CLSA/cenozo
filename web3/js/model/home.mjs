@@ -20,6 +20,11 @@ export class CN_model_home extends CN_base_model {
   }
 
   /**
+   * Replace parent method (this model is always rendered)
+   */
+  is_rendered() { return true; }
+
+  /**
    * ADD DOCS
    */
   update_element() {

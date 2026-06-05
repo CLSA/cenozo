@@ -34,8 +34,8 @@ export class CN_view_base_person extends CN_action_view {
   /**
    * Add operation to the footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the notes action
@@ -479,7 +479,7 @@ export class CN_history_base_person extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_placeholder_element() {
+  _create_placeholder_element() {
     const card_list = CN_common.get_list_of_numbers(10).map(() => `
       <div class="card">
         <div class="card-body row p-2">
@@ -501,7 +501,7 @@ export class CN_history_base_person extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_body_element() {
+  _create_body_element() {
     const body_el = this.constructor.html(`
       <div>
         <div name="button_list" class="container-fluid"></div>
@@ -570,10 +570,10 @@ export class CN_history_base_person extends CN_base_action {
   }
 
   /**
-   * Convenience method used by the create_footer_element() and create_topfooter_element() methods
+   * Convenience method used by the _create_footer_element() and _create_topfooter_element() methods
    * @param element el
    */
-  create_all_footer_elements(el) {
+  _create_all_footer_elements(el) {
     // wire up the buttons
     const back_btn_el = el.querySelector("button[name=back]");
     back_btn_el.addEventListener("click", this.on_navigate_to_parent.bind(this));
@@ -588,7 +588,7 @@ export class CN_history_base_person extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="left-btn-group">
@@ -602,7 +602,7 @@ export class CN_history_base_person extends CN_base_action {
       </div>
     `);
 
-    this.create_all_footer_elements(footer_el);
+    this._create_all_footer_elements(footer_el);
 
     return footer_el;
   }
@@ -610,10 +610,10 @@ export class CN_history_base_person extends CN_base_action {
   /**
    * Extend parent method
    */
-  create_topfooter_element() {
+  _create_topfooter_element() {
     // no need to create the top-footer as it gets cloned from the footer
-    const topfooter_el = super.create_topfooter_element();
-    this.create_all_footer_elements(topfooter_el);
+    const topfooter_el = super._create_topfooter_element();
+    this._create_all_footer_elements(topfooter_el);
     return topfooter_el;
   }
 }

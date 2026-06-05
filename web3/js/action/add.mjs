@@ -150,8 +150,8 @@ export class CN_action_add extends CN_action_base_record {
   /**
    * Extends parent method
    */
-  create_header_element() {
-    const el = super.create_header_element();
+  _create_header_element() {
+    const el = super._create_header_element();
 
     // remove the refresh button
     el.querySelector("[name=refresh]").remove();
@@ -162,7 +162,7 @@ export class CN_action_add extends CN_action_base_record {
   /**
    * Extends parent method
    */
-  create_footer_element() {
+  _create_footer_element() {
     const footer_el = this.constructor.html(`
       <div class="d-flex w-100">
         <div class="me-auto btn-group" role="group" name="left-btn-group"></div>
