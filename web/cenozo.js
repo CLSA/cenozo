@@ -4979,50 +4979,53 @@
         angular.extend(this, params);
 
         angular.extend(this, {
+          channelCount: 1,
+          bitsPerSample: 16,
+          chunks: [],
           timeoutPromise: null,
           audioContext: null,
           audioIn: null,
+          processor: null,
           analyser: null,
-          mediaRecorder: null,
           inputVolume: 0,
           inputVolumePromise: null,
           recordingInProgress: false,
-          initialize: function() {
-            this.timeoutPromise = null;
-            if( null == this.audioContext ) {
-              this.audioContext = new AudioContext();
-              this.analyser = this.audioContext.createAnalyser();
-            }
-          },
           start: async function () {
             try {
-              this.initialize();
+              this.timeoutPromise = null;
 
-              // connect to the first media device and start recording
-              await navigator.mediaDevices.getUserMedia({audio: true});
+              // make sure we have an audio media device
+              await navigator.mediaDevices.getUserMedia({ audio: true });
               var deviceResponse = await navigator.mediaDevices.enumerateDevices();
               if (0 == deviceResponse.length || !deviceResponse[0].deviceId)
                 throw new Error("No audio media device found.");
 
-              var stream = await navigator.mediaDevices.getUserMedia({
-                audio: { deviceId: { exact: deviceResponse[0].deviceId } },
+              const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                  deviceId: { exact: deviceResponse[0].deviceId },
+                  channelCount: this.channelCount,
+                  echoCancellation: false,
+                  noiseSuppression: false,
+                  autoGainControl: false
+                }
               });
+
+              this.audioContext = new AudioContext();
               this.audioIn = this.audioContext.createMediaStreamSource(stream);
+
+              // connect an analyser to measure volume in real time
+              this.analyser = this.audioContext.createAnalyser();
               this.audioIn.connect(this.analyser);
-              this.recordingInProgress = true;
-              this.mediaRecorder = new MediaRecorder(stream);
 
-              let chunks = [];
-              this.mediaRecorder.ondataavailable = (event) => {
-                chunks.push(event.data);
-              }
-              this.mediaRecorder.onstop = (event) => {
-                const blob = new Blob(chunks, {"type": "audio/wav"});
-                this.onComplete(blob);
-                chunks = [];
+              // connect a processor to collect audio data
+              this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+              this.chunks = [];
+              this.processor.onaudioprocess = (e) => {
+                this.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
               };
-
-              this.mediaRecorder.start();
+              this.audioIn.connect(this.processor);
+              this.processor.connect(this.audioContext.destination);
+              this.recordingInProgress = true;
 
               // automatically stop after the time limit has elapsed
               this.timeoutPromise = $timeout(() => {
@@ -5053,22 +5056,84 @@
             }
           },
           stop: function () {
+            // Step 1: Concatenate Float32Array chunks
+            const totalLength = this.chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+            const samples = new Float32Array(totalLength);
+            let offset = 0;
+            for (const chunk of this.chunks) {
+              samples.set(chunk, offset);
+              offset += chunk.length;
+            }
+
             // cancel the timeout
             $timeout.cancel(this.timeoutPromise);
-
             if (this.inputVolumePromise) {
               $interval.cancel(this.inputVolumePromise);
               this.inputVolumePromise = null;
             }
             this.inputVolume = 0;
-            this.mediaRecorder.stop();
+            const sampleRate = this.audioContext.sampleRate;
+
+            // disconnect everything
+            this.analyser.disconnect();
+            this.analyser = null;
+            this.processor.disconnect();
+            this.processor = null;
             this.audioIn.disconnect();
+            this.audioIn = null;
+            this.audioContext.close();
+            this.audioContext = null;
             this.recordingInProgress = false;
-          },
-          cancel: function () {
-            this.mediaRecorder.stop();
-            this.audioIn.disconnect();
-            this.recordingInProgress = false;
+            this.chunks = [];
+
+            // Step 2: Convert Float32 samples to 16-bit PCM
+            const pcmBuffer = new ArrayBuffer(samples.length * 2);
+            const pcmView = new DataView(pcmBuffer);
+            for (let i = 0; i < samples.length; i++) {
+              let s = Math.max(-1, Math.min(1, samples[i]));
+              pcmView.setInt16(
+                i * 2,
+                s < 0 ? s * 0x8000 : s * 0x7FFF,
+                true // little-endian
+              );
+            }
+
+            // Step 3: Create WAV header (44 bytes for the header + the buffer length)
+            const headerLength = 44;
+            const wavBuffer = new ArrayBuffer(headerLength + pcmBuffer.byteLength);
+            const wavView = new DataView(wavBuffer);
+            function writeString(view, offset, string) {
+              for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+              }
+            }
+
+            // RIFF chunk ("RIFF" + filesize-8 + "WAVE
+            writeString(wavView, 0, "RIFF");
+            wavView.setUint32(4, headerLength + pcmBuffer.byteLength - 8, true);
+            writeString(wavView, 8, "WAVE");
+
+            // fmt chunk
+            writeString(wavView, 12, "fmt ");
+            wavView.setUint32(16, 16, true); // PCM format chunk size
+            wavView.setUint16(20, 1, true);  // PCM
+            wavView.setUint16(22, this.channelCount, true);
+            wavView.setUint32(24, sampleRate, true);
+            // byte rate is calculated from the sample rate, channels and bits per sample
+            wavView.setUint32(28, sampleRate * this.channelCount * this.bitsPerSample / 8, true);
+            // block align is calculated from the channels and bits per sample only
+            wavView.setUint16(32, this.channelCount * this.bitsPerSample / 8, true);
+            wavView.setUint16(34, this.bitsPerSample, true);
+
+            // data chunk
+            writeString(wavView, 36, "data");
+            wavView.setUint32(40, pcmBuffer.byteLength, true);
+
+            // Copy PCM data after header
+            new Uint8Array(wavBuffer, 44).set(new Uint8Array(pcmBuffer));
+
+            // Step 4: Create Blob
+            this.onComplete(new Blob([wavBuffer], { type: "audio/wav" }));
           },
         });
       };
