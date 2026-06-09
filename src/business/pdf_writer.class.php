@@ -104,7 +104,7 @@ class pdf_writer extends \cenozo\base_object
 
     // get the dimensions of all pages in the template
     $pages = [];
-    $result = exec( sprintf( 'identify -format "%%wx%%h;" %s', $pdf_filename ) );
+    $result = exec( sprintf( 'identify -format "%%wx%%h;" "%s"', $pdf_filename ) );
     if( false === $result ) return false;
     foreach( explode( ';', substr( $result, 0, -1 ) ) as $index => $extent )
     {
@@ -126,12 +126,12 @@ class pdf_writer extends \cenozo\base_object
 
         // trim the signature file and determine its dimensions
         $result = exec( sprintf(
-          'convert %s -fuzz 10%% -trim +repage -transparent white %s',
+          'convert "%s" -fuzz 10%% -trim +repage -transparent white %s',
           $stamp_filename,
           $tsig_filename
         ) );
         if( false === $result ) return false;
-        $result = exec( sprintf( 'identify -format "%%wx%%h" %s', $tsig_filename ) );
+        $result = exec( sprintf( 'identify -format "%%wx%%h" "%s"', $tsig_filename ) );
         if( false === $result ) return false;
         [$tsig_width, $tsig_height] = explode( 'x', $result );
 
@@ -140,7 +140,7 @@ class pdf_writer extends \cenozo\base_object
         $tsig_height = round( $sig_ypad * $tsig_height );
         $tsig_slope = $tsig_height / $tsig_width;
         $result = exec( sprintf(
-          'convert %s -gravity Center -extent %dx%d %s',
+          'convert "%s" -gravity Center -extent %dx%d "%s"',
           $tsig_filename,
           $tsig_width,
           $tsig_height,
@@ -159,7 +159,7 @@ class pdf_writer extends \cenozo\base_object
             '-background transparent '.
             '-resize %d '.
             '-gravity SouthEast '.
-            '-extent %dx%d %s',
+            '-extent %dx%d "%s"',
           $tsig_filename,
           $tsig_width,
           round( $resize_factor * $box_left + $tsig_width ),
@@ -170,7 +170,7 @@ class pdf_writer extends \cenozo\base_object
 
         // expand the page to the same size as the document (scaled up using the resize_factor)
         $result = exec( sprintf(
-          'convert %s -background transparent -gravity NorthWest -extent %dx%d %s',
+          'convert "%s" -background transparent -gravity NorthWest -extent %dx%d "%s"',
           $tsig_filename,
           round( $resize_factor * $page_width ),
           round( $resize_factor * $page_height ),
@@ -182,7 +182,7 @@ class pdf_writer extends \cenozo\base_object
       {
         // create a blank page
         $result = exec( sprintf(
-          'convert -size %dx%d xc:transparent %s',
+          'convert -size %dx%d xc:transparent "%s"',
           $page_width,
           $page_height,
           $page_filename
@@ -192,7 +192,7 @@ class pdf_writer extends \cenozo\base_object
     }
 
     // now join the pages into a single mask file
-    $result = exec( sprintf( 'pdftk %s output %s', implode( ' ', $pages ), $multistamp_filename ) );
+    $result = exec( sprintf( 'pdftk %s output "%s"', implode( ' ', $pages ), $multistamp_filename ) );
     if( false === $result ) return false;
 
     // and stamp the input file using a new instance of the pdftk class
@@ -202,7 +202,7 @@ class pdf_writer extends \cenozo\base_object
     $pdf->saveAs( $pdf_filename );
 
     // clean up
-    exec( sprintf( 'rm -rf %s', $working_path ) );
+    exec( sprintf( 'rm -rf "%s"', $working_path ) );
 
     return true;
   }
