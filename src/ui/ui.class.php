@@ -206,8 +206,21 @@ class ui extends \cenozo\base_object
       }
       else if( 'GET' == $service['method'] )
       {
-        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}?{tab}' );
-        else $module->add_action( 'list', '?{page}&{restrict}&{order}&{reverse}' );
+        if( $service['resource'] )
+        {
+          $module->add_action( 'view', '/{identifier}?{tab}' );
+        }
+        else
+        {
+          $module->add_action(
+            'list',
+            sprintf(
+              '?%s{page}&{restrict}&{order}&{reverse}',
+              // the search_result page has an additional query parameter
+              'search_result' == $module->get_subject() ? '{q}&' : ''
+            )
+          );
+        }
       }
       else if( 'PATCH' == $service['method'] )
       {
