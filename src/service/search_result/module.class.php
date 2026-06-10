@@ -23,7 +23,6 @@ class module extends \cenozo\service\site_restricted_module
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
 
-    // always join to the search table
     $modifier->join( 'participant', 'search_result.participant_id', 'participant.id' );
     $modifier->join( 'search', 'search_result.search_id', 'search.id' );
 
@@ -55,6 +54,7 @@ class module extends \cenozo\service\site_restricted_module
     );
     $result_join_mod = lib::create( 'database\modifier' );
     $result_join_mod->group( 'participant_id' );
+    $result_join_mod->group( 'search_id' );
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'participant.id', '=', 'result.participant_id', false );
     $join_mod->where( 'search.id', '=', 'result.search_id', false );
