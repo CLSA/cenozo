@@ -1,13 +1,16 @@
-CREATE PROCEDURE update_participant_primary_address (IN proc_participant_id INT(10) UNSIGNED)
+CREATE DEFINER=patrick@localhost PROCEDURE update_participant_primary_address(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
-  REPLACE INTO participant_primary_address(participant_id, address_id)
+
+  REPLACE INTO participant_primary_address( participant_id, address_id )
   SELECT participant.id, address.id
   FROM participant
-  LEFT JOIN address ON participant.id = address.participant_id
+  LEFT JOIN address
+    ON participant.id = address.participant_id
   AND address.rank <=> (
-    SELECT MIN(address.rank)
+    SELECT MIN( address.rank )
     FROM address
-    JOIN region ON address.region_id = region.id
+    JOIN region
+    ON address.region_id = region.id
     WHERE address.active = true
     AND address.international = false
     AND address.region_id IS NOT NULL
@@ -16,4 +19,5 @@ BEGIN
     GROUP BY address.participant_id
   )
   WHERE participant.id = proc_participant_id;
-END$$
+
+END ;;

@@ -1,15 +1,17 @@
 CREATE TABLE hin (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  participant_id INT(10) UNSIGNED NOT NULL,
-  code VARCHAR(45) NOT NULL,
-  region_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  datetime DATETIME NOT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  participant_id int(10) unsigned NOT NULL,
+  code varchar(45) NOT NULL,
+  region_id int(10) unsigned DEFAULT NULL,
+  datetime datetime NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_participant_id_datetime (participant_id ASC, datetime ASC),
-  INDEX fk_participant_id (participant_id ASC),
-  INDEX fk_region_id (region_id ASC),
+  UNIQUE KEY uq_participant_id_datetime (participant_id,datetime),
+  KEY fk_participant_id (participant_id),
+  KEY fk_region_id (region_id),
+  KEY dk_participant_id_datetime (participant_id,datetime),
   CONSTRAINT fk_hin_participant_id
     FOREIGN KEY (participant_id)
     REFERENCES participant (id)
@@ -19,7 +21,5 @@ CREATE TABLE hin (
     FOREIGN KEY (region_id)
     REFERENCES region (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

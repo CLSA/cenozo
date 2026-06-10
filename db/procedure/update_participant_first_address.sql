@@ -1,15 +1,16 @@
-CREATE PROCEDURE update_participant_first_address (IN proc_participant_id INT(10) UNSIGNED)
+CREATE DEFINER=patrick@localhost PROCEDURE update_participant_first_address(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
-  REPLACE INTO participant_first_address(participant_id, address_id)
+  REPLACE INTO participant_first_address( participant_id, address_id )
   SELECT participant.id, address.id
   FROM participant
-  LEFT JOIN address ON participant.id = address.participant_id
+  LEFT JOIN address
+    ON participant.id = address.participant_id
   AND address.rank <=> (
-    SELECT MIN(address.rank)
+    SELECT MIN( address.rank )
     FROM address
     WHERE address.active
     AND participant.id = address.participant_id
-    AND CASE MONTH(CURRENT_DATE())
+    AND CASE MONTH( CURRENT_DATE() )
       WHEN 1 THEN address.january
       WHEN 2 THEN address.february
       WHEN 3 THEN address.march
@@ -26,4 +27,4 @@ BEGIN
     GROUP BY address.participant_id
   )
   WHERE participant.id = proc_participant_id;
-END$$
+END ;;

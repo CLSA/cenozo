@@ -1,15 +1,16 @@
 CREATE TABLE participant_site (
-  application_id INT(10) UNSIGNED NOT NULL,
-  participant_id INT(10) UNSIGNED NOT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  site_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  default_site_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  PRIMARY KEY (application_id, participant_id),
-  INDEX fk_application_id (application_id ASC),
-  INDEX fk_participant_id (participant_id ASC),
-  INDEX fk_site_id (site_id ASC),
-  INDEX fk_default_site_id (default_site_id ASC),
+  application_id int(10) unsigned NOT NULL,
+  participant_id int(10) unsigned NOT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  site_id int(10) unsigned DEFAULT NULL,
+  default_site_id int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (application_id,participant_id),
+  KEY fk_application_id (application_id),
+  KEY fk_participant_id (participant_id),
+  KEY fk_site_id (site_id),
+  KEY fk_default_site_id (default_site_id),
   CONSTRAINT fk_participant_site_application_id
     FOREIGN KEY (application_id)
     REFERENCES application (id)
@@ -29,7 +30,5 @@ CREATE TABLE participant_site (
     FOREIGN KEY (site_id)
     REFERENCES site (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

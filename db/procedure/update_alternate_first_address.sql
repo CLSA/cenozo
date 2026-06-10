@@ -1,15 +1,16 @@
-CREATE PROCEDURE update_alternate_first_address (IN proc_alternate_id INT(10) UNSIGNED)
+CREATE DEFINER=patrick@localhost PROCEDURE update_alternate_first_address(IN proc_alternate_id INT(10) UNSIGNED)
 BEGIN
-  REPLACE INTO alternate_first_address(alternate_id, address_id)
+  REPLACE INTO alternate_first_address( alternate_id, address_id )
   SELECT alternate.id, address.id
   FROM alternate
-  LEFT JOIN address ON alternate.id = address.alternate_id
+  LEFT JOIN address
+    ON alternate.id = address.alternate_id
   AND address.rank <=> (
-    SELECT MIN(address.rank)
+    SELECT MIN( address.rank )
     FROM address
     WHERE address.active
     AND alternate.id = address.alternate_id
-    AND CASE MONTH(CURRENT_DATE())
+    AND CASE MONTH( CURRENT_DATE() )
       WHEN 1 THEN address.january
       WHEN 2 THEN address.february
       WHEN 3 THEN address.march
@@ -26,4 +27,4 @@ BEGIN
     GROUP BY address.alternate_id
   )
   WHERE alternate.id = proc_alternate_id;
-END$$
+END ;;

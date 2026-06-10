@@ -1,5 +1,4 @@
-CREATE TRIGGER participant_AFTER_INSERT
-AFTER INSERT ON participant FOR EACH ROW
+CREATE TRIGGER participant_AFTER_INSERT AFTER INSERT ON participant FOR EACH ROW
 BEGIN
   CALL update_participant_site_for_participant( NEW.id );
   CALL update_participant_first_address( NEW.id );
@@ -11,4 +10,4 @@ BEGIN
   CALL update_participant_last_hold( NEW.id );
   CALL update_participant_last_proxy( NEW.id );
   CALL update_participant_last_trace( NEW.id );
-END$$
+END ;;

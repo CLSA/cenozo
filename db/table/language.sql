@@ -1,13 +1,12 @@
 CREATE TABLE language (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  name VARCHAR(45) NOT NULL,
-  active TINYINT(1) NOT NULL DEFAULT 0,
-  code CHAR(2) NOT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  name varchar(45) NOT NULL,
+  active tinyint(1) NOT NULL DEFAULT 0,
+  code char(2) NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_name (name ASC),
-  UNIQUE INDEX uq_code (code ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+  UNIQUE KEY uq_name (name),
+  UNIQUE KEY uq_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

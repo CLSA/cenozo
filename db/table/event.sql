@@ -1,19 +1,20 @@
 CREATE TABLE event (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  participant_id INT(10) UNSIGNED NOT NULL,
-  event_type_id INT(10) UNSIGNED NOT NULL,
-  site_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  user_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  datetime DATETIME NOT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  participant_id int(10) unsigned NOT NULL,
+  event_type_id int(10) unsigned NOT NULL,
+  site_id int(10) unsigned DEFAULT NULL,
+  user_id int(10) unsigned DEFAULT NULL,
+  datetime datetime NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_participant_id_event_type_id_datetime (participant_id ASC, event_type_id ASC, datetime ASC),
-  INDEX fk_participant_id (participant_id ASC),
-  INDEX dk_datetime (datetime ASC),
-  INDEX fk_event_type_id (event_type_id ASC),
-  INDEX fk_user_id (user_id ASC),
-  INDEX fk_site_id (site_id ASC),
+  UNIQUE KEY uq_participant_id_event_type_id_datetime (participant_id,event_type_id,datetime),
+  KEY fk_participant_id (participant_id),
+  KEY dk_datetime (datetime),
+  KEY fk_event_type_id (event_type_id),
+  KEY fk_user_id (user_id),
+  KEY fk_site_id (site_id),
   CONSTRAINT fk_event_event_type_id
     FOREIGN KEY (event_type_id)
     REFERENCES event_type (id)
@@ -33,7 +34,5 @@ CREATE TABLE event (
     FOREIGN KEY (user_id)
     REFERENCES user (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

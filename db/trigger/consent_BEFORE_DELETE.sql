@@ -1,6 +1,6 @@
-CREATE TRIGGER consent_BEFORE_DELETE
-BEFORE DELETE ON consent FOR EACH ROW
+CREATE TRIGGER consent_BEFORE_DELETE BEFORE DELETE ON consent FOR EACH ROW
 BEGIN
+
   SET @test = (
     SELECT consent_type.name
     FROM consent_type
@@ -12,4 +12,4 @@ BEGIN
       CALL remove_duplicate_hold( OLD.participant_id );
     END IF;
   END IF;
-END$$
+END ;;

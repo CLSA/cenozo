@@ -1,13 +1,12 @@
 CREATE TABLE hold_type (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  type ENUM('final', 'temporary') NOT NULL,
-  name VARCHAR(100) NOT NULL,
-  system TINYINT(1) NOT NULL DEFAULT 0,
-  description VARCHAR(512) NOT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  type enum('final','temporary') NOT NULL,
+  name varchar(100) NOT NULL,
+  system tinyint(1) NOT NULL DEFAULT 0,
+  description varchar(512) NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_type_name (type ASC, name ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+  UNIQUE KEY uq_type_name (type,name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

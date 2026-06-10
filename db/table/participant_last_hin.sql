@@ -1,10 +1,11 @@
 CREATE TABLE participant_last_hin (
-  participant_id INT(10) UNSIGNED NOT NULL,
-  hin_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  participant_id int(10) unsigned NOT NULL,
+  hin_id int(10) unsigned DEFAULT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (participant_id),
-  INDEX fk_hin_id (hin_id ASC),
+  KEY fk_hin_id (hin_id),
   CONSTRAINT fk_participant_last_hin_hin_id
     FOREIGN KEY (hin_id)
     REFERENCES hin (id)
@@ -14,7 +15,5 @@ CREATE TABLE participant_last_hin (
     FOREIGN KEY (participant_id)
     REFERENCES participant (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

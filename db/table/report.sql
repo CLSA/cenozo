@@ -1,29 +1,30 @@
 CREATE TABLE report (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  report_type_id INT(10) UNSIGNED NOT NULL,
-  report_schedule_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  user_id INT(10) UNSIGNED NOT NULL,
-  application_id INT(10) UNSIGNED NOT NULL,
-  site_id INT(10) UNSIGNED NOT NULL,
-  role_id INT(10) UNSIGNED NOT NULL,
-  format ENUM('CSV', 'Excel', 'LibreOffice') NOT NULL DEFAULT 'CSV',
-  size BIGINT(20) UNSIGNED NULL DEFAULT NULL,
-  stage ENUM('started', 'reading data', 'writing data', 'completed', 'failed') NOT NULL DEFAULT 'started',
-  progress FLOAT NOT NULL DEFAULT 0,
-  datetime DATETIME NOT NULL,
-  elapsed FLOAT NULL DEFAULT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  report_type_id int(10) unsigned NOT NULL,
+  report_schedule_id int(10) unsigned DEFAULT NULL,
+  user_id int(10) unsigned NOT NULL,
+  application_id int(10) unsigned NOT NULL,
+  site_id int(10) unsigned NOT NULL,
+  role_id int(10) unsigned NOT NULL,
+  format enum('CSV','Excel','LibreOffice') NOT NULL DEFAULT 'CSV',
+  size bigint(20) unsigned DEFAULT NULL,
+  stage enum('started','reading data','writing data','completed','failed') NOT NULL DEFAULT 'started',
+  progress float NOT NULL DEFAULT 0,
+  datetime datetime NOT NULL,
+  elapsed float DEFAULT NULL,
   PRIMARY KEY (id),
-  INDEX fk_report_type_id (report_type_id ASC),
-  INDEX fk_user_id (user_id ASC),
-  INDEX fk_site_id (site_id ASC),
-  INDEX fk_role_id (role_id ASC),
-  INDEX fk_application_id (application_id ASC),
-  INDEX fk_report_schedule_id (report_schedule_id ASC),
-  INDEX dk_datetime (datetime ASC),
-  INDEX dk_stage (stage ASC),
-  INDEX dk_size (size ASC),
+  KEY fk_report_type_id (report_type_id),
+  KEY fk_user_id (user_id),
+  KEY fk_site_id (site_id),
+  KEY fk_role_id (role_id),
+  KEY fk_application_id (application_id),
+  KEY fk_report_schedule_id (report_schedule_id),
+  KEY dk_datetime (datetime),
+  KEY dk_stage (stage),
+  KEY dk_size (size),
   CONSTRAINT fk_report_application_id
     FOREIGN KEY (application_id)
     REFERENCES application (id)
@@ -53,7 +54,5 @@ CREATE TABLE report (
     FOREIGN KEY (user_id)
     REFERENCES user (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

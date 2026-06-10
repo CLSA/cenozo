@@ -1,5 +1,4 @@
-CREATE TRIGGER address_AFTER_INSERT
-AFTER INSERT ON address FOR EACH ROW
+CREATE TRIGGER address_AFTER_INSERT AFTER INSERT ON address FOR EACH ROW
 BEGIN
   IF NEW.alternate_id IS NOT NULL THEN
     CALL update_alternate_first_address( NEW.alternate_id );
@@ -8,4 +7,4 @@ BEGIN
     CALL update_participant_primary_address( NEW.participant_id );
     CALL contact_changed( NEW.participant_id );
   END IF;
-END$$
+END ;;

@@ -1,18 +1,17 @@
 CREATE TABLE stratum (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  study_id INT(10) UNSIGNED NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  description TEXT NULL DEFAULT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  study_id int(10) unsigned NOT NULL,
+  name varchar(255) NOT NULL,
+  description mediumtext DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_study_id_name (study_id ASC, name ASC),
-  INDEX fk_study_id (study_id ASC),
+  UNIQUE KEY uq_study_id_name (study_id,name),
+  KEY fk_study_id (study_id),
   CONSTRAINT fk_stratum_study_id
     FOREIGN KEY (study_id)
     REFERENCES study (id)
     ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

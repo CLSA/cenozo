@@ -1,0 +1,143 @@
+#!/usr/bin/php
+<?php
+/**
+ * Running this script will rebuild the database schema found in the db directory
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+ini_set( 'display_errors', '1' );
+error_reporting( E_ALL | E_STRICT );
+ini_set( 'date.timezone', 'US/Eastern' );
+
+// utility functions
+function out( $msg ) { printf( '%s: %s'."\n", date( 'Y-m-d H:i:s' ), $msg ); }
+function error( $msg ) { out( sprintf( 'ERROR! %s', $msg ) ); }
+
+class schema
+{
+  /**
+   * Reads the framework and application settings
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function read_settings()
+  {
+    // get the initialization settings
+    require_once 'settings.ini.php';
+    $this->settings = $settings;
+
+    require_once 'settings.local.ini.php';
+    foreach( $settings as $category => $setting )
+    {
+      foreach( $setting as $name => $value )
+      {
+        $this->settings[$category][$name] = $value;
+      }
+    }
+  }
+
+  /**
+   * Executes the schema
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function execute()
+  {
+    out( 'Reading configuration parameters' );
+    $this->read_settings();
+
+    out( 'Generating database schema' );
+    $output = NULL;
+    exec(
+      sprintf(
+        'mariadb-dump '.
+          '--skip-add-drop-table '.
+          '--skip-add-locks '.
+          '--skip-disable-keys '.
+          '--skip-set-charset '.
+          '--skip-comments '.
+          '--routines '.
+          '--no-data '.
+          '-u %s %s%s',
+        preg_replace( '/_$/', '', $this->settings['db']['database_prefix'] ),
+        $this->settings['db']['database_prefix'],
+        $this->settings['general']['framework_name'],
+      ),
+      $output
+    );
+
+    $filename = NULL;
+    $contents = [];
+    foreach( $output as $line )
+    {
+      // ignore DELIMITER and ALTER DATABASE commands
+      if( preg_match( '/^(DELIMITER|ALTER DATABASE)/', $line ) ) continue;
+
+      // look for trigger declarations
+      $matches = NULL;
+      if( preg_match( '/^\/\*.*CREATE.*TRIGGER (.*)/', $line, $matches ) )
+      {
+        $line = sprintf( 'CREATE TRIGGER %s', $matches[1] );
+      }
+
+      // ignore commented lines
+      if( preg_match( '/^\/\*/', $line ) ) continue;
+
+      // remove backticks
+      $line = preg_replace( '/`/', '', $line );
+
+      // remove whitespace at the end of a line and auto increments
+      $line = preg_replace( ['/ +$/', '/AUTO_INCREMENT=[0-9]+ /'], '', $line );
+
+      $matches = NULL;
+      if( preg_match( '/^CREATE .*(TABLE|TRIGGER|PROCEDURE) ([a-zA-Z0-9_]+)/', $line, $matches ) )
+      {
+        if( !is_null( $filename ) && 0 < count( $contents ) )
+        {
+          file_put_contents( $filename, implode( "\n", $contents ) );
+        }
+
+        $type = strtolower( $matches[1] );
+        $name = $matches[2];
+        $filename = sprintf( "db/%s/%s.sql", $type, $name );
+        $contents = [$line];
+      }
+      else if( !is_null( $filename ) )
+      {
+        // never add more than one empty line in a row
+        if( 0 != strlen( $line ) || 0 != strlen( $last_line ) )
+        {
+          // remove junk at the end of closing triggers
+          if( 'trigger' == $type ) $line = preg_replace( '/^END \*\/(.*)/', 'END $1', $line );
+
+          // break up long lines
+          $contents[] = preg_replace( '/ (FOREIGN KEY|REFERENCES|ON) /', "\n    $1 ", $line );
+        }
+      }
+      $last_line = $line;
+    }
+
+    if( !is_null( $filename ) && 0 < count( $contents ) )
+    {
+      file_put_contents( $filename, implode( "\n", $contents ) );
+    }
+
+    out( 'Done' );
+  }
+
+  /**
+   * Contains all initialization parameters.
+   * @var array
+   * @access private
+   */
+  private $settings = ['path' => ['APPLICATION' => '']];
+}
+
+// always back out of the aux/ directory if we're in it
+if( preg_match('/\/aux$/', getcwd()) ) chdir( '..' );
+
+$schema = new schema();
+$schema->execute();

@@ -1,11 +1,12 @@
 CREATE TABLE participant_primary_address (
-  participant_id INT(10) UNSIGNED NOT NULL,
-  address_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  participant_id int(10) unsigned NOT NULL,
+  address_id int(10) unsigned DEFAULT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (participant_id),
-  INDEX fk_participant_id (participant_id ASC),
-  INDEX fk_address_id (address_id ASC),
+  KEY fk_participant_id (participant_id),
+  KEY fk_address_id (address_id),
   CONSTRAINT fk_participant_primary_address_address_id
     FOREIGN KEY (address_id)
     REFERENCES address (id)
@@ -15,7 +16,5 @@ CREATE TABLE participant_primary_address (
     FOREIGN KEY (participant_id)
     REFERENCES participant (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

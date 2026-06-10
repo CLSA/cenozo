@@ -1,13 +1,14 @@
-CREATE PROCEDURE update_participant_last_written_consent (IN proc_participant_id INT(10) UNSIGNED, IN proc_consent_type_id INT(10) UNSIGNED)
+CREATE DEFINER=patrick@localhost PROCEDURE update_participant_last_written_consent(IN proc_participant_id INT(10) UNSIGNED, IN proc_consent_type_id INT(10) UNSIGNED)
 BEGIN
-  REPLACE INTO participant_last_written_consent(participant_id, consent_type_id, consent_id)
+  REPLACE INTO participant_last_written_consent( participant_id, consent_type_id, consent_id )
   SELECT participant.id, consent_type.id, consent.id
   FROM participant
   CROSS JOIN consent_type
-  LEFT JOIN consent ON participant.id = consent.participant_id
+  LEFT JOIN consent
+    ON participant.id = consent.participant_id
   AND consent_type.id = consent.consent_type_id
   AND consent.datetime <=> (
-    SELECT MAX(datetime)
+    SELECT MAX( datetime )
     FROM consent
     WHERE consent.written = true
     AND participant.id = consent.participant_id
@@ -17,4 +18,4 @@ BEGIN
   )
   WHERE participant.id = proc_participant_id
   AND consent_type.id = proc_consent_type_id;
-END$$
+END ;;

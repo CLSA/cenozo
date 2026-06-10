@@ -1,27 +1,26 @@
 CREATE TABLE alternate_last_alternate_consent (
-  alternate_id INT(10) UNSIGNED NOT NULL,
-  alternate_consent_type_id INT(10) UNSIGNED NOT NULL,
-  alternate_consent_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (alternate_id, alternate_consent_type_id),
-  INDEX fk_alternate_consent_id (alternate_consent_id ASC),
-  INDEX fk_alternate_last_alternate_consent_alternate_consent_type__idx (alternate_consent_type_id ASC),
-  CONSTRAINT fk_alternate_last_alternate_consent_alternate_id
-    FOREIGN KEY (alternate_id)
-    REFERENCES alternate (id)
-    ON DELETE CASCADE
+  alternate_id int(10) unsigned NOT NULL,
+  alternate_consent_type_id int(10) unsigned NOT NULL,
+  alternate_consent_id int(10) unsigned DEFAULT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (alternate_id,alternate_consent_type_id),
+  KEY fk_alternate_consent_type_id (alternate_consent_type_id),
+  KEY fk_alternate_consent_id (alternate_consent_id),
+  CONSTRAINT fk_alternate_last_alternate_consent_alternate_consent_id
+    FOREIGN KEY (alternate_consent_id)
+    REFERENCES alternate_consent (id)
+    ON DELETE SET NULL
     ON UPDATE CASCADE,
   CONSTRAINT fk_alternate_last_alternate_consent_alternate_consent_type_id
     FOREIGN KEY (alternate_consent_type_id)
     REFERENCES alternate_consent_type (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
-  CONSTRAINT fk_alternate_last_alternate_consent_alternate_consent_id
-    FOREIGN KEY (alternate_consent_id)
-    REFERENCES alternate_consent (id)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+  CONSTRAINT fk_alternate_last_alternate_consent_alternate_id
+    FOREIGN KEY (alternate_id)
+    REFERENCES alternate (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

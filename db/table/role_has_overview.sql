@@ -1,11 +1,12 @@
 CREATE TABLE role_has_overview (
-  role_id INT(10) UNSIGNED NOT NULL,
-  overview_id INT(10) UNSIGNED NOT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (role_id, overview_id),
-  INDEX fk_overview_id (overview_id ASC),
-  INDEX fk_role_id (role_id ASC),
+  role_id int(10) unsigned NOT NULL,
+  overview_id int(10) unsigned NOT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (role_id,overview_id),
+  KEY fk_overview_id (overview_id),
+  KEY fk_role_id (role_id),
   CONSTRAINT fk_role_has_overview_overview_id
     FOREIGN KEY (overview_id)
     REFERENCES overview (id)
@@ -15,7 +16,5 @@ CREATE TABLE role_has_overview (
     FOREIGN KEY (role_id)
     REFERENCES role (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

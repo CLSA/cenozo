@@ -1,18 +1,19 @@
 CREATE TABLE note (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  alternate_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  participant_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  user_id INT(10) UNSIGNED NOT NULL,
-  sticky TINYINT(1) NOT NULL DEFAULT 0,
-  datetime DATETIME NOT NULL,
-  note TEXT NOT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  alternate_id int(10) unsigned DEFAULT NULL,
+  participant_id int(10) unsigned DEFAULT NULL,
+  user_id int(10) unsigned NOT NULL,
+  sticky tinyint(1) NOT NULL DEFAULT 0,
+  datetime datetime NOT NULL,
+  note mediumtext NOT NULL,
   PRIMARY KEY (id),
-  INDEX fk_user_id (user_id ASC),
-  INDEX dk_sticky_datetime (sticky ASC, datetime ASC),
-  INDEX fk_alternate_id (alternate_id ASC),
-  INDEX fk_participant_id (participant_id ASC),
+  KEY fk_user_id (user_id),
+  KEY dk_sticky_datetime (sticky,datetime),
+  KEY fk_alternate_id (alternate_id),
+  KEY fk_participant_id (participant_id),
   CONSTRAINT fk_note_alternate_id
     FOREIGN KEY (alternate_id)
     REFERENCES alternate (id)
@@ -27,7 +28,5 @@ CREATE TABLE note (
     FOREIGN KEY (user_id)
     REFERENCES user (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

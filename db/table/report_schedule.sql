@@ -1,21 +1,22 @@
 CREATE TABLE report_schedule (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  report_type_id INT(10) UNSIGNED NOT NULL,
-  user_id INT(10) UNSIGNED NOT NULL,
-  application_id INT(10) UNSIGNED NOT NULL,
-  site_id INT(10) UNSIGNED NOT NULL,
-  role_id INT(10) UNSIGNED NOT NULL,
-  schedule ENUM('daily', 'weekly', 'monthly') NOT NULL,
-  format ENUM('CSV', 'Excel', 'LibreOffice') NOT NULL DEFAULT 'CSV',
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  report_type_id int(10) unsigned NOT NULL,
+  user_id int(10) unsigned NOT NULL,
+  application_id int(10) unsigned NOT NULL,
+  site_id int(10) unsigned NOT NULL,
+  role_id int(10) unsigned NOT NULL,
+  schedule enum('daily','weekly','monthly') NOT NULL,
+  format enum('CSV','Excel','LibreOffice') NOT NULL DEFAULT 'CSV',
   PRIMARY KEY (id),
-  INDEX fk_report_type_id (report_type_id ASC),
-  INDEX fk_user_id (user_id ASC),
-  INDEX fk_application_id (application_id ASC),
-  INDEX fk_site_id (site_id ASC),
-  INDEX fk_role_id (role_id ASC),
-  INDEX dk_repeat (schedule ASC),
+  KEY fk_report_type_id (report_type_id),
+  KEY fk_user_id (user_id),
+  KEY fk_application_id (application_id),
+  KEY fk_site_id (site_id),
+  KEY fk_role_id (role_id),
+  KEY dk_repeat (schedule),
   CONSTRAINT fk_report_schedule_application_id
     FOREIGN KEY (application_id)
     REFERENCES application (id)
@@ -40,7 +41,5 @@ CREATE TABLE report_schedule (
     FOREIGN KEY (user_id)
     REFERENCES user (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

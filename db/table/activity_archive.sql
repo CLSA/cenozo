@@ -1,16 +1,16 @@
 CREATE TABLE activity_archive (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT(10) UNSIGNED NOT NULL,
-  application_id INT(10) UNSIGNED NOT NULL,
-  site_id INT(10) UNSIGNED NOT NULL,
-  role_id INT(10) UNSIGNED NOT NULL,
-  start_datetime DATETIME NOT NULL,
-  end_datetime DATETIME NULL DEFAULT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  user_id int(10) unsigned NOT NULL,
+  application_id int(10) unsigned NOT NULL,
+  site_id int(10) unsigned NOT NULL,
+  role_id int(10) unsigned NOT NULL,
+  start_datetime datetime NOT NULL,
+  end_datetime datetime DEFAULT NULL,
   PRIMARY KEY (id),
-  INDEX fk_user_id (user_id ASC),
-  INDEX fk_site_id (site_id ASC),
-  INDEX fk_role_id (role_id ASC),
-  INDEX fk_application_id (application_id ASC),
+  KEY fk_user_id (user_id),
+  KEY fk_site_id (site_id),
+  KEY fk_role_id (role_id),
+  KEY fk_application_id (application_id),
   CONSTRAINT fk_activity_archive_application_id
     FOREIGN KEY (application_id)
     REFERENCES application (id)
@@ -30,7 +30,5 @@ CREATE TABLE activity_archive (
     FOREIGN KEY (user_id)
     REFERENCES user (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

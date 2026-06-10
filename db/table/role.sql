@@ -1,13 +1,12 @@
 CREATE TABLE role (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  name VARCHAR(45) NOT NULL,
-  tier INT(10) UNSIGNED NOT NULL DEFAULT 1 COMMENT '1 = normal, 2 = site admin, 3 = global admin',
-  all_sites TINYINT(1) NOT NULL DEFAULT 0,
-  special TINYINT(1) NOT NULL DEFAULT 0,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  name varchar(45) NOT NULL,
+  tier int(10) unsigned NOT NULL DEFAULT 1 COMMENT '1 = normal, 2 = site admin, 3 = global admin',
+  all_sites tinyint(1) NOT NULL DEFAULT 0,
+  special tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_name (name ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+  UNIQUE KEY uq_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

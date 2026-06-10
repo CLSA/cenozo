@@ -1,28 +1,27 @@
 CREATE TABLE mail (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  participant_id INT(10) UNSIGNED NOT NULL,
-  from_name VARCHAR(255) NULL DEFAULT NULL,
-  from_address VARCHAR(127) NOT NULL,
-  to_name VARCHAR(255) NULL DEFAULT NULL,
-  to_address VARCHAR(127) NOT NULL,
-  cc_address VARCHAR(255) NULL DEFAULT NULL,
-  bcc_address VARCHAR(255) NULL DEFAULT NULL,
-  schedule_datetime DATETIME NOT NULL,
-  sent_datetime DATETIME NULL DEFAULT NULL,
-  sent TINYINT(1) NULL DEFAULT NULL,
-  subject VARCHAR(255) NOT NULL,
-  body TEXT NOT NULL,
-  note TEXT NULL DEFAULT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  participant_id int(10) unsigned NOT NULL,
+  from_name varchar(255) DEFAULT NULL,
+  from_address varchar(127) NOT NULL,
+  to_name varchar(255) DEFAULT NULL,
+  to_address varchar(127) NOT NULL,
+  cc_address varchar(255) DEFAULT NULL,
+  bcc_address varchar(255) DEFAULT NULL,
+  schedule_datetime datetime NOT NULL,
+  sent_datetime datetime DEFAULT NULL,
+  sent tinyint(1) DEFAULT NULL,
+  subject varchar(255) NOT NULL,
+  body mediumtext NOT NULL,
+  note mediumtext DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_participant_id_scheduled_datetime (participant_id ASC, schedule_datetime ASC),
-  INDEX fk_participant_id (participant_id ASC),
+  UNIQUE KEY uq_participant_id_scheduled_datetime (participant_id,schedule_datetime),
+  KEY fk_participant_id (participant_id),
   CONSTRAINT fk_mail_participant_id
     FOREIGN KEY (participant_id)
     REFERENCES participant (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
