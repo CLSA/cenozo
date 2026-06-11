@@ -6,8 +6,7 @@ BEGIN
     INSERT INTO event_address( event_id, address_id, international, address1, address2, city, region_id, postcode )
     SELECT NEW.id, address.id, international, address1, address2, city, region_id, postcode
     FROM participant_primary_address
-    JOIN address
-    ON participant_primary_address.address_id = address.id
+    JOIN address ON participant_primary_address.address_id = address.id
     WHERE participant_primary_address.participant_id = NEW.participant_id;
   END IF;
 END ;;

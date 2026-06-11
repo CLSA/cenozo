@@ -1,10 +1,9 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_participant_first_address(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_first_address(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO participant_first_address( participant_id, address_id )
   SELECT participant.id, address.id
   FROM participant
-  LEFT JOIN address
-    ON participant.id = address.participant_id
+  LEFT JOIN address ON participant.id = address.participant_id
   AND address.rank <=> (
     SELECT MIN( address.rank )
     FROM address

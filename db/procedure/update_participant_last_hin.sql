@@ -1,10 +1,9 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_participant_last_hin(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_last_hin(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO participant_last_hin( participant_id, hin_id )
   SELECT participant.id, hin.id
   FROM participant
-  LEFT JOIN hin
-    ON participant.id = hin.participant_id
+  LEFT JOIN hin ON participant.id = hin.participant_id
   AND hin.datetime <=> (
     SELECT MAX( datetime )
     FROM hin

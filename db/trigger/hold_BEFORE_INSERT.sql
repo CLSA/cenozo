@@ -8,12 +8,9 @@ BEGIN
 
   SELECT exclusion_id, hold_type.type, hold_type.id INTO @exclusion_id, @last_hold_type, @last_hold_type_id
   FROM participant
-  JOIN participant_last_hold
-    ON participant.id = participant_last_hold.participant_id
-  LEFT JOIN hold
-    ON participant_last_hold.hold_id = hold.id
-  LEFT JOIN hold_type
-    ON hold.hold_type_id = hold_type.id
+  JOIN participant_last_hold ON participant.id = participant_last_hold.participant_id
+  LEFT JOIN hold ON participant_last_hold.hold_id = hold.id
+  LEFT JOIN hold_type ON hold.hold_type_id = hold_type.id
   WHERE participant.id = NEW.participant_id;
 
   IF ( @exclusion_id IS NOT NULL ) THEN

@@ -1,11 +1,10 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_participant_last_consents(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_last_consents(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO participant_last_consent( participant_id, consent_type_id, consent_id )
   SELECT participant.id, consent_type.id, consent.id
   FROM participant
   CROSS JOIN consent_type
-  LEFT JOIN consent
-    ON participant.id = consent.participant_id
+  LEFT JOIN consent ON participant.id = consent.participant_id
   AND consent_type.id = consent.consent_type_id
   AND consent.datetime <=> (
     SELECT MAX( datetime )

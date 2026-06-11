@@ -1,10 +1,9 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_alternate_first_address(IN proc_alternate_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_alternate_first_address(IN proc_alternate_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO alternate_first_address( alternate_id, address_id )
   SELECT alternate.id, address.id
   FROM alternate
-  LEFT JOIN address
-    ON alternate.id = address.alternate_id
+  LEFT JOIN address ON alternate.id = address.alternate_id
   AND address.rank <=> (
     SELECT MIN( address.rank )
     FROM address

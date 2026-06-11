@@ -1,10 +1,9 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_participant_last_proxy(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_last_proxy(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO participant_last_proxy( participant_id, proxy_id )
   SELECT participant.id, proxy.id
   FROM participant
-  LEFT JOIN proxy
-    ON participant.id = proxy.participant_id
+  LEFT JOIN proxy ON participant.id = proxy.participant_id
   AND proxy.datetime <=> (
     SELECT MAX( datetime )
     FROM proxy

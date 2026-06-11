@@ -1,10 +1,9 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_participant_last_trace(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_participant_last_trace(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO participant_last_trace( participant_id, trace_id )
   SELECT participant.id, trace.id
   FROM participant
-  LEFT JOIN trace
-    ON participant.id = trace.participant_id
+  LEFT JOIN trace ON participant.id = trace.participant_id
   AND trace.datetime <=> (
     SELECT MAX( datetime )
     FROM trace

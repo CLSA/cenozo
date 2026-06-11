@@ -1,4 +1,4 @@
-CREATE DEFINER=patrick@localhost PROCEDURE remove_duplicate_hold(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE remove_duplicate_hold(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
 
   DECLARE id_val INT UNSIGNED;

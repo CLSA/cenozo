@@ -1,24 +1,19 @@
-CREATE DEFINER=patrick@localhost PROCEDURE contact_changed(IN proc_participant_id INT(10) UNSIGNED)
+CREATE PROCEDURE contact_changed(IN proc_participant_id INT(10) UNSIGNED)
 BEGIN
   IF proc_participant_id IS NOT NULL THEN
     SELECT trace_type.name, IF( address.id IS NULL, 0, COUNT(*) )
     INTO @trace_type, @address_count
     FROM participant
-    JOIN participant_last_trace
-    ON participant.id = participant_last_trace.participant_id
-    LEFT JOIN trace
-    ON participant_last_trace.trace_id = trace.id
-    LEFT JOIN trace_type
-    ON trace.trace_type_id = trace_type.id
-    LEFT JOIN address
-    ON participant.id = address.participant_id AND address.active = 1
+    JOIN participant_last_trace ON participant.id = participant_last_trace.participant_id
+    LEFT JOIN trace ON participant_last_trace.trace_id = trace.id
+    LEFT JOIN trace_type ON trace.trace_type_id = trace_type.id
+    LEFT JOIN address ON participant.id = address.participant_id AND address.active = 1
     WHERE participant.id = proc_participant_id;
 
     SELECT IF( phone.id IS NULL, 0, COUNT(*) )
     INTO @phone_count
     FROM participant
-    LEFT JOIN phone
-    ON participant.id = phone.participant_id AND phone.active = 1
+    LEFT JOIN phone ON participant.id = phone.participant_id AND phone.active = 1
     WHERE participant.id = proc_participant_id;
 
     IF 0 = @address_count OR 0 = @phone_count THEN

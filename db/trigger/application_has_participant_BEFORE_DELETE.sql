@@ -1,6 +1,5 @@
 CREATE TRIGGER application_has_participant_BEFORE_DELETE
-BEFORE DELETE
-    ON application_has_participant
+BEFORE DELETE ON application_has_participant
 FOR EACH ROW
 BEGIN
 

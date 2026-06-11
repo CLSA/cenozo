@@ -8,18 +8,12 @@ BEGIN
 
   SELECT exclusion_id, hold_type.type, proxy_type.name INTO @exclusion_id, @last_hold_type, @last_proxy_type
   FROM participant
-  JOIN participant_last_hold
-    ON participant.id = participant_last_hold.participant_id
-  LEFT JOIN hold
-    ON participant_last_hold.hold_id = hold.id
-  LEFT JOIN hold_type
-    ON hold.hold_type_id = hold_type.id
-  JOIN participant_last_proxy
-    ON participant.id = participant_last_proxy.participant_id
-  LEFT JOIN proxy
-    ON participant_last_proxy.proxy_id = proxy.id
-  LEFT JOIN proxy_type
-    ON proxy.proxy_type_id = proxy_type.id
+  JOIN participant_last_hold ON participant.id = participant_last_hold.participant_id
+  LEFT JOIN hold ON participant_last_hold.hold_id = hold.id
+  LEFT JOIN hold_type ON hold.hold_type_id = hold_type.id
+  JOIN participant_last_proxy ON participant.id = participant_last_proxy.participant_id
+  LEFT JOIN proxy ON participant_last_proxy.proxy_id = proxy.id
+  LEFT JOIN proxy_type ON proxy.proxy_type_id = proxy_type.id
   WHERE participant.id = NEW.participant_id;
 
   IF ( @exclusion_id IS NOT NULL ) THEN

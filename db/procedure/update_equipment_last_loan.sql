@@ -1,10 +1,9 @@
-CREATE DEFINER=patrick@localhost PROCEDURE update_equipment_last_loan(IN proc_equipment_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_equipment_last_loan(IN proc_equipment_id INT(10) UNSIGNED)
 BEGIN
   REPLACE INTO equipment_last_loan( equipment_id, equipment_loan_id )
   SELECT equipment.id, equipment_loan.id
   FROM equipment
-  LEFT JOIN equipment_loan
-    ON equipment.id = equipment_loan.equipment_id
+  LEFT JOIN equipment_loan ON equipment.id = equipment_loan.equipment_id
   AND equipment_loan.start_datetime <=> (
     SELECT MAX( start_datetime )
     FROM equipment_loan
@@ -15,10 +14,8 @@ BEGIN
   WHERE equipment.id = proc_equipment_id;
 
   UPDATE equipment
-  JOIN equipment_last_loan
-    ON equipment.id = equipment_last_loan.equipment_id
-  LEFT JOIN equipment_loan
-    ON equipment_last_loan.equipment_loan_id = equipment_loan.id
+  JOIN equipment_last_loan ON equipment.id = equipment_last_loan.equipment_id
+  LEFT JOIN equipment_loan ON equipment_last_loan.equipment_loan_id = equipment_loan.id
   SET equipment.status = IF(
     equipment_loan.id IS NULL,
     'new',
