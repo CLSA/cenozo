@@ -24,8 +24,8 @@ export class CN_action_list extends CN_base_action {
    * TODO: document a full description of the columns parameter
    * @param base_model model: The model that the list action belongs to
    */
-  constructor(parent_el, model) {
-    super("list", parent_el, model);
+  constructor(parent_el, model, override_type = null) {
+    super(null == override_type ? "list" : override_type, parent_el, model);
 
     // we don't want a delay when showing the placeholder
     this.set_placeholder_show_delay(0);

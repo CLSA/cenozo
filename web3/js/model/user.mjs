@@ -17,11 +17,22 @@ export class CN_model_user extends CN_base_model {
         posessive: "user's",
       },
       columns: {
-        active: { title: "Active", type: "boolean" },
         name: { title: "Name" },
-        first_name: { title: "First Name", },
-        last_name: { title: "Last Name", },
-        email: { title: "Email", },
+        active: { title: "Active", type: "boolean" },
+        first_name: { title: "First Name" },
+        last_name: { title: "Last Name" },
+        role_list: { title: "Roles", table_prefix: false },
+        site_list: {
+          title: "Sites",
+          is_hidden: () => !CN_session.get("role", "all_sites"),
+          table_prefix: false,
+        },
+        last_access_datetime: {
+          title: "Last Used",
+          type: "datetime",
+          help: "The last time the user accessed this application.",
+          table_prefix: false,
+        },
       },
       properties: {
         active: {
@@ -173,7 +184,7 @@ export class CN_model_user extends CN_base_model {
           modifier: {
             where: [
               { bracket: true, open: true },
-              { column: "user.first_name", operator: "like", value: `%${value}%`, },
+              { column: "user.first_name", operator: "like", value: `%${value}%` },
               { column: "user.last_name", operator: "like", value: `%${value}%`, or: true },
               { column: "user.name", operator: "like", value: `%${value}%`, or: true },
               { bracket: true, open: false },
@@ -264,6 +275,10 @@ export class CN_list_user extends CN_action_list {
 }
 
 export class CN_overview_user extends CN_action_list {
+  constructor(parent_el, model) {
+    super(parent_el, model, "overview");
+  }
+
   /**
    * Extends the parent method
    */
