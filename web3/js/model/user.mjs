@@ -49,8 +49,8 @@ export class CN_model_user extends CN_base_model {
           is_hidden: (model) => "add" == model.get_action_name(),
           help: `
             Every time an invalid password is used to log in as this user this counter will go up.
-            Once it reaches ${CN_session.get("application", "login_failure_limit")} the user will automatically
-            be deactivated.
+            Once it reaches ${CN_session.get("application", "login_failure_limit")} the user will
+            automatically be deactivated.
             Reactivating the user will reset the counter to 0.
           `,
         },
@@ -67,19 +67,19 @@ export class CN_model_user extends CN_base_model {
           format: "email",
           help: `
             Must be in the format "account@domain.name"
-            (if not provided then the user will be prompted for an email address the next time they login)
+            (if not provided then the user will be prompted for an email address the next time they login).
           `,
         },
         timezone: {
           title: "Timezone",
           type: "typeahead",
           typeahead: { list: CN_common.get_timezones() },
-          help: "Which timezone the user displays times in",
+          help: "Which timezone the user displays times in.",
         },
         use_12hour_clock: {
           title: "Use 12-hour Clock",
           type: "boolean",
-          help: "Whether to display times using the 12-hour clock (am/pm)",
+          help: "Whether to display times using the 12-hour clock (am/pm).",
         },
         site_id: {
           title: "Initial Site",
@@ -98,7 +98,7 @@ export class CN_model_user extends CN_base_model {
               }));
             },
           },
-          help: "Which site to assign the user to",
+          help: "Which site to assign the user to.",
           is_hidden: (model) => "view" == model.get_action_name(),
         },
         role_id: {
@@ -118,7 +118,7 @@ export class CN_model_user extends CN_base_model {
               }));
             },
           },
-          help: "Which role to assign the user to",
+          help: "Which role to assign the user to.",
           is_hidden: (model) => "view" == model.get_action_name(),
         },
         language_id: {
@@ -127,8 +127,8 @@ export class CN_model_user extends CN_base_model {
           type: "enum",
           enum: { path: "language" },
           help: `
-            If the user can only speak a single language you can define it here (this can be changed in the
-            user's record after they have been created)
+            If the user can only speak a single language you can define it here
+            (this can be changed in the user's record after they have been created).
           `,
           is_hidden: (model) => "view" == model.get_action_name(),
         },

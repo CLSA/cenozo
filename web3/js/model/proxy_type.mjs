@@ -20,9 +20,10 @@ export class CN_model_proxy_type extends CN_base_model {
         prompt: {
           title: "Prompt",
           type: "text",
-          help:
-            "This message will appear to any user adding this proxy type asking to " +
-            "confirm whether they wish to proceed.",
+          help: `
+            This message will appear to any user adding this proxy type asking to
+            confirm whether they wish to proceed.
+          `,
         },
       },
     });

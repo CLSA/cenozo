@@ -25,17 +25,18 @@ export class CN_input_base_number extends CN_input_base_string {
    */
   async validate() {
     const value = this.get_value();
+    if (null != value) {
+      const min = await this.get_config("get_min")();
+      if (null != min && value < min) {
+        this.show_error(`The minimum number allowed is ${min}`);
+        return false;
+      }
 
-    const min = await this.get_config("get_min")();
-    if (null != min && value < min) {
-      this.show_error(`The minimum number allowed is ${min}`);
-      return false;
-    }
-
-    const max = await this.get_config("get_max")();
-    if (null != max && value < max) {
-      this.show_error(`The maximum number allowed is ${max}`);
-      return false;
+      const max = await this.get_config("get_max")();
+      if (null != max && value < max) {
+        this.show_error(`The maximum number allowed is ${max}`);
+        return false;
+      }
     }
 
     return await super.validate();

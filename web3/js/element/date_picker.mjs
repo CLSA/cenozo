@@ -47,6 +47,7 @@ export class CN_element_date_picker extends CN_base_element {
     this.#month = this.#date.getMonth();
     this.#year = this.#date.getFullYear();
     this.#start_year = Math.floor(this.#year / this.#year_range) * this.#year_range;
+    this.update_element();
   }
 
   /**
@@ -75,14 +76,16 @@ export class CN_element_date_picker extends CN_base_element {
   update_element() {
     super.update_element();
 
-    if (this.#mode == "day") {
-      this.#display_day();
-    } else if (this.#mode == "month") {
-      this.#display_month()
-    } else if (this.#mode == "year") {
-      this.#display_year();
-    } else {
-      throw new Error(`Unsupported mode: ${this.#mode}`);
+    if (this.#mode_btn_el) {
+      if (this.#mode == "day") {
+        this.#display_day();
+      } else if (this.#mode == "month") {
+        this.#display_month()
+      } else if (this.#mode == "year") {
+        this.#display_year();
+      } else {
+        throw new Error(`Unsupported mode: ${this.#mode}`);
+      }
     }
   }
 

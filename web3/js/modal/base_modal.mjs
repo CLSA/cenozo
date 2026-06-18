@@ -185,10 +185,14 @@ export class CN_base_modal extends CN_base_element {
       </div>
     `));
 
-    el.addEventListener("keydown", (event) => {
+    el.addEventListener("keydown", async (event) => {
       if ("Enter" == event.key) {
         const button = this.#resolve_button_list.find(button => button.execute_on_enter);
-        if (button) button.on_click(event);
+        if (button) {
+          // wait in case an input is losing focus (otherwise its value may not be updated)
+          await CN_common.sleep(100);
+          button.on_click(event);
+        }
       }
     });
 

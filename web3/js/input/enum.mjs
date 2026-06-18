@@ -51,9 +51,9 @@ export class CN_input_enum extends CN_base_input {
   /**
    * Extend parent method
    */
-  set_value(value) {
+  async set_value(value) {
     if (null === value) value = "";
-    super.set_value(value);
+    await super.set_value(value);
 
     const control_el = this.get_control_element();
     if (control_el) {

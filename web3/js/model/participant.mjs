@@ -45,7 +45,7 @@ export class CN_model_participant extends CN_model_base_person {
       },
       columns: columns,
       properties: {
-        uid: { title: "UID", is_constant: () => true },
+        uid: { title: "Unique ID", is_constant: () => true },
         cohort: {
           column: "cohort.name",
           title: "Cohort",
@@ -60,9 +60,12 @@ export class CN_model_participant extends CN_model_base_person {
           properties: {
             honorific: {
               title: "Honorific",
-              help:
-                "English examples: Mr. Mrs. Miss Ms. Dr. Prof. Br. Sr. Fr. Rev. Pr.<br/>" +
-                "Exemples français: M. Mme Dr Dre Prof. F. Sr P. Révérend Pasteur Pasteure Me",
+              help: `
+                <span class='fw-bold'>English examples:</span>
+                Mr. Mrs. Miss Ms. Dr. Prof. Br. Sr. Fr. Rev. Pr.<br/>
+                <span class='fw-bold'>Exemples français:</span>
+                M. Mme Dr Dre Prof. F. Sr P. Révérend Pasteur Pasteure Me
+              `,
             },
             first_name: { title: "First Name" },
             other_name: { title: "Other/Nickname" },
@@ -96,6 +99,7 @@ export class CN_model_participant extends CN_model_base_person {
                 el.append(btn_el);
               },
               is_constant: () => true,
+              help: "Whether the participant is currently in a hold.",
             },
             trace: {
               title: "Trace",
@@ -111,6 +115,7 @@ export class CN_model_participant extends CN_model_base_person {
                 el.append(btn_el);
               },
               is_constant: () => true,
+              help: "Whether the participant currently requires tracing.",
             },
             proxy: {
               title: "Proxy",
@@ -126,6 +131,7 @@ export class CN_model_participant extends CN_model_base_person {
                 el.append(btn_el);
               },
               is_constant: () => true,
+              help: "Whether the participant requires a proxy, and if so then what their proxy status is.",
             },
           },
         },
@@ -149,6 +155,7 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Date of Birth",
               type: "dob",
               get_max: () => new Date(),
+              get_dod: async (model) => model.get_action().get_property("date_of_death").form_input.get_date(),
               is_constant: () => 3 <= CN_session.get("role", "tier"),
             },
             date_of_death: {
@@ -156,18 +163,19 @@ export class CN_model_participant extends CN_model_base_person {
               type: "dod",
               get_min: (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
               get_max: () => new Date(),
+              get_dob: async (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
             },
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
               type: "enum",
-              is_constant: (model) => !model.get_action().get_property_value("date_of_death"),
+              is_constant: (model) => "(empty)" == model.get_action().get_property_value("date_of_death"),
               help: "Defines how accurate the date of death is.",
             },
             date_of_death_ministry: {
               title: "Death Confirmed by Ministry",
               type: "boolean",
-              is_constant: (model) => !model.get_action().get_property_value("date_of_death"),
-              help: "Determines whether information about the participant's death is confirmed by a ministry",
+              is_constant: (model) => "(empty)" == model.get_action().get_property_value("date_of_death"),
+              help: "Determines whether information about the participant's death is confirmed by a ministry.",
             },
             language_id: {
               title: "Preferred Language",
@@ -195,7 +203,7 @@ export class CN_model_participant extends CN_model_base_person {
             out_of_area: {
               title: "Out of Area",
               type: "boolean",
-              help: "Whether the participant lives outside of the study's serviceable area",
+              help: "Whether the participant lives outside of the study's serviceable area.",
             },
             email: {
               title: "Email",
@@ -692,8 +700,7 @@ export class CN_multiedit_participant extends CN_base_action {
             let invalid = false;
             await Promise.all(
               Object.keys(this.#selected_participant_properties).map(property => (async () => {
-                const test = await this.#selected_participant_properties[property].validate();
-                if (!test) invalid = true;
+                if (!(await this.#selected_participant_properties[property].validate())) invalid = true;
               })())
             );
             this.constructor.set_disabled(mod.proceed_btn_el, invalid);
@@ -1444,7 +1451,7 @@ export class CN_element_participant_selection extends CN_base_element {
             identifier_list = response;
           }
 
-          this.#identifier_list_form_input.set_value(identifier_list.join(" "));
+          await this.#identifier_list_form_input.set_value(identifier_list.join(" "));
           this.#count_el.innerHTML = `(${identifier_list.length} selected)`;
 
           this.#validated = true;
@@ -1475,11 +1482,7 @@ export class CN_element_participant_selection extends CN_base_element {
    */
   async reset() {
     this.reset_confirmation();
-
-    if (this.#created) {
-      this.#identifier_list_form_input.set_value(null);
-    }
-
+    if (this.#created) await this.#identifier_list_form_input.set_value(null);
     this.update_element();
   }
 

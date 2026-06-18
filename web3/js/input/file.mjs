@@ -15,8 +15,8 @@ export class CN_input_file extends CN_base_input {
   /**
    * Extends parent method
    */
-  set_value(value) {
-    super.set_value(value);
+  async set_value(value) {
+    await super.set_value(value);
 
     const prefix_div_el = this.get_prefix_div_element();
     prefix_div_el.innerHTML = "";

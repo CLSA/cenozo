@@ -250,9 +250,9 @@ export class CN_action_base_record extends CN_base_action {
   /**
    * ADD DOCS
    */
-  set_property_value(prop_name, value) {
+  async set_property_value(prop_name, value) {
     const prop = this.get_property(prop_name);
-    if (prop && prop.form_input) prop.form_input.set_value(value);
+    if (prop && prop.form_input) await prop.form_input.set_value(value);
   }
 
   /**
@@ -262,13 +262,21 @@ export class CN_action_base_record extends CN_base_action {
   set_disabled(disabled) {
     super.set_disabled(disabled);
 
-    // disable all form inputs by setting the fieldset's disable state
+    // disable the fieldset element
     const fieldset_el = this.get_body_element().querySelector('fieldset');
     if (fieldset_el) {
       this.constructor.set_disabled(
         fieldset_el,
         this.get_disabled() || ("view" == this.get_type() && !this.get_model().allow_edit())
       );
+    }
+
+    // disable all form inputs
+    for (const group_name in this.#property_groups) {
+      const group = this.#property_groups[group_name];
+      for (const prop_name in group.properties) {
+        group.properties[prop_name].form_input.set_disabled(disabled);
+      }
     }
   }
 
@@ -278,14 +286,7 @@ export class CN_action_base_record extends CN_base_action {
   update_element() {
     super.update_element();
 
-    // update whether the record can be edited
-    const fieldset_el = this.get_body_element().querySelector('fieldset');
-    if (fieldset_el) {
-      this.constructor.set_disabled(
-        fieldset_el,
-        this.get_disabled() || ("view" == this.get_type() && !this.get_model().allow_edit())
-      );
-    }
+    this.set_disabled("view" == this.get_type() && !this.get_model().allow_edit());
 
     for (const group_name in this.#property_groups) {
       const group = this.#property_groups[group_name];
@@ -311,8 +312,7 @@ export class CN_action_base_record extends CN_base_action {
           }
 
           // disable any properties that evaluate to constant
-          prop.form_input.set_config("undo", !prop.is_constant(this.get_model()));
-          prop.form_input.set_disabled(prop.is_constant(this.get_model()));
+          if (prop.is_constant(this.get_model())) prop.form_input.set_disabled(true);
 
           // now update the property element (this varies in the child action_add and action_view classes)
           this.update_property_element(prop.name);
@@ -514,6 +514,16 @@ export class CN_action_base_record extends CN_base_action {
         }
         if (CN_common.is_function(input_config.get_max)) {
           input_config.get_max = async () => await prop.get_max(this.get_model());
+        }
+
+        // pass the get_dod function to dob inputs
+        if ("dob" == prop.type && CN_common.is_function(input_config.get_dod)) {
+          input_config.get_dod = async () => await prop.get_dod(this.get_model());
+        }
+
+        // pass the get_dob function to dod inputs
+        if ("dod" == prop.type && CN_common.is_function(input_config.get_dob)) {
+          input_config.get_dob = async () => await prop.get_dob(this.get_model());
         }
       } else if ("rank" == prop.type) {
         // define the max rank

@@ -68,16 +68,11 @@ export class CN_action_add extends CN_action_base_record {
 
     // validate all visible properties setting valid to false if any fail
     await Promise.all(
-      this.get_all_properties().map(prop => {
-        if (!prop.is_hidden(this.get_model())) {
-          return (
-            async () => {
-              const test = await prop.form_input.validate();
-              if (!test) valid = false;
-            }
-          )();
-        }
-      })
+      this.get_all_properties()
+        .filter(prop => !prop.is_hidden(this.get_model()))
+        .map(prop => (async () => {
+          if (!(await prop.form_input.validate())) valid = false;
+        })())
     );
 
     return valid;
@@ -97,7 +92,9 @@ export class CN_action_add extends CN_action_base_record {
     await Promise.all(
       this.get_all_properties()
         .filter(prop => !prop.is_hidden(this.get_model()))
-        .map(prop => (async () => record[prop.name] = await this.get_property_value_for_record(prop.name))())
+        .map(prop => (async () => {
+          record[prop.name] = await this.get_property_value_for_record(prop.name);
+        })())
     );
 
     try {

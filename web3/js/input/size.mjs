@@ -48,13 +48,13 @@ export class CN_input_size extends CN_input_float {
   /**
    * Extend parent method
    */
-  set_value(value) {
+  async set_value(value) {
     if (null != value) {
       // convert the value to a filesize string
       const [size, unit] = CN_common.format_filesize(Number(value)).split(" ");
 
-      super.set_value(size);
-      this.#size_form_input.set_value(unit ? unit : "Bytes");
+      await super.set_value(size);
+      await this.#size_form_input.set_value(unit ? unit : "Bytes");
     }
   }
 

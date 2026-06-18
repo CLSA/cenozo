@@ -511,6 +511,8 @@ export class CN_action_list extends CN_base_action {
 
     const model = this.get_model();
     const parent_model = model.get_parent_model();
+    const body_el = this.get_body_element();
+    const footer_el = this.get_footer_element();
 
     // update the parent's child list record count
     if (parent_model && "view" == parent_model.get_action_name()) {
@@ -526,7 +528,7 @@ export class CN_action_list extends CN_base_action {
     // set the column sort and filter icons
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
-      const th_el = this.get_body_element().querySelector(`th[name=${column.name}]`);
+      const th_el = body_el.querySelector(`th[name=${column.name}]`);
 
       if (th_el) {
         const sort_icon_el = th_el.querySelector("i[name=sort-icon]");
@@ -547,8 +549,8 @@ export class CN_action_list extends CN_base_action {
       }
     }
 
-    const btn_group_el = this.get_footer_element().querySelector("div.btn-group");
-    let btn_el = this.get_footer_element().querySelector(`[name=${this.#list_mode}]`);
+    const btn_group_el = footer_el.querySelector("div.btn-group");
+    let btn_el = footer_el.querySelector(`[name=${this.#list_mode}]`);
 
     if ("add" == this.#list_mode) {
       // if we have no add button and adding is allowed then create it
@@ -570,7 +572,7 @@ export class CN_action_list extends CN_base_action {
           btn_el.addEventListener("click", this.on_choose.bind(this));
         }
 
-        let cancel_btn_el = this.get_footer_element().querySelector("button[name=cancel-choose]");
+        let cancel_btn_el = footer_el.querySelector("button[name=cancel-choose]");
         if (this.#is_choosing) {
           // we're currently choosing records
           btn_el.innerHTML = "Apply";
@@ -596,7 +598,7 @@ export class CN_action_list extends CN_base_action {
       }
     }
 
-    const tbody_el = this.get_body_element().querySelector("tbody");
+    const tbody_el = body_el.querySelector("tbody");
     tbody_el.innerHTML = "";
 
     const cursor = model.allow_view() ? 'style="cursor: grab"' : "";
@@ -611,7 +613,7 @@ export class CN_action_list extends CN_base_action {
       const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
       const last_col_name = 0 == visible_columns.length ? null : visible_columns[visible_columns.length-1];
 
-      const last_column_el = this.get_body_element().querySelector("thead th:last-child div.d-flex");
+      const last_column_el = body_el.querySelector("thead th:last-child div.d-flex");
       if (last_column_el) {
         if ("choose" != this.#list_mode && model.allow_delete()) {
           last_column_el.classList.add("pe-2");
@@ -697,15 +699,19 @@ export class CN_action_list extends CN_base_action {
       });
     }
 
-    this.get_footer_element().querySelector("div[name=summary]").innerHTML = [
-      this.#total_records,
-      1 == this.#total_records ? model.get_singular() : model.get_plural(),
-      "total",
-      this.has_column_filters() ? "(filtered)" : "",
-    ].join(" ");
+    if (null == this.#total_records) {
+      footer_el.querySelector("div[name=summary]").innerHTML = "Loading...";
+    } else {
+      footer_el.querySelector("div[name=summary]").innerHTML = [
+        this.#total_records,
+        1 == this.#total_records ? model.get_singular() : model.get_plural(),
+        "total",
+        this.has_column_filters() ? "(filtered)" : "",
+      ].join(" ");
+    }
 
     // rebuild the pagination buttons
-    const pagination_el = this.get_footer_element().querySelector("ul.pagination");
+    const pagination_el = footer_el.querySelector("ul.pagination");
     pagination_el.innerHTML = "";
 
     const pages = Math.ceil(this.#total_records / CN_session.get("application", "list_row_size"));
@@ -775,7 +781,8 @@ export class CN_action_list extends CN_base_action {
       `<i
         class="bi bi-info-circle-fill"
         data-bs-toggle="tooltip"
-        data-bs-title="${CN_common.encode_html(column.help)}"
+        data-bs-html="true"
+        data-bs-title="${column.help.replace(/"/g, "&quot;")}"
       ></i>` :
       ""
     );
@@ -848,6 +855,12 @@ export class CN_action_list extends CN_base_action {
         </ul>
       </div>
     `);
+
+    new bootstrap.Tooltip(report_div_el, {
+      title: "Download list",
+      trigger: "hover",
+      delay: { "show": 1000, "hide": 100 },
+    });
 
     ["csv", "xlsx", "ods"].forEach(format => {
       report_div_el.querySelector(`button[name=${format}]`).addEventListener("click", async () => {

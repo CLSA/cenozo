@@ -21,14 +21,14 @@ export class CN_input_range extends CN_base_input {
   /**
    * Extends parent method
    */
-  set_value(value) {
+  async set_value(value) {
     // don't allow setting value outside of min/max range
     const min = this.get_config("min");
     const max = this.get_config("max");
     if (min > value || max < value) {
       throw new Error(`Value ${value} is out of range, must be between ${min} and ${max}`);
     }
-    super.set_value(value);
+    await super.set_value(value);
   }
 
   /**

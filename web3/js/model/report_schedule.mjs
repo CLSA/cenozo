@@ -26,18 +26,18 @@ export class CN_model_report_schedule extends CN_base_model {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
-          help: "Which site to run the report under",
+          help: "Which site to run the report under.",
         },
         role_id: {
           title: "Role",
           type: "enum",
           enum: { path: "role" },
-          help: "Which role to run the report under",
+          help: "Which role to run the report under.",
         },
         schedule: {
           title: "Schedule",
           type: "enum",
-          help: "How often to run the report",
+          help: "How often to run the report.",
         },
         format: {
           title: "Format",

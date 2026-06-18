@@ -180,13 +180,15 @@ export class CN_modal_datetime extends CN_base_modal {
 
     const btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
-    const now_btn_el = this.constructor.html('<button name="now" class="btn btn-light">Now</button>');
-    now_btn_el.addEventListener("click", this.#on_now_clicked.bind(this));
-    btn_group_el.append(now_btn_el);
-
-    const today_btn_el = this.constructor.html('<button name="today" class="btn btn-light">Today</button>');
-    today_btn_el.addEventListener("click", this.#on_today_clicked.bind(this));
-    btn_group_el.append(today_btn_el);
+    if (["date", "dob", "dod"].includes(this.get_config("mode"))) {
+      const today_btn_el = this.constructor.html('<button name="today" class="btn btn-light">Today</button>');
+      today_btn_el.addEventListener("click", this.#on_today_clicked.bind(this));
+      btn_group_el.append(today_btn_el);
+    } else {
+      const now_btn_el = this.constructor.html('<button name="now" class="btn btn-light">Now</button>');
+      now_btn_el.addEventListener("click", this.#on_now_clicked.bind(this));
+      btn_group_el.append(now_btn_el);
+    }
 
     const empty_btn_el = this.constructor.html('<button name="empty" class="btn btn-light">Empty</button>');
     empty_btn_el.addEventListener("click", this.#on_empty_clicked.bind(this));

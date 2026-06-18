@@ -106,7 +106,9 @@ export class CN_model_application extends CN_base_model {
         update_queue: {
           title: "Update Queue",
           type: "boolean",
-          help: "Whether the application has a queue which should be updated when changes are made to the database.",
+          help: `
+            Whether the application has a queue which should be updated when changes are made to the database.
+          `,
         },
         primary_color: {
           title: "Primary Colour",
@@ -152,12 +154,18 @@ export class CN_model_application extends CN_base_model {
         mail_header: {
           title: "Mail Header",
           type: "text",
-          help: "A header which is added to all emails sent out by the application.  This text may contain HTML markup.",
+          help: `
+            A header which is added to all emails sent out by the application.
+            This text may contain HTML markup.
+          `,
         },
         mail_footer: {
           title: "Mail Footer",
           type: "text",
-          help: "A footer which is added to all emails sent out by the application.  This text may contain HTML markup.",
+          help: `
+            A footer which is added to all emails sent out by the application.
+            This text may contain HTML markup.
+          `,
         },
         country_id: { title: "Country", type: "typeahead", typeahead: CN_model_country.get_typeahead() },
         timezone: { title: "Default Timezone", type: "typeahead", typeahead: { list: CN_common.get_timezones() } },

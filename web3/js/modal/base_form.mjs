@@ -61,8 +61,7 @@ export class CN_modal_base_form extends CN_base_modal {
     // validate all inputs setting valid to false if any fail
     await Promise.all(
       this.#input_list.map(input => (async () => {
-        const test = await input.form_input.validate();
-        if (!test) valid = false;
+        if (!(await input.form_input.validate())) valid = false;
       })())
     );
 

@@ -21,7 +21,7 @@ export class CN_input_typeahead extends CN_base_input {
         timeout_id: null,
         open: false,
         on_select: async (form_input, item) => {
-          this.set_value(item.value);
+          await this.set_value(item.value);
           this.commit_value();
           if (this.has_config("on_change")) {
             this.get_config("on_change")(this, await this.validate());

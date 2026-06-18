@@ -38,8 +38,8 @@ export class CN_input_text extends CN_base_input {
   /**
    * Extend parent method
    */
-  set_value(value) {
-    super.set_value(value);
+  async set_value(value) {
+    await super.set_value(value);
     this.update_element();
   }
 

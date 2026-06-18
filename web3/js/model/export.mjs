@@ -59,9 +59,9 @@ export class CN_model_export extends CN_base_model {
             btn_el.addEventListener(
               "click",
               async () => {
-                this.get_action().set_property_value("participant_count", "(calculating...)");
+                await this.get_action().set_property_value("participant_count", "(calculating...)");
                 CN_base_element.set_disabled(btn_el, true);
-                this.get_action().set_property_value(
+                await this.get_action().set_property_value(
                   "participant_count",
                   await CN_api.count(`${this.get_view_url(null, "api")}/participant`)
                 );
@@ -214,7 +214,7 @@ export class CN_view_export extends CN_action_view {
     await super.on_load();
 
     // reset the partcipant count to unknown
-    this.set_property_value("participant_count", "(not calculated)");
+    await this.set_property_value("participant_count", "(not calculated)");
   }
 
   /**

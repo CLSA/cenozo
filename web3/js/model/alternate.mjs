@@ -46,9 +46,10 @@ export class CN_model_alternate extends CN_model_base_person {
         association: {
           title: "Association",
           regex: "^[^0-9]*[0-9]?[^0-9]*$",
-          help:
-            "How the alternate knows the participant (son, neighbour, wife, etc). " +
-            "DO NOT include phone numbers.",
+          help: `
+            How the alternate knows the participant (son, neighbour, wife, etc).
+            DO NOT include phone numbers.
+          `,
         },
         language_id: {
           title: "Preferred Language",
@@ -107,6 +108,8 @@ export class CN_model_alternate extends CN_model_base_person {
 }
 
 export class CN_view_alternate extends CN_view_base_person {
+  #view_participant_btn_el;
+
   /**
    * Extends the parent method
    */
@@ -119,6 +122,36 @@ export class CN_view_alternate extends CN_view_base_person {
       ].join(", ");
     }
     return await super.get_text(type);
+  }
+
+  /**
+   * Extends the parent method
+   */
+  set_disabled(disabled) {
+    super.set_disabled(disabled);
+    this.constructor.set_disabled(this.#view_participant_btn_el, disabled);
+  }
+
+  /**
+   * Extends the parent method
+   */
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
+
+    // add a view-participant button when the parent model isn't the participant
+    const parent_model = this.get_model().get_parent_model();
+    if (null == parent_model || "participant" != parent_model.get_name()) {
+      const right_btn_group_el = footer_el.querySelector("div[name=right-btn-group]");
+      this.#view_participant_btn_el = this.constructor.html(
+        '<button name="view-participant" type="button" class="btn btn-primary">View Participant</button>'
+      );
+      right_btn_group_el.append(this.#view_participant_btn_el);
+      this.#view_participant_btn_el.addEventListener("click", async () => {
+        CN_session.navigate_to(`participant/view/${await this.get_property_value_for_record("participant_id")}`);
+      });
+    }
+
+    return footer_el;
   }
 }
 

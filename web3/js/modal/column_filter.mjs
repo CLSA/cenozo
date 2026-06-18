@@ -192,8 +192,7 @@ export class CN_modal_column_filter extends CN_base_modal {
     // validate all condition inputs setting invalid to true if any fail
     await Promise.all(
       this.#condition_list.map(condition => (async () => {
-        const test = await condition.value_input.validate();
-        if (!test) invalid = true;
+        if (!(await condition.value_input.validate())) invalid = true;
       })())
     );
 

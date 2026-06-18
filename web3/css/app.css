@@ -62,3 +62,7 @@ div[name=app_bg].loading:before {
 .tooltip-inner {
   text-align: left;
 }
+
+.tooltip {
+  --bs-tooltip-max-width: 500px !important;
+}

@@ -26,7 +26,7 @@ export class CN_model_recording extends CN_base_model {
           title: "Timer",
           format: "integer",
           get_min: () => 1,
-          help: "The number of seconds to limit the stage to (empty meaning no limit)",
+          help: "The number of seconds to limit the stage to (empty meaning no limit).",
         },
       },
     });

@@ -108,9 +108,11 @@ class session extends CN_base_object {
       }
 
       // first run all non-leaf models in parallel as their data may be needed by the leaf model
-      await Promise.all(this.#path_model_list.slice(0, -1).map(async (model) => {
-        model.get_action().run();
-      }));
+      await Promise.all(
+        this.#path_model_list.slice(0, -1).map(model => (async () => {
+          await model.get_action().run();
+        })())
+      );
 
       // now add the model's element to the DOM and run the leaf module
       this.#main_content_el.append(leaf_model.get_element());

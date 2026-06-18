@@ -182,7 +182,7 @@ export class CN_base_element extends CN_base_object {
    */
   static set_disabled(element, disabled) {
     if (!CN_common.is_element(element)) {
-      console.error(`Tried to set disabled state on non element.`);
+      if (element) console.error(`Tried to set disabled state on non element.`);
     } else {
       if (disabled) {
         element.setAttribute("disabled", true);

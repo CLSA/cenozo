@@ -26,7 +26,7 @@ export class CN_model_script extends CN_base_model {
         supporting: {
           title: "Supporting",
           type: "boolean",
-          help: 'Identifies this as a supporting script (launched in the participant\'s "Scripts" action)',
+          help: 'Identifies this as a supporting script (launched in the participant\'s "Scripts" action).',
         },
         repeated: { title: "Repeated", type: "boolean", },
         total_pages: {

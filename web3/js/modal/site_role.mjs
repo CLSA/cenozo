@@ -73,10 +73,10 @@ export class CN_modal_site_role extends CN_modal_base_form {
       const role_id = role_form_input.get_value();
       if ("" == role_id) {
         // if no role is selected then use the default value
-        role_form_input.set_value(role_form_input.get_config("get_default")());
+        await role_form_input.set_value(role_form_input.get_config("get_default")());
       } else {
         // if the role_id is not in the new set of values then select the first one
-        if (!role_list.find(r => r.key == role_id)) role_form_input.set_value(role_list[0].key);
+        if (!role_list.find(r => r.key == role_id)) await role_form_input.set_value(role_list[0].key);
       }
     };
 
@@ -84,7 +84,7 @@ export class CN_modal_site_role extends CN_modal_base_form {
     site_form_input.get_config("enum").values = site_list;
     site_form_input.set_config("on_change", update_role_list);
     await site_form_input.update();
-    site_form_input.set_value(site_form_input.get_config("get_default")())
+    await site_form_input.set_value(site_form_input.get_config("get_default")())
 
     // populate the role list and set the current role
     update_role_list();

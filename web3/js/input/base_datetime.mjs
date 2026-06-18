@@ -33,7 +33,7 @@ export class CN_input_base_datetime extends CN_base_input {
   /**
    * Extend parent method
    */
-  set_value(value) {
+  async set_value(value) {
     if (CN_common.is_string(value)) {
       value = new Date(
         value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
@@ -47,7 +47,7 @@ export class CN_input_base_datetime extends CN_base_input {
 
     // convert date object to string
     const input_type = this.get_class_name().replace(/^CN_input_/, "");
-    super.set_value(value ? CN_common.format_datetime(value, input_type, true) : "(empty)");
+    await super.set_value(value ? CN_common.format_datetime(value, input_type, true) : "(empty)");
   }
 
   /**
@@ -116,7 +116,7 @@ export class CN_input_base_datetime extends CN_base_input {
 
       const response = await CN_modal_datetime.create_and_open(config);
       if (undefined !== response) {
-        this.set_value(response);
+        await this.set_value(response);
 
         const valid = this.validate();
         if (this.has_config("on_change")) {

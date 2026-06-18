@@ -225,7 +225,7 @@ export class CN_action_notes extends CN_base_action {
         datetime: CN_common.format_datetime(new Date(), "record"),
         note: new_note_input.get_value(),
       });
-      new_note_input.set_value("");
+      await new_note_input.set_value("");
       await this.run();
     });
 

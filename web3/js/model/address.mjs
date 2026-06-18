@@ -62,7 +62,9 @@ export class CN_model_address extends CN_model_traceable {
             model.get_action().get_property_value("international")
           ),
           is_constant: () => true,
-          help: "The region cannot be changed directly, instead it is automatically updated based on the postcode.",
+          help: `
+            The region cannot be changed directly, instead it is automatically updated based on the postcode.
+          `,
         },
         international_region: {
           title: "Region",
@@ -96,7 +98,7 @@ export class CN_model_address extends CN_model_traceable {
         note: { title: "Note", type: "text" },
 
         months: {
-          title: "Available Months",
+          title: "Active Months",
           is_hidden: model => !model.get_action().get_property_value("active"),
           properties: CN_common.get_month().reduce((obj, month) => {
             obj[month.toLowerCase()] = { title: month, type: "boolean" };
@@ -134,10 +136,12 @@ export class CN_add_address extends CN_add_traceable {
 
     const set_months = async (active) => {
       await Promise.all(
-        CN_common.get_month().map(month => month.toLowerCase()).map(month => {
-          this.set_property_value(month, active);
-          return this.on_set_property(month);
-        })
+        CN_common.get_month().map(month => month.toLowerCase()).map(
+          month => (async () => {
+            await this.set_property_value(month, active);
+            await this.on_set_property(month);
+          })()
+        )
       );
     };
 
@@ -212,9 +216,9 @@ export class CN_view_address extends CN_view_traceable {
         await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
 
         // update the client
-        for (const month in data) {
-          this.set_property_value(month, active);
-        }
+        const promise_list = [];
+        for (const month in data) promise_list.push(this.set_property_value(month, active));
+        await Promise.all(promise_list);
       }
     };
 

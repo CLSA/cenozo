@@ -51,6 +51,7 @@ export class CN_action_view extends CN_action_base_record {
     }
 
     if ("header" == type) {
+      await this.after_first_load();
       return `${CN_common.uc_words(model.get_singular())} Details${model.allow_edit() ? "" : " (read-only)"}`;
     }
 
@@ -105,29 +106,33 @@ export class CN_action_view extends CN_action_base_record {
     const record = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
 
     // fill in the property values (if the form_inputs have been created)
-    this.get_all_properties().filter(prop => prop.form_input).forEach(prop => {
-      if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
-        // put the ID in the typeahead list
-        prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
-        prop.form_input.set_value(record[`formatted_${prop.name}`], record[prop.name]);
-      } else if (CN_common.is_datetime_type(prop.type, "date")) {
-        // convert string value to date object
-        if (record[prop.name]) {
-          const date_string = (
-            record[prop.name].match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
-            `${record[prop.name]} 12:00:00` :
-            record[prop.name]
-          );
-          prop.form_input.set_value(new Date(date_string));
-        } else {
-          prop.form_input.set_value(null);
-        }
-      } else if (record.hasOwnProperty(prop.name)) {
-        prop.form_input.set_value(record[prop.name]);
-      }
+    await Promise.all(
+      this.get_all_properties().filter(prop => prop.form_input).map(
+        prop => (async () => {
+          if ("typeahead" == prop.type && record.hasOwnProperty(`formatted_${prop.name}`)) {
+            // put the ID in the typeahead list
+            prop.typeahead.list = [{ key: record[prop.name], value: record[`formatted_${prop.name}`] }];
+            await prop.form_input.set_value(record[`formatted_${prop.name}`], record[prop.name]);
+          } else if (CN_common.is_datetime_type(prop.type, "date")) {
+            // convert string value to date object
+            if (record[prop.name]) {
+              const date_string = (
+                record[prop.name].match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
+                `${record[prop.name]} 12:00:00` :
+                record[prop.name]
+              );
+              await prop.form_input.set_value(new Date(date_string));
+            } else {
+              await prop.form_input.set_value(null);
+            }
+          } else if (record.hasOwnProperty(prop.name)) {
+            await prop.form_input.set_value(record[prop.name]);
+          }
 
-      prop.form_input.commit_value();
-    });
+          prop.form_input.commit_value();
+        })()
+      )
+    );
 
     // with the record loaded we can now run the parent's method
     await super.on_load();

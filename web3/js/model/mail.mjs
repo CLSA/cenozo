@@ -10,7 +10,7 @@ export class CN_model_mail extends CN_base_model {
     super({
       wording: {
         singular: "email",
-        plural: "email",
+        plural: "emails",
         posessive: "email's",
       },
       columns: {
@@ -22,6 +22,11 @@ export class CN_model_mail extends CN_base_model {
       },
       get_default_order: () => ({ column: "sent_datetime", desc: true }),
       properties: {
+        formatted_participant_id: {
+          title: "Participant",
+          meta: {},
+          is_constant: () => true,
+        },
         from_name: {
           title: "From Name",
           is_constant: (model) => (

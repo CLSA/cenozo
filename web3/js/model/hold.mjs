@@ -13,10 +13,8 @@ export class CN_model_hold extends CN_base_model {
         posessive: "hold's",
       },
       columns: {
-        hold_type_full_name: {
-          title: "Type",
-          table_prefix: false,
-        },
+        type: { title: "Type", column: "hold_type.type" },
+        name: { title: "Name", column: "hold_type.name" },
         datetime: { title: "Date & Time", type: "datetime" },
       },
       properties: {

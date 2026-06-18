@@ -118,105 +118,6 @@ export class CN_base_input extends CN_base_element {
   }
 
   /**
-   * Extends the parent method
-   */
-  _create_element() {
-    const el = super._create_element();
-
-    this.#prefix_div_el = this.constructor.html('<div name="prefix"></div>');
-    el.append(this.#prefix_div_el);
-    this.#input_div_el = this.constructor.html('<div name="input" class="flex-fill"></div>');
-    el.append(this.#input_div_el);
-    this.#control_div_el = this.constructor.html('<div name="control"></div>');
-    this.#input_div_el.append(this.#control_div_el);
-    this.#error_div_el = this.constructor.html('<div name="error" class="text-danger"></div>');
-    this.#input_div_el.append(this.#error_div_el);
-    this.#postfix_div_el = this.constructor.html('<div name="postfix"></div>');
-    el.append(this.#postfix_div_el);
-
-    if (!CN_common.is_function(this._create_control_element)) {
-      throw new Error("Tried to create input but _create_control_element has not been implemented.");
-    }
-    this.#control_el = this._create_control_element(el);
-    if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
-    if (this.#control_name) this.#control_el.setAttribute("name", this.#control_name);
-    this.set_disabled(this.get_config("disabled"));
-    this.update();
-
-    // set the value to the default (only if it hasn't been set yet)
-    if (null === this.get_value() && this.has_config("get_default")) {
-      const default_value = this.get_config("get_default")(this.#action ? this.#action.get_model() : null);
-      this.set_value(default_value);
-    }
-    this.#control_div_el.append(this.#control_el);
-
-    if (this.#event_listeners) {
-      // only listen to focus events if there's a function to do so with
-      if (this.has_config("on_focus")) {
-        this.#control_el.addEventListener("focus", async () => {
-          await this.get_config("on_focus")(this);
-        });
-      }
-
-      // only listen to input events if there's a function to do so with
-      if (this.has_config("on_input")) {
-        this.#control_el.addEventListener("input", async () => {
-          await this.get_config("on_input")(this);
-        });
-      }
-
-      // validate and call on_change function when the value changes
-      this.#control_el.addEventListener("change", async () => {
-        // always validate the input
-        const valid = await this.validate();
-
-        // call the on_change function if it exists
-        if (this.has_config("on_change")) {
-          await this.get_config("on_change")(this, valid);
-        }
-      });
-    }
-
-    // add the undo button if enabled
-    if (this.get_config("undo")) {
-      this.#undo_btn_el = this.constructor.html(
-        '<button type="button" name="undo" class="btn btn-warning ms-2 d-none">Undo</button>'
-      );
-      this.#undo_btn_el.addEventListener("click", this.undo_value.bind(this, true));
-      this.#postfix_div_el.append(this.#undo_btn_el);
-    }
-
-    // append the control and add prefix and postfix elements
-    if (this.has_config("prefix")) {
-      const prefix = this.get_config("prefix");
-      if (!CN_common.is_function(prefix)) {
-        throw new Error('Form input "prefix" config must be a function.');
-      }
-      prefix(this.#prefix_div_el);
-    }
-    if (this.has_config("postfix")) {
-      const postfix = this.get_config("postfix");
-      if (!CN_common.is_function(postfix)) {
-        throw new Error('Form input "postfix" config must be a function.');
-      }
-      postfix(this.#postfix_div_el);
-    }
-
-    if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
-    if (this.has_config("title")) {
-      this.#control_el.setAttribute("aria-label", this.get_config("title"));
-    }
-    if (this.has_config("placeholder")) {
-      this.#control_el.setAttribute("placeholder", this.get_config("placeholder"));
-    }
-    if (this.has_config("max_length")) {
-      this.#control_el.setAttribute("max_length", this.get_config("max_length"));
-    }
-
-    return el;
-  }
-
-  /**
    * ADD DOCS
    */
   async on_dom_add() {
@@ -243,7 +144,20 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
-  set_value(value, value_for_record = undefined) {
+  async set_value(value, value_for_record = undefined) {
+    // check if the value has a prefix or postfix
+    if (value) {
+      const prefix = await this._get_value_prefix();
+      const postfix = await this._get_value_postfix();
+      if (
+        (CN_common.is_string(prefix) && 0 < prefix.length) ||
+        (CN_common.is_string(postfix) && 0 < postfix.length)
+      ) {
+        if (CN_common.is_string(prefix) && 0 < prefix.length) value = prefix + value;
+        if (CN_common.is_string(postfix) && 0 < postfix.length) value = value + postfix;
+      }
+    }
+
     this.#state.set(value, value_for_record);
 
     if (this.get_config("undo") && this.#undo_btn_el) {
@@ -383,6 +297,14 @@ export class CN_base_input extends CN_base_element {
   set_disabled(disabled) {
     this.set_config("disabled", disabled);
     this.constructor.set_disabled(this.#control_el, disabled);
+
+    if (this.get_config("undo") && this.#undo_btn_el) {
+      if (!disabled && this.#state.can_undo()) {
+        this.#undo_btn_el.classList.remove("d-none");
+      } else {
+        this.#undo_btn_el.classList.add("d-none");
+      }
+    }
   }
 
   /**
@@ -431,7 +353,117 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
+  async _get_value_prefix() { return ""; }
+
+  /**
+   * ADD DOCS
+   */
+  async _get_value_postfix() { return ""; }
+
+  /**
+   * ADD DOCS
+   */
   async _calculate_value_for_record(value) {
     return "" === value ? null : value;
+  }
+
+  /**
+   * Extends the parent method
+   */
+  _create_element() {
+    const el = super._create_element();
+
+    this.#prefix_div_el = this.constructor.html('<div name="prefix"></div>');
+    el.append(this.#prefix_div_el);
+    this.#input_div_el = this.constructor.html('<div name="input" class="flex-fill"></div>');
+    el.append(this.#input_div_el);
+    this.#control_div_el = this.constructor.html('<div name="control"></div>');
+    this.#input_div_el.append(this.#control_div_el);
+    this.#error_div_el = this.constructor.html('<div name="error" class="text-danger"></div>');
+    this.#input_div_el.append(this.#error_div_el);
+    this.#postfix_div_el = this.constructor.html('<div name="postfix"></div>');
+    el.append(this.#postfix_div_el);
+
+    if (!CN_common.is_function(this._create_control_element)) {
+      throw new Error("Tried to create input but _create_control_element has not been implemented.");
+    }
+    this.#control_el = this._create_control_element(el);
+    if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
+    if (this.#control_name) this.#control_el.setAttribute("name", this.#control_name);
+    this.set_disabled(this.get_config("disabled"));
+
+    // set the value to the default (only if it hasn't been set yet)
+    if (null === this.get_value() && this.has_config("get_default")) {
+      const default_value = this.get_config("get_default")(this.#action ? this.#action.get_model() : null);
+      this.set_value(default_value);
+    }
+    this.#control_div_el.append(this.#control_el);
+
+    this.update();
+
+    if (this.#event_listeners) {
+      // only listen to focus events if there's a function to do so with
+      if (this.has_config("on_focus")) {
+        this.#control_el.addEventListener("focus", async () => {
+          await this.get_config("on_focus")(this);
+        });
+      }
+
+      // only listen to input events if there's a function to do so with
+      if (this.has_config("on_input")) {
+        this.#control_el.addEventListener("input", async () => {
+          await this.get_config("on_input")(this);
+        });
+      }
+
+      // validate and call on_change function when the value changes
+      this.#control_el.addEventListener("change", async () => {
+        // always validate the input
+        const valid = await this.validate();
+
+        // call the on_change function if it exists
+        if (this.has_config("on_change")) {
+          await this.get_config("on_change")(this, valid);
+        }
+      });
+    }
+
+    // add the undo button if enabled
+    if (this.get_config("undo")) {
+      this.#undo_btn_el = this.constructor.html(
+        '<button type="button" name="undo" class="btn btn-warning ms-2 d-none">Undo</button>'
+      );
+      this.#undo_btn_el.addEventListener("click", this.undo_value.bind(this, true));
+      this.#postfix_div_el.append(this.#undo_btn_el);
+    }
+
+    // append the control and add prefix and postfix elements
+    if (this.has_config("prefix")) {
+      const prefix = this.get_config("prefix");
+      if (!CN_common.is_function(prefix)) {
+        throw new Error('Form input "prefix" config must be a function.');
+      }
+      prefix(this.#prefix_div_el);
+    }
+    if (this.has_config("postfix")) {
+      const postfix = this.get_config("postfix");
+      if (!CN_common.is_function(postfix)) {
+        throw new Error('Form input "postfix" config must be a function.');
+      }
+      postfix(this.#postfix_div_el);
+    }
+
+    if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);
+    if (this.has_config("title")) {
+      this.#control_el.setAttribute("aria-label", this.get_config("title"));
+    }
+    if (this.has_config("placeholder")) {
+      this.#control_el.setAttribute("placeholder", this.get_config("placeholder"));
+    }
+    if (this.has_config("max_length")) {
+      this.#control_el.setAttribute("max_length", this.get_config("max_length"));
+    }
+
+    return el;
   }
 }
