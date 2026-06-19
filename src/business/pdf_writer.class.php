@@ -76,7 +76,7 @@ class pdf_writer extends \cenozo\base_object
    * @param string $box_left_inches The distance of the left side of the box from the left side of the page
    * @param string $box_bottom_inches The distance of the bottom of the box from the bottom of the page
    * @param string $box_right_inches The distance of the right side of the box from the left side of the page
-   * @param string $box_top_inches The distance of the top of the box from the top of the page
+   * @param string $box_top_inches The distance of the top of the box from the bottom of the page
    * @return boolean 
    */
   public function stamp_signature(
@@ -135,7 +135,7 @@ class pdf_writer extends \cenozo\base_object
         if( false === $result ) return false;
         [$tsig_width, $tsig_height] = explode( 'x', $result );
 
-        // now pad the signature by 15%
+        // now pad the signature
         $tsig_width = round( $sig_xpad * $tsig_width );
         $tsig_height = round( $sig_ypad * $tsig_height );
         $tsig_slope = $tsig_height / $tsig_width;
@@ -148,9 +148,13 @@ class pdf_writer extends \cenozo\base_object
         ) );
         if( false === $result ) return false;
 
+        // The magnification factor helps to make the signature clear in the final PDF
+        // This value was determined by trial and error and is effectively arbitrary
+        $magnification = 10;
+
         // determine whether to contrain the signature by width or height
-        $resize_width = $tsig_slope >= $box_slope ? $box_height / $tsig_slope : $box_width;
-        $resize_factor = $tsig_width / $resize_width;
+        $resize_factor = $tsig_width / $box_width;
+        if( $tsig_height / $resize_factor > $box_height ) $resize_factor = $tsig_height / $box_height;
 
         // add the trimmed signature to the page
         $result = exec( sprintf(
@@ -161,19 +165,20 @@ class pdf_writer extends \cenozo\base_object
             '-gravity SouthEast '.
             '-extent %dx%d "%s"',
           $tsig_filename,
-          $tsig_width,
-          round( $resize_factor * $box_left + $tsig_width ),
-          round( $resize_factor * $box_bottom ),
+          round( $magnification * $tsig_width / $resize_factor ),
+          round( $magnification * ( $box_left + $tsig_width / $resize_factor ) ),
+          round( $magnification * $box_bottom ),
           $tsig_filename
         ) );
+
         if( false === $result ) return false;
 
-        // expand the page to the same size as the document (scaled up using the resize_factor)
+        // complete the page using the magnification
         $result = exec( sprintf(
           'convert "%s" -background transparent -gravity NorthWest -extent %dx%d "%s"',
           $tsig_filename,
-          round( $resize_factor * $page_width ),
-          round( $resize_factor * $page_height ),
+          round( $magnification * $page_width ),
+          round( $magnification * $page_height ),
           $page_filename
         ) );
         if( false === $result ) return false;
