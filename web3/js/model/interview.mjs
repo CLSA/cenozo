@@ -72,7 +72,7 @@ export class CN_list_interview extends CN_action_list {
     } catch (error) {
       if (409 == error.response.status) {
         await CN_modal_message.create_and_open({
-          type: "danger",
+          header_class: "text-bg-danger",
           title: "Unable to Add Interview",
           message: `
             ${JSON.parse(error.body)}<br/>

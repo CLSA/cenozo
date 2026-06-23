@@ -91,9 +91,9 @@ export class CN_api extends CN_base_object {
       )
     ) {
       await CN_modal_message.create_and_open({
+        header_class: "text-bg-danger",
         title: "Login Mismatch",
         size: "lg",
-        type: "danger",
         message: `
           <div class="pb-2">
             You have been switched to another site or role in a different browser.

@@ -274,21 +274,21 @@ export class CN_action_calendar extends CN_base_action {
       report_div_el.querySelector(`button[name=${format}]`).addEventListener("click", async () => {
         if (!this.get_model().allow_report()) {
           await CN_modal_message.create_and_open({
+            header_class: "text-bg-danger",
             title: "Error",
             message: "You cannot download data from this list.",
-            header_class: "text-bg-danger",
           });
         } else if (this.#total_records > CN_session.get("application", "max_big_report")) {
           await CN_modal_message.create_and_open({
+            header_class: "text-bg-danger",
             title: "Error",
             message: "The list has too many rows to download.",
-            header_class: "text-bg-danger",
           });
         } else if ("csv" != format && this.#total_records > CN_session.get("application", "max_small_report")) {
           await CN_modal_message.create_and_open({
+            header_class: "text-bg-danger",
             title: "Error",
             message: "The list can only be downloaded as a CSV file.",
-            header_class: "text-bg-danger",
           });
         } else {
           const model = this.get_model();

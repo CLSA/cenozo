@@ -335,7 +335,7 @@ export class CN_view_user extends CN_action_view {
         } catch (error) {
           if (403 == error.response.status) {
             await CN_modal_message.create_and_open({
-              type: "danger",
+              header_class: "text-bg-danger",
               title: "Unable To Change Password",
               message: `Sorry, you do not have access to resetting the password for user "${username}".`,
             });

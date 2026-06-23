@@ -194,7 +194,7 @@ class session extends CN_base_object {
         if (0 < keys.length) type = keys[0].replace(/_id$/, "");
       }
 
-      const params = { type: "danger" };
+      const params = { header_class: "text-bg-danger" };
       if (null == type) {
         params.title = "Unknown Error";
         params.message = "The server was not able to change your timezone.";

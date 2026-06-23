@@ -995,9 +995,9 @@ export class CN_multiedit_participant extends CN_base_action {
 
           if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
             await CN_modal_message.create_and_open({
+              header_class: "text-bg-danger",
               title: "No Columns Selected",
               message: "Please select at least one column to edit.",
-              type: "danger",
             });
             return;
           }
@@ -1184,11 +1184,11 @@ export class CN_scripts_participant extends CN_base_action {
           // if we still don't have a token then there's a problem
           if (null == script.token) {
             await CN_modal_message.create_and_open({
+              header_class: "text-bg-danger",
               title: "Respondent Not Found",
               message:
                 "Unable to find the respondent record belonging to the script you are trying to launch. " +
                 "If the problem persists please contact support.",
-              type: "danger",
             });
           } else {
             // launch the sript
