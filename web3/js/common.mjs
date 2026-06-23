@@ -223,11 +223,25 @@ export class CN_common extends CN_base_object {
   /**
    * Inserts a new property into an objects after an existing property
    */
-  static insert_property_after(object, after_prop, new_prop, value) {
-    if (!this.is_object(object) || !object[after_prop]) {
+  static insert_property(object, side, prop, new_prop, value) {
+    if (!["after", "before"].includes(side)) {
       throw new Error(`
-        Tried to insert object new property "${new_prop}"
-        after existing property "${after_prop}" which doesn\'t exist.
+        Invalid side argument, "${side}", when trying to insert property into object
+        (must either be "before" or "after").
+      `);
+    }
+
+    if (!this.is_object(object)) {
+      throw new Error(`
+        Tried to insert a new property "${new_prop}"
+        ${side} the existing property "${prop}" but the input object is not an object.
+      `);
+    }
+
+    if (!object[prop]) {
+      throw new Error(`
+        Tried to insert a new property "${new_prop}"
+        ${side} the existing property "${prop}" but that property doesn't exist in the object.
       `);
     }
 
@@ -236,9 +250,10 @@ export class CN_common extends CN_base_object {
     Object.keys(object).forEach(prop => delete object[prop]);
 
     // now loop through the copied object and add the new property as we go
-    Object.keys(object_copy).forEach(prop => {
-      object[prop] = object_copy[prop];
-      if (after_prop === prop) object[new_prop] = value;
+    Object.keys(object_copy).forEach(p => {
+      if ("before" == side && prop === p) object[new_prop] = value;
+      object[p] = object_copy[p];
+      if ("after" == side && prop === p) object[new_prop] = value;
     });
   }
 
