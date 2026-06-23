@@ -71,7 +71,7 @@ class patch extends \cenozo\service\service
                 if( property_exists( $timezone, 'address_id' ) )
                 {
                   // make sure the address exists and its timezone is valid
-                  $db_address = lib::create( 'database\address', $value->address_id );
+                  $db_address = lib::create( 'database\address', $timezone->address_id );
                 }
                 else if( property_exists( $timezone, 'participant_id' ) )
                 {
