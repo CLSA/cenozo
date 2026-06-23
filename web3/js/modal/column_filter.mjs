@@ -1,3 +1,4 @@
+import { CN_api } from "../api.mjs"
 import { CN_base_modal } from "./base_modal.mjs"
 import { CN_common } from "../common.mjs";
 import { CN_element_label } from "../element/label.mjs"
@@ -17,6 +18,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       ...{
         table: null,
         column: null,
+        model: null,
         ok_text: "OK",
         cancel_text: "Cancel"
       },
@@ -85,6 +87,8 @@ export class CN_modal_column_filter extends CN_base_modal {
    */
   add_condition(condition = { operator: "=", value: null, or: false }) {
     const index = this.#condition_list.length;
+    const column = this.get_config("column");
+    const model = this.get_config("model");
 
     condition.element = this.constructor.html('<div class="d-flex w-100 py-2"></div>');
 
@@ -120,7 +124,7 @@ export class CN_modal_column_filter extends CN_base_modal {
     condition.element.append(condition.operator_input.get_element());
 
     // add the value input
-    condition.value_input = CN_input.create_input(this.get_config("column").type, condition.element, {
+    const config = {
       class: "flex-grow-1",
       placeholder: "(empty)",
       required: false,
@@ -129,7 +133,27 @@ export class CN_modal_column_filter extends CN_base_modal {
         condition.value = await form_input.get_value_for_record();
         await this.#check_form();
       },
-    });
+    };
+
+    // specify the max rank for rank columns
+    if ("rank" == column.type) {
+      config.max_rank = (
+        column.max_rank ?
+        column.max_rank :
+        async () => {
+          const response = await CN_api.get(model.get_base_path("api"), {
+            select: { column: {
+              column: `max(${model.get_name()}.${column.name})`,
+              alias: "max_rank",
+              table_prefix: false
+            } },
+          });
+          return Number(null == response[0].max_rank ? 0 : response[0].max_rank);
+        }
+      );
+    }
+
+    condition.value_input = CN_input.create_input(column.type, condition.element, config);
     condition.element.append(condition.value_input.get_element());
 
     // add the remove button
