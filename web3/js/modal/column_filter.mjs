@@ -159,7 +159,7 @@ export class CN_modal_column_filter extends CN_base_modal {
     // add the remove button
     if (0 < index) {
       condition.remove_btn_el = this.constructor.html(
-        '<button class="btn btn-danger"><i class="bi bi-trash"></i></button>'
+        '<button type="button" class="btn btn-danger"><i class="bi bi-trash"></i></button>'
       );
       condition.remove_btn_el.addEventListener("click", () => {
         this.#condition_list.splice(index, 1);
@@ -178,7 +178,7 @@ export class CN_modal_column_filter extends CN_base_modal {
     const body_el = this.constructor.html(`
       <div>
         <div name="conditions"></div>
-        <button name="add" class="btn btn-primary w-100">Add Extra Condition</button>
+        <button type="button" name="add" class="btn btn-primary w-100">Add Extra Condition</button>
       </div>
     `);
     this.#conditions_el = body_el.querySelector("div[name=conditions]");
@@ -200,7 +200,7 @@ export class CN_modal_column_filter extends CN_base_modal {
   _create_footer_element() {
     const footer_el = super._create_footer_element();
 
-    const remove_btn_el = this.constructor.html('<button class="btn btn-danger">Remove</button>');
+    const remove_btn_el = this.constructor.html('<button type="button" class="btn btn-danger">Remove</button>');
     remove_btn_el.addEventListener("click", () => this._resolve([]));
     footer_el.querySelector("div[name=left-btn-group]").append(remove_btn_el);
 

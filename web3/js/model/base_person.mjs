@@ -515,8 +515,8 @@ export class CN_history_base_person extends CN_base_action {
 
     button_list_el.append(this.constructor.html(`
       <div class="row">
-        <button name="select_all" class="col btn btn-primary">Select All</button>
-        <button name="select_none" class="col btn btn-primary">Select None</button>
+        <button type="button" name="select_all" class="col btn btn-primary">Select All</button>
+        <button type="button" name="select_none" class="col btn btn-primary">Select None</button>
       </div>
     `));
 
@@ -547,7 +547,7 @@ export class CN_history_base_person extends CN_base_action {
 
     this.#category_list.forEach(category => {
       const btn_el = this.constructor.html(`
-        <button name="${category.subject}" class="col btn btn-light btn-outline-primary">
+        <button type="button" name="${category.subject}" class="col btn btn-light btn-outline-primary">
           ${CN_common.uc_words(category.subject)}
           <i class="bi bi-${null === this.get_query_parameter(category.subject) ? "check" : "x"}-circle"></i>
         </button>

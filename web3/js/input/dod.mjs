@@ -19,10 +19,9 @@ export class CN_input_dod extends CN_input_date {
     let postfix = await super._get_value_postfix();
 
     // calculate the dod based on the dob (if it is provided)
-    const date = this.get_date();
     const dob = await this.get_config("get_dob")();
-    if (date && dob) {
-      const age = (new Date(date - dob)).getFullYear() - 1970;
+    if (dob) {
+      const age = (new Date(this.get_date() - dob)).getFullYear() - 1970;
       postfix += ` (${age} year${1 == age ? "" : "s"} old)`;
     }
     return postfix;

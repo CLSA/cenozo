@@ -161,7 +161,7 @@ export class CN_base_action extends CN_base_element {
       card_header_el.replaceChildren(this.constructor.html(`
         <div class="d-flex">
           <div class="flex-grow-1">Loading...</div>
-          <button name="refresh" class="btn btn-primary disabled px-2 py-0">
+          <button type="button" name="refresh" class="btn btn-primary disabled px-2 py-0">
             <i class="bi bi-arrow-clockwise fs-5"></i>
           </button>
         </div>
@@ -373,7 +373,7 @@ export class CN_base_action extends CN_base_element {
 
     // add a data notation button (not shown until update_element() is called)
     const notation_btn_el = this.constructor.html(`
-      <button name="notation" class="btn btn-primary px-2 py-0 d-none">
+      <button type="button" name="notation" class="btn btn-primary px-2 py-0 d-none">
         <i class="bi bi-info-circle fs-5"></i>
       </button>
     `);
@@ -387,7 +387,7 @@ export class CN_base_action extends CN_base_element {
 
     // add a data refresh button
     const refresh_btn_el = this.constructor.html(`
-      <button name="refresh" class="btn btn-primary px-2 py-0">
+      <button type="button" name="refresh" class="btn btn-primary px-2 py-0">
         <i class="bi bi-arrow-clockwise fs-5"></i>
       </button>
     `);
@@ -453,7 +453,7 @@ export class CN_base_action extends CN_base_element {
         header: this.constructor.html(`
           <div class="d-flex">
             <div class="flex-grow-1">Loading...</div>
-            <button name="refresh" class="btn btn-primary disabled px-2 py-0">
+            <button type="button" name="refresh" class="btn btn-primary disabled px-2 py-0">
               <i class="bi bi-arrow-clockwise fs-5"></i>
             </button>
           </div>

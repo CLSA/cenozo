@@ -40,7 +40,7 @@ export class CN_model_home extends CN_base_model {
         const message_el = CN_base_element.html(`
           <div class="card mt-3 px-0 ${message.unread ? "" : "text-black text-opacity-50"}">
             <div class="card-header fw-bold bg-${message.unread ? "warning" : "light"}">
-              <button class="btn btn-dark">
+              <button type="button" class="btn btn-dark">
                 <i class="bi bi-envelope-${message.unread ? "" : "open-"}fill"></i>
               </button>
               ${message.title}

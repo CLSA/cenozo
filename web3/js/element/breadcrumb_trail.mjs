@@ -34,6 +34,7 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       el.append(this.constructor.html('<i class="bi bi-chevron-compact-right text-light"></i>'));
       const home_crumb_el = this.constructor.html(`
         <button
+          type="button"
           name="home"
           class="btn btn-primary px-1"
           data-bs-dismiss="offcanvas"
@@ -63,6 +64,7 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       el.append(this.constructor.html('<i class="bi bi-chevron-compact-right text-light"></i>'));
       const crumb_el = this.constructor.html(`
         <button
+          type="button"
           class="btn btn-primary px-1"
           data-bs-dismiss="offcanvas"
           data-bs-target="#main-menu-offcanvas"
