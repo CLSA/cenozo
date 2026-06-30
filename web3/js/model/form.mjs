@@ -1,5 +1,6 @@
 import { CN_action_list } from "../action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_model_form extends CN_base_model {
@@ -30,7 +31,7 @@ export class CN_model_form extends CN_base_model {
           type: "enum",
           enum: { path: "form_type" },
         },
-        date: { title: "Date", type: "date", get_max: () => new Date() },
+        date: { title: "Date", type: "date", get_max: () => CN_common.get_date() },
       },
     });
   }

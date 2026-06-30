@@ -2,6 +2,7 @@ import { CN_action_add } from "../action/add.mjs"
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 
 export class CN_model_hold extends CN_base_model {
@@ -43,7 +44,7 @@ export class CN_model_hold extends CN_base_model {
         datetime: {
           title: "Date & Time",
           type: "datetime",
-          get_max: () => new Date(),
+          get_max: () => CN_common.get_date(),
           is_hidden: (model) => "add" == model.get_action_name(),
         },
         user: {

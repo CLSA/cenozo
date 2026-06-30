@@ -1,4 +1,5 @@
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 
 export class CN_model_event extends CN_base_model {
   constructor() {
@@ -30,7 +31,7 @@ export class CN_model_event extends CN_base_model {
             ]},
           },
         },
-        datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => new Date() },
+        datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => CN_common.get_date() },
         site_user: {
           title: "Site/User",
           is_hidden: (model) => "add" == model.get_action_name(),

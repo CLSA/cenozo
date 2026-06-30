@@ -43,7 +43,7 @@ export class CN_element_calendar extends CN_base_element {
     });
 
     const date = this.get_config("date");
-    this.set_date(CN_common.is_date(date) ? date : new Date());
+    this.set_date(CN_common.is_date(date) ? date : CN_common.get_date());
     this.#mode = this.get_config("mode");
   }
 
@@ -503,7 +503,7 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_month() {
-    const today_string = (new Date()).toDateString();
+    const today_string = CN_common.get_date().toDateString();
 
     // rebuild the table cell list
     this.#table_cell_list = [];
@@ -596,7 +596,7 @@ export class CN_element_calendar extends CN_base_element {
    * ADD DOCS
    */
   #display_week() {
-    const today_string = (new Date()).toDateString();
+    const today_string = CN_common.get_date().toDateString();
 
     // rebuild the table cell list
     this.#table_cell_list = [];

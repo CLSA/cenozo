@@ -154,7 +154,7 @@ export class CN_model_participant extends CN_model_base_person {
             date_of_birth: {
               title: "Date of Birth",
               type: "dob",
-              get_max: () => new Date(),
+              get_max: () => CN_common.get_date(),
               get_dod: async (model) => model.get_action().get_property("date_of_death").form_input.get_date(),
               is_constant: () => 3 <= CN_session.get("role", "tier"),
             },
@@ -162,7 +162,7 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Date of Death",
               type: "dod",
               get_min: (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
-              get_max: () => new Date(),
+              get_max: () => CN_common.get_date(),
               get_dob: async (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
             },
             date_of_death_accuracy: {
@@ -194,7 +194,7 @@ export class CN_model_participant extends CN_model_base_person {
         contact_details: {
           title: "Contact Details",
           properties: {
-            callback: { title: "Callback", type: "datetime", get_min: () => new Date() },
+            callback: { title: "Callback", type: "datetime", get_min: () => CN_common.get_date() },
             availability_type_id: {
               title: "Availability Preference",
               type: "enum",
@@ -354,7 +354,7 @@ export class CN_list_participant extends CN_action_list {
 
     if ("participant" == CN_session.get_leaf_model().get_name()) {
       const search_btn_el = this.constructor.html(
-        '<button name="search" class="btn btn-light btn-outline-primary">Search</button>'
+        '<button type="button" name="search" class="btn btn-light btn-outline-primary">Search</button>'
       );
       search_btn_el.addEventListener("click", () => {
         CN_session.navigate_to("search_result/list");
@@ -927,6 +927,7 @@ export class CN_multiedit_participant extends CN_base_action {
       nav_el.append(this.constructor.html(`
         <li class="nav-item" role="presentation">
           <button
+            type="button"
             class="nav-link ${"participant" == module_name ? "active" : ""}"
             id="${module_name}-tab"
             data-bs-toggle="tab"
@@ -965,7 +966,7 @@ export class CN_multiedit_participant extends CN_base_action {
       `);
 
       mod.proceed_btn_el = this.constructor.html(`
-        <button class="btn btn-primary" name="proceed">${
+        <button type="button" class="btn btn-primary" name="proceed">${
           "participant" == module_name ?
           "Change Details" :
           mod.enum ?

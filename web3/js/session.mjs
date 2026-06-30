@@ -460,7 +460,7 @@ class session extends CN_base_object {
     this.#menu_btn_group_el = CN_base_element.html(`
       <div name="menu-btn-group" class="d-flex">
         <div name="access"></div>
-        <button name="clock" class="btn btn-outline-light">
+        <button type="button" name="clock" class="btn btn-outline-light">
           <i class="bi bi-clock-fill"></i>
           <span name="time" class="nav-item"></span>
         </button>
@@ -518,7 +518,7 @@ class session extends CN_base_object {
       `));
     } else {
       const access_btn_el = CN_base_element.html(`
-        <button name="access" class="btn btn-outline-light mx-1">
+        <button type="button" name="access" class="btn btn-outline-light mx-1">
           ${CN_common.uc_words(this.#data.role.name)} @ ${this.#data.site.name}
         </button>
       `);
@@ -540,14 +540,11 @@ class session extends CN_base_object {
     const time_el = this.#main_menu_header_el.querySelector("span[name=time]");
     const update_clock = () => {
       // If the user's selected TZ does not match their computer then offset the time
-      const date = new Date();
-      const tz_offset = date.getTimezoneOffset() + this.#data.user.tz_offset * 60;
-      if (tz_offset) date.setMinutes(date.getMinutes() + tz_offset);
-      const datetime = CN_common.format_time(date);
+      const datetime = CN_common.format_time(CN_common.get_date());
       const tz = Intl.DateTimeFormat(
         'en-CA',
         { timeZone: this.#data.user.timezone, timeZoneName: "short" }
-      ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
+      ).formatToParts(CN_common.get_date()).find(o => o.type == "timeZoneName").value;
       time_el.innerHTML = `${datetime} ${tz}`;
     };
     update_clock();

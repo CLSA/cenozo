@@ -27,7 +27,7 @@ export class CN_element_date_picker extends CN_base_element {
     });
 
     const date = this.get_config("date");
-    this.set_date(CN_common.is_date(date) ? date : new Date());
+    this.set_date(CN_common.is_date(date) ? date : CN_common.get_date());
   }
 
   /**

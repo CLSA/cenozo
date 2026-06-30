@@ -39,7 +39,7 @@ export class CN_input_base_datetime extends CN_base_input {
         value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
         `${value} 12:00:00` :
         value.match(/^[0-9]{2}:[0-9]{2}:[0-9]{2}$/) ?
-        `${CN_common.format_datetime(new Date(), "date")} ${value}` :
+        `${CN_common.format_datetime(CN_common.get_date(), "date")} ${value}` :
         value
       );
     }
@@ -81,7 +81,7 @@ export class CN_input_base_datetime extends CN_base_input {
 
     // convert special values
     if ("now" == value) {
-      value = new Date();
+      value = CN_common.get_date();
     } else if (CN_common.is_string(value)) {
       value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
     }

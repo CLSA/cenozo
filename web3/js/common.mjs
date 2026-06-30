@@ -297,6 +297,17 @@ export class CN_common extends CN_base_object {
   }
 
   /**
+   * ADD DOCS
+   */
+  static get_date(date = null) {
+    // If the user's selected TZ does not match their computer then offset the time
+    const date_obj = null == date ? new Date() : new Date(date);
+    const tz_offset = date_obj.getTimezoneOffset() + CN_session.get("user", "tz_offset") * 60;
+    if (tz_offset) date_obj.setMinutes(date_obj.getMinutes() + tz_offset);
+    return date_obj;
+  }
+
+  /**
    * Determines whether a particular type is a datetime
    * @param string type: The type to check
    * @param string subtype: A datetime sub-type to restrict to ("date", "time", "second")

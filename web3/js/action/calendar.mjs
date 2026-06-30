@@ -24,7 +24,7 @@ export class CN_action_calendar extends CN_base_action {
     const calendar = {
       ...{
         mode: this.has_config("mode") ? this.get_config("mode") : "week",
-        date: this.has_config("date") ? this.get_config("date") : new Date(),
+        date: this.has_config("date") ? this.get_config("date") : CN_common.get_date(),
         allow_selection: this.has_config("on_select"),
       },
       ...JSON.parse(this.get_query_parameter("calendar"))
@@ -34,7 +34,7 @@ export class CN_action_calendar extends CN_base_action {
     if (this.has_config("scroll_time")) calendar.scroll_time = this.get_config("scroll_time");
     if (this.has_config("on_click_cell")) calendar.on_click_cell = this.get_config("on_click_cell");
 
-    if (CN_common.is_string(calendar.date)) calendar.date = new Date(`${calendar.date} 12:00:00`);
+    if (CN_common.is_string(calendar.date)) calendar.date = CN_common.get_date(`${calendar.date} 12:00:00`);
     this.#calendar = new CN_element_calendar(null, calendar);
 
     // the placeholder calendar can use the same config, just remove the interactions
@@ -91,7 +91,7 @@ export class CN_action_calendar extends CN_base_action {
       if (null == calendar) calendar = {};
       calendar.mode = mode;
     }
-    const today_string = CN_common.format_datetime(new Date(), "record").replace(/ .*/, "");
+    const today_string = CN_common.format_datetime(CN_common.get_date(), "record").replace(/ .*/, "");
     const date_string = CN_common.format_datetime(this.#calendar.get_date(), "record").replace(/ .*/, "");
     if (today_string != date_string) {
       if (null == calendar) calendar = {};
@@ -258,13 +258,28 @@ export class CN_action_calendar extends CN_base_action {
             <div class="dropdown-header text-bg-secondary">Download List Data</div>
           </li>
           <li class="bg-body">
-            <button name="csv" class="dropdown-item" href="#">Comma Separated Values (.csv)</button>
+            <button
+              type="button"
+              name="csv"
+              class="dropdown-item"
+              href="#"
+            >Comma Separated Values (.csv)</button>
           </li>
           <li class="bg-body">
-            <button name="xlsx" class="dropdown-item" href="#">Microsoft Excel (.xlsx)</button>
+            <button
+              type="button"
+              name="xlsx"
+              class="dropdown-item"
+              href="#"
+            >Microsoft Excel (.xlsx)</button>
           </li>
           <li class="bg-body">
-            <button name="ods" class="dropdown-item" href="#">OpenDocument Spreadsheet (.ods)</button>
+            <button
+              type="button"
+              name="ods"
+              class="dropdown-item"
+              href="#"
+            >OpenDocument Spreadsheet (.ods)</button>
           </li>
         </ul>
       </div>
@@ -323,16 +338,16 @@ export class CN_action_calendar extends CN_base_action {
 
     // add a button that brings the calendar to today's date
     const today_btn_el = this.constructor.html(
-      '<button name="today" class="btn btn-light btn-outline-primary">Today</button>'
+      '<button type="button" name="today" class="btn btn-light btn-outline-primary">Today</button>'
     );
     footer_el.querySelector("div[name=left-btn-group]").append(today_btn_el);
-    today_btn_el.addEventListener("click", () => this.#calendar.set_date(new Date()));
+    today_btn_el.addEventListener("click", () => this.#calendar.set_date(CN_common.get_date()));
 
     // add a view list button (if listing is allowed)
     const model = this.get_model();
     if (model.allow_list()) {
       const list_btn_el = this.constructor.html(`
-        <button name="list" class="btn btn-primary">
+        <button type="button" name="list" class="btn btn-primary">
           View ${CN_common.uc_words(model.get_singular())} List
         </button>
       `);

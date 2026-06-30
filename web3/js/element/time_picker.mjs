@@ -57,7 +57,7 @@ export class CN_element_time_picker extends CN_base_element {
    * ADD DOCS
    */
   async set_to_now() {
-    const date = new Date();
+    const date = CN_common.get_date();
     await this.set_time(date.getHours(), date.getMinutes(), date.getSeconds());
     this.update_element();
   }
@@ -95,7 +95,7 @@ export class CN_element_time_picker extends CN_base_element {
   update_element() {
     super.update_element();
 
-    const date = new Date();
+    const date = CN_common.get_date();
     date.setHours(Number(this.#hours_input.get_value()));
     date.setMinutes(Number(this.#minutes_input.get_value()));
     if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));
@@ -105,7 +105,7 @@ export class CN_element_time_picker extends CN_base_element {
       const tz = Intl.DateTimeFormat(
         'en-CA',
         { timeZone: CN_session.get("user", "timezone"), timeZoneName: "short" }
-      ).formatToParts(new Date()).find(o => o.type == "timeZoneName").value;
+      ).formatToParts(CN_common.get_date()).find(o => o.type == "timeZoneName").value;
       this.#time_el.innerHTML += ` ${tz}`;
     }
   }

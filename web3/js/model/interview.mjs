@@ -2,6 +2,7 @@ import { CN_action_list } from "../action/list.mjs"
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
 
@@ -49,7 +50,7 @@ export class CN_model_interview extends CN_base_model {
           title: "End Date & Time",
           type: "datetimesecond",
           get_min: (model) => model.get_action().get_property("start_datetime").form_input.get_date(),
-          get_max: () => new Date(), // now
+          get_max: () => CN_common.get_date(),
           is_constant: () => 3 > CN_session.get("role", "tier"),
           help: "Will remain blank until the questionnaire is finished.",
         },

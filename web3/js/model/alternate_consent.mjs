@@ -1,4 +1,5 @@
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_model_alternate_consent extends CN_base_model {
@@ -36,7 +37,7 @@ export class CN_model_alternate_consent extends CN_base_model {
           is_constant: (model) => "view" == model.get_action_name(),
           is_hidden: () => 3 > CN_session.get("role", "tier"),
         },
-        datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => new Date() },
+        datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => CN_common.get_date() },
         note: { title: "Note", type: "text" },
       },
     });

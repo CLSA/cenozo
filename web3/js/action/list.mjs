@@ -652,7 +652,7 @@ export class CN_action_list extends CN_base_action {
           } else if (CN_common.is_datetime_type(column.type, "time")) {
             value = CN_common.format_time(
               CN_common.is_string(value) ?
-              new Date(`${CN_common.format_datetime(new Date(), "date")} ${value}`) :
+              new Date(`${CN_common.format_datetime(CN_common.get_date(), "date")} ${value}`) :
               value
             );
           } else if (CN_common.is_string(value) && 0 < column.limit) {
@@ -667,7 +667,7 @@ export class CN_action_list extends CN_base_action {
                 <div class="d-flex">
                   <div class="w-100">${value}</div>
                   <div class="flex-shrink-1">
-                    <button name="delete" class="btn btn-sm btn-danger">
+                    <button type="button" name="delete" class="btn btn-sm btn-danger">
                       <i class="bi bi-x-circle-fill"></i>
                     </button>
                   </div>
@@ -719,7 +719,9 @@ export class CN_action_list extends CN_base_action {
     if (1 < pages) {
       // add the previous button
       const prev_el = this.constructor.html(`
-        <li class="page-item"><button class="page-link"><i class="bi bi-rewind-fill"></i></button></li>
+        <li class="page-item">
+          <button type="button" class="page-link"><i class="bi bi-rewind-fill"></i></button>
+        </li>
       `);
       if (1 == this.#current_page) this.constructor.set_disabled(prev_el, true);
       pagination_el.append(prev_el);
@@ -749,7 +751,7 @@ export class CN_action_list extends CN_base_action {
 
       for (let page = first_page; page <= last_page; page++) {
         let page_el = this.constructor.html(`
-          <li class="page-item"><button class="page-link">${page}</button></li>
+          <li class="page-item"><button type="button" class="page-link">${page}</button></li>
         `);
         if (page == this.#current_page) page_el.classList.add("active");
         pagination_el.append(page_el);
@@ -760,7 +762,9 @@ export class CN_action_list extends CN_base_action {
 
       // add the next button
       const next_el = this.constructor.html(`
-        <li class="page-item"><button class="page-link"><i class="bi bi-fast-forward-fill"></i></button></li>
+        <li class="page-item">
+          <button type="button" class="page-link"><i class="bi bi-fast-forward-fill"></i></button>
+        </li>
       `);
       if (pages == this.#current_page) this.constructor.set_disabled(next_el, true);
       pagination_el.append(next_el);
@@ -845,13 +849,28 @@ export class CN_action_list extends CN_base_action {
             <div class="dropdown-header text-bg-secondary">Download List Data</div>
           </li>
           <li class="bg-body">
-            <button name="csv" class="dropdown-item" href="#">Comma Separated Values (.csv)</button>
+            <button
+              type="button"
+              name="csv"
+              class="dropdown-item"
+              href="#"
+            >Comma Separated Values (.csv)</button>
           </li>
           <li class="bg-body">
-            <button name="xlsx" class="dropdown-item" href="#">Microsoft Excel (.xlsx)</button>
+            <button
+              type="button"
+              name="xlsx"
+              class="dropdown-item"
+              href="#"
+            >Microsoft Excel (.xlsx)</button>
           </li>
           <li class="bg-body">
-            <button name="ods" class="dropdown-item" href="#">OpenDocument Spreadsheet (.ods)</button>
+            <button
+              type="button"
+              name="ods"
+              class="dropdown-item"
+              href="#"
+            >OpenDocument Spreadsheet (.ods)</button>
           </li>
         </ul>
       </div>
@@ -981,32 +1000,33 @@ export class CN_action_list extends CN_base_action {
    */
   show_placeholder() {
     // update how many rows the placeholder has based on the existing data (minimum 1)
-    const total_rows = null == this.#total_records ? 20 : 0 == this.#total_records ? 1 : this.#records.length;
-
     const tbody_el = this.get_placeholder_element().querySelector("tbody");
-    tbody_el.innerHTML = "";
-    for (let row = 0; row < total_rows; row++) {
-      const td_list = [];
-      for (const col_name in this.#columns) {
-        const column = this.#columns[col_name];
-        td_list.push(`
-          <td
-            class="text-${column.align} border border-light border-2 px-3 placeholder-glow"
-            style="line-height: 30.6px;"
-          >
-            <span
-              class="
-                placeholder
-                placeholder-lg
-                bg-dark
-                bg-opacity-50
-                col-${Math.ceil(Math.random() * 5) + 5}
-              "
-            ></span>
-          </td>
-        `);
+    if (tbody_el) {
+      tbody_el.innerHTML = "";
+      const total_rows = null == this.#total_records ? 20 : 0 == this.#total_records ? 1 : this.#records.length;
+      for (let row = 0; row < total_rows; row++) {
+        const td_list = [];
+        for (const col_name in this.#columns) {
+          const column = this.#columns[col_name];
+          td_list.push(`
+            <td
+              class="text-${column.align} border border-light border-2 px-3 placeholder-glow"
+              style="line-height: 30.6px;"
+            >
+              <span
+                class="
+                  placeholder
+                  placeholder-lg
+                  bg-dark
+                  bg-opacity-50
+                  col-${Math.ceil(Math.random() * 5) + 5}
+                "
+              ></span>
+            </td>
+          `);
+        }
+        tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
       }
-      tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
     }
 
     super.show_placeholder();

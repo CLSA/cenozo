@@ -1,6 +1,7 @@
 import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_session } from "../session.mjs"
 
@@ -49,7 +50,7 @@ export class CN_model_assignment extends CN_base_model {
           title: "End Date & Time",
           type: "datetimesecond",
           get_min: (model) => model.get_action().get_property("start_datetime").form_input.get_date(),
-          get_max: () => new Date(),
+          get_max: () => CN_common.get_date(),
         },
         participant_id: { meta: { table: "participant", column: "id" }, is_hidden: () => true },
       },

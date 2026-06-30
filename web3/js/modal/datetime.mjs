@@ -31,7 +31,7 @@ export class CN_modal_datetime extends CN_base_modal {
       throw new Error(`CN_modal_datetime: ${mode} is not supported`);
     }
 
-    if (null === this.get_config("value")) this.set_config("value", new Date());
+    if (null === this.get_config("value")) this.set_config("value", CN_common.get_date());
     if (!CN_common.is_date(this.get_config("value"))) {
       throw new Error("Non-date value passed to CN_modal_datetime");
     }
@@ -65,7 +65,7 @@ export class CN_modal_datetime extends CN_base_modal {
    * ADD DOCS
    */
   get_date() {
-    const date = this.#date_picker ? this.#date_picker.get_date() : new Date();
+    const date = this.#date_picker ? this.#date_picker.get_date() : CN_common.get_date();
     if (this.#time_picker) {
       const time = this.#time_picker.get_time();
       date.setHours(time.hours);
@@ -87,7 +87,7 @@ export class CN_modal_datetime extends CN_base_modal {
    */
   #on_now_clicked(event) {
     if (this.#time_picker) this.#time_picker.set_to_now();
-    if (this.#date_picker) this.#date_picker.set_date(new Date());
+    if (this.#date_picker) this.#date_picker.set_date(CN_common.get_date());
   }
 
   /**
@@ -95,7 +95,7 @@ export class CN_modal_datetime extends CN_base_modal {
    * @param {*} event
    */
   #on_today_clicked(event) {
-    this.#date_picker.set_date(new Date());
+    this.#date_picker.set_date(CN_common.get_date());
   }
 
   /**
@@ -181,16 +181,22 @@ export class CN_modal_datetime extends CN_base_modal {
     const btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
     if (["date", "dob", "dod"].includes(this.get_config("mode"))) {
-      const today_btn_el = this.constructor.html('<button name="today" class="btn btn-light">Today</button>');
+      const today_btn_el = this.constructor.html(
+        '<button type="button" name="today" class="btn btn-light">Today</button>'
+      );
       today_btn_el.addEventListener("click", this.#on_today_clicked.bind(this));
       btn_group_el.append(today_btn_el);
     } else {
-      const now_btn_el = this.constructor.html('<button name="now" class="btn btn-light">Now</button>');
+      const now_btn_el = this.constructor.html(
+        '<button type="button" name="now" class="btn btn-light">Now</button>'
+      );
       now_btn_el.addEventListener("click", this.#on_now_clicked.bind(this));
       btn_group_el.append(now_btn_el);
     }
 
-    const empty_btn_el = this.constructor.html('<button name="empty" class="btn btn-light">Empty</button>');
+    const empty_btn_el = this.constructor.html(
+      '<button type="button" name="empty" class="btn btn-light">Empty</button>'
+    );
     empty_btn_el.addEventListener("click", this.#on_empty_clicked.bind(this));
     btn_group_el.append(empty_btn_el);
 

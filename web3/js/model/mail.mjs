@@ -93,7 +93,7 @@ export class CN_model_mail extends CN_base_model {
         schedule_datetime: {
           title: "Scheduled Date & Time",
           type: "datetime",
-          get_min: () => new Date(),
+          get_min: () => CN_common.get_date(),
           is_constant: (model) => (
             "view" == model.get_action_name() &&
             "(empty)" != model.get_action().get_property_value("sent_datetime")

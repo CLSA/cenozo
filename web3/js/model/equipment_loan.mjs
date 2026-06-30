@@ -1,4 +1,5 @@
 import { CN_base_model } from "./base_model.mjs"
+import { CN_common } from "../common.mjs"
 import { CN_model_equipment } from "./equipment.mjs"
 import { CN_model_participant } from "./participant.mjs"
 
@@ -39,12 +40,12 @@ export class CN_model_equipment_loan extends CN_base_model {
         start_datetime: {
           title: "Loan Date & Time",
           type: "datetime",
-          get_max: () => new Date(),
+          get_max: () => CN_common.get_date(),
         },
         end_datetime: {
           title: "Return Date & Time",
           type: "datetime",
-          get_max: () => new Date(),
+          get_max: () => CN_common.get_date(),
           is_hidden: (model) => "add" == model.get_action_name(),
         },
         note: { title: "Note", type: "text" },
