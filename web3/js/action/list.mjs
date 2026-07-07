@@ -853,7 +853,6 @@ export class CN_action_list extends CN_base_action {
               type="button"
               name="csv"
               class="dropdown-item"
-              href="#"
             >Comma Separated Values (.csv)</button>
           </li>
           <li class="bg-body">
@@ -861,7 +860,6 @@ export class CN_action_list extends CN_base_action {
               type="button"
               name="xlsx"
               class="dropdown-item"
-              href="#"
             >Microsoft Excel (.xlsx)</button>
           </li>
           <li class="bg-body">
@@ -869,7 +867,6 @@ export class CN_action_list extends CN_base_action {
               type="button"
               name="ods"
               class="dropdown-item"
-              href="#"
             >OpenDocument Spreadsheet (.ods)</button>
           </li>
         </ul>

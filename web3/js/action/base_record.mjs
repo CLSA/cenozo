@@ -438,8 +438,7 @@ export class CN_action_base_record extends CN_base_action {
     return this.constructor.html(`
       <div name="${CN_common.encode_html(group_name)}" class="accordion-item px-0">
         <div class="accordion-header">
-          <a
-            href="#"
+          <button
             class="
               accordion-button
               link-underline
@@ -452,7 +451,7 @@ export class CN_action_base_record extends CN_base_action {
             data-bs-target="#${group_id}"
             aria-expanded="${group.open ? "true" : "false"}"
             aria-controls="${group_id}"
-          >${group.title}</a>
+          >${group.title}</button>
         </div>
         <div id="${group_id}" class="accordion-collapse collapse ${group.open ? "show" : ""}">
           <div class="accordion-body"></div>

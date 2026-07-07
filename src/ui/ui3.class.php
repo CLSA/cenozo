@@ -714,7 +714,7 @@ class ui3 extends \cenozo\base_object
       }
     }
 
-    // the following three scripts must always be loaded last
+    // the app.js script must always be loaded last
     $this->script_list[] = [
       'id' => 'app',
       'path' => CENOZO3_URL,
