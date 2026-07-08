@@ -22,6 +22,7 @@ class session extends CN_base_object {
 
   #main_menu_header_el;
   #main_menu_offcanvas_el;
+  #main_menu_offcanvas_bs;
   #main_content_el;
   #breadcrumbs_el;
   #menu_btn_group_el;
@@ -84,9 +85,25 @@ class session extends CN_base_object {
   }
 
   /**
+   * ADD DOCS
+   */
+  open_menu() {
+    this.#main_menu_offcanvas_bs.show();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  close_menu() {
+    this.#main_menu_offcanvas_bs.hide();
+  }
+
+  /**
    * Handles browser navigation buttons
    */
   async render() {
+    const { CN_app_session } = await import(`${ROOT_URL}/js/app_session.mjs`);
+
     this.#main_content_el.innerHTML = "";
     try {
       // show loading indicator in breadcrumb trail
@@ -132,6 +149,7 @@ class session extends CN_base_object {
       this.#breadcrumb_trail.set_config("loading", false);
       this.#breadcrumb_trail.set_config("crumb_list", crumb_list);
       this.#breadcrumb_trail.update_element();
+      await CN_app_session.render();
     } catch (error) {
       console.error(error);
       const model = new CN_model_error(error);
@@ -147,9 +165,9 @@ class session extends CN_base_object {
 
   /**
    * Reloads the page at a particular path
-   * @param boolean root: Wether to return to the application root
+   * @param boolean path: Which path to load (true for the application root, empty for the current URL)
    */
-  reload(root = false) {
+  reload(path = false) {
     // show loading indicator in breadcrumb trail
     this.#breadcrumb_trail.set_config("loading", true);
     this.#breadcrumb_trail.update_element();
@@ -161,8 +179,8 @@ class session extends CN_base_object {
       </div>
     `));
     this.#set_loading_state(true);
-    if (root) {
-      window.location.assign(ROOT_URL);
+    if (path) {
+      window.location.assign(CN_common.is_string(path) ? `${ROOT_URL}/${path}` : ROOT_URL);
     } else {
       window.location.reload();
     }
@@ -217,10 +235,14 @@ class session extends CN_base_object {
    * Starts the application
    */
   async start() {
+    const { CN_app_session } = await import(`${ROOT_URL}/js/app_session.mjs`);
+
     await this.#update_data();
     if (this.#data.application.development_mode) console.info("Development mode");
     await this.#generate_ui();
+    await CN_app_session.start();
     await this.render();
+
     this.#set_loading_state(false);
   }
 
@@ -441,12 +463,10 @@ class session extends CN_base_object {
           <button
             name="menu-button"
             type="button"
-            class="btn btn-outline-light my-1"
+            class="btn btn-outline-light fw-bold my-1"
             data-bs-toggle="offcanvas"
             data-bs-target="#main-menu-offcanvas"
-          >
-            <strong>${APP_TITLE}</strong>
-          </button>
+          >${APP_TITLE}</button>
         </div>
       </nav>
     `);
@@ -496,17 +516,13 @@ class session extends CN_base_object {
       </div>
     `);
     this.#menu_el = this.#main_menu_offcanvas_el.querySelector("div[name=menu]");
-
     this.#main_content_el = CN_base_element.html('<div class="container-fluid my-2"></div>');
-
     document.querySelector("div[name=app-body]").replaceChildren(
       this.#main_menu_header_el,
       this.#main_menu_offcanvas_el,
       this.#main_content_el,
     );
-
-    const split_lists = null != this.#data.menu.lists && 20 <= Object.keys(this.#data.menu.lists).length;
-    const main_menu_offcanvas_bs = new bootstrap.Offcanvas(this.#main_menu_offcanvas_el);
+    this.#main_menu_offcanvas_bs = new bootstrap.Offcanvas(this.#main_menu_offcanvas_el);
 
     const access_el = this.#main_menu_header_el.querySelector("div[name=access]");
     const access_count = await CN_api.count("self/0/access");
@@ -523,7 +539,7 @@ class session extends CN_base_object {
         </button>
       `);
       access_btn_el.addEventListener("click", async () => {
-        main_menu_offcanvas_bs.hide();
+        this.close_menu();
         const response = await CN_modal_site_role.create_and_open();
         if (
           null != response &&
@@ -553,13 +569,13 @@ class session extends CN_base_object {
     // wire up the clock and menu buttons
     const clock_el = this.#main_menu_header_el.querySelector("button[name=clock]");
     clock_el.addEventListener("click", async () => {
-      main_menu_offcanvas_bs.hide();
+      this.close_menu();
       const response = await CN_modal_clock_settings.create_and_open();
       if (null != response) await this.set_timezone(response.timezone, response.am_pm);
     });
     const account_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=account]");
     account_btn_el.addEventListener("click", async () => {
-      main_menu_offcanvas_bs.hide();
+      this.close_menu();
       const response = await CN_modal_account.create_and_open();
       if (
         null != response &&
@@ -573,13 +589,13 @@ class session extends CN_base_object {
     });
     const timezone_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=timezone]");
     timezone_btn_el.addEventListener("click", async () => {
-      main_menu_offcanvas_bs.hide();
+      this.close_menu();
       const response = await CN_modal_clock_settings.create_and_open();
       if (null != response) await this.set_timezone(response.timezone, response.am_pm);
     });
     const password_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=password]");
     password_btn_el.addEventListener("click", async () => {
-      main_menu_offcanvas_bs.hide();
+      this.close_menu();
       if (await CN_modal_password.create_and_open()) {
         await CN_modal_message.create_and_open({
           title: "Password Changed",
@@ -589,11 +605,12 @@ class session extends CN_base_object {
     });
     const logout_btn_el = this.#main_menu_offcanvas_el.querySelector("button[name=logout]");
     logout_btn_el.addEventListener("click", async () => {
-      main_menu_offcanvas_bs.hide();
+      this.close_menu();
       await this.#logout();
     });
 
     // determine the column width of each sub-menu
+    const split_lists = null != this.#data.menu.lists && 20 <= Object.keys(this.#data.menu.lists).length;
     const total_menus = (
       (null == this.#data.menu.lists ? 0 : 1) +
       (null == this.#data.menu.utilities ? 0 : 1) +
@@ -644,7 +661,7 @@ class session extends CN_base_object {
           <button name="${name}.list" type="button" class="btn btn-outline-primary ${rounded}">${title}</button>
         `);
         btn_el.addEventListener("click", async () => {
-          main_menu_offcanvas_bs.hide();
+          this.close_menu();
           await this.navigate_to(`${name}/list`);
         });
 
@@ -684,7 +701,7 @@ class session extends CN_base_object {
           >${title}</button>
         `);
         btn_el.addEventListener("click", async () => {
-          main_menu_offcanvas_bs.hide();
+          this.close_menu();
           await this.navigate_to(`${utility.subject}/${utility.action}`);
         });
         btn_group_el.append(btn_el);
@@ -715,7 +732,7 @@ class session extends CN_base_object {
           >${title}</button>
         `);
         btn_el.addEventListener("click", async () => {
-          main_menu_offcanvas_bs.hide();
+          this.close_menu();
           await this.navigate_to(null == id ? "custom_report/list" : `report_type/view/${id}`);
         });
         btn_group_el.append(btn_el);
