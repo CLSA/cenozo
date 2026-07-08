@@ -239,10 +239,20 @@ class get extends \cenozo\service\service
         if( !is_null( $db_assignment ) )
         {
           $db_interview = $db_assignment->get_interview();
-          $pseudo_record['user']['assignment'] = [
-            'id' => $db_assignment->id,
-            'participant_id' => is_null( $db_interview ) ? NULL : $db_interview->participant_id
-          ];
+          $pseudo_record['user']['assignment'] = (
+            $session->version3 ?
+            [
+              'role_id' => $db_assignment->role_id,
+              'role_name' => $db_assignment->get_role()->name,
+              'site_id' => $db_assignment->site_id,
+              'site_name' => $db_assignment->get_site()->name,
+              'participant_id' => is_null( $db_interview ) ? NULL : $db_interview->participant_id
+            ] :
+            [
+              'id' => $db_assignment->id,
+              'participant_id' => is_null( $db_interview ) ? NULL : $db_interview->participant_id
+            ]
+          );
         }
       }
 

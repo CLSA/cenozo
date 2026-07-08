@@ -1,3 +1,17 @@
+@keyframes pulse {
+  0% { opacity: 0; }
+  100% { opacity: 0.666; }
+}
+
+@keyframes barberpole {
+  100% { background-position: 100% 100%; }
+}
+
+@keyframes pulse-danger {
+  0% { background-color: inherit; }
+  100% { background-color: rgb(var(--bs-danger-rgb)); }
+}
+
 .loading {
   background: url(../img/loading.gif);
   background-repeat: no-repeat;
@@ -42,15 +56,6 @@ div[name=app_bg].loading:before {
   animation: barberpole 20s linear infinite;
 }
 
-@keyframes pulse {
-  0% { opacity: 0; }
-  100% { opacity: 0.666; }
-}
-
-@keyframes barberpole {
-  100% { background-position: 100% 100%; }
-}
-
 .allow-select {
   -webkit-touch-callout: text;
   -webkit-user-select: text;
@@ -65,4 +70,8 @@ div[name=app_bg].loading:before {
 
 .tooltip {
   --bs-tooltip-max-width: 500px !important;
+}
+
+.btn-pulse-danger:not(:hover) {
+  animation: pulse-danger 1s linear infinite alternate;
 }
