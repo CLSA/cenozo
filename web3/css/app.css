@@ -12,17 +12,20 @@
   100% { background-color: rgb(var(--bs-danger-rgb)); }
 }
 
-.loading {
-  background: url(../img/loading.gif);
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
-div[name="app_bg"] {
+#app-body {
   position: relative;
+  box-shadow: 0 0 4rem 4rem white;
 }
 
-div[name="app_bg"]:before {
+#main-content {
+  margin-top: 53.6px !important;
+}
+
+#main-menu-header {
+  box-shadow: 0 0.1rem 0.5rem rgba(0,0,0,0.5) !important;
+}
+
+body:before {
   content: ' ';
   display: block;
   position: absolute;
@@ -35,11 +38,13 @@ div[name="app_bg"]:before {
   opacity: 0.333;
 }
 
-div[name="app_body"] {
-  position: relative;
+.loading {
+  background: url(../img/loading.gif);
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
-div[name=app_bg].loading:before {
+body.loading:before {
   animation: pulse 1s linear infinite alternate;
 }
 

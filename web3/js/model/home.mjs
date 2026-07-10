@@ -93,7 +93,7 @@ export class CN_model_home extends CN_base_model {
     }
 
     return CN_base_element.html(`
-      <div class="container-fluid rounded bg-white p-4">
+      <div class="container-fluid rounded bg-white p-2">
         <div class="row">
           <div class="col-sm-6">
             <div class="text-primary fs-4">Welcome to ${CN_session.get("application", "title")}</div>

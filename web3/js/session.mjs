@@ -104,7 +104,8 @@ class session extends CN_base_object {
   async render() {
     const { CN_app_session } = await import(`${ROOT_URL}/js/app_session.mjs`);
 
-    this.#main_content_el.innerHTML = "";
+    const content_el = CN_base_element.html('<div class="container-fluid px-2 bg-white"></div>');
+    this.#main_content_el.replaceChildren(content_el);
     try {
       // show loading indicator in breadcrumb trail
       this.#breadcrumb_trail.set_config("loading", true);
@@ -132,7 +133,7 @@ class session extends CN_base_object {
       );
 
       // now add the model's element to the DOM and run the leaf module
-      this.#main_content_el.append(leaf_model.get_element());
+      content_el.append(leaf_model.get_element());
       await leaf_model.run();
 
       // create the crumbs for the breadcrumb trail
@@ -154,7 +155,7 @@ class session extends CN_base_object {
       console.error(error);
       const model = new CN_model_error(error);
       await model.run();
-      this.#main_content_el.replaceChildren(model.get_element());
+      content_el.replaceChildren(model.get_element());
 
       // update the breadcrumbs
       this.#breadcrumb_trail.set_config("loading", false);
@@ -264,10 +265,10 @@ class session extends CN_base_object {
 
   #set_loading_state(loading) {
     if (loading) {
-      document.querySelector("div[name=app-bg]").classList.add("loading");
+      document.querySelector("body").classList.add("loading");
       document.querySelector("nav.navbar").classList.add("bg-loading");
     } else {
-      document.querySelector("div[name=app-bg]").classList.remove("loading");
+      document.querySelector("body").classList.remove("loading");
       document.querySelector("nav.navbar").classList.remove("bg-loading");
     }
   }
@@ -458,7 +459,7 @@ class session extends CN_base_object {
    */
   async #generate_ui() {
     this.#main_menu_header_el = CN_base_element.html(`
-      <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
+      <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark fixed-top bg-primary p-0">
         <div class="container-fluid">
           <button
             name="menu-button"
@@ -516,8 +517,8 @@ class session extends CN_base_object {
       </div>
     `);
     this.#menu_el = this.#main_menu_offcanvas_el.querySelector("div[name=menu]");
-    this.#main_content_el = CN_base_element.html('<div class="container-fluid my-2"></div>');
-    document.querySelector("div[name=app-body]").replaceChildren(
+    this.#main_content_el = CN_base_element.html('<div id="main-content"></div>');
+    document.getElementById("app-body").replaceChildren(
       this.#main_menu_header_el,
       this.#main_menu_offcanvas_el,
       this.#main_content_el,

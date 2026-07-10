@@ -34,51 +34,53 @@
   <title><?php echo APP_TITLE; ?></title>
 </head>
 <body class="background user-select-none">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
-    <div class="container-fluid">
-      <button type="button" class="btn btn-outline-light my-1" disabled>
-        <strong><?php echo APP_TITLE; ?></strong>
-      </button>
-      <div class="collapse navbar-collapse ms-2">
-        <div>
-          <i class="bi-chevron-compact-right text-light"></i>
-          <button class="home btn btn-primary px-1" disabled="true">Login</button>
+  <div id="app-body" class="user-select-none">
+    <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
+      <div class="container-fluid">
+        <button type="button" class="btn btn-outline-light my-1" disabled>
+          <strong><?php echo APP_TITLE; ?></strong>
+        </button>
+        <div class="collapse navbar-collapse ms-2">
+          <div>
+            <i class="bi-chevron-compact-right text-light"></i>
+            <button class="home btn btn-primary px-1" disabled="true">Login</button>
+          </div>
         </div>
+        <div name="menu-btn-group" class="d-flex"></div>
       </div>
-      <div name="menu-btn-group" class="d-flex"></div>
-    </div>
-  </nav>
+    </nav>
 
-  <div id="main-content" class="bg-white pt-2 pb-4">
-    <div class="container my-3">
-      <img id="logo" class="img-responsive w-50" onerror="this.style.display='none'"></img>
-    </div>
+    <div id="main-content-login" class="bg-white pt-2 pb-4">
+      <div class="container my-3">
+        <img id="logo" class="img-responsive w-50" onerror="this.style.display='none'"></img>
+      </div>
 
-    <div class="container">
-      <div class="card">
-        <form name="login">
-          <div class="card-header text-bg-primary fw-bold fs-4">
-            Login Required
-          </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <div>
-                <label for="username" class="form-label">Username</label>
-                <input type="username" class="form-control" id="username" placeholder="Username" required>
-              </div>
-              <div>
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Password" required>
-              </div>
-              <span name="login-message" class="text-danger fw-bold mx-3"></span>
+      <div class="container">
+        <div class="card">
+          <form name="login">
+            <div class="card-header text-bg-primary fw-bold fs-4">
+              Login Required
             </div>
-          </div>
-          <div class="card-footer text-bg-secondary">
-            <div class="d-flex flex-row-reverse w-100">
-              <button name="submit" type="button" class="btn btn-light" autofocus>Login</button>
+            <div class="card-body">
+              <div class="row g-3">
+                <div>
+                  <label for="username" class="form-label">Username</label>
+                  <input type="username" class="form-control" id="username" placeholder="Username" required>
+                </div>
+                <div>
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" class="form-control" id="password" placeholder="Password" required>
+                </div>
+                <span name="login-message" class="text-danger fw-bold mx-3"></span>
+              </div>
             </div>
-          </div>
-        </form>
+            <div class="card-footer text-bg-secondary">
+              <div class="d-flex flex-row-reverse w-100">
+                <button name="submit" type="button" class="btn btn-light" autofocus>Login</button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>

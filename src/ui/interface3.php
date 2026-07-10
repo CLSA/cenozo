@@ -16,28 +16,26 @@
   <meta http-equiv="Expires" content="-1">
   <title><?php echo APP_TITLE; ?></title>
 </head>
-<body>
-  <div name="app-bg" class="loading">
-    <div name="app-body" class="user-select-none">
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0 bg-loading">
-        <div class="container-fluid">
-          <button type="button" class="btn btn-outline-light my-1" disabled="">
-            <strong><?php echo APP_TITLE; ?></strong>
-          </button>
-          <div class="collapse navbar-collapse ms-2">
-            <div>
-              <i class="bi-chevron-compact-right text-light"></i>
-              <button class="home btn btn-primary px-1" disabled="true">Loading...</button>
-            </div>
-          </div>
-          <div name="menu-btn-group" class="d-flex">
-            <div class="spinner-border text-light" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
+<body class="loading">
+  <div id="app-body" class="user-select-none">
+    <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark fixed-top bg-primary p-0 bg-loading">
+      <div class="container-fluid">
+        <button type="button" class="btn btn-outline-light my-1" disabled="">
+          <strong><?php echo APP_TITLE; ?></strong>
+        </button>
+        <div class="collapse navbar-collapse ms-2">
+          <div>
+            <i class="bi-chevron-compact-right text-light"></i>
+            <button class="home btn btn-primary px-1" disabled="true">Loading...</button>
           </div>
         </div>
-      </nav>
-    </div>
+        <div name="menu-btn-group" class="d-flex">
+          <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </nav>
   </div>
 </body>
 </html>

@@ -94,7 +94,7 @@
               });
 
               if (201 == response.status) {
-                document.getElementById("main-content").innerHTML = "";
+                document.getElementById("main-content-login").innerHTML = "";
                 document.querySelector("button.home").innerHTML = "Loading...";
                 window.location.reload();
               } else if (202 == response.status) {
