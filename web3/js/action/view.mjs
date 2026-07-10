@@ -222,12 +222,12 @@ export class CN_action_view extends CN_action_base_record {
     // update the child lists
     const btn_group_el = this.#list_selector_el.querySelector(".card-footer > div.row");
     const selector_model_list = this.get_selector_child_list();
+    this.#child_lists_el.innerHTML = "";
     if (1 >= selector_model_list.length) {
       // remove all buttons from the list selector
       btn_group_el.innerHTML = "";
 
       // only display the sole child, if there is one
-      this.#child_lists_el.innerHTML = "";
       if (0 < selector_model_list.length) {
         this.#child_lists_el.append(selector_model_list[0].model.get_element());
       }

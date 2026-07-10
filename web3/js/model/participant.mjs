@@ -367,6 +367,8 @@ export class CN_list_participant extends CN_action_list {
 }
 
 export class CN_view_participant extends CN_view_base_person {
+  #show_study_phase_status = false;
+
   /**
    * Extends the parent method
    */
@@ -382,7 +384,23 @@ export class CN_view_participant extends CN_view_base_person {
    * Extends the parent method
    */
   get_selector_child_list() {
-    return super.get_selector_child_list().map(title => "Application" == title ? "Release" : title);
+    const child_list = super.get_selector_child_list();
+    return (
+      this.#show_study_phase_status ?
+      child_list :
+      child_list.filter(child => "study_phase_status" != child.model.get_name())
+    );
+  }
+
+  /**
+   * Extends the parent method
+   */
+  async on_load() {
+    const response = await Promise.all([
+      CN_api.count("study", { modifier: { where: { column: "enable_status", operator: "=", value: true } } }),
+      super.on_load(),
+    ]);
+    this.#show_study_phase_status = 0 < response[0];
   }
 
   /**
@@ -602,41 +620,43 @@ export class CN_multiedit_participant extends CN_base_action {
       const mod = this.#module_list[module_name];
 
       // don't load the module if it has already been loaded or for the note module
-      if (mod.moudle || "note" == module_name) continue;
+      if (mod.module || "note" == module_name) continue;
 
-      mod.module = CN_session.get_module(module_name);
-      await mod.module.load_classes();
-      const model = mod.module.create_model();
+      promise_list.push((async () => {
+        mod.module = CN_session.get_module(module_name);
+        await mod.module.load_classes();
+        const model = mod.module.create_model();
 
-      if (mod.hasOwnProperty("properties")) {
-        const properties = model.clone_properties();
+        if (mod.hasOwnProperty("properties")) {
+          const properties = model.clone_properties();
 
-        // find each property (some may be in sub-groups) and populate any enum values
-        for (const prop_name in mod.properties) {
-          let prop = null;
+          // find each property (some may be in sub-groups) and populate any enum values
+          for (const prop_name in mod.properties) {
+            let prop = null;
 
-          if (Object.keys(properties).includes(prop_name)) {
-            prop = properties[prop_name];
-          } else {
-            // look in the sub-groups
-            for (const p in properties) {
-              if (properties[p].hasOwnProperty("properties")) {
-                if (Object.keys(properties[p].properties).includes(prop_name)) {
-                  prop = properties[p].properties[prop_name];
-                  break;
+            if (Object.keys(properties).includes(prop_name)) {
+              prop = properties[prop_name];
+            } else {
+              // look in the sub-groups
+              for (const p in properties) {
+                if (properties[p].hasOwnProperty("properties")) {
+                  if (Object.keys(properties[p].properties).includes(prop_name)) {
+                    prop = properties[p].properties[prop_name];
+                    break;
+                  }
                 }
               }
             }
-          }
 
-          // if we didn't find the prop then ignore it
-          if (null == prop) {
-            delete mod.properties[prop_name];
-          } else {
-            mod.properties[prop_name] = prop;
+            // if we didn't find the prop then ignore it
+            if (null == prop) {
+              delete mod.properties[prop_name];
+            } else {
+              mod.properties[prop_name] = prop;
+            }
           }
         }
-      }
+      })());
     }
 
     await Promise.all(promise_list);

@@ -147,7 +147,10 @@ export class CN_view_alternate extends CN_view_base_person {
       );
       right_btn_group_el.append(this.#view_participant_btn_el);
       this.#view_participant_btn_el.addEventListener("click", async () => {
-        CN_session.navigate_to(`participant/view/${await this.get_property_value_for_record("participant_id")}`);
+        CN_session.navigate_to(
+          `participant/view/${await this.get_property_value_for_record("participant_id")}`,
+          { tab: "alternate" },
+        );
       });
     }
 

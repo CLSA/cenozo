@@ -483,7 +483,6 @@ class ui3 extends \cenozo\base_object
       ['subject' => 'participant', 'title' => 'Participants'],
       ['subject' => 'proxy_type', 'title' => 'Proxy Types'],
       ['subject' => 'setting', 'title' => 'Settings'],
-      ['subject' => 'study', 'title' => 'Studies'],
       ['subject' => 'trace_type', 'title' => 'Trace Types'],
       ['subject' => 'user', 'title' => 'Users'],
     ];

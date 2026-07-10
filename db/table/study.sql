@@ -6,6 +6,7 @@ CREATE TABLE study (
   name varchar(45) NOT NULL,
   consent_type_id int(10) unsigned DEFAULT NULL,
   completed_event_type_id int(10) unsigned DEFAULT NULL,
+  enable_status tinyint(1) NOT NULL DEFAULT 0,
   description mediumtext DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_name (name),

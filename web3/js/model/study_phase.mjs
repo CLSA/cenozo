@@ -1,3 +1,4 @@
+import { CN_action_view } from "../action/view.mjs"
 import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
@@ -29,6 +30,7 @@ export class CN_model_study_phase extends CN_base_model {
           is_hidden: () => 3 > CN_session.get("role", "tier"),
           help: "The special identifier used by this study-phase.",
         },
+        enable_status: { meta: { table: "study", column: "enable_status" }, is_hidden: () => true },
       },
     });
   }
@@ -60,5 +62,19 @@ export class CN_model_study_phase extends CN_base_model {
         return await CN_api.get("study_phase", api_params);
       },
     };
+  }
+}
+
+export class CN_view_study_phase extends CN_action_view {
+  /**
+   * Extends parent method
+   */
+  get_selector_child_list() {
+    const child_list = super.get_selector_child_list();
+    return (
+      !this.get_property_value("enable_status") ?
+      child_list.filter(child => "study_phase_status" != child.model.get_name()) :
+      child_list
+    );
   }
 }
