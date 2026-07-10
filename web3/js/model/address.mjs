@@ -143,6 +143,8 @@ export class CN_add_address extends CN_add_traceable {
           })()
         )
       );
+
+      await this.run();
     };
 
     left_btn_group_el.querySelector("button[name=activate]").addEventListener("click", () => set_months(true));

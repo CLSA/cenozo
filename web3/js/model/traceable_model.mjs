@@ -175,7 +175,7 @@ export class CN_view_traceable extends CN_action_view {
   /**
    * Extends the parent method
    */
-  async on_set_property(prop_name) {
+  async on_set_property(prop_name, run = true) {
     // only test when setting a participant's active value
     const parent_model = this.get_model().get_parent_model();
     if ("active" == prop_name && "participant" == parent_model.get_name()) {
@@ -187,14 +187,14 @@ export class CN_view_traceable extends CN_action_view {
 
       if (trace_reason) {
         // if a reason was given then update the participant with a new trace
-        await super.on_set_property(prop_name);
+        await super.on_set_property(prop_name, run);
         this.get_model().add_trace(trace_reason);
       } else {
         this.get_property(prop_name).form_input.undo_value(true);
-        this.run();
+        if (run) this.run();
       }
     } else {
-      await super.on_set_property(prop_name);
+      await super.on_set_property(prop_name, run);
     }
   }
 

@@ -53,8 +53,8 @@ export class CN_view_export_restriction extends CN_action_view {
   /**
    * Extend parent method
    */
-  async on_set_property(prop_name) {
-    await super.on_set_property(prop_name);
+  async on_set_property(prop_name, run = true) {
+    await super.on_set_property(prop_name, false);
 
     // if the table name has changed then make sure to update the column_name as well
     if ("table_name" == prop_name) {
@@ -62,7 +62,9 @@ export class CN_view_export_restriction extends CN_action_view {
         "column_name",
         this.get_property(prop_name).form_input.get_config("enum").values[0].key
       );
-      await super.on_set_property("column_name");
+      await super.on_set_property("column_name", false);
     }
+
+    if (run) await this.run();
   }
 }

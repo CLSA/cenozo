@@ -141,8 +141,9 @@ export class CN_action_view extends CN_action_base_record {
   /**
    * Called after a property's value is changed in the DOM
    * @param string prop_name: The name of the property
+   * @param boolean run: Whether to run the action after the operation is complete
    */
-  async on_set_property(prop_name) {
+  async on_set_property(prop_name, run = true) {
     try {
       // update the server
       let data = {};
@@ -155,12 +156,12 @@ export class CN_action_view extends CN_action_base_record {
           this.get_property(prop_name).form_input.show_error("Conflicts with existing record");
         });
       } else {
-        this.run();
+        if (run) this.run();
         throw error;
       }
     }
 
-    await this.run();
+    if (run) await this.run();
   }
 
   /**

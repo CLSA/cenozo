@@ -79,7 +79,7 @@ export class CN_model_application extends CN_base_model {
           enum: {
             path: "study_phase",
             select: { column: {
-              column: "CONCAT(study.name, ' ', study_phase.name)",
+              column: "CONCAT(study.name, ': ', study_phase.name)",
               alias: "name",
               table_prefix: false,
             } },

@@ -393,6 +393,13 @@ export class CN_action_base_record extends CN_base_action {
   }
 
   /**
+   * ADD DOCS
+   */
+  async on_set_property(prop_name, run) {
+    throw new Error(`${this.constructor}.on_set_property() must be implemented.`);
+  }
+
+  /**
    * Extend parent method
    */
   async on_dom_add() {

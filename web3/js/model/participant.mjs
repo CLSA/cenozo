@@ -192,36 +192,115 @@ export class CN_model_participant extends CN_model_base_person {
         },
 
         contact_details: {
-          title: "Contact Details",
+          title: (
+            CN_session.get("application", "site_based") ?
+            "Site & Contact Details" :
+            "Contact Details"
+          ),
           properties: {
-            callback: { title: "Callback", type: "datetime", get_min: () => CN_common.get_date() },
-            availability_type_id: {
-              title: "Availability Preference",
-              type: "enum",
-              enum: { path: "availability_type" },
-            },
-            out_of_area: {
-              title: "Out of Area",
-              type: "boolean",
-              help: "Whether the participant lives outside of the study's serviceable area.",
-            },
-            email: {
-              title: "Email",
-              type: "email",
-              help: 'Must be in the format "account@domain.name".',
-            },
-            email2: {
-              title: "Alternate Email",
-              type: "email",
-              help: 'Must be in the format "account@domain.name".',
-            },
-            mass_email: {
-              title: "Mass Emails",
-              type: "boolean",
-              help: `
-                Whether the participant wishes to be included in mass emails such as newsletters,
-                holiday greetings, etc.
-              `,
+            // only include site properties when the application is site-based
+            ...(
+              CN_session.get("application", "site_based") ?
+              {
+                id: { is_hidden: () => true },
+                default_site: {
+                  title: "Default Site",
+                  meta: { table: "default_site", column: "name" },
+                  is_constant: () => true,
+                  is_hidden: () => !CN_session.get("application", "site_based"),
+                  help: "The site the participant belongs to if a preferred site is not set.",
+                },
+                preferred_site_id: {
+                  title: "Preferred Site",
+                  meta: { table: "preferred_site", column: "id" },
+                  type: "enum",
+                  enum: { path: "site" },
+                  is_hidden: () => !CN_session.get("application", "site_based"),
+                  on_change: async (form_input, valid) => {
+                    const action = form_input.get_action();
+                    let proceed = true;
+                    let access_to_participant_lost = false;
+
+                    if (valid && !CN_session.get("role", "all_sites")) {
+                      const participant_id = await action.get_property_value_for_record("id");
+                      const default_site = await action.get_property_value_for_record("default_site");
+                      const preferred_site_id = form_input.get_value();
+
+                      // warn non all-sites users when changing the preferred site
+                      if (
+                        ("" === preferred_site_id && default_site != CN_session.get("site", "name")) ||
+                        ("" !== preferred_site_id && preferred_site_id != CN_session.get("site", "id"))
+                      ) {
+                        const assignment = CN_session.get("user", "assignment");
+                        access_to_participant_lost = (
+                          !CN_common.is_object(assignment) ||
+                          participant_id != assignment.participant_id
+                        );
+                        let message =
+                          `Are you sure you wish to change this participant's preferred site?<br/><br/>` + (
+                            access_to_participant_lost ?
+                            "By selecting yes you will no longer have access to this participant." :
+                            `
+                              By selecting yes you will continue to have access to this participant until your
+                              assignment is complete, after which you will no longer have access to this
+                              participant.
+                            `
+                          );
+
+                        proceed = await CN_modal_confirm.create_and_open({
+                          title: "Change Preferred Site",
+                          message: message,
+                        });
+                      }
+                    }
+
+                    if (proceed) {
+                      // changing the preferred site can be slow, so always wait for the response
+                      CN_base_element.wait_for(async () => {
+                        // note that on_property_change is extended in the view action to handle lost access
+                        await action.on_property_change("preferred_site_id", valid, access_to_participant_lost);
+                      }, 0);
+                    } else {
+                      form_input.undo_value(true);
+                    }
+                  },
+                  help: "If set then the participant will be assigned to this site instead of the default site.",
+                },
+              } :
+              {}
+            ),
+
+            // these properties are always included
+            ...{
+              callback: { title: "Callback", type: "datetime", get_min: () => CN_common.get_date() },
+              availability_type_id: {
+                title: "Availability Preference",
+                type: "enum",
+                enum: { path: "availability_type" },
+              },
+              out_of_area: {
+                title: "Out of Area",
+                type: "boolean",
+                help: "Whether the participant lives outside of the study's serviceable area.",
+              },
+              email: {
+                title: "Email",
+                type: "email",
+                help: 'Must be in the format "account@domain.name".',
+              },
+              email2: {
+                title: "Alternate Email",
+                type: "email",
+                help: 'Must be in the format "account@domain.name".',
+              },
+              mass_email: {
+                title: "Mass Emails",
+                type: "boolean",
+                help: `
+                  Whether the participant wishes to be included in mass emails such as newsletters,
+                  holiday greetings, etc.
+                `,
+              },
             },
           },
         },
@@ -401,6 +480,19 @@ export class CN_view_participant extends CN_view_base_person {
       super.on_load(),
     ]);
     this.#show_study_phase_status = 0 < response[0];
+  }
+
+  /**
+   * Extend the parent method
+   */
+  async on_property_change(prop_name, valid, lost_access = false) {
+    if (valid && lost_access) {
+      // We've lost access so set the property without re-running the action and navigate to the participant list
+      await this.on_set_property(prop_name, false);
+      await CN_session.navigate_to("participant/list");
+    } else {
+      await super.on_property_change(prop_name, valid);
+    }
   }
 
   /**

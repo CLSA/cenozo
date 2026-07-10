@@ -55,11 +55,12 @@ export class CN_action_add extends CN_action_base_record {
   /**
    * Commits a property's UI value to the state
    * @param string prop_name
+   * @param boolean run: Whether to run the action after the operation is complete
    */
-  async on_set_property(prop_name, run = true) {
+  async on_set_property(prop_name, run = false) {
     this.get_property(prop_name).form_input.commit_value();
 
-    // NOTE: purposefully ignoring the run property
+    if (run) await this.run();
   }
 
   /**
