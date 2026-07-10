@@ -56,8 +56,10 @@ export class CN_action_add extends CN_action_base_record {
    * Commits a property's UI value to the state
    * @param string prop_name
    */
-  async on_set_property(prop_name) {
+  async on_set_property(prop_name, run = true) {
     this.get_property(prop_name).form_input.commit_value();
+
+    // NOTE: purposefully ignoring the run property
   }
 
   /**
@@ -129,7 +131,7 @@ export class CN_action_add extends CN_action_base_record {
     const parent_model = model.get_parent_model();
     if (parent_model) {
       // go back to the parent
-      await CN_session.navigate_to(parent_model.get_view_url());
+      await CN_session.navigate_to(parent_model.get_view_url(), { tab: model.get_name() });
     } else {
       await CN_session.navigate_to(model.allow_view() ? model.get_view_url(response) : model.get_list_url());
     }

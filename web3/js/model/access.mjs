@@ -1,5 +1,7 @@
+import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_model_user } from "./user.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_model_access extends CN_base_model {
   constructor() {
@@ -24,22 +26,42 @@ export class CN_model_access extends CN_base_model {
           typeahead: CN_model_user.get_typeahead({
             modifier: { where: { column: "user.active", operator: "=", value: true } },
           }),
+          is_hidden: () => "user" == CN_session.get_leaf_model().get_parent_model().get_name(),
         },
         role_id: {
           title: "Role",
           type: "enum",
           enum: {
-            path: "role",
-            // add granting=true
+            get_enums: async () => {
+              return (await CN_api.get("role", {
+                select: { column: "name" },
+                modifier: { order: "name" },
+                granting: true, // only return roles which we can grant access to
+              })).map(record => ({
+                key: record.id,
+                value: record.name,
+                disabled: false,
+              }));
+            },
           },
         },
         site_id: {
           title: "Site",
           type: "enum",
           enum: {
-            path: "site",
-            // add granting=true
+            get_enums: async () => {
+              return (await CN_api.get("site", {
+                select: { column: "name" },
+                modifier: { order: "name" },
+                granting: true, // only return sites which we can grant access to
+              })).map(record => ({
+                key: record.id,
+                value: record.name,
+                disabled: false,
+              }));
+            },
           },
+          is_hidden: () => "site" == CN_session.get_leaf_model().get_parent_model().get_name(),
         },
       },
     });
