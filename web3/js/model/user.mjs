@@ -125,7 +125,13 @@ export class CN_model_user extends CN_base_model {
           title: "Restrict to Language",
           meta: {},
           type: "enum",
-          enum: { path: "language" },
+          enum: {
+            path: "language",
+            modifier: {
+              where: { column: "active", operator: "=", value: true },
+              order: "language.name",
+            },
+          },
           help: `
             If the user can only speak a single language you can define it here
             (this can be changed in the user's record after they have been created).
