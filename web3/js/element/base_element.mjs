@@ -12,7 +12,6 @@ export class CN_base_element extends CN_base_object {
 
   #element;
   #parent_el;
-  #config = new Map();
   #event_listeners = {};
 
   /**
@@ -24,14 +23,7 @@ export class CN_base_element extends CN_base_object {
       throw new Error("Non-object config argument passed to CN_base_element constructor");
     }
 
-    super();
-
-    if ("CN_base_element" == this.constructor) {
-      throw new Error("Abstract class CN_base_element can't be instantiated.");
-    }
-
-    // store all properties in the config parameter
-    config = {
+    super({
       ...{
         // default config
         type: "div", // the root element type
@@ -40,33 +32,14 @@ export class CN_base_element extends CN_base_object {
         class: null, // will be added to the element as an attribute if defined
       },
       ...config
-    };
-    for(const name in config) {
-      this.#config.set(name, config[name]);
+    });
+
+    if ("CN_base_element" == this.constructor) {
+      throw new Error("Abstract class CN_base_element can't be instantiated.");
     }
 
+    // store all properties in the config parameter
     this.set_parent_element(parent_el);
-  }
-
-  /**
-   * Determines whether a config value exists
-   * @param string name: The name of the variable
-   * @return boolean
-   */
-  has_config(name) {
-    return this.#config.has(name);
-  }
-
-  /**
-   * Gets the value of a configuration variable
-   * @param string name: The name of the variable
-   * @return mixed
-   */
-  get_config(name) {
-    if (!this.#config.has(name)){
-      console.error(`Referencing undefined config parameter "${name}" in ${this.get_class_name()}`);
-    }
-    return this.#config.get(name);
   }
 
   /**
@@ -105,15 +78,6 @@ export class CN_base_element extends CN_base_object {
    */
   get_parent_element() {
     return this.#parent_el;
-  }
-
-  /**
-   * Sets the value of a configuration variable
-   * @param string name: The name of the variable
-   * @param mixed value: The value to set the variable to
-   */
-  set_config(name, value) {
-    this.#config.set(name, value);
   }
 
   /**

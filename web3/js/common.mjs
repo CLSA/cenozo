@@ -1,10 +1,9 @@
-import { CN_base_object } from "./base_object.mjs"
 import { CN_session } from "./session.mjs"
 
 /**
  * A object containing a number of helpful functions
  */
-export class CN_common extends CN_base_object {
+export class CN_common {
   constructor() {
     throw new Error("Abstract class CN_common can't be instantiated.");
   }
@@ -305,6 +304,36 @@ export class CN_common extends CN_base_object {
     const tz_offset = date_obj.getTimezoneOffset() + CN_session.get("user", "tz_offset") * 60;
     if (tz_offset) date_obj.setMinutes(date_obj.getMinutes() + tz_offset);
     return date_obj;
+  }
+
+  /**
+   * Adds time to a date
+   * @param Date date: The date to add time to
+   * @param string unit: One of "day", "week", "month" or "year"
+   * @param integer value: The number of units to add (or subtract if a negative number is provided)
+   */
+  static add_date(date, unit, value) {
+    const new_date = this.clone(date);
+    if ("day" == unit) {
+      new_date.setDate(new_date.getDate() + value);
+    } else if ("week" == unit) {
+      new_date.setDate(new_date.getDate() + 7 * value);
+    } else if ("month" == unit) {
+      const month = date.getMonth() + value;
+      new_date.setMonth(month);
+
+      let correct_month = month % 12;
+      if (0 > correct_month) correct_month += 12;
+
+      // backup one day at a time until we're in the correct month
+      while (new_date.getMonth() != correct_month) new_date.setDate(new_date.getDate() - 1);
+    } else if ("year" == unit) {
+      new_date.setFullYear(new_date.getFullYear() + value);
+
+      // backup one day at a time until we're in the same month
+      while (new_date.getMonth() != date.getMonth()) new_date.setDate(new_date.getDate() - 1);
+    }
+    return new_date;
   }
 
   /**
