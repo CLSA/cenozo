@@ -10,7 +10,7 @@ export class CN_model_script extends CN_base_model {
       },
       columns: {
         name: { column: "script.name", title: "Name" },
-        application: { title: "Application" },
+        application: { title: "Application", table_prefix: false },
         supporting: { title: "Supporting", type: "boolean" },
         repeated: { title: "Repeated", type: "boolean" },
         total_pages: { title: "Pages" },

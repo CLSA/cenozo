@@ -147,35 +147,19 @@ export class CN_element_calendar extends CN_base_element {
   /**
    * ADD DOCS
    */
-  move_date(forward, unit, fast) {
+  #move_date(forward, unit, fast) {
     if ("day" == unit && !fast) {
       // move one day
-      const date = CN_common.clone(this.#date);
-      date.setDate(date.getDate() + (forward ? 1 : -1));
-      this.set_date(date);
+      this.set_date(CN_common.add_date(this.#date, "day", forward ? 1 : -1));
     } else if (("week" == unit && !fast) || ("day" == unit && fast)) {
       // move one week
-      const date = CN_common.clone(this.#date);
-      date.setDate(date.getDate() + (forward ? 7 : -7));
-      this.set_date(date);
+      this.set_date(CN_common.add_date(this.#date, "week", forward ? 1 : -1));
     } else if (("month" == unit && !fast) || ("week" == unit && fast)) {
       // move one month
-      const date = CN_common.clone(this.#date);
-      const month = this.#date.getMonth() + (forward ? 1 : -1);
-      date.setMonth(month);
-      const correct_month = 0 > month ? 11 : 11 < month ? 0 : month;
-
-      // backup one day at a time until we're in the correct month
-      while (date.getMonth() != correct_month) date.setDate(date.getDate() - 1);
-      this.set_date(date);
+      this.set_date(CN_common.add_date(this.#date, "month", forward ? 1 : -1));
     } else if ("month" == unit && fast) {
       // move one year
-      const date = CN_common.clone(this.#date);
-      date.setFullYear(this.#date.getFullYear() + (forward ? 1 : -1));
-
-      // backup one day at a time until we're in the same month
-      while (date.getMonth() != this.#date.getMonth()) date.setDate(date.getDate() - 1);
-      this.set_date(date);
+      this.set_date(CN_common.add_date(this.#date, "year", forward ? 1 : -1));
     }
   }
 
@@ -329,22 +313,22 @@ export class CN_element_calendar extends CN_base_element {
 
     // wire up the forward/reverse and mode buttons
     el.querySelector("button[name=previous-fast]").addEventListener("click", () => {
-      this.move_date(false, this.#mode, true);
+      this.#move_date(false, this.#mode, true);
       this.update_element();
     });
 
     el.querySelector("button[name=previous]").addEventListener("click", () => {
-      this.move_date(false, this.#mode, false);
+      this.#move_date(false, this.#mode, false);
       this.update_element();
     });
 
     el.querySelector("button[name=next]").addEventListener("click", () => {
-      this.move_date(true, this.#mode, false);
+      this.#move_date(true, this.#mode, false);
       this.update_element();
     });
 
     el.querySelector("button[name=next-fast]").addEventListener("click", () => {
-      this.move_date(true, this.#mode, true);
+      this.#move_date(true, this.#mode, true);
       this.update_element();
     });
 
@@ -574,9 +558,9 @@ export class CN_element_calendar extends CN_base_element {
         // clicking on days outside of the current month will transition to that month
         cell_td_el.addEventListener("click", (event) => {
           if (year < current_year || month < current_month) {
-            this.move_date(false, "month", false);
+            this.#move_date(false, "month", false);
           } else if (year > current_year || month > current_month) {
-            this.move_date(true, "month", false);
+            this.#move_date(true, "month", false);
           }
           this.update_element();
         });

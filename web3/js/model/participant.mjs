@@ -17,6 +17,7 @@ import { CN_input_enum } from "../input/enum.mjs"
 import { CN_input_text } from "../input/text.mjs"
 import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
+import { CN_script_launcher } from "../script_launcher.mjs"
 import { CN_session } from "../session.mjs"
 
 /**
@@ -256,7 +257,7 @@ export class CN_model_participant extends CN_model_base_person {
 
                     if (proceed) {
                       // changing the preferred site can be slow, so always wait for the response
-                      CN_base_element.wait_for(async () => {
+                      await CN_base_element.wait_for(async () => {
                         // note that on_property_change is extended in the view action to handle lost access
                         await action.on_property_change("preferred_site_id", valid, access_to_participant_lost);
                       }, 0);
@@ -1167,6 +1168,7 @@ export class CN_multiedit_participant extends CN_base_action {
 }
 
 export class CN_scripts_participant extends CN_base_action {
+  #participant;
   #script_list = [];
   #reverse_messages = {
     Proxy:
@@ -1186,17 +1188,18 @@ export class CN_scripts_participant extends CN_base_action {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      return (await CN_api.get(
-        `participant/${this.get_model().get_identifier()}`,
-        { select: { column: "uid" },
-      })).uid;
+      await this.after_first_load();
+      return this.#participant.uid;
     }
 
     if ("header" == type) {
-      const data = await CN_api.get(`participant/${this.get_model().get_identifier()}`, {
-        select: { column: ["uid", "first_name", "last_name"] },
-      });
-      return `Utility scripts for ${data.first_name} ${data.last_name} (${data.uid})`;
+      await this.after_first_load();
+      return `
+        Utility scripts for
+        ${this.#participant.first_name}
+        ${this.#participant.last_name}
+        (${this.#participant.uid})
+      `;
     }
 
     return super.get_text(type);
@@ -1213,33 +1216,43 @@ export class CN_scripts_participant extends CN_base_action {
    * Extend parent method
    */
   async on_load() {
+    const identifier = this.get_model().get_identifier();
+
     await super.on_load();
 
-    // get the script list for this application
-    this.#script_list = await CN_api.get(`application/${CN_session.get("application", "id")}/script`, {
-      select: { column: ["id", "name", "url"] },
-      modifier: {
-        where: {
-          column: "supporting",
-          operator: "=",
-          value: true,
-        },
-        order: "name",
-      },
-    });
+    const [participant_response, script_response] = await Promise.all([
+      CN_api.get(`participant/${identifier}`, {
+        select: {
+          column: [
+            "uid",
+            "first_name",
+            "last_name",
+            { table: "language", column: "code", alias: "lang" }
+          ]
+        }
+      }),
 
-    // load the participant's status for all utility scripts in parallel
+      CN_api.get(`application/${CN_session.get("application", "id")}/script`, {
+        select: { column: ["id", "name", "url"] },
+        modifier: {
+          where: { column: "supporting", operator: "=", value: true },
+          order: "name",
+        },
+      }),
+    ]);
+
+    this.#participant = participant_response;
+    this.#script_list = script_response;
+
+
+    // initialize all scripts in parallel
     await Promise.all(this.#script_list.map(script => (async () => {
-      script.token = null;
-      script.end_datetime = null;
-      try {
-        const data = await CN_api.get(`script/${script.id}/pine_response/${this.get_model().get_identifier()}`);
-        script.token = data.token;
-        script.end_datetime = data.end_datetime;
-      } catch (error) {
-        // ignore 404
-        if (404 != error.response.status) throw error;
-      }
+      script.launcher = new CN_script_launcher({
+        script: script,
+        identifier: this.get_model().get_identifier(),
+        lang: this.#participant.lang,
+      });
+      await script.launcher.initialize();
     })()));
   }
 
@@ -1252,14 +1265,16 @@ export class CN_scripts_participant extends CN_base_action {
     script_list_el.innerHTML = "";
     this.#script_list.forEach(script => {
       const reversable = this.#reverse_messages.hasOwnProperty(script.name);
-      const disabled = script.end_datetime && !reversable;
+      const token = script.launcher.get_token();
+      const end_datetime = token ? token.end_datetime : null;
+      const disabled = end_datetime && !reversable;
       let title = `Launch ${script.name}`;
 
-      if (script.end_datetime) {
+      if (end_datetime) {
         title = (
           reversable ?
-          `Reverse ${script.name} (completed on ${CN_common.format_datetime(script.end_datetime, "datetime")})` :
-          `${script.name} Completed (${CN_common.format_datetime(script.end_datetime, "datetime")})`
+          `Reverse ${script.name} (completed on ${CN_common.format_datetime(end_datetime, "datetime")})` :
+          `${script.name} Completed (${CN_common.format_datetime(end_datetime, "datetime")})`
         );
       }
       const btn_el = this.constructor.html(
@@ -1267,7 +1282,7 @@ export class CN_scripts_participant extends CN_base_action {
       );
       this.constructor.set_disabled(btn_el, disabled);
       btn_el.addEventListener("click", async () => {
-        if (script.end_datetime) {
+        if (end_datetime) {
           if (reversable) {
             const modal = new CN_modal_confirm({
               title: `Reverse ${script.name}`,
@@ -1284,45 +1299,18 @@ export class CN_scripts_participant extends CN_base_action {
             }
           }
         } else {
-          // request a token if one doesn't already exist
-          if (null == script.token) {
-            await this.constructor.wait_for(async () => {
-              const response = await CN_api.post(`script/${script.id}/pine_response`, {
-                identifier: this.get_model().get_identifier(),
-              })
-              script.token = response.token;
-            });
-          }
+          await script.launcher.open({
+            show_hidden: 1,
+            site: CN_session.get("site", "name"),
+            username: CN_session.get("user", "name"),
+          });
 
-          // if we still don't have a token then there's a problem
-          if (null == script.token) {
-            await CN_modal_message.create_and_open({
-              header_class: "text-bg-danger",
-              title: "Respondent Not Found",
-              message:
-                "Unable to find the respondent record belonging to the script you are trying to launch. " +
-                "If the problem persists please contact support.",
-            });
-          } else {
-            // launch the sript
-            const url_params = {
-              show_hidden: 1,
-              site: CN_session.get("site", "name"),
-              username: CN_session.get("user", "name"),
-            };
-            const params = (new URLSearchParams(url_params)).toString()
-            window.open(
-              `${script.url}${script.token}?${params}`,
-              `script_${script.id}`
-            ).focus();
-
-            // re-run the action once the user returns to this tab
-            const regained_focus = async () => {
-              await this.run();
-              window.removeEventListener("focus", regained_focus);
-            };
-            window.addEventListener("focus", regained_focus);
-          }
+          // re-run the action once the user returns to this tab
+          const regained_focus = async () => {
+            await this.run();
+            window.removeEventListener("focus", regained_focus);
+          };
+          window.addEventListener("focus", regained_focus);
         }
       });
       script_list_el.append(btn_el);

@@ -51,26 +51,6 @@ export class CN_element_date_picker extends CN_base_element {
   }
 
   /**
-   * ADD DOCS
-   */
-  move_date(forward, unit) {
-    if (this.#mode == "day") {
-      this.#month += forward ? 1 : -1;
-      if (0 == this.#month) {
-        this.#month = 11;
-        this.#year--;
-      } else if (12 == this.#month) {
-        this.#month = 0;
-        this.#year++;
-      }
-    } else if (this.#mode == "month") {
-      this.#year += forward ? 1 : -1;
-    } else if (this.#mode == "year") {
-      this.#start_year += forward ? this.#year_range : -this.#year_range;
-    }
-  }
-
-  /**
    * Updates the DOM according to current state
    */
   update_element() {
@@ -124,16 +104,36 @@ export class CN_element_date_picker extends CN_base_element {
     });
 
     el.querySelector("button[name=previous]").addEventListener("click", () => {
-      this.move_date(false, this.#mode);
+      this.#move_date(false, this.#mode);
       this.update_element();
     });
 
     el.querySelector("button[name=next]").addEventListener("click", () => {
-      this.move_date(true, this.#mode);
+      this.#move_date(true, this.#mode);
       this.update_element();
     });
 
     return el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  #move_date(forward, unit) {
+    if (this.#mode == "day") {
+      this.#month += forward ? 1 : -1;
+      if (0 == this.#month) {
+        this.#month = 11;
+        this.#year--;
+      } else if (12 == this.#month) {
+        this.#month = 0;
+        this.#year++;
+      }
+    } else if (this.#mode == "month") {
+      this.#year += forward ? 1 : -1;
+    } else if (this.#mode == "year") {
+      this.#start_year += forward ? this.#year_range : -this.#year_range;
+    }
   }
 
   /**
@@ -204,9 +204,9 @@ export class CN_element_date_picker extends CN_base_element {
       if (!restricted) {
         date_td_el.addEventListener("click", (event) => {
           if (year < this.#year || month < this.#month) {
-            this.move_date(false, "day");
+            this.#move_date(false, "day");
           } else if (year > this.#year || month > this.#month) {
-            this.move_date(true, "day");
+            this.#move_date(true, "day");
           }
           this.set_date(date);
           this.update_element();

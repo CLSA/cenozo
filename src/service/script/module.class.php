@@ -76,7 +76,7 @@ class module extends \cenozo\service\module
       $join_mod->where( 'script.id', '=', 'application_has_script.script_id', false );
       $join_mod->where( 'application_has_script.application_id', '=', $session->get_application()->id );
       $modifier->join_modifier( 'application_has_script', $join_mod, 'left' );
-      $select->add_column( 'application_has_script.application_id IS NOT NULL', 'access', false );
+      $select->add_column( 'application_has_script.application_id IS NOT NULL', 'access', false, 'boolean' );
     }
 
     if( $select->has_column( 'url' ) )
