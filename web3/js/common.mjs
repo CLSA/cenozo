@@ -149,6 +149,16 @@ export class CN_common {
   static sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
   /**
+   * Determines whether an thrown error is of a particular type
+   * @param (dynamic) error: A caught error
+   * @param integer status: Restricts to a particular status code
+   * @return boolean
+   */
+  static is_uri_error(error, status = null) {
+    return error instanceof URIError && (null == status || error.response.status == status);
+  }
+
+  /**
    * Clones any variable (creating a perfect copy)
    * @param (dynamic) x: The variable to clone
    * @return (dynamic)

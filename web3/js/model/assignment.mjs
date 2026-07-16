@@ -113,11 +113,11 @@ export class CN_view_assignment extends CN_action_view {
               await CN_api.patch(this.get_model().get_view_url(null, "api") + "?operation=force_close", {});
             });
           } catch (error) {
-            if (404 == error.response.status) {
+            if (CN_common.is_uri_error(error, 404)) {
               // 404 means the assignment no longer exists, so to back to the parent's view
               await CN_session.transition_to(this.get_model().get_parent_model().get_view_url());
               return
-            } else if (409 == error.response.status) {
+            } else if (CN_common.is_uri_error(error, 409)) {
               // 409 means the assignment is already closed (so wait for the view to run and update
             } else {
               throw error;

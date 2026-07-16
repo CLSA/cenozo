@@ -258,7 +258,7 @@ export class CN_list_user extends CN_action_list {
               user_id = response.id;
             } catch (error) {
               // ignore 404s, it just means the username doesn't exist
-              if (404 != error.response.status) throw error;
+              if (!CN_common.is_uri_error(error, 404)) throw error;
             }
 
             if (null == user_id) {
@@ -339,7 +339,7 @@ export class CN_view_user extends CN_action_view {
             message: `The password for user "${username}" has been successfully reset.`,
           });
         } catch (error) {
-          if (403 == error.response.status) {
+          if (CN_common.is_uri_error(error, 403)) {
             await CN_modal_message.create_and_open({
               header_class: "text-bg-danger",
               title: "Unable To Change Password",

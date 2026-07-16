@@ -71,7 +71,7 @@ export class CN_list_interview extends CN_action_list {
     try {
       await CN_api.post(this.get_model().get_base_path("api"), {});
     } catch (error) {
-      if (409 == error.response.status) {
+      if (CN_common.is_uri_error(error, 409)) {
         await CN_modal_message.create_and_open({
           header_class: "text-bg-danger",
           title: "Unable to Add Interview",

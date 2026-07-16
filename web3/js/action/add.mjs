@@ -105,7 +105,7 @@ export class CN_action_add extends CN_action_base_record {
       await this.on_pre_submit(record);
       await this.on_post_submit(await CN_api.post(this.get_model().get_base_path("api"), record));
     } catch (error) {
-      if (409 == error.response.status) {
+      if (CN_common.is_uri_error(error, 409)) {
         JSON.parse(error.body).forEach(prop_name => {
           this.get_property(prop_name).form_input.show_error("Conflicts with existing record", 0);
         });

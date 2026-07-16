@@ -50,7 +50,7 @@ export class CN_script_launcher extends CN_base_object {
         this.#token = await CN_api.get(`script/${script_id}/pine_response/${identifier}`);
       } catch (error) {
         // ignore 404s
-        if (404 == error.response.status) {
+        if (CN_common.is_uri_error(error, 404)) {
           this.#token = null;
         } else {
           throw error;

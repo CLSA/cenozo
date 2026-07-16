@@ -90,7 +90,7 @@ export class CN_add_hold extends CN_action_add {
       )).id;
     } catch (error) {
       // ignore 404
-      if (404 != error.response.status) throw error;
+      if (!CN_common.is_uri_error(error, 404)) throw error;
     }
 
     if (deceased_hold_type_id == this.get_property_value("hold_type_id")) {
