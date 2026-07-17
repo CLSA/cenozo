@@ -105,7 +105,6 @@ class session extends CN_base_object {
     const { CN_app_session } = await import(`${ROOT_URL}/js/app_session.mjs`);
 
     const content_el = CN_base_element.html('<div class="container-fluid px-2 bg-white"></div>');
-    this.#main_content_el.replaceChildren(content_el);
     try {
       // show loading indicator in breadcrumb trail
       this.#breadcrumb_trail.set_config("loading", true);
@@ -162,6 +161,7 @@ class session extends CN_base_object {
       this.#breadcrumb_trail.set_config("crumb_list", [{ name: "Error", path: null }]);
       this.#breadcrumb_trail.update_element();
     }
+    this.#main_content_el.replaceChildren(content_el);
   }
 
   /**
