@@ -47,6 +47,7 @@ export class CN_action_list extends CN_base_action {
       if (!column.type) column.type = "string";
       if (undefined === column.table_prefix) column.table_prefix = true;
       if (undefined === column.align) column.align = "left";
+      if (undefined === column.empty_label) column.empty_label = "(empty)";
 
       // make sure the column type is valid
       if (!this.#valid_type_list.includes(column.type)) {
@@ -637,7 +638,7 @@ export class CN_action_list extends CN_base_action {
 
           let value = record[col_name];
           if (null === value) {
-            value = "(empty)";
+            value = column.empty_label;
           } else if ("boolean" == column.type) {
             value = value ? "Yes" : "No";
           } else if (["string", "text"].includes(column.type) && column.html) {

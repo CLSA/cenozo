@@ -24,7 +24,8 @@ export class CN_input_enum extends CN_base_input {
     super(parent_el, {
       ...{
         // default config
-        enum: { values: [] }
+        enum: { values: [] },
+        empty_label: "(empty)",
       },
       ...config}
     );
@@ -36,7 +37,7 @@ export class CN_input_enum extends CN_base_input {
   get_value_label() {
     const value = this.get_value();
     const option = this.get_config("enum").values.find(o => test_option(o, value));
-    return option ? option.value : null;
+    return option ? option.value : this.get_config("empty_label");
   }
 
   /**
@@ -138,7 +139,7 @@ export class CN_input_enum extends CN_base_input {
         option_el.innerHTML = (
           this.has_config("placeholder") ?
           this.get_config("placeholder") : // use the placeholder in the config if one exists
-          (required ? "(Select an option...)" : "(empty)")
+          (required ? "(Select an option...)" : this.get_config("empty_label"))
         );
         if ("" === value) option_el.selected = true;
         control_el.prepend(option_el);
