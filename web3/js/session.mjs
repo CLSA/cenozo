@@ -277,10 +277,8 @@ class session extends CN_base_object {
    * Logs the user out of the application
    */
   async #logout() {
-    await CN_base_element.wait_for(async () => {
-      await CN_api.delete("self/0");
-      this.reload(true);
-    });
+    await CN_base_element.wait_for(CN_api.delete("self/0"));
+    this.reload(true);
   }
 
   /**

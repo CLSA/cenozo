@@ -160,7 +160,7 @@ export class CN_base_element extends CN_base_object {
 
   /**
    * Creates a "please wait" blocking modal
-   * @param async function or promise: fn The function to wait for
+   * @param async function or promise or [promise]: fn The function, promise or array of promises to wait for
    * @return Promise
    */
   static async wait_for(fn, delay = 500) {
@@ -195,7 +195,13 @@ export class CN_base_element extends CN_base_object {
 
     try {
       // if fn is a function the await it, otherwise await fn as a promise
-      await (CN_common.is_function(fn) ? fn() : fn);
+      if (CN_common.is_function(fn)) {
+        await fn();
+      } else if (CN_common.is_array(fn)) {
+        await Promise.all(fn);
+      } else {
+        await fn;
+      }
     } finally {
       if (null != timeout_id) {
         // if the timeout exists then the modal hasn't been shown, so just cancel it

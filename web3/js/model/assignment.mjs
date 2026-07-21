@@ -109,9 +109,10 @@ export class CN_view_assignment extends CN_action_view {
 
         if (response) {
           try {
-            await this.constructor.wait_for(async () => {
-              await CN_api.patch(this.get_model().get_view_url(null, "api") + "?operation=force_close", {});
-            });
+            await this.constructor.wait_for(CN_api.patch(
+              this.get_model().get_view_url(null, "api") + "?operation=force_close",
+              {}
+            ));
           } catch (error) {
             if (CN_common.is_uri_error(error, 404)) {
               // 404 means the assignment no longer exists, so to back to the parent's view

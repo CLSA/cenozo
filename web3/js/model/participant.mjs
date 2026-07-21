@@ -257,10 +257,11 @@ export class CN_model_participant extends CN_model_base_person {
 
                     if (proceed) {
                       // changing the preferred site can be slow, so always wait for the response
-                      await CN_base_element.wait_for(async () => {
+                      await CN_base_element.wait_for(
                         // note that on_property_change is extended in the view action to handle lost access
-                        await action.on_property_change("preferred_site_id", valid, access_to_participant_lost);
-                      }, 0);
+                        action.on_property_change("preferred_site_id", valid, access_to_participant_lost),
+                        0
+                      );
                     } else {
                       form_input.undo_value(true);
                     }
