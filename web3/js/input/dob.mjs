@@ -22,7 +22,12 @@ export class CN_input_dob extends CN_input_date {
     // only add the current age if there is no dod
     const dod = await this.get_config("get_dod")();
     if (null == dod) {
-      const age = (new Date(Date.now() - CN_common.get_date())).getFullYear() - 1970;
+      const today = CN_common.get_date();
+      today.setHours(12);
+      today.setMinutes(0);
+      today.setSeconds(0);
+      today.setMilliseconds(0);
+      const age = CN_common.get_date(today - this.get_date()).getFullYear() - 1970;
       postfix += ` (${age} year${1 == age ? "" : "s"} old)`;
     }
     return postfix;

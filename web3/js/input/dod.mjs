@@ -1,3 +1,4 @@
+import { CN_common } from "../common.mjs"
 import { CN_input_date } from "./date.mjs"
 
 export class CN_input_dod extends CN_input_date {
@@ -20,8 +21,9 @@ export class CN_input_dod extends CN_input_date {
 
     // calculate the dod based on the dob (if it is provided)
     const dob = await this.get_config("get_dob")();
-    if (dob) {
-      const age = (new Date(this.get_date() - dob)).getFullYear() - 1970;
+    const dod = this.get_date();
+    if (dob && dod) {
+      const age = CN_common.get_date(dod - dob).getFullYear() - 1970;
       postfix += ` (${age} year${1 == age ? "" : "s"} old)`;
     }
     return postfix;
