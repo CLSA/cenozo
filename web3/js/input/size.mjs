@@ -48,13 +48,13 @@ export class CN_input_size extends CN_input_float {
   /**
    * Extend parent method
    */
-  async set_value(value) {
+  async set_value(value, value_for_record = undefined) {
     if (null != value) {
       // convert the value to a filesize string
       const [size, unit] = CN_common.format_filesize(Number(value)).split(" ");
 
       await super.set_value(size);
-      await this.#size_form_input.set_value(unit ? unit : "Bytes");
+      await this.#size_form_input.set_value(unit ? unit : "Bytes", value_for_record);
     }
   }
 
@@ -74,7 +74,7 @@ export class CN_input_size extends CN_input_float {
   /**
    * Extend parent method
    */
-  async _calculate_value_for_record(value) {
+  _calculate_value_for_record(value) {
     return (
       CN_common.is_float(value) ?
       CN_common.format_filesize(`${value} ${this.#size_form_input.get_value()}`, true) :

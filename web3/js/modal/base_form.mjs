@@ -47,9 +47,9 @@ export class CN_modal_base_form extends CN_base_modal {
   /**
    * ADD DOCS
    */
-  async get_input_value_for_record(name) {
+  get_input_value_for_record(name) {
     const input = this.get_input(name);
-    return input ? await input.form_input.get_value_for_record() : null;
+    return input ? input.form_input.get_value_for_record() : null;
   }
 
   /**

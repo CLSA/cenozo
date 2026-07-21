@@ -85,18 +85,17 @@ export class CN_action_add extends CN_action_base_record {
    * Validates all properties and creates a new record on the server side
    */
   async on_submit() {
-    const valid = await this.validate();
-    if (!valid) return;
+    if (!(await this.validate())) return;
 
     this.set_disabled(true);
 
-    // build the record
+    // build the record making sure to resolve any record values that are promises
     let record = {};
     await Promise.all(
       this.get_all_properties()
         .filter(prop => !prop.is_hidden(this.get_model()))
         .map(prop => (async () => {
-          record[prop.name] = await this.get_property_value_for_record(prop.name);
+          record[prop.name] = await Promise.resolve(this.get_property_value_for_record(prop.name));
         })())
     );
 

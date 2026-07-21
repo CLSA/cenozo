@@ -39,8 +39,6 @@ export class CN_action_view extends CN_action_base_record {
     const model = this.get_model();
 
     if (["crumb", "name"].includes(type)) {
-      await this.after_first_load();
-
       const name = this.get_property_value("name");
       if (name) return name;
 
@@ -51,7 +49,6 @@ export class CN_action_view extends CN_action_base_record {
     }
 
     if ("header" == type) {
-      await this.after_first_load();
       return `${CN_common.uc_words(model.get_singular())} Details${model.allow_edit() ? "" : " (read-only)"}`;
     }
 
@@ -145,9 +142,9 @@ export class CN_action_view extends CN_action_base_record {
    */
   async on_set_property(prop_name, run = true) {
     try {
-      // update the server
+      // resolve any record values that may be a promise
       let data = {};
-      data[prop_name] = await this.get_property_value_for_record(prop_name);
+      data[prop_name] = await Promise.resolve(this.get_property_value_for_record(prop_name));
       await CN_api.patch(this.get_model().get_view_url(null, "api"), data);
     } catch (error) {
       this.get_property(prop_name).form_input.undo_value(true);

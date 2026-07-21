@@ -15,8 +15,8 @@ export class CN_input_file extends CN_base_input {
   /**
    * Extends parent method
    */
-  async set_value(value) {
-    await super.set_value(value);
+  async set_value(value, value_for_record = undefined) {
+    await super.set_value(value, value_for_record);
 
     const prefix_div_el = this.get_prefix_div_element();
     prefix_div_el.innerHTML = "";
@@ -63,21 +63,22 @@ export class CN_input_file extends CN_base_input {
   /**
    * Overrides parent method
    */
-  async _calculate_value_for_record(value) {
-    const file = this.get_config("file");
+  _calculate_value_for_record(value) {
+    const encoding = this.get_config("file").encoding;
 
-    // convert the first file in file lists from blob to base64
-    if (CN_common.is_filelist(value)) {
-      value = await CN_common.convert_from_blob(file.encoding, value[0]);
-    } else if (CN_common.is_object(value)) {
-      value = value.data;
-    }
+    // converting from a blob is asynchronus, so return a promise to that operation instead of the value
+    return (async () => {
+      // convert the first file in file lists from blob to base64
+      if (CN_common.is_filelist(value)) {
+        value = await CN_common.convert_from_blob(encoding, value[0]);
+      } else if (CN_common.is_object(value)) {
+        value = value.data;
+      }
 
-    if (null != value && "base64" == file.encoding) {
       // remove the base64 metadata
-      value = value.replace(/.*;base64,/, "");
-    }
+      if (null != value && "base64" == encoding) value = value.replace(/.*;base64,/, "");
 
-    return value;
+      return value;
+    })();
   }
 }

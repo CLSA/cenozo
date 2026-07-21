@@ -37,9 +37,9 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
     this.add_resolve_button(
       "success",
       "OK",
-      async () => this._resolve({
-        timezone: await this.get_input_value_for_record("timezone"),
-        am_pm: await this.get_input_value_for_record("am_pm"),
+      () => this._resolve({
+        timezone: this.get_input_value_for_record("timezone"),
+        am_pm: this.get_input_value_for_record("am_pm"),
       }),
       true, // submit on enter key
     );

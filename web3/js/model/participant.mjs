@@ -223,8 +223,8 @@ export class CN_model_participant extends CN_model_base_person {
                     let access_to_participant_lost = false;
 
                     if (valid && !CN_session.get("role", "all_sites")) {
-                      const participant_id = await action.get_property_value_for_record("id");
-                      const default_site = await action.get_property_value_for_record("default_site");
+                      const participant_id = action.get_property_value_for_record("id");
+                      const default_site = action.get_property_value_for_record("default_site");
                       const preferred_site_id = form_input.get_value();
 
                       // warn non all-sites users when changing the preferred site
@@ -454,9 +454,9 @@ export class CN_view_participant extends CN_view_base_person {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      await this.after_first_load();
       return this.get_property_value("uid");
     }
+
     return await super.get_text(type);
   }
 
@@ -1188,12 +1188,10 @@ export class CN_scripts_participant extends CN_base_action {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      await this.after_first_load();
       return this.#participant.uid;
     }
 
     if ("header" == type) {
-      await this.after_first_load();
       return `
         Utility scripts for
         ${this.#participant.first_name}
@@ -1443,6 +1441,7 @@ export class CN_element_participant_selection extends CN_base_element {
       body: "",
       footer: this.constructor.html('<div class="row"></div>'),
     });
+    this.#count_el = element.querySelector("div[name=count]");
 
     const card_body_el = card.get_element().querySelector(".card-body");
     this.#identifier_list_form_input = CN_input.create_input("text", card_body_el, {
@@ -1494,8 +1493,6 @@ export class CN_element_participant_selection extends CN_base_element {
       },
     });
     row_el.append(this.#idtype_list_form_input.get_element());
-
-    this.#count_el = element.querySelector("div[name=count]");
 
     // confirm the identifier list with the server
     this.#confirm_btn_el.addEventListener(

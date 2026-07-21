@@ -45,8 +45,8 @@ export class CN_input_base_number extends CN_input_base_string {
   /**
    * Extends parent method
    */
-  async _calculate_value_for_record(value) {
-    value = await super._calculate_value_for_record(value);
+  _calculate_value_for_record(value) {
+    value = super._calculate_value_for_record(value);
     return null == value ? null : Number(value);
   }
 }

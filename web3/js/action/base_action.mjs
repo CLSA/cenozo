@@ -23,8 +23,6 @@ export class CN_base_action extends CN_base_element {
   #placeholder_show_delay = 200;
   #simple_mode = false;
   #footer_at_top = false;
-  #first_load_promise;
-  #first_load_resolve;
 
   /**
    * Constructor
@@ -40,11 +38,6 @@ export class CN_base_action extends CN_base_element {
 
     this.#type = type;
     this.#model = model;
-
-    // create the promise which will be resolved after the first time the on_post_loading() method is called
-    if (!this.#first_load_promise) {
-      this.#first_load_promise = new Promise(resolve => { this.#first_load_resolve = resolve; });
-    }
   }
 
   // access methods
@@ -273,16 +266,6 @@ export class CN_base_action extends CN_base_element {
       }
       if (this.#is_placeholder) this.hide_placeholder();
     }
-
-    this.#first_load_resolve(true);
-  }
-
-  /**
-   * Returns a promise that resolves after the first time the action finishes loading
-   * @return Promise
-   */
-  async after_first_load() {
-    return this.#first_load_promise;
   }
 
   /**
@@ -334,6 +317,10 @@ export class CN_base_action extends CN_base_element {
 
     super.update_element();
 
+    (async () => {
+      this.get_header_element().querySelector("div.flex-grow-1").innerHTML = await this.get_text("header");
+    })();
+
     const notation_btn_el = this.get_header_element().querySelector("button[name=notation]");
     const notation_module = CN_session.get_module("notation");
     const notation = this.get_model().get_module().get_notation(this.#type);
@@ -369,7 +356,6 @@ export class CN_base_action extends CN_base_element {
    */
   _create_header_element() {
     const el = this.constructor.html('<div class="d-flex"><div class="flex-grow-1"></div></div>');
-    (async () => { el.querySelector("div.flex-grow-1").innerHTML = await this.get_text("header"); })();
 
     // add a data notation button (not shown until update_element() is called)
     const notation_btn_el = this.constructor.html(`

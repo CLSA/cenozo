@@ -286,7 +286,7 @@ export class CN_input_typeahead extends CN_base_input {
   /**
    * Extend parent method
    */
-  async _calculate_value_for_record(value) {
+  _calculate_value_for_record(value) {
     if (!this.#active_item) {
       const list = this.#get_matching_list(value);
       if (0 < list.length) this.#active_item = list[0];

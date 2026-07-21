@@ -137,8 +137,8 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
-  async get_value_for_record() {
-    return await this.#state.get_for_record();
+  get_value_for_record() {
+    return this.#state.get_for_record();
   }
 
   /**
@@ -231,10 +231,11 @@ export class CN_base_input extends CN_base_element {
 
   /**
    * Determines if there was an error
+   * Note that this method is only asynchronous to facilitate child classes
    * @return boolean
    */
   async validate() {
-    const value = await this.get_value_for_record();
+    const value = this.get_value_for_record();
     let error = null;
 
     if ([undefined, null, ""].includes(value)) {
@@ -363,7 +364,7 @@ export class CN_base_input extends CN_base_element {
   /**
    * ADD DOCS
    */
-  async _calculate_value_for_record(value) {
+  _calculate_value_for_record(value) {
     return "" === value ? null : value;
   }
 
@@ -404,16 +405,12 @@ export class CN_base_input extends CN_base_element {
     if (this.#event_listeners) {
       // only listen to focus events if there's a function to do so with
       if (this.has_config("on_focus")) {
-        this.#control_el.addEventListener("focus", async () => {
-          await this.get_config("on_focus")(this);
-        });
+        this.#control_el.addEventListener("focus", () => this.get_config("on_focus")(this));
       }
 
       // only listen to input events if there's a function to do so with
       if (this.has_config("on_input")) {
-        this.#control_el.addEventListener("input", async () => {
-          await this.get_config("on_input")(this);
-        });
+        this.#control_el.addEventListener("input", () => this.get_config("on_input")(this));
       }
 
       // validate and call on_change function when the value changes

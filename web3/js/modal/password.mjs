@@ -39,12 +39,8 @@ export class CN_modal_password extends CN_modal_base_form {
         const data = {
           user: {
             password: {
-              current: (
-                this.get_config("force") ?
-                null :
-                await this.get_input_value_for_record("current_password")
-              ),
-              requested: await this.get_input_value_for_record("new_password"),
+              current: this.get_config("force") ? null : this.get_input_value_for_record("current_password"),
+              requested: this.get_input_value_for_record("new_password"),
             },
           },
         };

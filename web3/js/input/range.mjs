@@ -21,14 +21,14 @@ export class CN_input_range extends CN_base_input {
   /**
    * Extends parent method
    */
-  async set_value(value) {
+  async set_value(value, value_for_record = undefined) {
     // don't allow setting value outside of min/max range
     const min = this.get_config("min");
     const max = this.get_config("max");
     if (min > value || max < value) {
       throw new Error(`Value ${value} is out of range, must be between ${min} and ${max}`);
     }
-    await super.set_value(value);
+    await super.set_value(value, value_for_record);
   }
 
   /**
@@ -49,8 +49,8 @@ export class CN_input_range extends CN_base_input {
   /**
    * Extends parent method
    */
-  async _calculate_value_for_record(value) {
-    value = await super._calculate_value_for_record(value);
+  _calculate_value_for_record(value) {
+    value = super._calculate_value_for_record(value);
     return null == value ? null : Number(value);
   }
 }

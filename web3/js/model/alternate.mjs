@@ -115,12 +115,9 @@ export class CN_view_alternate extends CN_view_base_person {
    */
   async get_text(type) {
     if (["crumb", "name"].includes(type)) {
-      await this.after_first_load();
-      return [
-        this.get_property_value("last_name"),
-        this.get_property_value("first_name"),
-      ].join(", ");
+      return [this.get_property_value("last_name"), this.get_property_value("first_name")].join(", ");
     }
+
     return await super.get_text(type);
   }
 
@@ -146,9 +143,9 @@ export class CN_view_alternate extends CN_view_base_person {
         '<button name="view-participant" type="button" class="btn btn-primary">View Participant</button>'
       );
       right_btn_group_el.append(this.#view_participant_btn_el);
-      this.#view_participant_btn_el.addEventListener("click", async () => {
+      this.#view_participant_btn_el.addEventListener("click", () => {
         CN_session.navigate_to(
-          `participant/view/${await this.get_property_value_for_record("participant_id")}`,
+          `participant/view/${this.get_property_value_for_record("participant_id")}`,
           { tab: "alternate" },
         );
       });

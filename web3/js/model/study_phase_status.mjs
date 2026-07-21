@@ -70,9 +70,9 @@ export class CN_view_study_phase_status extends CN_action_view {
         '<button name="view-participant" type="button" class="btn btn-primary">View Participant</button>'
       );
       right_btn_group_el.prepend(this.#view_participant_btn_el);
-      this.#view_participant_btn_el.addEventListener("click", async () => {
+      this.#view_participant_btn_el.addEventListener("click", () => {
         CN_session.navigate_to(
-          `participant/view/${await this.get_property_value_for_record("participant_id")}`,
+          `participant/view/${this.get_property_value_for_record("participant_id")}`,
           { tab: "study_phase_status" },
         );
       });
@@ -84,9 +84,9 @@ export class CN_view_study_phase_status extends CN_action_view {
         '<button name="view-study_phase" type="button" class="btn btn-primary">View Study Phase</button>'
       );
       right_btn_group_el.append(this.#view_study_phase_btn_el);
-      this.#view_study_phase_btn_el.addEventListener("click", async () => {
-        const study_id = await this.get_property_value_for_record("study_id");
-        const study_phase_id = await this.get_property_value_for_record("study_phase_id");
+      this.#view_study_phase_btn_el.addEventListener("click", () => {
+        const study_id = this.get_property_value_for_record("study_id");
+        const study_phase_id = this.get_property_value_for_record("study_phase_id");
         CN_session.navigate_to(
           `study/view/${study_id}/study_phase/view/${study_phase_id}`,
           { tab: "study_phase_status" },

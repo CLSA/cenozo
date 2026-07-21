@@ -78,11 +78,10 @@ export class CN_state extends CN_base_object {
    * Gets the current value of the state as intended for a record
    * @return (dynamic)
    */
-  async get_for_record() {
+  get_for_record() {
     const len = this.#stack.length;
     if (0 < len) {
       // Make sure the record value has been calculating before returning the value
-      await this.#stack[len-1].promise;
       return this.#stack[len-1].record_value;
     } else {
       return null;
@@ -102,18 +101,12 @@ export class CN_state extends CN_base_object {
     const new_state = {
       committed: false,
       input_value: input_value,
-      record_value: record_value,
+      record_value: (
+        undefined === record_value ?
+        this.#calculate_record_value(input_value) :
+        record_value
+      ),
     };
-
-    new_state.promise = (
-      async () => {
-        if (undefined === new_state.record_value) {
-          new_state.record_value = await this.#calculate_record_value(new_state.input_value);
-        }
-      }
-    )();
-
-    // start determining the record value now
 
     if (0 < len && !this.#stack[len-1].committed) {
       // when the current state isn't committed then simply overwrite it

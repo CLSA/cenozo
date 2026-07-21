@@ -34,7 +34,7 @@ export class CN_input_base_datetime extends CN_base_input {
   /**
    * Extend parent method
    */
-  async set_value(value) {
+  async set_value(value, value_for_record = undefined) {
     if (CN_common.is_string(value)) {
       value = new Date(
         value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ?
@@ -49,9 +49,8 @@ export class CN_input_base_datetime extends CN_base_input {
     // convert date object to string
     const input_type = this.get_class_name().replace(/^CN_input_/, "");
     await super.set_value(
-      value ?
-      CN_common.format_datetime(value, input_type, true) :
-      this.get_config("empty_label")
+      value ? CN_common.format_datetime(value, input_type, true) : this.get_config("empty_label"),
+      value_for_record,
     );
   }
 
@@ -135,7 +134,7 @@ export class CN_input_base_datetime extends CN_base_input {
   /**
    * Extends the parent method
    */
-  async _calculate_value_for_record(value) {
+  _calculate_value_for_record(value) {
     const input_type = this.get_class_name().replace(/^CN_input_/, "");
     return CN_common.format_datetime(
       this.#date,

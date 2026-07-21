@@ -104,7 +104,7 @@ export class CN_modal_column_filter extends CN_base_modal {
           ],
         },
         on_change: async (form_input, valid) => {
-          condition.or = await form_input.get_value_for_record();
+          condition.or = form_input.get_value_for_record();
           await this.#check_form();
         },
       });
@@ -117,7 +117,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       get_default: () => condition.operator,
       enum: { values: this.#operator_list },
       on_change: async (form_input, valid) => {
-        condition.operator = await form_input.get_value_for_record();
+        condition.operator = form_input.get_value_for_record();
         await this.#check_form();
       },
     });
@@ -130,7 +130,7 @@ export class CN_modal_column_filter extends CN_base_modal {
       required: false,
       get_default: () => condition.value,
       on_change: async (form_input, valid) => {
-        condition.value = await form_input.get_value_for_record();
+        condition.value = form_input.get_value_for_record();
         await this.#check_form();
       },
     };

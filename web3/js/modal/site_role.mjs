@@ -24,9 +24,9 @@ export class CN_modal_site_role extends CN_modal_base_form {
     this.add_resolve_button(
       "success",
       "OK",
-      async () => this._resolve({
-        site_id: await this.get_input_value_for_record("site_id"),
-        role_id: await this.get_input_value_for_record("role_id"),
+      () => this._resolve({
+        site_id: this.get_input_value_for_record("site_id"),
+        role_id: this.get_input_value_for_record("role_id"),
       }),
       true, // submit on enter key
     );
