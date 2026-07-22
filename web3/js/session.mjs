@@ -132,6 +132,7 @@ class session extends CN_base_object {
       );
 
       // now add the model's element to the DOM and run the leaf module
+      this.#main_content_el.replaceChildren(content_el);
       content_el.append(leaf_model.get_element());
       await leaf_model.run();
 
@@ -161,7 +162,6 @@ class session extends CN_base_object {
       this.#breadcrumb_trail.set_config("crumb_list", [{ name: "Error", path: null }]);
       this.#breadcrumb_trail.update_element();
     }
-    this.#main_content_el.replaceChildren(content_el);
   }
 
   /**
