@@ -57,35 +57,35 @@ export class CN_model_stratum extends CN_base_model {
         participant_count: {
           meta: {}, // predefined by the service
           title: "Total Participants",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: "The number of participants who belong to the stratum.",
         },
         eligible_count: {
           meta: {}, // predefined by the service
           title: "Eligible Participants",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who are eligible for the study.",
         },
         refused_count: {
           meta: {}, // predefined by the service
           title: "Refused Participants",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who refused the extra consent type.",
         },
         consented_count: {
           meta: {}, // predefined by the service
           title: "Consented Participants",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who accepted the extra consent type.",
         },
         completed_count: {
           meta: {}, // predefined by the service
           title: "Completed Participants",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: "The number of stratum participants who are eligible for and have completed the study.",
         },

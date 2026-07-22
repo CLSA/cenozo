@@ -90,11 +90,9 @@ export class CN_action_base_record extends CN_base_action {
    *     form_input: the property's form input object (input classes)
    *     valid: whether or not the new value is valid
    *     (the default function is to call this class' on_property_change() method)
-   *   is_constant: a function that makes the property read-only when it returns true, with arguments:
-   *     model: the model of the action that the property belongs to
+   *   is_constant: a function that makes the property read-only when it returns true
    *     (the default function always returns false)
-   *   is_hidden: a function that hides the property when it returns true, with arguments:
-   *     model: the model of the action that the property belongs to
+   *   is_hidden: a function that hides the property when it returns true
    *     (the default function always returns false)
    *   meta: an object used to define the property's data definition when it doesn't exist in the parent module.
    *     The object can include column select properties as defined in CN_api.select().  If left as an empty
@@ -106,10 +104,8 @@ export class CN_action_base_record extends CN_base_action {
    *
    * The following properties are only used for certain property types:
    *   Optional properties for the numeric types (integer, float, date, datetime, datetimesecond):
-   *     get_min: an async function that returns the minimum number or Date object, with arguments:
-   *       model: the model of the action that the property belongs to
-   *     get_max: an async function that returns the maximum number or Date object, with arguments:
-   *       model: the model of the action that the property belongs to
+   *     get_min: an async function that returns the minimum number or Date object
+   *     get_max: an async function that returns the maximum number or Date object
    *
    * Mandatory property for the "enum" type:
    *   enum: an object with one of three sets of properties:
@@ -119,8 +115,7 @@ export class CN_action_base_record extends CN_base_action {
    *       path: the API path to get enum values
    *       select: a select property to be used when calling the API for enum values
    *       modifier: a modifier property to be used when calling the API for enum values
-   *     get_enums: an async function that returns enum values, with arguments:
-   *       model: the model of the action that the property belongs to
+   *     get_enums: an async function that returns enum values
    *
    * Mandatory property for the "typeahead" type:
    *   typeahead: an object with one of the two sets of properties:
@@ -136,8 +131,7 @@ export class CN_action_base_record extends CN_base_action {
    *   file: an object with the following properties:
    *     encoding: how the file is encoded ("base64", "text", etc)
    *     mime_type: the file's mime-type ("application/pdf", "text/csv", etc)
-   *     get_filename: an async function that returns the file's name, with arguments:
-   *       action: the action object that the property belongs to
+   *     get_filename: an async function that returns the file's name
    *
    * @param string group_name: The name of the group to add the property to (null for the main group)
    * @param string prop_name: The name of the property
@@ -175,16 +169,16 @@ export class CN_action_base_record extends CN_base_action {
     // make sure all properties have the is_constant, is_hidden and get_default functions
     if (!CN_common.is_function(prop.is_constant)) prop.is_constant = () => false;
     if (!CN_common.is_function(prop.is_hidden)) {
-      prop.is_hidden = (model) => {
-        const parent_model = model.get_parent_model();
+      prop.is_hidden = () => {
+        const parent_model = this.get_model().get_parent_model();
         return parent_model && prop.name == `^${parent_model.get_name()}_id$`;
       };
     }
     if (!CN_common.is_function(prop.get_default)) {
       // if the column is a reference to the parent then use the parent's id
-      prop.get_default = (model) => {
+      prop.get_default = () => {
         const module_prop = module.get_property(prop_name);
-        const parent_model = model.get_parent_model();
+        const parent_model = this.get_model().get_parent_model();
         return (
           parent_model && prop.name == `${parent_model.get_name()}_id` ?
           parent_model.get_identifier() :
@@ -282,7 +276,7 @@ export class CN_action_base_record extends CN_base_action {
       if ("$main" != group_name) {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
         if (group_el) {
-          if (group.is_hidden(this.get_model())) {
+          if (group.is_hidden()) {
             group_el.classList.add("d-none");
           } else {
             group_el.classList.remove("d-none");
@@ -294,7 +288,7 @@ export class CN_action_base_record extends CN_base_action {
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
         if (prop_el) {
           // remove any properties that evaluate to hidden
-          if (prop.is_hidden(this.get_model())) {
+          if (prop.is_hidden()) {
             prop_el.classList.add("d-none");
           } else {
             prop_el.classList.remove("d-none");
@@ -303,7 +297,7 @@ export class CN_action_base_record extends CN_base_action {
           prop.form_input.update_element();
 
           // disable any properties that evaluate to constant
-          if (prop.is_constant(this.get_model())) prop.form_input.set_disabled(true);
+          if (prop.is_constant()) prop.form_input.set_disabled(true);
 
           // now update the property element (this varies in the child action_add and action_view classes)
           this.update_property_element(prop.name);
@@ -507,20 +501,20 @@ export class CN_action_base_record extends CN_base_action {
       if (CN_common.is_datetime_type(prop.type, "date")) {
         // pass the get_min/max functions from the property to the input
         if (CN_common.is_function(input_config.get_min)) {
-          input_config.get_min = async () => await prop.get_min(this.get_model());
+          input_config.get_min = async () => await prop.get_min();
         }
         if (CN_common.is_function(input_config.get_max)) {
-          input_config.get_max = async () => await prop.get_max(this.get_model());
+          input_config.get_max = async () => await prop.get_max();
         }
 
         // pass the get_dod function to dob inputs
         if ("dob" == prop.type && CN_common.is_function(input_config.get_dod)) {
-          input_config.get_dod = async () => await prop.get_dod(this.get_model());
+          input_config.get_dod = async () => await prop.get_dod();
         }
 
         // pass the get_dob function to dod inputs
         if ("dod" == prop.type && CN_common.is_function(input_config.get_dob)) {
-          input_config.get_dob = async () => await prop.get_dob(this.get_model());
+          input_config.get_dob = async () => await prop.get_dob();
         }
       } else if ("rank" == prop.type) {
         // define the max rank

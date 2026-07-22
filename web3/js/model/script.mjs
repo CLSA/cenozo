@@ -32,27 +32,27 @@ export class CN_model_script extends CN_base_model {
         total_pages: {
           title: "Total Number of Pages",
           is_constant: () => true,
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           help: "Updated nightly from Pine.",
         },
         create_event_types: {
           title: "Create Start/Finish Event Types",
           type: "boolean",
           meta: {}, // predefined by the service
-          is_hidden: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "view" == this.get_action_name(),
           help: "Only used when creating a non-repeating script.",
         },
         started_event_type_id: {
           title: "Started Event Type",
           type: "enum",
           enum: { path: "event_type" },
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
         finished_event_type_id: {
           title: "Finished Event Type",
           type: "enum",
           enum: { path: "event_type" },
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
         description: { title: "Description", type: "text", },
       },

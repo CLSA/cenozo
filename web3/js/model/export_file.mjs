@@ -20,30 +20,30 @@ export class CN_model_export_file extends CN_base_model {
         user: {
           meta: { table: "user", column: "name" },
           title: "User",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         stage: {
           title: "Status",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         size: {
           title: "Size",
           type: "size",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         datetime: {
           title: "Date & Time",
           type: "datetimesecond",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         formatted_elapsed: {
           title: "Elapsed",
           meta: {}, // predefined by the service
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
       },

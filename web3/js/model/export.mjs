@@ -178,8 +178,8 @@ export class CN_model_export extends CN_base_model {
             return enums;
           },
         },
-        is_hidden: (model) => {
-          const table_name = model.get_action().get_property_value("table_name");
+        is_hidden: () => {
+          const table_name = this.get_action().get_property_value("table_name");
           const table = this.get_export_table(table_name);
           return null == table;
         },

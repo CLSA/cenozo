@@ -46,7 +46,7 @@ export class CN_model_user extends CN_base_model {
         login_failures: {
           title: "Login Failures",
           is_constant: () => true,
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           help: `
             Every time an invalid password is used to log in as this user this counter will go up.
             Once it reaches ${CN_session.get("application", "login_failure_limit")} the user will
@@ -57,7 +57,7 @@ export class CN_model_user extends CN_base_model {
         name: {
           title: "Username",
           format: "alpha_num",
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
           help: "May only contain numbers, letters and underscores. Can only be defined when creating a new user.",
         },
         first_name: { title: "First Name" },
@@ -99,7 +99,7 @@ export class CN_model_user extends CN_base_model {
             },
           },
           help: "Which site to assign the user to.",
-          is_hidden: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "view" == this.get_action_name(),
         },
         role_id: {
           title: "Initial Role",
@@ -119,7 +119,7 @@ export class CN_model_user extends CN_base_model {
             },
           },
           help: "Which role to assign the user to.",
-          is_hidden: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "view" == this.get_action_name(),
         },
         language_id: {
           title: "Restrict to Language",
@@ -136,7 +136,7 @@ export class CN_model_user extends CN_base_model {
             If the user can only speak a single language you can define it here
             (this can be changed in the user's record after they have been created).
           `,
-          is_hidden: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "view" == this.get_action_name(),
         },
       },
     });

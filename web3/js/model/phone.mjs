@@ -40,7 +40,7 @@ export class CN_model_phone extends CN_model_traceable {
           title: "International",
           type: "boolean",
           help: "Cannot be changed once the phone has been created.",
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         rank: { title: "Rank", type: "rank" },
         type: { title: "Type", type: "enum" },

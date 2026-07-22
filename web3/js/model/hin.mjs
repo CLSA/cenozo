@@ -33,7 +33,7 @@ export class CN_model_hin extends CN_base_model {
         datetime: {
           title: "Date",
           type: "datetime",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
       },
     });

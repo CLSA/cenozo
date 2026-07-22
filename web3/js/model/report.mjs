@@ -30,25 +30,25 @@ export class CN_model_report extends CN_base_model {
           meta: {}, // predefined by the service
           title: "Automatically Generated",
           type: "boolean",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         user: {
           meta: { table: "user", column: "name" },
           title: "User",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         site: {
           meta: { table: "site", column: "name" },
           title: "Site",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         role: {
           meta: { table: "role", column: "name" },
           title: "Role",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         format: {
@@ -58,25 +58,25 @@ export class CN_model_report extends CN_base_model {
         },
         stage: {
           title: "Status",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         size: {
           title: "Size",
           type: "size",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         datetime: {
           title: "Date & Time",
           type: "datetimesecond",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         formatted_elapsed: {
           title: "Elapsed",
           meta: {}, // predefined by the service
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
       },

@@ -75,9 +75,9 @@ export class CN_action_list extends CN_base_action {
 
       // define the is_hidden function if it hasn't been defined
       if (!CN_common.is_function(column.is_hidden)) {
-        column.is_hidden = (model) => {
+        column.is_hidden = () => {
           // if there's a parent then don't show columns belonging to the parent's name
-          const parent_model = model.get_parent_model();
+          const parent_model = this.get_model().get_parent_model();
           return null != parent_model && parent_model.get_name() == column.table_name;
         };
       }
@@ -94,20 +94,22 @@ export class CN_action_list extends CN_base_action {
    * Extends the parent method
    */
   async get_text(type) {
+    const model = this.get_model();
+
     if ("crumb" == type) {
-      return CN_common.uc_words(this.get_model().get_plural());
+      return CN_common.uc_words(model.get_plural());
     }
 
     if ("header" == type) {
-      return `${CN_common.uc_words(this.get_model().get_singular())} List`;
+      return `${CN_common.uc_words(model.get_singular())} List`;
     }
 
     if ("add" == type) {
-      return `Add ${CN_common.uc_words(this.get_model().get_singular())}`;
+      return `Add ${CN_common.uc_words(model.get_singular())}`;
     }
 
     if ("choose" == type) {
-      return `Choose ${CN_common.uc_words(this.get_model().get_plural())}`;
+      return `Choose ${CN_common.uc_words(model.get_plural())}`;
     }
 
     return await super.get_text(type);

@@ -20,7 +20,7 @@ export class CN_model_participant_identifier extends CN_base_model {
           title: "Identifier",
           type: "enum",
           enum: { path: "identifier" },
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         participant_id: {
           column: "participant_identifier.participant_id",
@@ -31,10 +31,10 @@ export class CN_model_participant_identifier extends CN_base_model {
         value: {
           title: "Value",
           format: "identifier",
-          is_constant: (model) => {
+          is_constant: () => {
             return (
-              "view" == model.get_action_name() ?
-              model.get_action().get_property_value("locked") :
+              "view" == this.get_action_name() ?
+              this.get_action().get_property_value("locked") :
               false
             );
           },

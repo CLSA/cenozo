@@ -44,12 +44,12 @@ export class CN_model_assignment extends CN_base_model {
         start_datetime: {
           title: "Start Date & Time",
           type: "datetimesecond",
-          get_max: (model) => model.get_action().get_property("end_datetime").form_input.get_date(),
+          get_max: () => this.get_action().get_property("end_datetime").form_input.get_date(),
         },
         end_datetime: {
           title: "End Date & Time",
           type: "datetimesecond",
-          get_min: (model) => model.get_action().get_property("start_datetime").form_input.get_date(),
+          get_min: () => this.get_action().get_property("start_datetime").form_input.get_date(),
           get_max: () => CN_common.get_date(),
         },
         participant_id: { meta: { table: "participant", column: "id" }, is_hidden: () => true },

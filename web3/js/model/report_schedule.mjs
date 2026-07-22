@@ -19,7 +19,7 @@ export class CN_model_report_schedule extends CN_base_model {
         user: {
           meta: { table: "user", column: "name" },
           title: "User",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         site_id: {
@@ -42,7 +42,7 @@ export class CN_model_report_schedule extends CN_base_model {
         format: {
           title: "Format",
           type: "enum",
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
       },
     });

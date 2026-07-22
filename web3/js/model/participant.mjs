@@ -162,26 +162,26 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Date of Birth",
               type: "dob",
               get_max: () => CN_common.get_date(),
-              get_dod: async (model) => model.get_action().get_property("date_of_death").form_input.get_date(),
+              get_dod: async () => this.get_action().get_property("date_of_death").form_input.get_date(),
               is_constant: () => 3 <= CN_session.get("role", "tier"),
             },
             date_of_death: {
               title: "Date of Death",
               type: "dod",
-              get_min: (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
+              get_min: () => this.get_action().get_property("date_of_birth").form_input.get_date(),
               get_max: () => CN_common.get_date(),
-              get_dob: async (model) => model.get_action().get_property("date_of_birth").form_input.get_date(),
+              get_dob: async () => this.get_action().get_property("date_of_birth").form_input.get_date(),
             },
             date_of_death_accuracy: {
               title: "Date of Death Accuracy",
               type: "enum",
-              is_constant: (model) => "(empty)" == model.get_action().get_property_value("date_of_death"),
+              is_constant: () => "(empty)" == this.get_action().get_property_value("date_of_death"),
               help: "Defines how accurate the date of death is.",
             },
             date_of_death_ministry: {
               title: "Death Confirmed by Ministry",
               type: "boolean",
-              is_constant: (model) => "(empty)" == model.get_action().get_property_value("date_of_death"),
+              is_constant: () => "(empty)" == this.get_action().get_property_value("date_of_death"),
               help: "Determines whether information about the participant's death is confirmed by a ministry.",
             },
             language_id: {
@@ -804,9 +804,7 @@ export class CN_multiedit_participant extends CN_base_action {
           if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
           if (undefined === params.placeholder) params.placeholder = "(empty)";
 
-          params.get_default = (model) => {
-            return null;
-          };
+          params.get_default = () => null;
 
           // restore any previous values
           if ("enum" != params.type && prev_params[prop_name]) params.value = prev_params[prop_name];

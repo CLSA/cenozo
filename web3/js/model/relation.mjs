@@ -15,7 +15,7 @@ export class CN_model_relation extends CN_base_model {
         primary_uid: {
           column: "primary_participant.uid",
           title: "Index UID",
-          is_hidden: (model) => {
+          is_hidden: () => {
             const parent_model = this.get_parent_model();
             return parent_model && "participant" == parent_model.get_name();
           },
@@ -23,7 +23,7 @@ export class CN_model_relation extends CN_base_model {
         primary_first_name: {
           column: "primary_participant.first_name",
           title: "Index First Name",
-          is_hidden: (model) => {
+          is_hidden: () => {
             const parent_model = this.get_parent_model();
             return parent_model && "participant" == parent_model.get_name();
           },
@@ -31,7 +31,7 @@ export class CN_model_relation extends CN_base_model {
         primary_last_name: {
           column: "primary_participant.last_name",
           title: "Index Last Name",
-          is_hidden: (model) => {
+          is_hidden: () => {
             const parent_model = this.get_parent_model();
             return parent_model && "participant" == parent_model.get_name();
           },
@@ -39,22 +39,22 @@ export class CN_model_relation extends CN_base_model {
         uid: {
           column: "participant.uid",
           title: "UID",
-          is_hidden: (model) => false,
+          is_hidden: () => false,
         },
         first_name: {
           column: "participant.first_name",
           title: "First Name",
-          is_hidden: (model) => false,
+          is_hidden: () => false,
         },
         last_name: {
           column: "participant.last_name",
           title: "Last Name",
-          is_hidden: (model) => false,
+          is_hidden: () => false,
         },
         full_relation_type: {
           title: "Relationship Type",
           table_prefix: false,
-          is_hidden: (model) => false,
+          is_hidden: () => false,
         },
         participant_id: { is_hidden: () => true } // used in CN_list_relation.on_row_click method below
       },

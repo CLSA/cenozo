@@ -36,7 +36,7 @@ export class CN_model_trace_type_mail extends CN_base_model {
               order: "language.name",
             },
           },
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         from_name: { title: "From Name" },
         from_address: {

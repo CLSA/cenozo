@@ -27,7 +27,7 @@ export class CN_input_file extends CN_base_input {
       );
       download_btn.addEventListener("click", async () => CN_common.download_file(
         this.get_value().data,
-        await this.get_config("file").get_filename(this.get_action())
+        await this.get_config("file").get_filename()
       ));
       prefix_div_el.append(download_btn);
       prefix_div_el.append(this.constructor.html(`

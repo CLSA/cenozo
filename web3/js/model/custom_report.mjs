@@ -26,7 +26,7 @@ export class CN_model_custom_report extends CN_base_model {
           file: {
             encoding: "base64",
             mime_type: "application/sql",
-            get_filename: async (action) => action.get_property_value("name") + ".sql",
+            get_filename: async () => this.get_action().get_property_value("name") + ".sql",
           },
         },
         description: { title: "Description", type: "text" },

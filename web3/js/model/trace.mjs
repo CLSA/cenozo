@@ -16,7 +16,7 @@ export class CN_model_trace extends CN_base_model {
         cohort: {
           column: "cohort.name",
           title: "Cohort",
-          is_hidden: (model) => null != model.get_parent_model(),
+          is_hidden: () => null != this.get_parent_model(),
         },
         trace_type: { column: "trace_type.name", title: "Type" },
         datetime: { title: "Date & Time", type: "datetime" },

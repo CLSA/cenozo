@@ -36,8 +36,8 @@ export class CN_model_export_restriction extends CN_base_model {
           title: "Logic",
           type: "enum",
           // don't show logic if this is the first restriction
-          is_hidden: (model) => {
-            const rank = model.get_action().get_property_value("rank");
+          is_hidden: () => {
+            const rank = this.get_action().get_property_value("rank");
             return !rank || 1 == rank;
           },
         },

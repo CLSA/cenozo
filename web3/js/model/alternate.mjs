@@ -26,8 +26,8 @@ export class CN_model_alternate extends CN_model_base_person {
         alternate_type_list: { title: "Types", table_prefix: false },
         global_note: { title: "Special Note", type: "text", limit: 100 },
       },
-      get_default_order: (model) => {
-        const parent_model = model.get_parent_model();
+      get_default_order: () => {
+        const parent_model = this.get_parent_model();
         return (
           parent_model && "participant" == parent_model.get_name() ?
           "last_name" :
@@ -78,7 +78,7 @@ export class CN_model_alternate extends CN_model_base_person {
           type: "enum",
           enum: { path: "alternate_type" },
           help: "You can add more than one role after the alternate has been created.",
-          is_hidden: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "view" == this.get_action_name(),
         },
         global_note: { title: "Special Note", type: "text" },
       },

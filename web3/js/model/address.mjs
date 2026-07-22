@@ -40,7 +40,7 @@ export class CN_model_address extends CN_model_traceable {
             // then update the element to propagate the changed property
             if (valid) action.update_element();
           },
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         address1: { title: "Address Line 1", type: "string" },
         address2: { title: "Address Line 2", type: "string" },
@@ -57,9 +57,9 @@ export class CN_model_address extends CN_model_traceable {
             } },
             modifier: { order: ["country.name", "region.name"] },
           },
-          is_hidden: (model) => (
-            "add" == model.get_action_name() ||
-            model.get_action().get_property_value("international")
+          is_hidden: () => (
+            "add" == this.get_action_name() ||
+            this.get_action().get_property_value("international")
           ),
           is_constant: () => true,
           help: `
@@ -69,14 +69,14 @@ export class CN_model_address extends CN_model_traceable {
         international_region: {
           title: "Region",
           type: "string",
-          is_hidden: (model) => !model.get_action().get_property_value("international"),
+          is_hidden: () => !this.get_action().get_property_value("international"),
           help: "International regions are unrestricted and are not automatically set by the postcode.",
         },
         international_country_id: {
           title: "Country",
           type: "typeahead",
           typeahead: CN_model_country.get_typeahead(),
-          is_hidden: (model) => !model.get_action().get_property_value("international"),
+          is_hidden: () => !this.get_action().get_property_value("international"),
         },
         postcode: {
           title: "Postcode",
@@ -86,13 +86,13 @@ export class CN_model_address extends CN_model_traceable {
         timezone_offset: {
           title: "Timezone Offset",
           type: "float",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           help: "The number of hours difference between the address' timezone and UTC.",
         },
         daylight_savings: {
           title: "Daylight Savings",
           type: "boolean",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           help: "Whether the address observes daylight savings.",
         },
         note: { title: "Note", type: "text" },

@@ -24,7 +24,7 @@ export class CN_model_equipment_loan extends CN_base_model {
           title: "Participant",
           type: "typeahead",
           typeahead: CN_model_participant.get_typeahead(),
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         equipment_id: {
           title: "Serial Number",
@@ -35,7 +35,7 @@ export class CN_model_equipment_loan extends CN_base_model {
         lost: {
           title: "Lost",
           type: "boolean",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
         start_datetime: {
           title: "Loan Date & Time",
@@ -46,7 +46,7 @@ export class CN_model_equipment_loan extends CN_base_model {
           title: "Return Date & Time",
           type: "datetime",
           get_max: () => CN_common.get_date(),
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
         note: { title: "Note", type: "text" },
       },

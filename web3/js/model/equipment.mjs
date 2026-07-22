@@ -27,7 +27,7 @@ export class CN_model_equipment extends CN_base_model {
           title: "Equipment Type",
           type: "enum",
           enum: { path: "equipment_type" },
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         active: {
           title: "Active",
@@ -38,15 +38,15 @@ export class CN_model_equipment extends CN_base_model {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
-          is_hidden: (model) =>
+          is_hidden: () =>
             !CN_session.get("role", "all_sites") ||
-            "site" == model.get_parent_model().get_name(),
+            "site" == this.get_parent_model().get_name(),
         },
         serial_number: { title: "Serial Number", format: "identifier" },
         status: {
           title: "Status",
           is_constant: () => true,
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           help: `
             Will show "new" if never loaned out, "loaned" if currently on loan, "returned" if ready
             to re-distribute, and "lost" if never returned.
@@ -58,7 +58,7 @@ export class CN_model_equipment extends CN_base_model {
           type: "typeahead",
           typeahead: CN_model_participant.get_typeahead(),
           is_constant: () => true,
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
         note: { title: "Note", type: "text" }
       },

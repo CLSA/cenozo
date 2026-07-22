@@ -37,12 +37,12 @@ export class CN_model_consent extends CN_base_model {
         accept: {
           title: "Accept",
           type: "boolean",
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         written: {
           title: "Written",
           type: "boolean",
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
           is_hidden: () => 3 > CN_session.get("role", "tier"),
         },
         datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => CN_common.get_date() },

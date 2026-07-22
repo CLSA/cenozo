@@ -139,7 +139,7 @@ export class CN_base_model extends CN_base_object {
   get_default_order() {
     const default_order = { column: null, desc: false };
     if (this.#get_default_order) {
-      const order = this.#get_default_order(this);
+      const order = this.#get_default_order();
       if (CN_common.is_string(order)) {
         default_order.column = order;
       } else if (CN_common.is_object(order)) {

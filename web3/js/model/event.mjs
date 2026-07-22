@@ -34,7 +34,7 @@ export class CN_model_event extends CN_base_model {
         datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => CN_common.get_date() },
         site_user: {
           title: "Site/User",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           open: true,
           properties: {
             site: {
@@ -62,7 +62,7 @@ export class CN_model_event extends CN_base_model {
 
         address: {
           title: "Address",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           properties: {
             international: {
               title: "International",
