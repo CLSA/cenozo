@@ -297,7 +297,19 @@ export class CN_base_input extends CN_base_element {
    */
   set_disabled(disabled) {
     this.set_config("disabled", disabled);
-    this.constructor.set_disabled(this.#control_el, disabled);
+
+    if (this.#prefix_div_el) {
+      const list = this.#prefix_div_el.querySelectorAll("button, input, select, textarea");
+      if (list) Array.from(list).forEach(el => this.constructor.set_disabled(el, disabled));
+    }
+    if (this.#input_div_el) {
+      const list = this.#input_div_el.querySelectorAll("button, input, select, textarea");
+      if (list) Array.from(list).forEach(el => this.constructor.set_disabled(el, disabled));
+    }
+    if (this.#postfix_div_el) {
+      const list = this.#postfix_div_el.querySelectorAll("button, input, select, textarea");
+      if (list) Array.from(list).forEach(el => this.constructor.set_disabled(el, disabled));
+    }
 
     if (this.get_config("undo") && this.#undo_btn_el) {
       if (!disabled && this.#state.can_undo()) {

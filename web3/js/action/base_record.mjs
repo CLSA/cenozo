@@ -260,15 +260,6 @@ export class CN_action_base_record extends CN_base_action {
   set_disabled(disabled) {
     super.set_disabled(disabled);
 
-    // disable the fieldset element
-    const fieldset_el = this.get_body_element().querySelector('fieldset');
-    if (fieldset_el) {
-      this.constructor.set_disabled(
-        fieldset_el,
-        this.get_disabled() || ("view" == this.get_type() && !this.get_model().allow_edit())
-      );
-    }
-
     // disable all form inputs
     for (const group_name in this.#property_groups) {
       const group = this.#property_groups[group_name];
@@ -323,12 +314,12 @@ export class CN_action_base_record extends CN_base_action {
    * Extends parent method
    */
   _create_body_element() {
-    const form_el = this.constructor.html("<form><fieldset></fieldset></form>");
+    const form_el = this.constructor.html("<form></form>");
 
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
       const parent_el = this.constructor.html('<div class="px-3"></div>');
-      form_el.querySelector("fieldset").append(parent_el);
+      form_el.querySelector("form").append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
         const prop = this.#property_groups.$main.properties[prop_name];
         this.#create_property_element(prop);
@@ -356,7 +347,7 @@ export class CN_action_base_record extends CN_base_action {
       }
     }
 
-    if (null != accordion_el) form_el.querySelector("fieldset").append(accordion_el);
+    if (null != accordion_el) form_el.querySelector("form").append(accordion_el);
 
     return form_el;
   }
