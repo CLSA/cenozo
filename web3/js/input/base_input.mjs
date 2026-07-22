@@ -1,4 +1,5 @@
 import { CN_base_element } from "../element/base_element.mjs"
+import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_state } from "../state.mjs"
 
@@ -297,25 +298,43 @@ export class CN_base_input extends CN_base_element {
    */
   set_disabled(disabled) {
     this.set_config("disabled", disabled);
-
-    if (this.#prefix_div_el) {
-      const list = this.#prefix_div_el.querySelectorAll("button, input, select, textarea");
-      if (list) Array.from(list).forEach(el => this.constructor.set_disabled(el, disabled));
-    }
-    if (this.#input_div_el) {
-      const list = this.#input_div_el.querySelectorAll("button, input, select, textarea");
-      if (list) Array.from(list).forEach(el => this.constructor.set_disabled(el, disabled));
-    }
-    if (this.#postfix_div_el) {
-      const list = this.#postfix_div_el.querySelectorAll("button, input, select, textarea");
-      if (list) Array.from(list).forEach(el => this.constructor.set_disabled(el, disabled));
-    }
+    this.constructor.set_disabled(this.#control_el, disabled);
 
     if (this.get_config("undo") && this.#undo_btn_el) {
       if (!disabled && this.#state.can_undo()) {
         this.#undo_btn_el.classList.remove("d-none");
       } else {
         this.#undo_btn_el.classList.add("d-none");
+      }
+    }
+  }
+
+  /**
+   * Updates the element with the state's current value
+   */
+  update_element() {
+    super.update_element();
+
+    // append the control and add prefix and postfix elements
+    if (this.#prefix_div_el) {
+      if (this.has_config("prefix")) {
+        const prefix = this.get_config("prefix");
+        if (!CN_common.is_function(prefix)) {
+          throw new Error('Form input "prefix" config must be a function.');
+        }
+        this.#prefix_div_el.innerHTML = "";
+        prefix(this.#prefix_div_el);
+      }
+    }
+
+    if (this.#postfix_div_el) {
+      if (this.has_config("postfix")) {
+        const postfix = this.get_config("postfix");
+        if (!CN_common.is_function(postfix)) {
+          throw new Error('Form input "postfix" config must be a function.');
+        }
+        this.#postfix_div_el.innerHTML = "";
+        postfix(this.#postfix_div_el);
       }
     }
   }
@@ -444,22 +463,6 @@ export class CN_base_input extends CN_base_element {
       );
       this.#undo_btn_el.addEventListener("click", this.undo_value.bind(this, true));
       this.#postfix_div_el.append(this.#undo_btn_el);
-    }
-
-    // append the control and add prefix and postfix elements
-    if (this.has_config("prefix")) {
-      const prefix = this.get_config("prefix");
-      if (!CN_common.is_function(prefix)) {
-        throw new Error('Form input "prefix" config must be a function.');
-      }
-      prefix(this.#prefix_div_el);
-    }
-    if (this.has_config("postfix")) {
-      const postfix = this.get_config("postfix");
-      if (!CN_common.is_function(postfix)) {
-        throw new Error('Form input "postfix" config must be a function.');
-      }
-      postfix(this.#postfix_div_el);
     }
 
     if (this.#control_id) this.#control_el.setAttribute("id", this.#control_id);

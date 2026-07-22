@@ -300,6 +300,8 @@ export class CN_action_base_record extends CN_base_action {
             prop_el.classList.remove("d-none");
           }
 
+          prop.form_input.update_element();
+
           // disable any properties that evaluate to constant
           if (prop.is_constant(this.get_model())) prop.form_input.set_disabled(true);
 
@@ -319,7 +321,7 @@ export class CN_action_base_record extends CN_base_action {
     // create the main group above all others
     if (this.#property_groups.hasOwnProperty("$main")) {
       const parent_el = this.constructor.html('<div class="px-3"></div>');
-      form_el.querySelector("form").append(parent_el);
+      form_el.append(parent_el);
       for (const prop_name in this.#property_groups.$main.properties) {
         const prop = this.#property_groups.$main.properties[prop_name];
         this.#create_property_element(prop);
@@ -347,7 +349,7 @@ export class CN_action_base_record extends CN_base_action {
       }
     }
 
-    if (null != accordion_el) form_el.querySelector("form").append(accordion_el);
+    if (null != accordion_el) form_el.append(accordion_el);
 
     return form_el;
   }

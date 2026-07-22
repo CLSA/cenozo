@@ -90,14 +90,16 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Hold",
               meta: {}, // predefined by the service
               postfix: (el) => {
-                const btn_el = CN_base_element.html(
-                  '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
-                );
-                btn_el.addEventListener(
-                  "click",
-                  async () => { await CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
-                );
-                el.append(btn_el);
+                if (this.allow_edit()) {
+                  const btn_el = CN_base_element.html(
+                    '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
+                  );
+                  btn_el.addEventListener(
+                    "click",
+                    async () => { await CN_session.navigate_to(`${this.get_view_url()}/hold/add`); },
+                  );
+                  el.append(btn_el);
+                }
               },
               is_constant: () => true,
               help: "Whether the participant is currently in a hold.",
@@ -106,14 +108,16 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Trace",
               meta: {}, // predefined by the service
               postfix: (el) => {
-                const btn_el = CN_base_element.html(
-                  '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
-                );
-                btn_el.addEventListener(
-                  "click",
-                  async () => { await CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
-                );
-                el.append(btn_el);
+                if (this.allow_edit()) {
+                  const btn_el = CN_base_element.html(
+                    '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
+                  );
+                  btn_el.addEventListener(
+                    "click",
+                    async () => { await CN_session.navigate_to(`${this.get_view_url()}/trace/add`); },
+                  );
+                  el.append(btn_el);
+                }
               },
               is_constant: () => true,
               help: "Whether the participant currently requires tracing.",
@@ -122,14 +126,16 @@ export class CN_model_participant extends CN_model_base_person {
               title: "Proxy",
               meta: {}, // predefined by the service
               postfix: (el) => {
-                const btn_el = CN_base_element.html(
-                  '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
-                );
-                btn_el.addEventListener(
-                  "click",
-                  async () => { await CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
-                );
-                el.append(btn_el);
+                if (this.allow_edit()) {
+                  const btn_el = CN_base_element.html(
+                    '<button type="button" class="btn btn-outline-primary ms-2">Change</button>'
+                  );
+                  btn_el.addEventListener(
+                    "click",
+                    async () => { await CN_session.navigate_to(`${this.get_view_url()}/proxy/add`); },
+                  );
+                  el.append(btn_el);
+                }
               },
               is_constant: () => true,
               help: "Whether the participant requires a proxy, and if so then what their proxy status is.",

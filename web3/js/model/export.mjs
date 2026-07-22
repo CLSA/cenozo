@@ -53,22 +53,24 @@ export class CN_model_export extends CN_base_model {
           is_hidden: model => "add" == model.get_action_name(),
           is_constant: () => true,
           postfix: (el) => {
-            const btn_el = CN_base_element.html(
-              '<button type="button" class="btn btn-outline-primary ms-2">Calculate</button>'
-            );
-            btn_el.addEventListener(
-              "click",
-              async () => {
-                await this.get_action().set_property_value("participant_count", "(calculating...)");
-                CN_base_element.set_disabled(btn_el, true);
-                await this.get_action().set_property_value(
-                  "participant_count",
-                  await CN_api.count(`${this.get_view_url(null, "api")}/participant`)
-                );
-                CN_base_element.set_disabled(btn_el, false);
-              },
-            );
-            el.append(btn_el);
+            if (this.allow_edit()) {
+              const btn_el = CN_base_element.html(
+                '<button type="button" class="btn btn-outline-primary ms-2">Calculate</button>'
+              );
+              btn_el.addEventListener(
+                "click",
+                async () => {
+                  await this.get_action().set_property_value("participant_count", "(calculating...)");
+                  CN_base_element.set_disabled(btn_el, true);
+                  await this.get_action().set_property_value(
+                    "participant_count",
+                    await CN_api.count(`${this.get_view_url(null, "api")}/participant`)
+                  );
+                  CN_base_element.set_disabled(btn_el, false);
+                },
+              );
+              el.append(btn_el);
+            }
           },
         },
         description: { title: "Description", type: "text" },
