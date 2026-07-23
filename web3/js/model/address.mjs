@@ -99,7 +99,7 @@ export class CN_model_address extends CN_model_traceable {
 
         months: {
           title: "Active Months",
-          is_hidden: model => !model.get_action().get_property_value("active"),
+          is_hidden: () => !this.get_action().get_property_value("active"),
           properties: CN_common.get_month().reduce((obj, month) => {
             obj[month.toLowerCase()] = { title: month, type: "boolean" };
             return obj;

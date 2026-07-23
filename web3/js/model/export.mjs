@@ -45,12 +45,12 @@ export class CN_model_export extends CN_base_model {
           title: "Owner",
           type: "typeahead",
           typeahead: CN_model_user.get_typeahead(),
-          is_hidden: model => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
         },
         participant_count: {
           meta: null, // not associated with any column, set by the button in the postfix
           title: "Participant Count",
-          is_hidden: model => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           postfix: (el) => {
             if (this.allow_edit()) {

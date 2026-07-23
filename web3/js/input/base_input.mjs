@@ -63,6 +63,17 @@ export class CN_base_input extends CN_base_element {
       throw new Error("Abstract class CN_base_input can't be instantiated.");
     }
 
+    // make sure format config value is valid
+    if (this.has_config("format")) {
+      const format = this.get_config("format");
+      if (format && !["alphanum", "alpha_num", "identifier"].includes(format)) {
+        throw new Error(
+          `Invalid format "${format}" set for input "${name}", ` +
+          `must be one of "alphanum", "alpha_num", or "identifier"`
+        );
+      }
+    }
+
     this.#action = action;
     this.#control_id = id;
     this.#control_name = name;

@@ -64,7 +64,7 @@ export class CN_model_mail extends CN_base_model {
         },
         to_address: {
           title: "To Address",
-          format: "email",
+          type: "email",
           help: 'Must be in the format "account@domain.name".',
           get_default: () => {
             const parent_action = this.get_parent_model().get_action();

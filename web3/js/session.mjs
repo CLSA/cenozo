@@ -154,8 +154,9 @@ class session extends CN_base_object {
     } catch (error) {
       console.error(error);
       const model = new CN_model_error(error);
+      this.#main_content_el.replaceChildren(content_el);
+      content_el.append(model.get_element());
       await model.run();
-      content_el.replaceChildren(model.get_element());
 
       // update the breadcrumbs
       this.#breadcrumb_trail.set_config("loading", false);

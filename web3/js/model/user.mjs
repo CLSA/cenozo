@@ -64,7 +64,7 @@ export class CN_model_user extends CN_base_model {
         last_name: { title: "Last Name" },
         email: {
           title: "Email",
-          format: "email",
+          type: "email",
           help: `
             Must be in the format "account@domain.name"
             (if not provided then the user will be prompted for an email address the next time they login).
