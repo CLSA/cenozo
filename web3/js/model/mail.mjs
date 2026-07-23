@@ -26,6 +26,7 @@ export class CN_model_mail extends CN_base_model {
           title: "Participant",
           meta: {},
           is_constant: () => true,
+          is_hidden: () => "add" == this.get_action_name(),
         },
         from_name: {
           title: "From Name",
