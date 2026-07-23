@@ -29,7 +29,17 @@ class ui3 extends \cenozo\base_object
     $message = $this->maintenance_message;
 
     ob_start();
-    if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', $_SERVER['REQUEST_URI'] );
+    if( !defined( 'APP_TITLE' ) )
+    {
+      define(
+        'APP_TITLE',
+        ucwords( preg_replace(
+          ['/.*\/(.+)\/index.php/', '/_/'],
+          ['\1', ' '],
+          $_SERVER['SCRIPT_NAME']
+        ) )
+      );
+    }
     include( sprintf( '%s/src/ui/error3.php', CENOZO_PATH ) );
     return ob_get_clean();
   }
@@ -51,7 +61,17 @@ class ui3 extends \cenozo\base_object
     $code = array_key_exists( 'code', $error ) && $error['code'] ? $error['code'] : NULL;
 
     ob_start();
-    if( !defined( 'APP_TITLE' ) ) define( 'APP_TITLE', $_SERVER['REQUEST_URI'] );
+    if( !defined( 'APP_TITLE' ) )
+    {
+      define(
+        'APP_TITLE',
+        ucwords( preg_replace(
+          ['/.*\/(.+)\/index.php/', '/_/'],
+          ['\1', ' '],
+          $_SERVER['SCRIPT_NAME']
+        ) )
+      );
+    }
     include( CENOZO_PATH.'/src/ui/error3.php' );
     return ob_get_clean();
   }

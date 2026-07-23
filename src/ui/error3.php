@@ -12,34 +12,36 @@
   <title><?php echo APP_TITLE; ?></title>
 </head>
 <body class="background user-select-none">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
-    <div class="container-fluid">
-      <button type="button" class="btn btn-primary my-1 py-1" disabled>
-        <strong><?php echo APP_TITLE; ?></strong>
-      </button>
-    </div>
-  </nav>
+  <div id="app-body" class="user-select-none">
+    <nav id="main-menu-header" class="navbar navbar-expand-lg navbar-dark bg-primary p-0">
+      <div class="container-fluid">
+        <button type="button" class="btn btn-primary my-1" disabled>
+          <strong><?php echo APP_TITLE; ?></strong>
+        </button>
+      </div>
+    </nav>
 
-  <div class="bg-white pt-2 pb-4">
-    <div class="container my-3">
-      <img id="logo" class="img-responsive w-50" onerror="this.style.display='none'"></img>
-    </div>
+    <div id="main-content-login" class="bg-white pt-2 pb-4">
+      <div class="container my-3">
+        <img id="logo" src="<?php print CENOZO3_URL; ?>/img/branding.png" class="img-responsive w-50" onerror="this.style.display='none'"></img>
+      </div>
 
-    <div class="container">
-      <div class="card">
-        <div class="card-header text-bg-primary fw-bold fs-4">
-          <i class="glyphicon glyphicon-exclamation-sign"></i>
-          <?php echo $title; ?>
-        </div>
-        <div class="card-body">
-          <p class="alert">
-            <?php echo $message; ?>
-          </p>
-<?php if( isset( $code ) && $code ) { ?>
-          <code class="spacer" style="background-color: inherit;">
-            Error Code: <?php echo $code; ?>
-          </code>
-<?php } ?>
+      <div class="container">
+        <div class="card">
+          <div class="card-header text-bg-primary fw-bold fs-4">
+            <i class="glyphicon glyphicon-exclamation-sign"></i>
+            <?php echo $title; ?>
+          </div>
+          <div class="card-body">
+            <p class="alert">
+              <?php echo $message; ?>
+            </p>
+  <?php if( isset( $code ) && $code ) { ?>
+            <code class="spacer" style="background-color: inherit;">
+              Error Code: <?php echo $code; ?>
+            </code>
+  <?php } ?>
+          </div>
         </div>
       </div>
     </div>
