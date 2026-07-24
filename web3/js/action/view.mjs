@@ -45,7 +45,7 @@ export class CN_action_view extends CN_action_base_record {
       const title = this.get_property_value("title");
       if (title) return title;
 
-      return CN_common.uc_words(model.get_singular());
+      return "record";
     }
 
     if ("header" == type) {

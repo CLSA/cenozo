@@ -140,7 +140,7 @@ class session extends CN_base_object {
       const crumb_list = [];
       await Promise.all(this.#path_model_list.map(model => (async () => {
         // add the parent list as a crumb to view actions
-        if ("view" == model.get_action_name()) {
+        if (["add", "view"].includes(model.get_action_name())) {
           const parent_model = model.get_parent_model();
           crumb_list.push({
             name: CN_common.uc_words(model.get_singular()),

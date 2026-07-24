@@ -22,7 +22,7 @@ export class CN_action_add extends CN_action_base_record {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      return `Add ${CN_common.uc_words(this.get_model().get_singular())}`;
+      return "Add";
     }
 
     if ("header" == type) {
