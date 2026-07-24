@@ -119,7 +119,7 @@ export class CN_view_hold extends CN_action_view {
    * Extends the parent method
    */
   async get_text(type) {
-    if (["crumb", "name"].includes(type)) {
+    if ("crumb" == type) {
       const hold_type = this.get_property("hold_type_id").form_input.get_config("enum").values.find(
         e => e.key == this.get_property_value("hold_type_id")
       );

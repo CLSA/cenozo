@@ -92,7 +92,7 @@ export class CN_view_proxy extends CN_action_view {
    * Extends the parent method
    */
   async get_text(type) {
-    if (["crumb", "name"].includes(type)) {
+    if ("crumb" == type) {
       const proxy_type = this.get_property("proxy_type_id").form_input.get_config("enum").values.find(
         e => e.key == this.get_property_value("proxy_type_id")
       );

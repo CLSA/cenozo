@@ -13,6 +13,9 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       ...{
         loading: false,
         crumb_list: [],
+        class: "tiny text-truncate text-light",
+        max_trail_width: "60vw", // the max width of the full breadcrumb trail
+        max_crumb_width: "18vw", // the max width of a breadcrumb
       },
       ...config
     });
@@ -23,6 +26,8 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
    */
   update_element() {
     const el = this.get_element();
+    // set the maximum width the trail can be before it gets truncated
+    el.style["max-width"] = this.get_config("max_trail_width");
     let crumb_list = CN_common.clone(this.get_config("crumb_list"));
 
     el.innerHTML = "";
@@ -31,7 +36,7 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       crumb_list = [{ name: "Loading...", path: null }];
     } else {
       // add the home crumb at the start
-      el.append(this.constructor.html('<i class="bi bi-chevron-compact-right text-light"></i>'));
+      el.append(this.constructor.html('<i class="bi bi-chevron-compact-right text-light align-middle"></i>'));
       const home_crumb_el = this.constructor.html(`
         <button
           type="button"
@@ -61,11 +66,12 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
     // add each crumb to the trail, interspersed by chevrons
     let last_crumb_el = null;
     crumb_list.forEach(crumb => {
-      el.append(this.constructor.html('<i class="bi bi-chevron-compact-right text-light"></i>'));
+      el.append(this.constructor.html('<i class="bi bi-chevron-compact-right text-light align-middle"></i>'));
       const crumb_el = this.constructor.html(`
         <button
           type="button"
-          class="btn btn-primary px-1"
+          class="btn btn-primary px-1 text-truncate"
+          style="max-width: ${this.get_config("max_crumb_width")};"
           data-bs-dismiss="offcanvas"
           data-bs-target="#main-menu-offcanvas"
         >${crumb.name}</button>

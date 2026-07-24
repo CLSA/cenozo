@@ -38,7 +38,7 @@ export class CN_action_view extends CN_action_base_record {
   async get_text(type) {
     const model = this.get_model();
 
-    if (["crumb", "name"].includes(type)) {
+    if ("crumb" == type) {
       const name = this.get_property_value("name");
       if (name) return name;
 

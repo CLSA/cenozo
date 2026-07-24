@@ -48,6 +48,10 @@ body.loading:before {
   animation: pulse 1s linear infinite alternate;
 }
 
+.tiny {
+  zoom: 85%;
+}
+
 .bg-loading {
   background-image:
     repeating-linear-gradient(

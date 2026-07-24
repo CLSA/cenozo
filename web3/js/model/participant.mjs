@@ -460,7 +460,7 @@ export class CN_view_participant extends CN_view_base_person {
    * Extends the parent method
    */
   async get_text(type) {
-    if (["crumb", "name"].includes(type)) {
+    if ("crumb" == type) {
       return this.get_property_value("uid");
     }
 

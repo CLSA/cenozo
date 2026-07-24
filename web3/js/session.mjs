@@ -139,6 +139,15 @@ class session extends CN_base_object {
       // create the crumbs for the breadcrumb trail
       const crumb_list = [];
       await Promise.all(this.#path_model_list.map(model => (async () => {
+        // add the parent list as a crumb to view actions
+        if ("view" == model.get_action_name()) {
+          const parent_model = model.get_parent_model();
+          crumb_list.push({
+            name: CN_common.uc_words(model.get_singular()),
+            path: parent_model ? `${parent_model.get_view_url()}?tab=${model.get_name()}` : model.get_list_url(),
+          });
+        }
+
         let crumb = { name: "...", path: "view" == model.get_action_name() ? model.get_view_url() : null };
         crumb_list.push(crumb);
 
@@ -463,7 +472,7 @@ class session extends CN_base_object {
           <button
             name="menu-button"
             type="button"
-            class="btn btn-outline-light fw-bold my-1"
+            class="btn btn-outline-light fw-bold my-1 text-nowrap"
             data-bs-toggle="offcanvas"
             data-bs-target="#main-menu-offcanvas"
           >${APP_TITLE}</button>
@@ -480,7 +489,7 @@ class session extends CN_base_object {
     this.#menu_btn_group_el = CN_base_element.html(`
       <div name="menu-btn-group" class="d-flex">
         <div name="access"></div>
-        <button type="button" name="clock" class="btn btn-outline-light">
+        <button type="button" name="clock" class="btn btn-outline-light text-nowrap">
           <i class="bi bi-clock-fill"></i>
           <span name="time" class="nav-item"></span>
         </button>
@@ -534,7 +543,7 @@ class session extends CN_base_object {
       `));
     } else {
       const access_btn_el = CN_base_element.html(`
-        <button type="button" name="access" class="btn btn-outline-light mx-1">
+        <button type="button" name="access" class="btn btn-outline-light mx-1 text-nowrap">
           ${CN_common.uc_words(this.#data.role.name)} @ ${this.#data.site.name}
         </button>
       `);
