@@ -1,6 +1,6 @@
 {
     "require": {
-        "phpoffice/phpspreadsheet": "1.30.5",
+        "phpoffice/phpspreadsheet": "1.30.6",
         "mikehaertl/php-pdftk": "0.13.0",
         "softcreatr/jsonpath": "^0.9"
     }
