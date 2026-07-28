@@ -30,7 +30,11 @@ export class CN_model_participant extends CN_model_base_person {
       first_name: { title: "First Name" },
       last_name: { title: "Last Name" },
       cohort: { column: "cohort.name", title: "Cohort" },
-      status: { title: "Status", table_prefix: false },
+      status: {
+        title: "Status",
+        table_prefix: false,
+        is_hidden: () => this.get_parent_model() && "hold_type" == this.get_parent_model().get_name(),
+      },
     };
     // only add the site column if this is a site-based application
     if (CN_session.get("application", "site_based")) {
@@ -464,6 +468,15 @@ export class CN_view_participant extends CN_view_base_person {
       return this.get_property_value("uid");
     }
 
+    if ("header" == type) {
+      const full_name = [
+        this.get_property_value("honorific"),
+        this.get_property_value("first_name"),
+        this.get_property_value("last_name"),
+      ].join(" ");
+      return `Participant Details for ${full_name}`;
+    }
+
     return await super.get_text(type);
   }
 
@@ -471,12 +484,13 @@ export class CN_view_participant extends CN_view_base_person {
    * Extends the parent method
    */
   get_selector_child_list() {
-    const child_list = super.get_selector_child_list();
-    return (
-      this.#show_study_phase_status ?
-      child_list :
-      child_list.filter(child => "study_phase_status" != child.model.get_name())
-    );
+    return super.get_selector_child_list()
+      .filter(child => {
+        // make participant identifier title more user friendly
+        if ("participant_identifier" == child.model.get_name()) child.title = "Identifier";
+        // only include the study phase status child if needed
+        return this.#show_study_phase_status || "study_phase_status" != child.model.get_name();
+      });
   }
 
   /**

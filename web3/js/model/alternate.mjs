@@ -118,6 +118,14 @@ export class CN_view_alternate extends CN_view_base_person {
       return `${this.get_property_value("last_name")}, ${this.get_property_value("first_name")}`;
     }
 
+    if ("header" == type) {
+      const full_name = [
+        this.get_property_value("first_name"),
+        this.get_property_value("last_name"),
+      ].join(" ");
+      return `Alternate Details for ${full_name}`;
+    }
+
     return await super.get_text(type);
   }
 

@@ -124,13 +124,13 @@ export class CN_upload_equipment_type extends CN_action_upload {
           NOTE: You will not be able to upload data if there are any errors in the CSV data.
         </div>
         <div class="pb-2 px-3">
-          <div class="fs-5">Option #1: Three rows (used to uploaod new equipment)</div>
+          <div class="fs-5">Option #1: Three rows (used to upload new equipment)</div>
           <ul>
             <li>Serial Number "serial_number" (must not belong to any other equipment type)</li>
             <li>Site Name "site" (may be blank)</li>
             <li>Equipment Note "note" (may be blank)</li>
           </ul>
-          <div class="fs-5">Option #2: Eight rows (used to upload equipment that has alredy been loaned)</div>
+          <div class="fs-5">Option #2: Eight rows (used to upload equipment that has already been loaned)</div>
           <ul>
             <li>Serial Number "serial_number" (must not belong to any other equipment type)</li>
             <li>Site Name "site" (may be blank)</li>

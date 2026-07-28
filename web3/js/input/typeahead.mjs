@@ -14,6 +14,7 @@ export class CN_input_typeahead extends CN_base_input {
     }
 
     const default_config = {
+      placeholder: "(Type the first few letters to search for possible values)",
       typeahead: {
         min_length: 2,
         allow_new: false,

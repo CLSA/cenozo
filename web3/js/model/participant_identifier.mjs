@@ -1,3 +1,5 @@
+import { CN_action_add } from "../action/add.mjs"
+import { CN_action_list } from "../action/list.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_model_participant } from "./participant.mjs"
 
@@ -45,5 +47,35 @@ export class CN_model_participant_identifier extends CN_base_model {
         },
       }
     });
+  }
+}
+
+export class CN_add_participant_identifier extends CN_action_add {
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    if ("header" == type) {
+      return "Create Participant Identifier";
+    }
+    return await super.get_text(type);
+  }
+}
+
+export class CN_list_participant_identifier extends CN_action_list {
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    if ("header" == type) {
+      return (
+        "identifier" == this.get_model().get_parent_model().get_name() ?
+        "Participant List" :
+        "participant" == this.get_model().get_parent_model().get_name() ?
+        "Identifier List" :
+        await super.get_text("header")
+      )
+    }
+    return await super.get_text(type);
   }
 }

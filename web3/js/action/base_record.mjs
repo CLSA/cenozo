@@ -171,7 +171,7 @@ export class CN_action_base_record extends CN_base_action {
     if (!CN_common.is_function(prop.is_hidden)) {
       prop.is_hidden = () => {
         const parent_model = this.get_model().get_parent_model();
-        return parent_model && prop.name == `^${parent_model.get_name()}_id$`;
+        return parent_model && prop.name == `${parent_model.get_name()}_id`;
       };
     }
     if (!CN_common.is_function(prop.get_default)) {
