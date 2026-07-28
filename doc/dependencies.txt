@@ -25,8 +25,8 @@ Modify the following php parameters:
   upload_max_filesize = 128M
   memory_limit = 256M or if using Pine memory_limit = 1G
 
-Load timezone information into mysql:
-  mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
+Load timezone information into mariadb:
+  mariadb-tzinfo-to-sql /usr/share/zoneinfo | mariadb -u root mysql
 
 Apache Mod Rewrite:
   sudo a2enmod rewrite
