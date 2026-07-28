@@ -28,6 +28,8 @@ export class CN_action_upload extends CN_base_action {
   async get_text(type) {
     const singular = this.get_model().get_singular();
     const name = (
+      !this.#parent_record ?
+      null :
       this.#parent_record.name ?
       this.#parent_record.name :
       this.#parent_record.title ?

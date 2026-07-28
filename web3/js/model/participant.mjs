@@ -544,12 +544,8 @@ export class CN_notes_participant extends CN_action_notes {
     const model = this.get_model();
 
     if ("crumb" == type) {
-      return (
-        await CN_api.get(
-          model.get_view_url(null, "api"),
-          { select: { column: "uid" } },
-        )
-      ).uid;
+      const uid = (await CN_api.get(model.get_view_url(null, "api"), { select: { column: "uid" } })).uid;
+      return `${uid} Notes`;
     }
 
     if ("header" == type) {
@@ -1199,7 +1195,7 @@ export class CN_scripts_participant extends CN_base_action {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      return this.#participant.uid;
+      return `${this.#participant.uid} Scripts`;
     }
 
     if ("header" == type) {

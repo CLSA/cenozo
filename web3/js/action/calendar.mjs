@@ -49,7 +49,7 @@ export class CN_action_calendar extends CN_base_action {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      return CN_common.uc_words(this.get_model().get_plural());
+      return "Calendar";
     }
 
     if ("header" == type) {

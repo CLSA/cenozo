@@ -414,7 +414,12 @@ export class CN_history_base_person extends CN_base_action {
       };
 
       const data = await CN_api.get(this.get_model().get_view_url(null, "api"), select);
-      return "participant" == this.get_model().get_name() ? data.uid : `${data.first_name} ${data.last_name}`;
+      const text = (
+        "participant" == this.get_model().get_name() ?
+        data.uid :
+        `${data.first_name} ${data.last_name}`
+      );
+      return `${text} History`;
     }
 
     if ("header" == type) {
