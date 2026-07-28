@@ -186,11 +186,14 @@ class util
    * @access public
    * @static
    */
-  public static function get_timezone_name( $offset, $daylight_savings )
+  public static function get_timezone_name( $offset, $daylight_savings, $db_region = NULL )
   {
+    $is_bc = !is_null( $db_region ) && 'British Columbia' == $db_region->name;
+    if( $is_bc && -7 == $offset ) return 'Canada/Pacific';
+
     if( $daylight_savings )
     {
-      if( -8 == $offset ) return 'Canada/Pacific';
+      if( -8 == $offset || ( $is_bc && -7 == $offset ) ) return 'Canada/Pacific';
       if( -7 == $offset ) return 'Canada/Mountain';
       if( -6 == $offset ) return 'Canada/Central';
       if( -5 == $offset ) return 'Canada/Eastern';

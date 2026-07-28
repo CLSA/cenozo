@@ -226,7 +226,11 @@ class address extends has_rank
   public function get_timezone_name()
   {
     $util_class_name = lib::get_class_name( 'util' );
-    return $util_class_name::get_timezone_name( $this->timezone_offset, $this->daylight_savings );
+    return $util_class_name::get_timezone_name(
+      $this->timezone_offset,
+      $this->daylight_savings,
+      $this->get_region()
+    );
   }
 
   /**
