@@ -145,8 +145,8 @@ export class CN_base_action extends CN_base_element {
     this.#is_placeholder = true;
     const model_el = this.#model.get_element();
 
+    const placeholder_el = this.get_placeholder_element();
     if (this.#simple_mode) {
-      const placeholder_el = this.get_placeholder_element();
       const body_el = model_el.querySelector(":scope > div");
       body_el.replaceChildren(placeholder_el);
     } else {
@@ -165,7 +165,6 @@ export class CN_base_action extends CN_base_element {
         card_topfooter_el.innerHTML = "";
       }
 
-      const placeholder_el = this.get_placeholder_element();
       const card_body_el = model_el.querySelector(":scope > div > div.card > .card-body");
       card_body_el.replaceChildren(placeholder_el);
 

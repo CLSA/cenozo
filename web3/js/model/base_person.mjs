@@ -95,69 +95,90 @@ export class CN_history_base_person extends CN_base_action {
       subject: "address",
       path: `${base_path}/address`,
       get_data: async function () {
-        const rows = await CN_api.get(this.path, {
-          select: { column: [
-            "create_timestamp",
-            "rank",
-            "address1",
-            "address2",
-            "city",
-            "postcode",
-            "international",
-            { table: "region", column: "name", alias: "region" },
-            { table: "country", column: "name", alias: "country" },
-          ]},
-        });
-        return rows.map(row => ({
-          category: this,
-          datetime: row.create_timestamp,
-          title: "added rank " + row.rank,
-          description: [
-            row.address1,
-            row.address2,
-            `${row.city}, ${row.region}, ${row.country}, ${row.postcode}`,
-            row.international ? '(international)' : null,
-          ].filter(x => null != x).join("\n"),
-        }));
+        try {
+          return (await CN_api.get(this.path, {
+            select: { column: [
+              "create_timestamp",
+              "rank",
+              "address1",
+              "address2",
+              "city",
+              "postcode",
+              "international",
+              { table: "region", column: "name", alias: "region" },
+              { table: "country", column: "name", alias: "country" },
+            ]},
+          })).map(row => ({
+            category: this,
+            datetime: row.create_timestamp,
+            title: "added rank " + row.rank,
+            description: [
+              row.address1,
+              row.address2,
+              `${row.city}, ${row.region}, ${row.country}, ${row.postcode}`,
+              row.international ? '(international)' : null,
+            ].filter(x => null != x).join("\n"),
+          }));
+        } catch (error) {
+          // ignore 404s, it just means we don't have access to reading the data
+          if (!CN_common.is_uri_error(error, 404)) throw error;
+        }
+
+        // return an empty list if the data failed to load
+        return [];
       },
     }, {
       subject: "note",
       path: `${base_path}/note`,
       get_data: async function () {
-        const rows = await CN_api.get(this.path, {
-          select: { column: [
-            "datetime",
-            "note",
-            { table: "user", column: "first_name", alias: "user_first" },
-            { table: "user", column: "last_name", alias: "user_last" },
-          ]},
-        });
-        return rows.map(row => ({
-          category: this,
-          datetime: row.datetime,
-          title: `added by ${row.user_first} ${row.user_last}`,
-          description: row.note,
-        }));
+        try {
+          return (await CN_api.get(this.path, {
+            select: { column: [
+              "datetime",
+              "note",
+              { table: "user", column: "first_name", alias: "user_first" },
+              { table: "user", column: "last_name", alias: "user_last" },
+            ]},
+          })).map(row => ({
+            category: this,
+            datetime: row.datetime,
+            title: `added by ${row.user_first} ${row.user_last}`,
+            description: row.note,
+          }));
+        } catch (error) {
+          // ignore 404s, it just means we don't have access to reading the data
+          if (!CN_common.is_uri_error(error, 404)) throw error;
+        }
+
+        // return an empty list if the data failed to load
+        return [];
       },
     }, {
       subject: "phone",
       path: `${base_path}/phone`,
       get_data: async function () {
-        const rows = await CN_api.get(this.path, {
-          select: { column: [
-            "create_timestamp",
-            "rank",
-            "type",
-            "number",
-            "international",
-          ]},
-        });
-        return rows.map(row => ({
-          category: this,
-          datetime: row.create_timestamp,
-          title: `added rank ${row.rank}`,
-          description: `${row.type}: ${row.number}${row.international ? " (international)" : ""}`,
-        }));
+        try {
+          return (await CN_api.get(this.path, {
+            select: { column: [
+              "create_timestamp",
+              "rank",
+              "type",
+              "number",
+              "international",
+            ]},
+          })).map(row => ({
+            category: this,
+            datetime: row.create_timestamp,
+            title: `added rank ${row.rank}`,
+            description: `${row.type}: ${row.number}${row.international ? " (international)" : ""}`,
+          }));
+        } catch (error) {
+          // ignore 404s, it just means we don't have access to reading the data
+          if (!CN_common.is_uri_error(error, 404)) throw error;
+        }
+
+        // return an empty list if the data failed to load
+        return [];
       },
     }];
 
@@ -167,158 +188,214 @@ export class CN_history_base_person extends CN_base_action {
         subject: "alternate",
         path: `${base_path}/alternate`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "create_timestamp",
-              "association",
-              "alternate_type_list",
-              "first_name",
-              "last_name",
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.create_timestamp,
-            title: `added ${row.first_name} ${row.last_name}`,
-            description:
-              `${row.first_name} ${row.last_name} ` +
-              `(${row.association ? row.association : "unknown association"})\n` +
-              `Current roles: ${row.alternate_type_list ? row.alternate_type_list : "(none)"}`,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "create_timestamp",
+                "association",
+                "alternate_type_list",
+                "first_name",
+                "last_name",
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.create_timestamp,
+              title: `added ${row.first_name} ${row.last_name}`,
+              description:
+                `${row.first_name} ${row.last_name} ` +
+                `(${row.association ? row.association : "unknown association"})\n` +
+                `Current roles: ${row.alternate_type_list ? row.alternate_type_list : "(none)"}`,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "consent",
         path: `${base_path}/consent`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "datetime",
-              "accept",
-              "written",
-              "note",
-              { table: "consent_type", column: "name" },
-              { table: "consent_type", column: "description" },
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.datetime,
-            title: `added "${row.name}"`,
-            description: row.description + (row.note ? `\nNote: ${row.note}` : ""),
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "datetime",
+                "accept",
+                "written",
+                "note",
+                { table: "consent_type", column: "name" },
+                { table: "consent_type", column: "description" },
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.datetime,
+              title: `added "${row.name}"`,
+              description: row.description + (row.note ? `\nNote: ${row.note}` : ""),
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "event",
         path: `${base_path}/event`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "datetime",
-              { table: "event_type", column: "name" },
-              { table: "event_type", column: "description" },
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.datetime,
-            title: `added "${row.name}"`,
-            description: row.description,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "datetime",
+                { table: "event_type", column: "name" },
+                { table: "event_type", column: "description" },
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.datetime,
+              title: `added "${row.name}"`,
+              description: row.description,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "form",
         path: `${base_path}/form`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "date",
-              { table: "form_type", column: "name" },
-              { table: "form_type", column: "description" },
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.date,
-            title: `added "${row.name}"`,
-            description: row.description,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "date",
+                { table: "form_type", column: "name" },
+                { table: "form_type", column: "description" },
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.date,
+              title: `added "${row.name}"`,
+              description: row.description,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "hold",
         path: `${base_path}/hold`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "datetime",
-              { table: "hold_type", column: "name" },
-              { table: "hold_type", column: "type" },
-              { table: "hold_type", column: "description" },
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.datetime,
-            title: null == row.type ? "removed hold" : `added "${row.type} ${row.name}"`,
-            description: null == row.type ? "" : row.description,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "datetime",
+                { table: "hold_type", column: "name" },
+                { table: "hold_type", column: "type" },
+                { table: "hold_type", column: "description" },
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.datetime,
+              title: null == row.type ? "removed hold" : `added "${row.type} ${row.name}"`,
+              description: null == row.type ? "" : row.description,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "mail",
         path: `${base_path}/mail`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "sent_datetime",
-              "subject",
-              "note",
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.sent_datetime,
-            title: `sent "${row.subject}"`,
-            description: row.note,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "sent_datetime",
+                "subject",
+                "note",
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.sent_datetime,
+              title: `sent "${row.subject}"`,
+              description: row.note,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "proxy",
         path: `${base_path}/proxy`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "datetime",
-              { table: "proxy_type", column: "name" },
-              { table: "proxy_type", column: "description" },
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.datetime,
-            title: null == row.name ? "removed proxy" : `added proxy "${row.name}"`,
-            description: null == row.name ? "" : row.description,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "datetime",
+                { table: "proxy_type", column: "name" },
+                { table: "proxy_type", column: "description" },
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.datetime,
+              title: null == row.name ? "removed proxy" : `added proxy "${row.name}"`,
+              description: null == row.name ? "" : row.description,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }, {
         subject: "trace",
         path: `${base_path}/trace`,
         get_data: async function () {
-          const rows = await CN_api.get(this.path, {
-            select: { column: [
-              "datetime",
-              "note",
-              { table: "trace_type", column: "name" },
-              { table: "user", column: "first_name" },
-              { table: "user", column: "last_name" },
-            ]},
-          });
-          return rows.map(row => ({
-            category: this,
-            datetime: row.datetime,
-            title:
-              (null == row.name ? "removed trace" : `added to "${row.name}"`) +
-              ` by ${row.first_name} ${row.last_name}`,
-            description: row.note,
-          }));
+          try {
+            return (await CN_api.get(this.path, {
+              select: { column: [
+                "datetime",
+                "note",
+                { table: "trace_type", column: "name" },
+                { table: "user", column: "first_name" },
+                { table: "user", column: "last_name" },
+              ]},
+            })).map(row => ({
+              category: this,
+              datetime: row.datetime,
+              title:
+                (null == row.name ? "removed trace" : `added to "${row.name}"`) +
+                ` by ${row.first_name} ${row.last_name}`,
+              description: row.note,
+            }));
+          } catch (error) {
+            // ignore 404s, it just means we don't have access to reading the data
+            if (!CN_common.is_uri_error(error, 404)) throw error;
+          }
+
+          // return an empty list if the data failed to load
+          return [];
         },
       }]);
 
@@ -327,35 +404,42 @@ export class CN_history_base_person extends CN_base_action {
           subject: "assignment",
           path: `${base_path}/assignment`,
           get_data: async function () {
-            const rows = await CN_api.get(this.path, {
-              select: { column: [
-                "start_datetime",
-                "end_datetime",
-                { table: "user", column: "first_name", alias: "user_first" },
-                { table: "user", column: "last_name", alias: "user_last" },
-                { table: "site", column: "name", alias: "site" },
-                { table: "script", column: "name", alias: "script" },
-              ]},
-            });
-            return rows.reduce((list, row) => {
-              list.push({
-                category: this,
-                datetime: row.start_datetime,
-                title: `started by ${row.user_first} ${row.user_last}`,
-                description:
-                  `Started an assignment for the "${row.script}" questionnaire.\n` +
-                  `Assigned from the ${row.site} site.`,
-              });
-              list.push({
-                category: this,
-                datetime: row.end_datetime,
-                title: `completed by ${row.user_first} ${row.user_last}`,
-                description:
-                  `Completed an assignment for the "${row.script}" questionnaire.\n` +
-                  `Assigned from the ${row.site} site.`,
-              });
-              return list;
-            }, []);
+            try {
+              return (await CN_api.get(this.path, {
+                select: { column: [
+                  "start_datetime",
+                  "end_datetime",
+                  { table: "user", column: "first_name", alias: "user_first" },
+                  { table: "user", column: "last_name", alias: "user_last" },
+                  { table: "site", column: "name", alias: "site" },
+                  { table: "script", column: "name", alias: "script" },
+                ]},
+              })).reduce((list, row) => {
+                list.push({
+                  category: this,
+                  datetime: row.start_datetime,
+                  title: `started by ${row.user_first} ${row.user_last}`,
+                  description:
+                    `Started an assignment for the "${row.script}" questionnaire.\n` +
+                    `Assigned from the ${row.site} site.`,
+                });
+                list.push({
+                  category: this,
+                  datetime: row.end_datetime,
+                  title: `completed by ${row.user_first} ${row.user_last}`,
+                  description:
+                    `Completed an assignment for the "${row.script}" questionnaire.\n` +
+                    `Assigned from the ${row.site} site.`,
+                });
+                return list;
+              }, []);
+            } catch (error) {
+              // ignore 404s, it just means we don't have access to reading the data
+              if (!CN_common.is_uri_error(error, 404)) throw error;
+            }
+
+            // return an empty list if the data failed to load
+            return [];
           },
         });
       }
@@ -365,35 +449,42 @@ export class CN_history_base_person extends CN_base_action {
           subject: "equipment",
           path: `${base_path}/equipment_loan`,
           get_data: async function () {
-            const rows = await CN_api.get(this.path, {
-              select: { column: [
-                "start_datetime",
-                "end_datetime",
-                "note",
-                { table: "equipment", column: "serial_number" },
-                { table: "equipment_type", column: "name" },
-              ]},
-            });
-            return rows.reduce((list, row) => {
-              list.push({
-                category: this,
-                datetime: row.start_datetime,
-                title: `loaned ${row.name}`,
-                description:
-                  `Loaned ${row.name} with serial number "${row.serial_number}"` +
-                  (row.end_datetime ? "" : " (not yet returned)") +
-                  (row.note ? `\nNote: ${row.note}` : ""),
-              });
-              list.push({
-                category: this,
-                datetime: row.end_datetime,
-                title: `returned ${row.name}`,
-                description:
-                  `Returned ${row.name} with serial number "${row.serial_number}"` +
-                  (row.note ? `\nNote: ${row.note}` : ""),
-              });
-              return list;
-            }, []);
+            try {
+              return (await CN_api.get(this.path, {
+                select: { column: [
+                  "start_datetime",
+                  "end_datetime",
+                  "note",
+                  { table: "equipment", column: "serial_number" },
+                  { table: "equipment_type", column: "name" },
+                ]},
+              })).reduce((list, row) => {
+                list.push({
+                  category: this,
+                  datetime: row.start_datetime,
+                  title: `loaned ${row.name}`,
+                  description:
+                    `Loaned ${row.name} with serial number "${row.serial_number}"` +
+                    (row.end_datetime ? "" : " (not yet returned)") +
+                    (row.note ? `\nNote: ${row.note}` : ""),
+                });
+                list.push({
+                  category: this,
+                  datetime: row.end_datetime,
+                  title: `returned ${row.name}`,
+                  description:
+                    `Returned ${row.name} with serial number "${row.serial_number}"` +
+                    (row.note ? `\nNote: ${row.note}` : ""),
+                });
+                return list;
+              }, []);
+            } catch (error) {
+              // ignore 404s, it just means we don't have access to reading the data
+              if (!CN_common.is_uri_error(error, 404)) throw error;
+            }
+
+            // return an empty list if the data failed to load
+            return [];
           },
         });
       }
