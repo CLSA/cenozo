@@ -497,17 +497,8 @@ export class CN_view_participant extends CN_view_base_person {
    * Extends the parent method
    */
   async on_load() {
-    let count = 0;
-    try {
-      count = (await Promise.all([
-        CN_api.count("study", { modifier: { where: { column: "enable_status", operator: "=", value: true } } }),
-        super.on_load(),
-      ]))[0];
-    } catch (error) {
-      // ignore 404s, it just means we don't have access to reading study data
-      if (!CN_common.is_uri_error(error, 404)) throw error;
-    }
-    this.#show_study_phase_status = 0 < count;
+    // also update the study phase status ever time the action is loaded
+    await Promise.all([super.on_load(), this.#update_show_study_phase_status()]);
   }
 
   /**
@@ -545,6 +536,19 @@ export class CN_view_participant extends CN_view_base_person {
     }
 
     return footer_el;
+  }
+
+  async #update_show_study_phase_status() {
+    let count = 0;
+    try {
+      count = (await CN_api.count("study", {
+        modifier: { where: { column: "enable_status", operator: "=", value: true } }
+      }))[0];
+    } catch (error) {
+      // ignore 404s, it just means we don't have access to reading study data
+      if (!CN_common.is_uri_error(error, 404)) throw error;
+    }
+    this.#show_study_phase_status = 0 < count;
   }
 }
 
