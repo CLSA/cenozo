@@ -293,6 +293,7 @@ export class CN_api extends CN_base_object {
       if ("csv" == mime_type) mime_type = "text/csv;charset=utf-8";
       else if ("jpeg" == mime_type) mime_type = "image/jpeg";
       else if ("ods" == mime_type) mime_type = "application/vnd.oasis.opendocument.spreadsheet;charset=utf-8";
+      else if ("ogg" == mime_type) mime_type = "audio/ogg";
       else if ("pdf" == mime_type) mime_type = "application/pdf";
       else if ("png" == mime_type) mime_type = "image/png";
       else if ("txt" == mime_type) mime_type = "text/plain";
