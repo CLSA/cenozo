@@ -36,16 +36,20 @@ class patch extends write
     {
       if( false !== strpos( $content_type, 'application/json' ) )
       {
-        foreach( $this->get_file_as_array() as $key => $value )
+        $array = $this->get_file_as_array();
+        if( !is_null( $array ) )
         {
-          try
+          foreach( $this->get_file_as_array() as $key => $value )
           {
-            $leaf_record->$key = $value;
-          }
-          catch( \cenozo\exception\argument $e )
-          {
-            $this->status->set_code( 400 );
-            throw $e;
+            try
+            {
+              $leaf_record->$key = $value;
+            }
+            catch( \cenozo\exception\argument $e )
+            {
+              $this->status->set_code( 400 );
+              throw $e;
+            }
           }
         }
       }
