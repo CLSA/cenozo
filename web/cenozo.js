@@ -4965,7 +4965,128 @@
   /**
    * Creates objects which can be used to make audio recordings
    */
-  cenozo.factory("CnAudioRecordingFactory", [
+  cenozo.factory("CnOggAudioRecordingFactory", [
+    "CnModalMessageFactory",
+    "$interval",
+    "$timeout",
+    function (CnModalMessageFactory, $interval, $timeout) {
+      var object = function (params) {
+        angular.extend(this, {
+          timeLimit: 60000, // miliseconds
+          onComplete: function (blob) {}, // what to do after the recording is done (stored in blob)
+          onTimeout: function () {}, // what to do when the recording reaches its time limit
+        });
+        angular.extend(this, params);
+
+        angular.extend(this, {
+          timeoutPromise: null,
+          audioContext: null,
+          audioIn: null,
+          analyser: null,
+          mediaRecorder: null,
+          inputVolume: 0,
+          inputVolumePromise: null,
+          recordingInProgress: false,
+          initialize: function() {
+            this.timeoutPromise = null;
+            if( null == this.audioContext ) {
+              this.audioContext = new AudioContext();
+              this.analyser = this.audioContext.createAnalyser();
+            }
+          },
+          start: async function () {
+            try {
+              this.initialize();
+
+              // connect to the first media device and start recording
+              await navigator.mediaDevices.getUserMedia({audio: true});
+              var deviceResponse = await navigator.mediaDevices.enumerateDevices();
+              if (0 == deviceResponse.length || !deviceResponse[0].deviceId)
+                throw new Error("No audio media device found.");
+
+              var stream = await navigator.mediaDevices.getUserMedia({
+                audio: { deviceId: { exact: deviceResponse[0].deviceId } },
+              });
+              this.audioIn = this.audioContext.createMediaStreamSource(stream);
+              this.audioIn.connect(this.analyser);
+              this.recordingInProgress = true;
+              this.mediaRecorder = new MediaRecorder(stream);
+
+              let chunks = [];
+              this.mediaRecorder.ondataavailable = (event) => {
+                chunks.push(event.data);
+              }
+              this.mediaRecorder.onstop = (event) => {
+                const blob = new Blob(chunks, {"type": "audio/ogg"});
+                this.onComplete(blob);
+                chunks = [];
+              };
+
+              this.mediaRecorder.start();
+
+              // automatically stop after the time limit has elapsed
+              this.timeoutPromise = $timeout(() => {
+                this.onTimeout();
+                this.stop();
+              }, this.timeLimit);
+
+              // start recording the audio level
+              this.inputVolumePromise = $interval(() => {
+                if (this.analyser) {
+                  var bufferLength = this.analyser.frequencyBinCount;
+                  var dataArray = new Uint8Array(bufferLength);
+                  this.analyser.getByteFrequencyData(dataArray);
+                  var total = 0;
+                  for (var i = 0; i < 255; i++) { total += dataArray[i] * dataArray[i]; }
+                  this.inputVolume = Math.sqrt(total / bufferLength) / 128;
+                } else {
+                  this.inputVolume = 0;
+                }
+              }, 20);
+            } catch (err) {
+              CnModalMessageFactory.instance({
+                title: "Unable to start recording",
+                message: err.name.match(/Overconstrained/) ?
+                  "The audio device is in use by another application." : err,
+                error: true,
+              }).show();
+            }
+          },
+          stop: function () {
+            // cancel the timeout
+            $timeout.cancel(this.timeoutPromise);
+
+            if (this.inputVolumePromise) {
+              $interval.cancel(this.inputVolumePromise);
+              this.inputVolumePromise = null;
+            }
+            this.inputVolume = 0;
+            this.mediaRecorder.stop();
+            this.audioIn.disconnect();
+            this.recordingInProgress = false;
+          },
+          cancel: function () {
+            this.mediaRecorder.stop();
+            this.audioIn.disconnect();
+            this.recordingInProgress = false;
+          },
+        });
+      };
+
+      return {
+        instance: function (params) {
+          return new object(angular.isUndefined(params) ? {} : params);
+        },
+      };
+    },
+  ]);
+
+  /* ############################################################################################## */
+
+  /**
+   * Creates objects which can be used to make audio recordings
+   */
+  cenozo.factory("CnWavAudioRecordingFactory", [
     "CnModalMessageFactory",
     "$interval",
     "$timeout",
@@ -8856,12 +8977,14 @@
 
             // convert format to mimeType
             if (null == this.mimeType) {
-              const formatList = [ "csv", "jpeg", "ods", "pdf", "png", "txt", "unknown", "wav", "xlsx", "zip" ];
-              if (formatList.includes(this.format)) {
+              if ([
+                "csv", "jpeg", "ods", "ogg", "pdf", "png", "txt", "unknown", "wav", "xlsx", "zip"
+              ].includes(this.format)) {
                 if ("csv" == this.format) this.mimeType = "text/csv;charset=utf-8";
                 else if ("jpeg" == this.format) this.mimeType = "image/jpeg";
                 else if ("ods" == this.format) this.mimeType =
                   "application/vnd.oasis.opendocument.spreadsheet;charset=utf-8";
+                else if ("ogg" == this.format) this.mimeType = "audio/ogg";
                 else if ("pdf" == this.format) this.mimeType = "application/pdf";
                 else if ("png" == this.format) this.mimeType = "image/png";
                 else if ("txt" == this.format) this.mimeType = "text/plain";
