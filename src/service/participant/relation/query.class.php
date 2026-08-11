@@ -23,6 +23,8 @@ class query extends \cenozo\service\query
 
     $modifier = clone $this->modifier;
     $modifier->where( 'primary_participant_id', '=', $db_relation->primary_participant_id );
+    $this->select->apply_aliases_to_modifier( $modifier );
+
     return $relation_class_name::count( $modifier );
   }
 
