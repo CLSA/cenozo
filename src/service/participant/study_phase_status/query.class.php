@@ -18,6 +18,7 @@ class query extends \cenozo\service\query
     $db_participant = $this->get_parent_record();
     $modifier = clone $this->modifier;
     $modifier->where( 'study.enable_status', '=', true );
+    $this->select->apply_aliases_to_modifier( $modifier );
     return $db_participant->get_study_phase_status_count( $modifier );
   }
 
@@ -29,6 +30,7 @@ class query extends \cenozo\service\query
     $db_participant = $this->get_parent_record();
     $modifier = clone $this->modifier;
     $modifier->where( 'study.enable_status', '=', true );
+    $this->select->apply_aliases_to_modifier( $modifier );
     return $db_participant->get_study_phase_status_list( $this->select, $modifier );
   }
 }

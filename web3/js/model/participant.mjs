@@ -541,9 +541,9 @@ export class CN_view_participant extends CN_view_base_person {
   async #update_show_study_phase_status() {
     let count = 0;
     try {
-      count = (await CN_api.count("study", {
+      count = await CN_api.count("study", {
         modifier: { where: { column: "enable_status", operator: "=", value: true } }
-      }))[0];
+      });
     } catch (error) {
       // ignore 404s, it just means we don't have access to reading study data
       if (!CN_common.is_uri_error(error, 404)) throw error;
