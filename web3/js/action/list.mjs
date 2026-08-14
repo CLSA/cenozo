@@ -509,6 +509,43 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
+  show_placeholder() {
+    // update how many rows the placeholder has based on the existing data (minimum 1)
+    const tbody_el = this.get_placeholder_element().querySelector("tbody");
+    if (tbody_el) {
+      tbody_el.innerHTML = "";
+      const total_rows = null == this.#total_records ? 20 : 0 == this.#total_records ? 1 : this.#records.length;
+      for (let row = 0; row < total_rows; row++) {
+        const td_list = [];
+        for (const col_name in this.#columns) {
+          const column = this.#columns[col_name];
+          td_list.push(`
+            <td
+              class="text-${column.align} border border-light border-2 px-3 placeholder-glow"
+              style="line-height: 30.6px;"
+            >
+              <span
+                class="
+                  placeholder
+                  placeholder-lg
+                  bg-dark
+                  bg-opacity-50
+                  col-${Math.ceil(Math.random() * 5) + 5}
+                "
+              ></span>
+            </td>
+          `);
+        }
+        tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
+      }
+    }
+
+    super.show_placeholder();
+  }
+
+  /**
+   * Extends parent method
+   */
   update_element() {
     super.update_element();
 
@@ -608,7 +645,7 @@ export class CN_action_list extends CN_base_action {
     if (0 == this.#records.length) {
       let tr_el = this.constructor.html(`
         <tr>
-          <td colspan="100%" class="text-center">There are no ${this.get_model().get_plural()} found.</td>
+          <td colspan="100%" class="text-center">There are no ${model.get_plural()} found.</td>
         </tr>
       `);
       tbody_el.append(tr_el);
@@ -636,58 +673,9 @@ export class CN_action_list extends CN_base_action {
         tr_el.addEventListener("click", this.on_row_click.bind(this, record));
 
         visible_columns.forEach(col_name => {
-          const column = this.#columns[col_name];
-
-          let value = record[col_name];
-          if (null === value) {
-            value = column.empty_label;
-          } else if ("boolean" == column.type) {
-            value = value ? "Yes" : "No";
-          } else if (["string", "text"].includes(column.type) && column.html) {
-            // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
-            value = (new Option(value)).innerHTML
-          } else if ("size" == column.type) {
-            value = CN_common.format_filesize(value);
-          } else if (CN_common.is_datetime_type(column.type, "date")) {
-            value = CN_common.format_datetime(value, column.type);
-          } else if ("rank" == column.type) {
-            value = CN_common.ordinal_suffix(value);
-          } else if (CN_common.is_datetime_type(column.type, "time")) {
-            value = CN_common.format_time(
-              CN_common.is_string(value) ?
-              new Date(`${CN_common.format_datetime(CN_common.get_date(), "date")} ${value}`) :
-              value
-            );
-          } else if (CN_common.is_string(value) && 0 < column.limit) {
-            if (value.length > column.limit) {
-              value = value.substring(0, column.limit) + " ...";
-            }
-          }
-
-          if (last_col_name == col_name && "choose" != this.#list_mode && model.allow_delete()) {
-            tr_el.innerHTML += `
-              <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-                <div class="d-flex">
-                  <div class="w-100">${value}</div>
-                  <div class="flex-shrink-1">
-                    <button type="button" name="delete" class="btn btn-sm btn-danger">
-                      <i class="bi bi-x-circle-fill"></i>
-                    </button>
-                  </div>
-                </div>
-              </td>
-            `;
-            tr_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
-              e.stopPropagation();
-              this.on_delete(record);
-            });
-          } else {
-            tr_el.innerHTML += `
-              <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-                ${value}
-              </td>
-            `;
-          }
+          tr_el.append(
+            this._create_column_element(col_name, this.#columns[col_name], record, last_col_name == col_name)
+          );
         });
 
         // remove the outer most white borders
@@ -998,43 +986,6 @@ export class CN_action_list extends CN_base_action {
   /**
    * Extends parent method
    */
-  show_placeholder() {
-    // update how many rows the placeholder has based on the existing data (minimum 1)
-    const tbody_el = this.get_placeholder_element().querySelector("tbody");
-    if (tbody_el) {
-      tbody_el.innerHTML = "";
-      const total_rows = null == this.#total_records ? 20 : 0 == this.#total_records ? 1 : this.#records.length;
-      for (let row = 0; row < total_rows; row++) {
-        const td_list = [];
-        for (const col_name in this.#columns) {
-          const column = this.#columns[col_name];
-          td_list.push(`
-            <td
-              class="text-${column.align} border border-light border-2 px-3 placeholder-glow"
-              style="line-height: 30.6px;"
-            >
-              <span
-                class="
-                  placeholder
-                  placeholder-lg
-                  bg-dark
-                  bg-opacity-50
-                  col-${Math.ceil(Math.random() * 5) + 5}
-                "
-              ></span>
-            </td>
-          `);
-        }
-        tbody_el.append(this.constructor.html(`<tr>${td_list.join()}</tr>`));
-      }
-    }
-
-    super.show_placeholder();
-  }
-
-  /**
-   * Extends parent method
-   */
   _create_footer_element() {
     const footer_el = this.constructor.html(
       '<div class="d-flex align-items-center justify-content-between"></div>'
@@ -1061,5 +1012,64 @@ export class CN_action_list extends CN_base_action {
     const el = super._create_element();
     el.querySelector("div.card-body").classList.add("p-0");
     return el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  _create_column_element(col_name, column, record, last_column) {
+    let value = record[col_name];
+    if (null === value) {
+      value = column.empty_label;
+    } else if ("boolean" == column.type) {
+      value = value ? "Yes" : "No";
+    } else if (["string", "text"].includes(column.type) && column.html) {
+      // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
+      value = (new Option(value)).innerHTML
+    } else if ("size" == column.type) {
+      value = CN_common.format_filesize(value);
+    } else if (CN_common.is_datetime_type(column.type, "date")) {
+      value = CN_common.format_datetime(value, column.type);
+    } else if ("rank" == column.type) {
+      value = CN_common.ordinal_suffix(value);
+    } else if (CN_common.is_datetime_type(column.type, "time")) {
+      value = CN_common.format_time(
+        CN_common.is_string(value) ?
+        new Date(`${CN_common.format_datetime(CN_common.get_date(), "date")} ${value}`) :
+        value
+      );
+    } else if (CN_common.is_string(value) && 0 < column.limit) {
+      if (value.length > column.limit) {
+        value = value.substring(0, column.limit) + " ...";
+      }
+    }
+
+    let td_el = null;
+    if (last_column && "choose" != this.#list_mode && this.get_model().allow_delete()) {
+      td_el = this.constructor.html(`
+        <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+          <div class="d-flex">
+            <div class="w-100">${value}</div>
+            <div class="flex-shrink-1">
+              <button type="button" name="delete" class="btn btn-sm btn-danger">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </div>
+          </div>
+        </td>
+      `);
+      td_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.on_delete(record);
+      });
+    } else {
+      td_el = this.constructor.html(`
+        <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+          ${value}
+        </td>
+      `);
+    }
+
+    return td_el;
   }
 }
