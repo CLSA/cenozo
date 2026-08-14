@@ -17,8 +17,13 @@ export class CN_action_calendar extends CN_base_action {
    */
   constructor(parent_el, model) {
     super("calendar", parent_el, model);
+  }
 
-    const config = model.clone_calendar();
+  /**
+   * Extends the parent method
+   */
+  async configure() {
+    const config = await this.get_model().clone_calendar();
     for (const prop in config) this.set_config(prop, config[prop]);
 
     const calendar = {

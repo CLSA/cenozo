@@ -343,8 +343,8 @@ export class CN_model_participant extends CN_model_base_person {
   /**
    * Extend parent method
    */
-  clone_columns() {
-    const columns = super.clone_columns();
+  async clone_columns() {
+    const columns = await super.clone_columns();
 
     const parent_model = this.get_parent_model();
     if (parent_model) {
@@ -370,8 +370,8 @@ export class CN_model_participant extends CN_model_base_person {
   /**
    * Extend parent method
    */
-  clone_properties() {
-    const properties = super.clone_properties();
+  async clone_properties() {
+    const properties = await super.clone_properties();
 
     // add the relation columns if enabled
     if (CN_session.get("application", "use_relation")) {
@@ -748,7 +748,7 @@ export class CN_multiedit_participant extends CN_base_action {
         const model = mod.module.create_model();
 
         if (mod.hasOwnProperty("properties")) {
-          const properties = model.clone_properties();
+          const properties = await model.clone_properties();
 
           // find each property (some may be in sub-groups) and populate any enum values
           for (const prop_name in mod.properties) {
@@ -1269,14 +1269,14 @@ export class CN_scripts_participant extends CN_base_action {
 
 
     // initialize all scripts in parallel
-    await Promise.all(this.#script_list.map(script => (async () => {
+    await Promise.all(this.#script_list.map(script => {
       script.launcher = new CN_script_launcher({
         script: script,
         identifier: this.get_model().get_identifier(),
         lang: this.#participant.lang,
       });
-      await script.launcher.initialize();
-    })()));
+      return script.launcher.initialize();
+    }));
   }
 
   /**

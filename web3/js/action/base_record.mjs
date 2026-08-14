@@ -19,12 +19,14 @@ export class CN_action_base_record extends CN_base_action {
     if ("CN_action_base_record" == this.constructor) {
       throw new Error("Abstract class CN_action_base_record can't be instantiated.");
     }
+  }
 
-    // while setting up all property groups keep track of all property names to ensure they are unique
-    let existing_properties = {};
-
+  /**
+   * Extend parent method
+   */
+  async configure() {
     // setup all property group
-    const properties = this.get_model().clone_properties();
+    const properties = await this.get_model().clone_properties();
     this.#property_groups = {};
     for (const key in properties) {
       const entry = properties[key];

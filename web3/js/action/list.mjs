@@ -37,8 +37,14 @@ export class CN_action_list extends CN_base_action {
       "choose" :
       "add"
     );
+  }
 
-    this.#columns = model.clone_columns();
+  /**
+   * Extends the parent method
+   */
+  async configure() {
+    const model = this.get_model();
+    this.#columns = await model.clone_columns();
     for (const col_name in this.#columns) {
       const column = this.#columns[col_name];
 

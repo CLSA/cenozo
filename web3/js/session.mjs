@@ -125,11 +125,7 @@ class session extends CN_base_object {
       }
 
       // first run all non-leaf models in parallel as their data may be needed by the leaf model
-      await Promise.all(
-        this.#path_model_list.slice(0, -1).map(model => (async () => {
-          await model.get_action().run();
-        })())
-      );
+      await Promise.all(this.#path_model_list.slice(0, -1).map(model => model.get_action().run()));
 
       // now add the model's element to the DOM and run the leaf module
       this.#main_content_el.replaceChildren(content_el);
@@ -431,17 +427,15 @@ class session extends CN_base_object {
     this.#path_model_list = model_data_list.map(model_data => model_data.module.create_model());
 
     // now that they are all created we can configure them all
-    let parent_model = null;
-    this.#path_model_list.forEach((model, index) => {
-      model.configure(
+    await Promise.all(
+      this.#path_model_list.map((model, index) => model.configure(
         this.#main_content_el,
         model_data_list[index].action,
         model_data_list[index].identifier,
-        parent_model,
+        0 == index ? null : this.#path_model_list[index-1], // parent model
         index == model_data_list.length-1 // only the last model is rendered
-      );
-      parent_model = model;
-    });
+      ))
+    );
 
     // highlight menu item corresponding with the path's first model
     if (0 < this.#path_model_list.length) {

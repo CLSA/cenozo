@@ -186,8 +186,8 @@ export class CN_model_application extends CN_base_model {
   /**
    * Extend parent method
    */
-  clone_columns() {
-    const columns = super.clone_columns();
+  async clone_columns() {
+    const columns = await super.clone_columns();
 
     const parent_model = this.get_parent_model();
     if (parent_model) {

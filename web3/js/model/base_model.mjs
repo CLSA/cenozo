@@ -185,7 +185,7 @@ export class CN_base_model extends CN_base_object {
   /**
    * Configures the model's action
    */
-  configure(parent_el, action_name, identifier=null, parent_model=null, is_rendered=false) {
+  async configure(parent_el, action_name, identifier=null, parent_model=null, is_rendered=false) {
     this.#action_name = action_name;
     this.#identifier = identifier;
     this.#parent_model = parent_model;
@@ -209,6 +209,7 @@ export class CN_base_model extends CN_base_object {
         problem = "is not implemented in the model";
       } else {
         this.#action = this.#module.create_action(action_name, parent_el, this);
+        await this.#action.configure();
         this.#action.set_config("id", this.#unique_id);
       }
     }
@@ -222,16 +223,18 @@ export class CN_base_model extends CN_base_object {
 
     // if we've configured the view action and this is the leaf model then configure the model's children as well
     if ("view" == action_name && this.#is_rendered) {
-      this.#child_model_list = this.#module.get_child_modules().map(m => this.configure_child(m.get_name()));
+      this.#child_model_list = await Promise.all(
+        this.#module.get_child_modules().map(m => this.configure_child(m.get_name()))
+      );
     }
   }
 
   /**
    * Creates and configures the model's child and choose models
    */
-  configure_child(name) {
+  async configure_child(name) {
     const child_model = CN_session.get_module(name).create_model();
-    child_model.configure(null, "list", null, this, true);
+    await child_model.configure(null, "list", null, this, true);
     return child_model;
   }
 
@@ -239,19 +242,19 @@ export class CN_base_model extends CN_base_object {
    * Creates a clone of the properties template object (defined by implementing classes)
    * @return object
    */
-  clone_properties() { return CN_common.clone(this.#properties_template); }
+  async clone_properties() { return CN_common.clone(this.#properties_template); }
 
   /**
    * Creates a clone of the columns template object (defined by implementing classes)
    * @return object
    */
-  clone_columns() { return CN_common.clone(this.#columns_template); }
+  async clone_columns() { return CN_common.clone(this.#columns_template); }
 
   /**
    * Creates a clone of the calendar template object (defined by implementing classes)
    * @return object
    */
-  clone_calendar() { return CN_common.clone(this.#calendar_template); }
+  async clone_calendar() { return CN_common.clone(this.#calendar_template); }
 
   /**
    * Determines whether the add, delete, edit or view actions are permitted

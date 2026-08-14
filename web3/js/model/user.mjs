@@ -145,8 +145,8 @@ export class CN_model_user extends CN_base_model {
   /**
    * Extend the parent method for the special user_overview action
    */
-  clone_columns() {
-    const columns = super.clone_columns();
+  async clone_columns() {
+    const columns = await super.clone_columns();
 
     if ("overview" == this.get_action_name()) {
       delete columns.active;

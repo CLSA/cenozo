@@ -130,6 +130,11 @@ export class CN_base_action extends CN_base_element {
   set_footer_at_top(value) { this.#footer_at_top = !!value; }
 
   /**
+   * ADD DOCS
+   */
+  async configure() {}
+
+  /**
    * Gets UI text values by type
    * @param string type
    * @return string
