@@ -100,6 +100,11 @@ export class CN_view_overview extends CN_action_view {
    * Override this method to update the overview data
    */
   update_element() {
+    (async () => {
+      this.get_header_element().querySelector("div.flex-grow-1").innerHTML = await this.get_text("header");
+      console.log(await this.get_text("header"));
+    })();
+
     // build the overview based on the data property
     const add_node = (node, parent_el, first) => {
       if (CN_common.is_array(node.value)) {
