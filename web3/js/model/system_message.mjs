@@ -32,15 +32,13 @@ export class CN_model_system_message extends CN_base_model {
               order: "title",
             },
           },
-          is_hidden: () => CN_session.get("role", "all_sites") ? false : "add" == this.get_action_name(),
-          is_constant: () => CN_session.get("role", "all_sites") ? false : "view" == this.get_action_name(),
+          is_hidden: () => 3 > CN_session.get("role", "tier"),
         },
         site_id: {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
-          is_hidden: () => CN_session.get("role", "all_sites") ? false : "add" == this.get_action_name(),
-          is_constant: () => CN_session.get("role", "all_sites") ? false : "view" == this.get_action_name(),
+          is_hidden: () => !CN_session.get("role", "all_sites"),
         },
         role_id: {
           title: "Role",

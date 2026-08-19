@@ -68,4 +68,24 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
 
     return body_el;
   }
+
+  /**
+   * Implements the parent method
+   */
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
+
+    // add the "current site" button in the left button group
+    const current_site_btn_el = this.constructor.html(
+      '<button type="button" name="current-site" class="btn btn-light">Current Site</button>'
+    );
+    current_site_btn_el.addEventListener("click", async () => {
+      const timezone = CN_session.get("site", "timezone");
+      const form_input = this.get_input("timezone").form_input;
+      await form_input.set_value(timezone, timezone);
+    });
+    footer_el.querySelector("div[name=left-btn-group]").append(current_site_btn_el);
+
+    return footer_el;
+  }
 }

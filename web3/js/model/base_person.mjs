@@ -75,7 +75,7 @@ export class CN_view_base_person extends CN_action_view {
 
 export class CN_history_base_person extends CN_base_action {
   #category_list = [];
-  #data_list = [];
+  #data_list = null;
 
   /**
    * Constructor
@@ -551,25 +551,27 @@ export class CN_history_base_person extends CN_base_action {
   update_element() {
     super.update_element();
 
-    const data_list_el = this.get_element().querySelector("[name=data_list]");
-    data_list_el.innerHTML = "";
-    this.#data_list.filter(data => null === this.get_query_parameter(data.category.subject)).forEach(data => {
-      data_list_el.append(this.constructor.html(`
-        <div class="card">
-          <div class="card-body row p-2">
-            <div class="col-4">
-              <span class="fw-bold">
-                ${CN_common.uc_words(data.category.subject.replace("_", " "))}:
-              </span> ${data.title}<br/>
-              ${CN_common.format_datetime(data.datetime, "datetimesecond")}
-            </div>
-            <div class="col-8">
-              <span style="white-space: pre-wrap;">${null == data.description ? "" : data.description}</span>
-            </div>
+    if (null != this.#data_list) {
+      const data_list_el = this.get_element().querySelector("[name=data_list]");
+      data_list_el.innerHTML = "";
+      this.#data_list.filter(data => null === this.get_query_parameter(data.category.subject)).forEach(data => {
+        data_list_el.append(this.constructor.html(`
+          <div class="card">
+            <div class="card-body row p-2">
+              <div class="col-4">
+                <span class="fw-bold">
+                  ${CN_common.uc_words(data.category.subject.replace("_", " "))}:
+                </span> ${data.title}<br/>
+                ${CN_common.format_datetime(data.datetime, "datetimesecond")}
+              </div>
+              <div class="col-8">
+                <span style="white-space: pre-wrap;">${null == data.description ? "" : data.description}</span>
+              </div>
+            <div>
           <div>
-        <div>
-      `));
-    });
+        `));
+      });
+    }
   }
 
   /**

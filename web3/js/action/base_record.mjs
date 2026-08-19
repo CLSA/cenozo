@@ -294,15 +294,14 @@ export class CN_action_base_record extends CN_base_action {
             prop_el.classList.add("d-none");
           } else {
             prop_el.classList.remove("d-none");
+            prop.form_input.update_element();
+
+            // disable any properties that evaluate to constant
+            if (prop.is_constant()) prop.form_input.set_disabled(true);
+
+            // now update the property element (this varies in the child action_add and action_view classes)
+            this.update_property_element(prop.name);
           }
-
-          prop.form_input.update_element();
-
-          // disable any properties that evaluate to constant
-          if (prop.is_constant()) prop.form_input.set_disabled(true);
-
-          // now update the property element (this varies in the child action_add and action_view classes)
-          this.update_property_element(prop.name);
         }
       }
     }
@@ -470,7 +469,7 @@ export class CN_action_base_record extends CN_base_action {
     });
 
     prop.form_input.set_parent_element(prop.element);
-    prop.element.append(prop.form_input.get_element());
+    if (!prop.is_hidden()) prop.element.append(prop.form_input.get_element());
   }
 
   /**
