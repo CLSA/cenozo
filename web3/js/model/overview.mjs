@@ -30,7 +30,7 @@ export class CN_view_overview extends CN_action_view {
     if ("header" == type) {
       return this.#record.description;
     } else if (["crumb", "name"].includes(type)) {
-      return `Overview: ${this.#record.title}`;
+      return this.#record.title;
     }
     return super.get_text(type);
   }
