@@ -93,7 +93,7 @@ export class CN_view_overview extends CN_action_view {
    * Do not display a footer
    */
   _create_footer_element() {
-    return null;
+    return "";
   }
 
   /**
@@ -120,6 +120,7 @@ export class CN_view_overview extends CN_action_view {
           const body_el = card_el.querySelector(".card-body");
 
           card_el.classList.remove("mb-2");
+          card_el.querySelector("div.card").classList.add("rounded-0");
           header_el.classList.remove("text-bg-primary");
           header_el.classList.add("text-bg-secondary");
           header_el.classList.add("rounded-0");
@@ -128,6 +129,7 @@ export class CN_view_overview extends CN_action_view {
           if (0 < parent_el.querySelectorAll(":scope > div.container-fluid").length) {
             const show = first || !node.value.some(n => CN_common.is_array(n.value));
             body_el.classList.add("py-1");
+            body_el.classList.add("pe-0");
             body_el.classList.add("collapse");
             if (show) body_el.classList.add("show");
 
@@ -163,7 +165,7 @@ export class CN_view_overview extends CN_action_view {
         const stripe = 1 == parent_el.children.length%2;
 
         const child_el = this.constructor.html(`
-          <div class="row p-1 ${stripe ? 'bg-dark-subtle' : ''}">
+          <div class="row me-1 p-1 ${stripe ? 'bg-dark-subtle' : ''}">
             <label class="col fw-bold">${node.label}</label>
             <div class="col text-end">${node.value}</div>
           </div>
