@@ -102,7 +102,6 @@ export class CN_view_overview extends CN_action_view {
   update_element() {
     (async () => {
       this.get_header_element().querySelector("div.flex-grow-1").innerHTML = await this.get_text("header");
-      console.log(await this.get_text("header"));
     })();
 
     // build the overview based on the data property

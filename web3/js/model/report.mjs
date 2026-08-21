@@ -129,7 +129,12 @@ export class CN_model_report extends CN_base_model {
                   "enum" == prop.restriction_type ?
                   JSON.parse(`[${prop.enum_list}]`).map(item => ({ key: item, value: item, disabled: false })) :
                   await CN_api.get(prop.subject, {
-                    select: { column: [{ column: "id", alias: "key" }, { column: "name", alias: "value" }] },
+                    select: {
+                      column: [
+                        { column: "id", alias: "key" },
+                        { column: "name", alias: "value", table_prefix: false }
+                      ]
+                    },
                     modifier: { order: "name", limit: 1000000 },
                   })
                 );
