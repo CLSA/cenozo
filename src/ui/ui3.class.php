@@ -303,8 +303,7 @@ class ui3 extends \cenozo\base_object
       }
     }
 
-    // During the second pass determine which items can be added to the list and
-    // build all UI parent/child relationships
+    // During the second pass determine which items can be added to the list
     foreach( $this->modules as $module )
     {
       // add the module to the list menu if:
@@ -314,225 +313,252 @@ class ui3 extends \cenozo\base_object
         ( 'activity' == $module->get_subject() && $module->has_action( 'list' ) ) ||
         ( $module->has_action( 'list' ) && $module->has_action( 'view' ) )
       );
+    }
 
-      // add child/choose actions to certain modules
-      if( 'application' == $module->get_subject() )
-      {
-        if( $db_application->site_based ) $module->add_child( 'cohort' );
-        $module->add_child( 'role' );
-        $module->add_choose( 'site' );
-        $module->add_choose( 'script' );
-        $module->add_choose( 'collection' );
-        $module->add_choose( 'identifier' );
-      }
-      else if( 'assignment' == $module->get_subject() )
-      {
-        $module->add_child( 'phone_call' );
-      }
-      else if( 'alternate' == $module->get_subject() )
-      {
-        $module->add_child( 'address' );
-        $module->add_choose( 'alternate_type' );
-        $module->add_child( 'phone' );
-        $module->add_child( 'alternate_consent' );
-        $module->add_child( 'form' );
-        $module->add_action( 'notes', '/{identifier}?{search}' );
-        $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
-      }
-      else if( 'alternate_consent' == $module->get_subject() )
-      {
-        $module->add_child( 'form' );
-      }
-      else if( 'alternate_consent_type' == $module->get_subject() )
-      {
-        $module->add_choose( 'role' );
-        $module->add_child( 'alternate' );
-      }
-      else if( 'alternate_type' == $module->get_subject() )
-      {
-        $module->add_choose( 'alternate' );
-        $module->add_choose( 'role' );
-      }
-      else if( 'availability_type' == $module->get_subject() )
-      {
-        $module->add_child( 'participant' );
-      }
-      else if( 'callback' == $module->get_subject() )
-      {
-        $module->add_action( 'calendar', '/{identifier}?{calendar}' );
-      }
-      else if( 'collection' == $module->get_subject() )
-      {
-        $module->add_choose( 'participant' );
-        $module->add_choose( 'user' );
-        if( 2 < $db_role->tier ) $module->add_choose( 'application' );
-      }
-      else if( 'consent' == $module->get_subject() )
-      {
-        $module->add_child( 'form' );
-      }
-      else if( 'consent_type' == $module->get_subject() )
-      {
-        $module->add_choose( 'role' );
-        $module->add_child( 'participant' );
-      }
-      else if( 'custom_report' == $module->get_subject() )
-      {
-        $module->add_choose( 'role' );
-      }
-      else if( 'equipment' == $module->get_subject() )
-      {
-        $module->add_child( 'equipment_loan' );
-      }
-      else if( 'equipment_type' == $module->get_subject() )
-      {
-        $module->add_child( 'equipment' );
-        $module->add_action( 'upload', '/{identifier}' );
-      }
-      else if( 'event' == $module->get_subject() )
-      {
-        $module->add_child( 'event_mail' );
-        $module->add_child( 'form' );
-      }
-      else if( 'event_type' == $module->get_subject() )
-      {
-        $module->add_child( 'participant' );
-        $module->add_choose( 'role' );
-        $module->add_child( 'event_type_mail' );
-      }
-      else if( 'export' == $module->get_subject() )
-      {
-        $module->add_child( 'export_column' );
-        $module->add_child( 'export_restriction' );
-        $module->add_child( 'export_file' );
-      }
-      else if( 'form' == $module->get_subject() )
-      {
-        $module->add_child( 'form_association' );
-      }
-      else if( 'form_type' == $module->get_subject() )
-      {
-        $module->add_child( 'form' );
-      }
-      else if( 'hold_type' == $module->get_subject() )
-      {
-        $module->add_choose( 'role' );
-        $module->add_child( 'participant' );
-      }
-      else if( 'identifier' == $module->get_subject() )
-      {
-        $module->add_child( 'participant_identifier' );
-        $module->add_action( 'upload', '/{identifier}' );
-      }
-      else if( 'interview' == $module->get_subject() )
-      {
-        $module->add_child( 'assignment' );
-      }
-      else if( 'participant' == $module->get_subject() )
-      {
-        $module->add_child( 'address' );
-        $module->add_child( 'alternate' );
-        $module->add_choose( 'collection' );
-        $module->add_child( 'consent' );
-        if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
-        $module->add_child( 'event' );
-        $module->add_child( 'form' );
-        $module->add_child( 'hin' );
-        $module->add_child( 'hold' );
-        if( $use_interview_module ) $module->add_child( 'interview' );
-        $module->add_child( 'mail' );
-        $module->add_child( 'participant_identifier' );
-        $module->add_child( 'phone' );
-        $module->add_child( 'proxy' );
-        if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
-          $module->add_child( 'relation' );
-        $module->add_choose( 'study' );
-        $module->add_child( 'trace' );
+    // add child/choose actions to certain modules
+    $module = $this->get_module( 'application' );
+    if( !is_null( $module ) )
+    {
+      if( $db_application->site_based ) $module->add_child( 'cohort' );
+      $module->add_child( 'role' );
+      $module->add_choose( 'site' );
+      $module->add_choose( 'script' );
+      $module->add_choose( 'collection' );
+      $module->add_choose( 'identifier' );
+    }
 
-        $param_list = [
-          '{address}', '{alternate}', '{consent}', '{event}', '{form}',
-          '{hold}', '{mail}', '{note}', '{phone}', '{proxy}', '{trace}',
-        ];
-        if( $use_interview_module ) $param_list[] = '{assignment}';
-        if( $use_equipment_module ) $param_list[] = '{equipment}';
-        $module->add_action( 'history', sprintf( '/{identifier}?%s', implode( "&", $param_list ) ) );
-        $module->add_action( 'import' );
-        $module->add_action( 'multiedit' );
-        $module->add_action( 'notes', '/{identifier}?{search}' );
-        $module->add_action( 'scripts', '/{identifier}' );
+    $module = $this->get_module( 'assignment' );
+    if( !is_null( $module ) ) $module->add_child( 'phone_call' );
 
-        // remove the add action it is used for utility purposes only
-        $module->remove_action( 'add' );
-      }
-      else if( 'proxy_type' == $module->get_subject() )
-      {
-        $module->add_choose( 'role' );
-        $module->add_child( 'participant' );
-      }
-      else if( 'recording' == $module->get_subject() )
-      {
-        $module->add_child( 'recording_file' );
-      }
-      else if( 'relation_type' == $module->get_subject() )
-      {
+    $module = $this->get_module( 'alternate' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'address' );
+      $module->add_choose( 'alternate_type' );
+      $module->add_child( 'phone' );
+      $module->add_child( 'alternate_consent' );
+      $module->add_child( 'form' );
+      $module->add_action( 'notes', '/{identifier}?{search}' );
+      $module->add_action( 'history', '/{identifier}?{address}&{note}&{phone}' );
+    }
+
+    $module = $this->get_module( 'alternate_consent' );
+    if( !is_null( $module ) ) $module->add_child( 'form' );
+
+    $module = $this->get_module( 'alternate_consent_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'role' );
+      $module->add_child( 'alternate' );
+    }
+
+    $module = $this->get_module( 'alternate_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'alternate' );
+      $module->add_choose( 'role' );
+    }
+
+    $module = $this->get_module( 'availability_type' );
+    if( !is_null( $module ) ) $module->add_child( 'participant' );
+
+    $module = $this->get_module( 'callback' );
+    if( !is_null( $module ) ) $module->add_action( 'calendar', '/{identifier}?{calendar}' );
+
+    $module = $this->get_module( 'collection' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'participant' );
+      $module->add_choose( 'user' );
+      if( 2 < $db_role->tier ) $module->add_choose( 'application' );
+    }
+
+    $module = $this->get_module( 'consent' );
+    if( !is_null( $module ) ) $module->add_child( 'form' );
+
+    $module = $this->get_module( 'consent_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'role' );
+      $module->add_child( 'participant' );
+    }
+
+    $module = $this->get_module( 'custom_report' );
+    if( !is_null( $module ) ) $module->add_choose( 'role' );
+
+    $module = $this->get_module( 'equipment' );
+    if( !is_null( $module ) ) $module->add_child( 'equipment_loan' );
+
+    $module = $this->get_module( 'equipment_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'equipment' );
+      $module->add_action( 'upload', '/{identifier}' );
+    }
+
+    $module = $this->get_module( 'event' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'event_mail' );
+      $module->add_child( 'form' );
+    }
+
+    $module = $this->get_module( 'event_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'participant' );
+      $module->add_choose( 'role' );
+      $module->add_child( 'event_type_mail' );
+    }
+
+    $module = $this->get_module( 'export' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'export_column' );
+      $module->add_child( 'export_restriction' );
+      $module->add_child( 'export_file' );
+    }
+
+    $module = $this->get_module( 'form' );
+    if( !is_null( $module ) ) $module->add_child( 'form_association' );
+
+    $module = $this->get_module( 'form_type' );
+    if( !is_null( $module ) ) $module->add_child( 'form' );
+
+    $module = $this->get_module( 'hold_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'role' );
+      $module->add_child( 'participant' );
+    }
+
+    $module = $this->get_module( 'identifier' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'participant_identifier' );
+      $module->add_action( 'upload', '/{identifier}' );
+    }
+
+    $module = $this->get_module( 'interview' );
+    if( !is_null( $module ) ) $module->add_child( 'assignment' );
+
+    $module = $this->get_module( 'participant' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'address' );
+      $module->add_child( 'alternate' );
+      $module->add_choose( 'collection' );
+      $module->add_child( 'consent' );
+      if( $use_equipment_module ) $module->add_child( 'equipment_loan' );
+      $module->add_child( 'event' );
+      $module->add_child( 'form' );
+      $module->add_child( 'hin' );
+      $module->add_child( 'hold' );
+      if( $use_interview_module ) $module->add_child( 'interview' );
+      $module->add_child( 'mail' );
+      $module->add_child( 'participant_identifier' );
+      $module->add_child( 'phone' );
+      $module->add_child( 'proxy' );
+      if( $use_relation_module && $sm->get_setting( 'general', 'use_relation' ) )
         $module->add_child( 'relation' );
-      }
-      else if( 'report_type' == $module->get_subject() )
+      $module->add_choose( 'study' );
+      $module->add_child( 'trace' );
+
+      $param_list = [
+        '{address}', '{alternate}', '{consent}', '{event}', '{form}',
+        '{hold}', '{mail}', '{note}', '{phone}', '{proxy}', '{trace}',
+      ];
+      if( $use_interview_module ) $param_list[] = '{assignment}';
+      if( $use_equipment_module ) $param_list[] = '{equipment}';
+      $module->add_action( 'history', sprintf( '/{identifier}?%s', implode( "&", $param_list ) ) );
+      $module->add_action( 'import' );
+      $module->add_action( 'multiedit' );
+      $module->add_action( 'notes', '/{identifier}?{search}' );
+      $module->add_action( 'scripts', '/{identifier}' );
+
+      // remove the add action it is used for utility purposes only
+      $module->remove_action( 'add' );
+    }
+
+    $module = $this->get_module( 'proxy_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'role' );
+      $module->add_child( 'participant' );
+    }
+
+    $module = $this->get_module( 'recording' );
+    if( !is_null( $module ) ) $module->add_child( 'recording_file' );
+
+    $module = $this->get_module( 'relation_type' );
+    if( !is_null( $module ) ) $module->add_child( 'relation' );
+
+    $module = $this->get_module( 'report_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'report' );
+      if( 3 <= $db_role->tier )
       {
-        $module->add_child( 'report' );
-        if( 3 <= $db_role->tier )
-        {
-          $module->add_child( 'report_schedule' );
-          $module->add_choose( 'application_type' );
-          $module->add_choose( 'role' );
-        }
+        $module->add_child( 'report_schedule' );
+        $module->add_choose( 'application_type' );
+        $module->add_choose( 'role' );
       }
-      else if( 'script' == $module->get_subject() )
-      {
-        $module->add_choose( 'application' );
-      }
-      else if( 'search_result' == $module->get_subject() )
-      {
-        // search results require an additional query parameter
-        $module->append_action_query( 'list', '{q}' );
-      }
-      else if( 'site' == $module->get_subject() )
+    }
+
+    $module = $this->get_module( 'script' );
+    if( !is_null( $module ) ) $module->add_choose( 'application' );
+
+    $module = $this->get_module( 'search_result' );
+    if( !is_null( $module ) )
+    {
+      // search results require an additional query parameter
+      $module->append_action_query( 'list', '{q}' );
+    }
+
+    $module = $this->get_module( 'site' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'access' );
+      $module->add_child( 'activity' );
+      $module->add_child( 'equipment' );
+    }
+
+    $module = $this->get_module( 'source' );
+    if( !is_null( $module ) ) $module->add_child( 'participant' );
+
+    $module = $this->get_module( 'stratum' );
+    if( !is_null( $module ) )
+    {
+      $module->add_choose( 'participant' );
+      $module->add_action( 'mass_participant', '/{identifier}' );
+    }
+
+    $module = $this->get_module( 'study' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'study_phase' );
+      $module->add_child( 'stratum' );
+      $module->add_choose( 'participant' );
+    }
+
+    $module = $this->get_module( 'trace_type' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'trace_type_mail' );
+      $module->add_child( 'participant' );
+    }
+
+    $module = $this->get_module( 'user' );
+    if( !is_null( $module ) )
+    {
+      $module->add_action( 'overview', '?{tables}' );
+      if( 1 < $db_role->tier )
       {
         $module->add_child( 'access' );
         $module->add_child( 'activity' );
-        $module->add_child( 'equipment' );
-      }
-      else if( 'source' == $module->get_subject() )
-      {
-        $module->add_child( 'participant' );
-      }
-      else if( 'stratum' == $module->get_subject() )
-      {
-        $module->add_choose( 'participant' );
-        $module->add_action( 'mass_participant', '/{identifier}' );
-      }
-      else if( 'study' == $module->get_subject() )
-      {
-        $module->add_child( 'study_phase' );
-        $module->add_child( 'stratum' );
-        $module->add_choose( 'participant' );
-      }
-      else if( 'trace_type' == $module->get_subject() )
-      {
-        $module->add_child( 'trace_type_mail' );
-        $module->add_child( 'participant' );
-      }
-      else if( 'user' == $module->get_subject() )
-      {
-        $module->add_action( 'overview', '?{tables}' );
-        if( 1 < $db_role->tier )
-        {
-          $module->add_child( 'access' );
-          $module->add_child( 'activity' );
-          $module->add_child( 'user_ip_address' );
-          $module->add_child( 'failed_login' );
-          $module->add_choose( 'language' );
-        }
+        $module->add_child( 'user_ip_address' );
+        $module->add_child( 'failed_login' );
+        $module->add_choose( 'language' );
       }
     }
   }
