@@ -118,15 +118,62 @@ class ui3 extends \cenozo\base_object
   }
 
   /**
-   * Returns a list of all modules
+   * Returns a list of all UI modules and menus
    * 
-   * @return array
+   * @return ['modules' => [], 'menus' => ['lists' => [], 'utilities' => [], 'reports' => []]
    * @access public
    */
-  protected static function generate()
+  public function get_ui_data()
+  {
+    $this->generate_modules();
+    $this->generate_menus();
+
+    $menus = [];
+
+    // sort all menus by their key or set them to NULL if they are empty
+    $menus['lists'] = NULL;
+    if( 0 < count( $this->menus['list'] ) )
+    {
+      $menus['lists'] = $this->menus['list'];
+      ksort( $menus['lists'] );
+    }
+
+    $menus['utilities'] = NULL;
+    if( 0 < count( $this->menus['utility'] ) )
+    {
+      $menus['utilities'] = $this->menus['utility'];
+      ksort( $menus['utilities'] );
+    }
+
+    $menus['reports'] = NULL;
+    if( 0 < count( $this->menus['report'] ) )
+    {
+      $menus['reports'] = $this->menus['report'];
+      ksort( $menus['reports'] );
+    }
+
+    // build the modules by transforming all modules into data arrays
+    ksort( $this->modules );
+    $module_list = [];
+    foreach( $this->modules as $module ) $module_list[$module->get_subject()] = $module->as_array();
+
+    return ['modules' => $module_list, 'menus' => $menus];
+  }
+
+  /**
+   * Gets a module by its subject, returning NULL if the module does not exist
+   */
+  protected function get_module( $subject )
+  {
+    return array_key_exists( $subject, $this->modules ) ? $this->modules[$subject] : NULL;
+  }
+
+  /**
+   * Creates the module list
+   */
+  protected function generate_modules()
   {
     $service_class_name = lib::get_class_name( 'database\service' );
-    $custom_report_class_name = lib::get_class_name( 'database\custom_report' );
 
     $sm = lib::create( 'business\setting_manager' );
     $use_equipment_module = $sm->get_setting( 'module', 'equipment' );
@@ -136,12 +183,9 @@ class ui3 extends \cenozo\base_object
     $use_script_module = $sm->get_setting( 'module', 'script' );
 
     $session = lib::create( 'business\session' );
-    $db_role = $session->get_role();
     $db_site = $session->get_site();
+    $db_role = $session->get_role();
     $db_application = $session->get_application();
-    $db_application_type = $db_application->get_application_type();
-    $extended = in_array( $db_role->name, [ 'administrator', 'curator', 'helpline' ] );
-    $grouping_list = $session->get_application()->get_cohort_groupings();
 
     // get list of all services the current role has access to
     $select = lib::create( 'database\select' );
@@ -162,7 +206,7 @@ class ui3 extends \cenozo\base_object
     $modifier->order( 'method' );
 
     // add the two pseudo-modules
-    $module_list = [
+    $this->modules = [
       'home' => lib::create( 'ui\module', 'home' ),
       'error' => lib::create( 'ui\module', 'error' ),
     ];
@@ -171,9 +215,9 @@ class ui3 extends \cenozo\base_object
     foreach( $service_class_name::select( $select, $modifier ) as $service )
     {
       // add the subject as a new module
-      if( !array_key_exists( $service['subject'], $module_list ) )
-        $module_list[$service['subject']] = lib::create( 'ui\module', $service['subject'] );
-      $module = $module_list[$service['subject']];
+      if( !array_key_exists( $service['subject'], $this->modules ) )
+        $this->modules[$service['subject']] = lib::create( 'ui\module', $service['subject'] );
+      $module = $this->modules[$service['subject']];
 
       // Check that modules are activated before using them
       if( in_array( $module->get_subject(), [ 'equipment', 'equipment_loan', 'equipment_type' ] ) )
@@ -261,7 +305,7 @@ class ui3 extends \cenozo\base_object
 
     // During the second pass determine which items can be added to the list and
     // build all UI parent/child relationships
-    foreach( $module_list as $module )
+    foreach( $this->modules as $module )
     {
       // add the module to the list menu if:
       // 1) it is the activity module and we can list it or
@@ -412,6 +456,8 @@ class ui3 extends \cenozo\base_object
         if( $use_interview_module ) $param_list[] = '{assignment}';
         if( $use_equipment_module ) $param_list[] = '{equipment}';
         $module->add_action( 'history', sprintf( '/{identifier}?%s', implode( "&", $param_list ) ) );
+        $module->add_action( 'import' );
+        $module->add_action( 'multiedit' );
         $module->add_action( 'notes', '/{identifier}?{search}' );
         $module->add_action( 'scripts', '/{identifier}' );
 
@@ -445,6 +491,11 @@ class ui3 extends \cenozo\base_object
       {
         $module->add_choose( 'application' );
       }
+      else if( 'search_result' == $module->get_subject() )
+      {
+        // search results require an additional query parameter
+        $module->append_action_query( 'list', '{q}' );
+      }
       else if( 'site' == $module->get_subject() )
       {
         $module->add_child( 'access' );
@@ -473,6 +524,7 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'user' == $module->get_subject() )
       {
+        $module->add_action( 'overview', '?{tables}' );
         if( 1 < $db_role->tier )
         {
           $module->add_child( 'access' );
@@ -483,146 +535,112 @@ class ui3 extends \cenozo\base_object
         }
       }
     }
+  }
 
-    // now build the menu listings
-    $menu = ['lists' => [], 'utilities' => [], 'reports' => []];
+  /**
+   * Creates the UI menus
+   */
+  protected function generate_menus()
+  {
+    $custom_report_class_name = lib::get_class_name( 'database\custom_report' );
 
-    // build the list menu
-    $menu_list_items = [
-      ['subject' => 'activity', 'title' => 'Activities'],
-      ['subject' => 'alternate_consent_type', 'title' => 'Alternate Consent Types'],
-      ['subject' => 'alternate_type', 'title' => 'Alternate Types'],
-      ['subject' => 'application', 'title' => 'Applications'],
-      ['subject' => 'availability_type', 'title' => 'Availability Types'],
-      ['subject' => 'collection', 'title' => 'Collections'],
-      ['subject' => 'consent_type', 'title' => 'Consent Types'],
-      ['subject' => 'event_type', 'title' => 'Event Types'],
-      ['subject' => 'identifier', 'title' => 'Identifiers'],
-      ['subject' => 'hold_type', 'title' => 'Hold Types'],
-      ['subject' => 'notation', 'title' => 'Notations'],
-      ['subject' => 'participant', 'title' => 'Participants'],
-      ['subject' => 'proxy_type', 'title' => 'Proxy Types'],
-      ['subject' => 'setting', 'title' => 'Settings'],
-      ['subject' => 'trace_type', 'title' => 'Trace Types'],
-      ['subject' => 'user', 'title' => 'Users'],
-    ];
+    $sm = lib::create( 'business\setting_manager' );
+    $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
+    $db_site = $session->get_site();
+    $db_application = $session->get_application();
+    $db_application_type = $db_application->get_application_type();
+    $extended = in_array( $db_role->name, [ 'administrator', 'curator', 'helpline' ] );
+    $grouping_list = $session->get_application()->get_cohort_groupings();
+    
+    
+    $this->add_menu_item( 'list', 'Activities', 'activity' );
+    $this->add_menu_item( 'list', 'Alternate Consent Types', 'alternate_consent_type' );
+    $this->add_menu_item( 'list', 'Alternate Types', 'alternate_type' );
+    $this->add_menu_item( 'list', 'Applications', 'application' );
+    $this->add_menu_item( 'list', 'Availability Types', 'availability_type' );
+    $this->add_menu_item( 'list', 'Collections', 'collection' );
+    $this->add_menu_item( 'list', 'Consent Types', 'consent_type' );
+    $this->add_menu_item( 'list', 'Event Types', 'event_type' );
+    $this->add_menu_item( 'list', 'Identifiers', 'identifier' );
+    $this->add_menu_item( 'list', 'Hold Types', 'hold_type' );
+    $this->add_menu_item( 'list', 'Notations', 'notation' );
+    $this->add_menu_item( 'list', 'Participants', 'participant' );
+    $this->add_menu_item( 'list', 'Proxy Types', 'proxy_type' );
+    $this->add_menu_item( 'list', 'Settings', 'setting' );
+    $this->add_menu_item( 'list', 'Studies', 'study' );
+    $this->add_menu_item( 'list', 'Trace Types', 'trace_type' );
+    $this->add_menu_item( 'list', 'Users', 'user' );
 
     if( $extended )
     {
-      $menu_list_items = array_merge( $menu_list_items, [
-        ['subject' => 'alternate', 'title' => 'Alternates'],
-        ['subject' => 'form_type', 'title' => 'Form Types'],
-        ['subject' => 'language', 'title' => 'Languages'],
-        ['subject' => 'source', 'title' => 'Sources'],
-      ] );
+      $this->add_menu_item( 'list', 'Alternates', 'alternate' );
+      $this->add_menu_item( 'list', 'Form Types', 'form_type' );
+      $this->add_menu_item( 'list', 'Languages', 'language' );
+      $this->add_menu_item( 'list', 'Sources', 'source' );
 
       if( in_array( 'jurisdiction', $grouping_list ) )
-        $menu_list_items[] = ['subject' => 'jurisdiction', 'title' => 'Jurisdictions'];
+        $this->add_menu_item( 'list', 'Jurisdictions', 'jurisdiction' );
 
       if( in_array( 'region', $grouping_list ) )
-        $menu_list_items[] = ['subject' => 'region_site', 'title' => 'Region Sites'];
+        $this->add_menu_item( 'list', 'Region Sites', 'region_site' );
     }
 
     if( $sm->get_setting( 'module', 'equipment' ) )
-      $menu_list_items[] = ['subject' => 'equipment_type', 'title' => 'Equipment Types'];
+      $this->add_menu_item( 'list', 'Equipment Types', 'equipment_type' );
 
 
     if( $sm->get_setting( 'module', 'interview' ) )
     {
-      $menu_list_items = array_merge( $menu_list_items, [
-        ['subject' => 'interview', 'title' => 'Interviews'],
-        ['subject' => 'assignment', 'title' => 'Assignments'],
-      ] );
+      $this->add_menu_item( 'list', 'Interviews', 'interview' );
+      $this->add_menu_item( 'list', 'Assignments', 'assignment' );
     }
 
     if( 2 <= $db_role->tier )
     {
-      $menu_list_items = array_merge( $menu_list_items, [
-        ['subject' => 'overview', 'title' => 'Overviews'],
-        ['subject' => 'system_message', 'title' => 'System Messages'],
-      ] );
+      $this->add_menu_item( 'list', 'Overviews', 'overview' );
+      $this->add_menu_item( 'list', 'System Messages', 'system_message' );
     }
 
     if( 3 <= $db_role->tier )
     {
-      $menu_list_items[] = ['subject' => 'script', 'title' => 'Scripts'];
+      $this->add_menu_item( 'list', 'Scripts', 'script' );
 
       if( $sm->get_setting( 'module', 'recording' ) )
-        $menu_list_items[] = ['subject' => 'recording', 'title' => 'Recordings'];
+        $this->add_menu_item( 'list', 'Recordings', 'recording' );
 
       if( $sm->get_setting( 'general', 'use_relation' ) )
-        $menu_list_items[] = ['subject' => 'relation_type', 'title' => 'Relationship Types'];
+        $this->add_menu_item( 'list', 'Relationship Types', 'relation_type' );
 
       if( $db_role->all_sites )
-        $menu_list_items[] = ['subject' => 'site', 'title' => 'Sites'];
-    }
-
-    foreach( $menu_list_items as $item )
-    {
-      if( array_key_exists( $item['subject'], $module_list ) )
-      {
-        $module = $module_list[$item['subject']];
-        if( $module->get_list_menu() && $module->has_action( 'list' ) )
-          $menu['lists'][$item['title']] = $item['subject'];
-      }
+        $this->add_menu_item( 'list', 'Sites', 'site' );
     }
 
     if( 3 <= $db_role->tier )
     {
-      $menu['utilities']['Application Log'] = [
-        'subject' => 'log_entry',
-        'action' => 'list',
-        'query' => '?{tables}'
-      ];
-      $menu['utilities']['Participant Export'] = [
-        'subject' => 'export',
-        'action' => 'list',
-        'query' => '?{tables}'
-      ];
-      $menu['utilities']['Participant Multi-Edit'] = [ 'subject' => 'participant', 'action' => 'multiedit' ];
+      $module = $this->modules['log_entry'];
+      if( $module->has_action( 'list' ) )
+        $this->add_menu_item( 'utility', 'Application Log', 'log_entry', 'list' );
+
+      $this->add_menu_item( 'utility', 'Participant Export', 'export', 'list' );
+      $this->add_menu_item( 'utility', 'Participant Multi-Edit', 'participant', 'multiedit' );
       if( $sm->get_setting( 'general', 'participant_import' ) )
-      {
-        $menu['utilities']['Participant Import'] = [ 'subject' => 'participant', 'action' => 'import' ];
-      }
+        $this->add_menu_item( 'utility', 'Participant Import', 'participant', 'import' );
     }
 
-    $menu['utilities']['Participant Search'] = [
-      'subject' => 'search_result',
-      'action' => 'list',
-      'query' => '?{q}&{tables}'
-    ];
-    $menu['utilities']['User Overview'] = [
-      'subject' => 'user',
-      'action' => 'overview',
-      'query' => '?{tables}'
-    ];
+    $this->add_menu_item( 'utility', 'Participant Search', 'search_result', 'list' );
+    $this->add_menu_item( 'utility', 'User Overview', 'user', 'overview' );
 
-    if( array_key_exists( 'callback', $module_list ) )
-    {
-      $menu['utilities']['Callback Calendar'] = [
-        'subject' => 'callback',
-        'action' => sprintf( 'calendar/name=%s', $db_site->name ),
-        'query' => '/{identifier}?{calendar}'
-      ];
-    }
+    $this->add_menu_item(
+      'utility',
+      'Callback Calendar',
+      'callback',
+      'calendar',
+      sprintf( '/name=%s', $db_site->name )
+    );
 
     if( 2 <= $db_role->tier || 'helpline' == $db_role->name )
-    {
-      $menu['utilities']['Tracing'] = [
-        'subject' => 'trace',
-        'action' => 'list',
-        'query' => '?{tables}'
-      ];
-    }
-
-    // add any missing modules to the module list and add the utility's action
-    foreach( $menu['utilities'] as $title => $item )
-    {
-      if( !array_key_exists( $item['subject'], $module_list ) )
-        $module_list[$item['subject']] = lib::create( 'ui\module', $item['subject'] );
-      $module = $module_list[$item['subject']];
-      $module->add_action( $item['action'], array_key_exists( 'query', $item ) ? $item['query'] : '' );
-    }
+      $this->add_menu_item( 'utility', 'Tracing', 'trace', 'list' );
 
     // build the report menu
     $select = lib::create( 'database\select' );
@@ -632,46 +650,73 @@ class ui3 extends \cenozo\base_object
     $modifier->join( 'role_has_report_type', 'report_type.id', 'role_has_report_type.report_type_id' );
     $modifier->where( 'role_has_report_type.role_id', '=', $db_role->id );
     foreach( $db_application_type->get_report_type_list( $select, $modifier ) as $report_type )
-      $menu['reports'][$report_type['title']] = $report_type['id'];
+      $this->add_menu_item( 'report', $report_type['title'], $report_type['id'] );
 
-    if( 'administrator' == $db_role->name ) $menu['reports']['Custom Reports'] = NULL;
+    if( 'administrator' == $db_role->name ) $this->add_menu_item( 'report', 'Custom Reports', NULL );
     else
     {
-      // only show the custom reports if the role has access to any
+      // only show the custom report if the role has access to any
       $modifier = lib::create( 'database\modifier' );
       $modifier->join( 'role_has_custom_report', 'custom_report.id', 'role_has_custom_report.custom_report_id' );
       $modifier->where( 'role_has_custom_report.role_id', '=', $db_role->id );
       if( 0 < $custom_report_class_name::count( $modifier ) )
-        $menu['reports']['Custom Reports'] = NULL;
+        $this->add_menu_item( 'report', 'Custom Reports', NULL );
     }
-
-    return ['module_list' => $module_list, 'menu' => $menu];
   }
 
   /**
-   * Returns a list of all UI modules and menu items
-   * 
-   * @return [modules=>[], menu=>[lists=>[], utilities=>[], reports=>[]]
-   * @access public
+   * Attempts to add an item to the menu by type
+   * @param string $type The type of menu item (list, utility or report)
+   * @param string $title The menu item's title (as shown in the UI)
+   * @param mixed $subject The item's subject (for reports the report ID should be passed instead)
+   * @param string $action Only used for utilities
    */
-  public static function get_ui_data()
+  protected function add_menu_item( $type, $title, $subject, $action = NULL, $query = '' )
   {
-    $data = static::generate();
+    if( 'report' == $type )
+    {
+      $this->menus[$type][$title] = $subject;
+    }
+    else
+    {
+      $item = NULL;
+      if( 'list' == $type )
+      {
+        $action = 'list';
+        $item = $subject;
+      }
+      else if( 'utility' == $type )
+      {
+        $item = ['subject' => $subject, 'action' => $action . $query];
+      }
 
-    // sort all lists by their key or set them to NULL if they are empty
-    if( 0 == count( $data['menu']['lists'] ) ) $data['menu']['lists'] = NULL;
-    else ksort( $data['menu']['lists'] );
-    if( 0 == count( $data['menu']['utilities'] ) ) $data['menu']['utilities'] = NULL;
-    else ksort( $data['menu']['utilities'] );
-    if( 0 == count( $data['menu']['reports'] ) ) $data['menu']['reports'] = NULL;
-    else ksort( $data['menu']['reports'] );
+      $module = $this->get_module( $subject );
+      if(
+        !is_null( $module ) && // make sure the module exists
+        ( 'list' != $type || $module->get_list_menu() ) && // for list items, check that it is allowed
+        $module->has_action( $action ) // and that the action is allowed
+      ) $this->menus[$type][$title] = $item;
+    }
+  }
 
-    // build the modules by transforming all modules into data arrays
-    ksort( $data['module_list'] );
-    $modules = [];
-    foreach( $data['module_list'] as $module ) $modules[$module->get_subject()] = $module->as_array();
+  /**
+   * Removes an item from the menu by type
+   * @param string $type The type of menu item (list, utility or report)
+   * @param string $title The menu item's title (as shown in the UI)
+   */
+  protected function remove_menu_item( $type, $title )
+  {
+    if( array_key_exists( $type, $this->menus ) && array_key_exists( $title, $this->menus[$type] ) )
+      unset( $this->menus[$type][$title] );
+  }
 
-    return ['modules' => $modules, 'menu' => $data['menu']];
+  /**
+   * Removes all menu items by type
+   * @param string $type The type of menu item (list, utility or report)
+   */
+  protected function remove_all_menu_items( $type )
+  {
+    if( array_key_exists( $type, $this->menus ) ) $this->menus[$type] = [];
   }
 
   /**
@@ -833,4 +878,16 @@ class ui3 extends \cenozo\base_object
   protected $maintenance_message =
     'Sorry, the system is currently offline for maintenance. '.
     'Please check with an administrator or try again at a later time.';
+
+  /**
+   * An array of all modules
+   * @var [module]
+   */
+  private $modules;
+
+  /**
+   * A associative array of all menus items
+   * @var ['list' => [], 'utility' => [], 'report' => []]
+   */
+  private $menus = ['list' => [], 'utility' => [], 'report' => []];
 }

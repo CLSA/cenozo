@@ -127,12 +127,12 @@ class get extends \cenozo\service\service
 
       if( $session->version3 )
       {
-        $ui_data = lib::create( 'ui\ui3' )::get_ui_data();
+        $ui_data = lib::create( 'ui\ui3' )->get_ui_data();
         $pseudo_record = array_merge(
           $pseudo_record,
           [
             'modules' => $ui_data['modules'],
-            'menu' => $ui_data['menu'],
+            'menus' => $ui_data['menus'],
           ]
         );
 

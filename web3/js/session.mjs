@@ -323,18 +323,18 @@ class session extends CN_base_object {
       // a module is "root" if it's found in the list, utility menus, or is one of the special modules
       params.root = ["home", "error", "custom_report", "report_type"].includes(module_name);
 
-      if (!params.root && null != this.#data.menu.lists) {
-        for (const m in this.#data.menu.lists) {
-          if (this.#data.menu.lists[m] === module_name) {
+      if (!params.root && null != this.#data.menus.lists) {
+        for (const m in this.#data.menus.lists) {
+          if (this.#data.menus.lists[m] === module_name) {
             params.root = true;
             break;
           }
         }
       }
 
-      if (!params.root && null != this.#data.menu.utilities) {
-        for (const u in this.#data.menu.utilities) {
-          if (this.#data.menu.utilities[u].subject === module_name) {
+      if (!params.root && null != this.#data.menus.utilities) {
+        for (const u in this.#data.menus.utilities) {
+          if (this.#data.menus.utilities[u].subject === module_name) {
             params.root = true;
             break;
           }
@@ -612,16 +612,16 @@ class session extends CN_base_object {
     });
 
     // determine the column width of each sub-menu
-    const split_lists = null != this.#data.menu.lists && 20 <= Object.keys(this.#data.menu.lists).length;
+    const split_lists = null != this.#data.menus.lists && 20 <= Object.keys(this.#data.menus.lists).length;
     const total_menus = (
-      (null == this.#data.menu.lists ? 0 : 1) +
-      (null == this.#data.menu.utilities ? 0 : 1) +
-      (null == this.#data.menu.reports ? 0 : 1)
+      (null == this.#data.menus.lists ? 0 : 1) +
+      (null == this.#data.menus.utilities ? 0 : 1) +
+      (null == this.#data.menus.reports ? 0 : 1)
     );
     const col_width = 1 < total_menus ?  12/(total_menus + (split_lists?1:0)) : null;
 
     // build the lists sub-menu
-    if (null != this.#data.menu.lists) {
+    if (null != this.#data.menus.lists) {
       const sub_menu_el = CN_base_element.html(`
         <div name="lists">
           <div class="btn-group-vertical w-100">
@@ -643,10 +643,10 @@ class session extends CN_base_object {
         `));
       }
 
-      const lists_total = Object.keys(this.#data.menu.lists).length;
+      const lists_total = Object.keys(this.#data.menus.lists).length;
       let index = 0;
-      for (const title in this.#data.menu.lists) {
-        const name = this.#data.menu.lists[title];
+      for (const title in this.#data.menus.lists) {
+        const name = this.#data.menus.lists[title];
         let side = null;
         let rounded = "";
         if (split_lists) {
@@ -680,7 +680,7 @@ class session extends CN_base_object {
     }
 
     // build the utilities sub-menu
-    if (null != this.#data.menu.utilities) {
+    if (null != this.#data.menus.utilities) {
       const sub_menu_el = CN_base_element.html(`
         <div name="utilities">
           <div class="btn-group-vertical w-100">
@@ -693,8 +693,8 @@ class session extends CN_base_object {
       this.#menu_el.append(sub_menu_el);
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
-      for (const title in this.#data.menu.utilities) {
-        const utility = this.#data.menu.utilities[title];
+      for (const title in this.#data.menus.utilities) {
+        const utility = this.#data.menus.utilities[title];
         const btn_el = CN_base_element.html(`
           <button
             name="${utility.subject}.${utility.action}"
@@ -711,7 +711,7 @@ class session extends CN_base_object {
     }
 
     // build the reports sub-menu
-    if (null != this.#data.menu.reports) {
+    if (null != this.#data.menus.reports) {
       const sub_menu_el = CN_base_element.html(`
         <div name="reports">
           <div class="btn-group-vertical w-100">
@@ -724,8 +724,8 @@ class session extends CN_base_object {
       this.#menu_el.append(sub_menu_el);
 
       const btn_group_el = sub_menu_el.querySelector("div.btn-group-vertical");
-      for (const title in this.#data.menu.reports) {
-        const id = this.#data.menu.reports[title];
+      for (const title in this.#data.menus.reports) {
+        const id = this.#data.menus.reports[title];
         const btn_el = CN_base_element.html(`
           <button
             name="${null == id ? "custom_report.list" : "report_type.view." + id}"
