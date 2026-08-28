@@ -410,8 +410,12 @@ export class CN_api extends CN_base_object {
       return new_select;
     }
 
-    // return non array/objects unchanged
-    return select;
+    // remove superfluous whitespace from strings caused by backtick notation
+    return (
+      CN_common.is_string(select) ?
+      select.replace(/\n +/g, " ").replace(/\n$/, " ") :
+      select
+    );
   }
 
   /**
@@ -462,8 +466,12 @@ export class CN_api extends CN_base_object {
       return new_modifier;
     }
 
-    // return non array/objects unchanged
-    return modifier;
+    // remove superfluous whitespace from strings caused by backtick notation
+    return (
+      CN_common.is_string(modifier) ?
+      modifier.replace(/\n +/g, " ").replace(/\n$/, " ") :
+      modifier
+    );
   }
 
   /**
