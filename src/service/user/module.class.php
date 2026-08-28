@@ -61,7 +61,8 @@ class module extends \cenozo\service\site_restricted_module
     $modifier->left_join(
       sprintf( '( %s %s ) AS user_join_special_access', $join_sel->get_sql(), $join_mod->get_sql() ),
       'user.id',
-      'user_join_special_access.user_id' );
+      'user_join_special_access.user_id'
+    );
     $modifier->where( 'user_join_special_access.user_id', '=', NULL );
 
     // we want to allow direct access to users even if they don't have access to this application/site,
@@ -72,54 +73,63 @@ class module extends \cenozo\service\site_restricted_module
       // only include users with access to this application
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
+      $join_sel->set_distinct( true );
       $join_sel->add_column( 'user_id' );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->group( 'user_id' );
-
-      $modifier->join(
-        sprintf( '( %s %s ) AS user_join_site_access', $join_sel->get_sql(), $join_mod->get_sql() ),
-        'user.id',
-        'user_join_site_access.user_id' );
 
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) )
-      {
-        $join_sel = lib::create( 'database\select' );
-        $join_sel->from( 'access' );
-        $join_sel->set_distinct( true );
-        $join_sel->add_column( 'user_id' );
+      $join_mod = lib::create( 'database\modifier' );
+      if( !is_null( $db_restrict_site ) ) $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
 
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where( 'access.site_id', '=', $db_restrict_site->id );
-
-        $modifier->join(
-          sprintf( '( %s %s ) AS user_join_application ', $join_sel->get_sql(), $join_mod->get_sql() ),
-          'user.id',
-          'user_join_application.user_id' );
-      }
+      $modifier->join(
+        sprintf( '( %s %s ) AS user_join_application', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'user.id',
+        'user_join_application.user_id'
+      );
     }
 
-    // add empty values for site_id, role_id, and language_id (they are only used when adding new users so they will be ignored)
+    // Add empty values for site_id, role_id, and language_id
+    // (they are only used when adding new users so they will be ignored)
     if( $select->has_column( 'site_id' ) ) $select->add_constant( NULL, 'site_id' );
     if( $select->has_column( 'role_id' ) ) $select->add_constant( NULL, 'role_id' );
     if( $select->has_column( 'language_id' ) ) $select->add_constant( NULL, 'language_id' );
 
     // add the total number of related records (we can't use parent::add_list_column() here)
-    if( $select->has_column( 'role_list' ) ||
-        $select->has_column( 'site_list' ) ||
-        $select->has_column( 'last_access_datetime' ) )
-    {
+    if(
+      $select->has_column( 'role_list' ) || $modifier->has_where( 'role_list' ) ||
+      $select->has_column( 'site_list' ) || $modifier->has_where( 'site_list' ) ||
+      $modifier->has_where( 'last_access_datetime' ) || $select->has_column( 'last_access_datetime' )
+    ) {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
       $join_sel->add_column( 'user_id' );
-      if( $select->has_column( 'role_list' ) )
-        $join_sel->add_column( 'GROUP_CONCAT( DISTINCT role.name ORDER BY role.name SEPARATOR ", " )', 'role_list', false );
-      if( $select->has_column( 'site_list' ) )
-        $join_sel->add_column( 'GROUP_CONCAT( DISTINCT site.name ORDER BY site.name SEPARATOR ", " )', 'site_list', false );
-      if( $select->has_column( 'last_access_datetime' ) )
-        $join_sel->add_column( 'MAX( access.datetime )', 'last_access_datetime', false );
+
+      if( $select->has_column( 'role_list' ) || $modifier->has_where( 'role_list' ) )
+      {
+        $join_sel->add_column(
+          'GROUP_CONCAT( DISTINCT role.name ORDER BY role.name SEPARATOR ", " )',
+          'role_list',
+          false
+        );
+      }
+
+      if( $select->has_column( 'site_list' ) || $modifier->has_where( 'site_list' ) )
+      {
+        $join_sel->add_column(
+          'GROUP_CONCAT( DISTINCT site.name ORDER BY site.name SEPARATOR ", " )',
+          'site_list',
+          false
+        );
+      }
+
+      if( $select->has_column( 'last_access_datetime' ) || $modifier->has_where( 'last_access_datetime' ) )
+      {
+        $join_sel->add_column(
+          'MAX( access.datetime )',
+          'last_access_datetime',
+          false
+        );
+      }
 
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'role', 'access.role_id', 'role.id' );
@@ -129,7 +139,11 @@ class module extends \cenozo\service\site_restricted_module
       // restrict to roles belonging to this application
       $sub_mod = lib::create( 'database\modifier' );
       $join_mod->join( 'application_type_has_role', 'access.role_id', 'application_type_has_role.role_id' );
-      $join_mod->where( 'application_type_has_role.application_type_id', '=', $db_application->application_type_id );
+      $join_mod->where(
+        'application_type_has_role.application_type_id',
+        '=',
+        $db_application->application_type_id
+      );
 
       // restrict to current site if role is not all-sites based
       if( !$db_role->all_sites ) $join_mod->where( 'access.site_id', '=', $db_site->id );
@@ -137,7 +151,8 @@ class module extends \cenozo\service\site_restricted_module
       $modifier->left_join(
         sprintf( '( %s %s ) AS user_join_access', $join_sel->get_sql(), $join_mod->get_sql() ),
         'user.id',
-        'user_join_access.user_id' );
+        'user_join_access.user_id'
+      );
 
       // override columns so that we can fake these columns being in the user table
       if( $select->has_column( 'role_list' ) )
@@ -149,11 +164,12 @@ class module extends \cenozo\service\site_restricted_module
     }
 
     // add active access (site/role) details if requested
-    if( $select->has_table_columns( 'activity' ) ||
-        $select->has_table_columns( 'access' ) ||
-        $select->has_table_columns( 'site' ) ||
-        $select->has_table_columns( 'role' ) )
-    {
+    if(
+      $select->has_table_columns( 'activity' ) ||
+      $select->has_table_columns( 'access' ) ||
+      $select->has_table_columns( 'site' ) ||
+      $select->has_table_columns( 'role' )
+    ) {
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'user.id', '=', 'activity.user_id', false );
       $join_mod->where( 'activity.end_datetime', '=', NULL );
@@ -176,10 +192,14 @@ class module extends \cenozo\service\site_restricted_module
       {
         $db_restrict_site = $this->get_restricted_site();
         if( !is_null( $db_restrict_site ) )
+        {
           $modifier->where(
-            sprintf( 'IFNULL( activity.site_id, %d )', $db_restrict_site->id ), '=', $db_restrict_site->id );
+            sprintf( 'IFNULL( activity.site_id, %d )', $db_restrict_site->id ),
+            '=',
+            $db_restrict_site->id
+          );
+        }
       }
-
     }
 
     if( $setting_manager->get_setting( 'module', 'interview' ) )
@@ -226,7 +246,7 @@ class module extends \cenozo\service\site_restricted_module
             sort( $in_call_list );
             if( 0 < count( $in_call_list ) ) $in_call_string = implode( ',', $in_call_list );
           }
-          
+
           $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_string ), 'webphone', false );
           $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_string ), 'in_call', false );
         }
