@@ -183,12 +183,6 @@ export class CN_base_element extends CN_base_object {
 
     // wait for delay before showing the modal
     let timeout_id = setTimeout(() => {
-      // automatically dispose of the modal once finished
-      modal_el.addEventListener("hidden.bs.modal", () => {
-        modal_bs.dispose();
-        modal_el.remove();
-      });
-
       modal_bs.show();
       timeout_id = null;
     }, delay);
@@ -207,8 +201,13 @@ export class CN_base_element extends CN_base_object {
         // if the timeout exists then the modal hasn't been shown, so just cancel it
         clearTimeout(timeout_id);
       } else {
-        // if the timeout no longer exists then the modal is showing, so hide it
-        modal_bs.hide();
+        // if the timeout no longer exists then the modal is showing, so dispose and remove it
+        try {
+          modal_bs.dispose();
+          modal_el.remove();
+        } catch (error) {
+          // ignore errors, it means the modal has already been removed
+        }
       }
     }
   }
