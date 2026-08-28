@@ -705,7 +705,10 @@ export class CN_element_calendar extends CN_base_element {
     const time_width = td_el.clientWidth + 1;
     const day_width = td_el.nextElementSibling.clientWidth + 1;
 
-    // add this week's events
+    // don't repaint when the day width is 0 or 1, it means the calendar isn't in the DOM or not ready for events)
+    if (1 >= day_width) return;
+
+    // add all events between the min/max dates
     const min_date = this.get_min_date();
     const max_date = this.get_max_date();
     this.#events.forEach(event => {
