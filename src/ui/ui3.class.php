@@ -512,7 +512,7 @@ class ui3 extends \cenozo\base_object
     if( !is_null( $module ) )
     {
       // search results require an additional query parameter
-      $module->append_action_query( 'list', '{q}' );
+      $module->append_action_query( 'list', '&{q}' );
     }
 
     $module = $this->get_module( 'site' );
