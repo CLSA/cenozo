@@ -500,6 +500,32 @@ export class CN_common {
   }
 
   /**
+   * Converts an number of seconds into a human-friendly string
+   * @param integer seconds
+   * @return string
+   */
+  static seconds_to_string(seconds) {
+    const duration_parts = [];
+    if (86400 <= seconds) {
+      const days = Math.floor(seconds / 86400);
+      seconds -= 86400 * days;
+      duration_parts.push(`${days} day${1 == days ? "" : "s"}`);
+    }
+    if (3600 <= seconds) {
+      const hours = Math.floor(seconds / 3600);
+      seconds -= 3600 * hours;
+      duration_parts.push(`${hours} hour${1 == hours ? "" : "s"}`);
+    }
+    if (60 <= seconds) {
+      const minutes = Math.floor(seconds / 60);
+      seconds -= 60 * minutes;
+      duration_parts.push(`${minutes} minute${1 == minutes ? "" : "s"}`);
+    }
+    duration_parts.push(`${seconds} second${1 == seconds ? "" : "s"}`);
+    return duration_parts.join(", ");
+  }
+
+  /**
    * Convert a blob to data
    * @param type string: One of "base64", "buffer" or "text"
    * @param Blob blob: The blob to convert into data

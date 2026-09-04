@@ -84,3 +84,19 @@ body.loading:before {
 .btn-pulse-danger:not(:hover) {
   animation: pulse-danger 1s linear infinite alternate;
 }
+
+.bi-overlap-group {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+  vertical-align: middle;
+}
+
+.bi-overlap-group i {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}

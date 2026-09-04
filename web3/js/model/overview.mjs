@@ -23,6 +23,8 @@ export class CN_model_overview extends CN_base_model {
 export class CN_view_overview extends CN_action_view {
   #record = {};
 
+  get_record() { return this.#record; }
+
   /**
    * Extend parent method
    */
@@ -42,7 +44,7 @@ export class CN_view_overview extends CN_action_view {
     await super.on_load();
 
     // we don't need states since all data will be static
-    this.#record = await CN_api.get(this.get_on_load_path());
+    this.#record = await CN_api.get(this.get_on_load_path(), this.get_on_load_parameters());
   }
 
   /**
@@ -87,6 +89,68 @@ export class CN_view_overview extends CN_action_view {
    */
   _create_body_element() {
     return this.constructor.html("<div></div>");
+  }
+
+  /**
+   * Do not display a header
+   */
+  _create_header_element() {
+    const header_el = super._create_header_element();
+
+    const report_div_el = this.constructor.html(`
+      <div class="dropdown" name="report">
+        <button name="report" type="button" class="btn btn-primary px-2 py-0" data-bs-toggle="dropdown">
+          <i class="bi bi-cloud-download fs-5"></i>
+        </button>
+        <ul class="dropdown-menu bg-secondary">
+          <li>
+            <div class="dropdown-header text-bg-secondary">Download List Data</div>
+          </li>
+          <li class="bg-body">
+            <button
+              type="button"
+              name="csv"
+              class="dropdown-item"
+            >Comma Separated Values (.csv)</button>
+          </li>
+          <li class="bg-body">
+            <button
+              type="button"
+              name="xlsx"
+              class="dropdown-item"
+            >Microsoft Excel (.xlsx)</button>
+          </li>
+          <li class="bg-body">
+            <button
+              type="button"
+              name="ods"
+              class="dropdown-item"
+            >OpenDocument Spreadsheet (.ods)</button>
+          </li>
+        </ul>
+      </div>
+    `);
+
+    new bootstrap.Tooltip(report_div_el, {
+      title: "Download list",
+      trigger: "hover",
+      delay: { "show": 1000, "hide": 100 },
+    });
+
+    ["csv", "xlsx", "ods"].forEach(format => {
+      report_div_el.querySelector(`button[name=${format}]`).addEventListener("click", async () => {
+        const model = this.get_model();
+        const parent_model = model.get_parent_model();
+        const response = await CN_api.file(this.get_on_load_path(), format, this.get_on_load_parameters(), true);
+        CN_common.download_file(
+          await response.blob(),
+          response.headers.get("content-disposition").match(/filename=(.*);/)[1],
+        );
+      });
+    });
+    header_el.querySelector("button[name=refresh]").before(report_div_el);
+
+    return header_el;
   }
 
   /**
@@ -190,9 +254,15 @@ export class CN_view_overview extends CN_action_view {
       }
     };
 
-    if (this.#record.data) {
+    if (this.#record.id) {
       this.get_body_element().innerHTML = "";
-      add_node(this.#record.data, this.get_body_element(), true);
+      if (CN_common.is_object(this.#record.data)) {
+        add_node(this.#record.data, this.get_body_element(), true);
+      } else {
+        this.get_body_element().append(this.constructor.html(`
+          <div class="p-2">There is no data available.</div>
+        `));
+      }
     }
   }
 

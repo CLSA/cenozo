@@ -7,7 +7,7 @@ import { CN_session } from "./session.mjs"
  * The voip class which handles all VoIP integration
  */
 class voip extends CN_base_object {
-  #enabled = CN_session.get("application", "voip_enabled");
+  #enabled = false;
   #info = null;
   #call = null;
   #last_update = null;
@@ -19,16 +19,20 @@ class voip extends CN_base_object {
   get_last_update() { return this.#last_update; }
 
   /**
-   * ADD DOCS
+   * Updates the voip details
+   *
+   * Should only be run in CN_session::update_webphone(), use that method instead of this one when voip
+   * details need to be updated, that way the menu webphone icon will also be updated.
    */
   async update() {
+    this.#enabled = CN_session.get("application", "voip_enabled");
     if (!this.#enabled) return;
 
     try {
       const response = await CN_api.get("voip/0");
       this.#info = response.info;
       this.#call = response.call;
-      this.last_update = CN_common.get_date();
+      this.#last_update = CN_common.get_date();
     } catch (error) {
       this.#info = null;
       this.#call = null;

@@ -30,6 +30,7 @@ export class CN_base_element extends CN_base_object {
         id: null, // will be added to the element as an attribute if defined
         name: null, // will be added to the element as an attribute if defined
         class: null, // will be added to the element as an attribute if defined
+        style: null, // will be added to the element as an attribute if defined
       },
       ...config
     });
@@ -118,6 +119,8 @@ export class CN_base_element extends CN_base_object {
     if (null != name) el.setAttribute("name", name);
     const class_list = this.get_config("class");
     if (null != class_list) el.classList = class_list;
+    const style = this.get_config("style");
+    if (null != style) el.style = style;
 
     return el;
   }

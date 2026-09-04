@@ -1,4 +1,5 @@
 import { CN_base_object } from "./base_object.mjs"
+import { CN_session } from "./session.mjs"
 
 /**
  * A object containing a number of helpful functions
@@ -16,6 +17,8 @@ export class CN_base_app_session extends CN_base_object {
    * Run after the session is rendered
    */
   async render() {
+    CN_session.update_breadcrumbs();
+    CN_session.update_webphone();
   }
 
   /**

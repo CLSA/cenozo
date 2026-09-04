@@ -290,7 +290,13 @@ class ui3 extends \cenozo\base_object
       }
       else if( 'GET' == $service['method'] )
       {
-        if( $service['resource'] ) $module->add_action( 'view', '/{identifier}?{tab}&{tables}' );
+        if( $service['resource'] )
+        {
+          $module->add_action(
+            'view',
+            sprintf( '/{identifier}%s', 'overview' == $service['subject'] ? '' : '?{tab}&{tables}' )
+          );
+        }
         else $module->add_action( 'list', '?{tables}' );
       }
       else if( 'PATCH' == $service['method'] )

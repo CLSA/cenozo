@@ -140,6 +140,7 @@ export class CN_module extends CN_base_object {
   }
   get_name() { return this.#name; }
   is_root() { return this.#root; }
+  set_root(root) { this.#root = root; }
   is_framework() { return this.#framework; }
   has_notation(type) { return this.#notations.hasOwnProperty(type); }
   get_notation(type) { return this.has_notation(type) ? this.#notations[type] : null; }

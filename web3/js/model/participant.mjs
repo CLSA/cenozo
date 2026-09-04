@@ -545,8 +545,8 @@ export class CN_view_participant extends CN_view_base_person {
         modifier: { where: { column: "enable_status", operator: "=", value: true } }
       });
     } catch (error) {
-      // ignore 404s, it just means we don't have access to reading study data
-      if (!CN_common.is_uri_error(error, 404)) throw error;
+      // ignore 403s and 404s, it just means we don't have access to reading study data
+      if (!CN_common.is_uri_error(error, 403) && !CN_common.is_uri_error(error, 404)) throw error;
     }
     this.#show_study_phase_status = 0 < count;
   }

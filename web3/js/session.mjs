@@ -9,7 +9,9 @@ import { CN_modal_clock_settings } from "./modal/clock_settings.mjs"
 import { CN_modal_message } from "./modal/message.mjs"
 import { CN_modal_password } from "./modal/password.mjs"
 import { CN_modal_site_role } from "./modal/site_role.mjs"
+import { CN_modal_webphone } from "./modal/webphone.mjs"
 import { CN_module } from "./module.mjs"
+import { CN_voip } from "./voip.mjs"
 
 /**
  * The session class which handles the application
@@ -154,8 +156,6 @@ class session extends CN_base_object {
       // update the breadcrumbs
       this.#breadcrumb_trail.set_config("loading", false);
       this.#breadcrumb_trail.set_config("crumb_list", crumb_list);
-      this.#breadcrumb_trail.update_element();
-      await CN_app_session.render();
     } catch (error) {
       const model = new CN_model_error(error);
       this.#main_content_el.replaceChildren(content_el);
@@ -165,8 +165,9 @@ class session extends CN_base_object {
       // update the breadcrumbs
       this.#breadcrumb_trail.set_config("loading", false);
       this.#breadcrumb_trail.set_config("crumb_list", [{ name: "Error", path: null }]);
-      this.#breadcrumb_trail.update_element();
     }
+
+    await CN_app_session.render();
   }
 
   /**
@@ -257,6 +258,28 @@ class session extends CN_base_object {
    */
   update_breadcrumbs() {
     this.#breadcrumb_trail.update_element();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async update_webphone() {
+    const webphone_btn_el = this.#main_menu_header_el.querySelector("button[name=webphone]");
+    if (this.get("application", "voip_enabled")) {
+      webphone_btn_el.replaceChildren(CN_base_element.html('<i class="bi bi-three-dots"></i>'));
+      webphone_btn_el.classList.remove("d-none");
+
+      await CN_voip.update();
+
+      const info = CN_voip.get_info();
+      webphone_btn_el.replaceChildren(CN_base_element.html(
+        info && "Reachable" == info.status ?
+        '<i class="bi bi-headset"></i>' :
+        '<span class="bi-overlap-group"><i class="bi bi-slash-lg"></i><i class="bi bi-headset"></i></span>'
+      ));
+    } else {
+      webphone_btn_el.classList.add("d-none");
+    }
   }
 
   /**
@@ -482,6 +505,9 @@ class session extends CN_base_object {
     this.#menu_btn_group_el = CN_base_element.html(`
       <div name="menu-btn-group" class="d-flex">
         <div name="access"></div>
+        <button type="button" name="webphone" class="btn btn-outline-light me-1 text-nowrap d-none">
+          <i class="bi bi-three-dots"></i>
+        </button>
         <button type="button" name="clock" class="btn btn-outline-light text-nowrap">
           <i class="bi bi-clock-fill"></i>
           <span name="time" class="nav-item"></span>
@@ -553,6 +579,10 @@ class session extends CN_base_object {
       });
       access_el.append(access_btn_el);
     }
+
+    this.#main_menu_header_el.querySelector("button[name=webphone]").addEventListener("click", async () => {
+      await CN_modal_webphone.create_and_open();
+    });
 
     // keep the clock running
     const time_el = this.#main_menu_header_el.querySelector("span[name=time]");
