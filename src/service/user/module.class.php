@@ -247,8 +247,8 @@ class module extends \cenozo\service\site_restricted_module
             if( 0 < count( $in_call_list ) ) $in_call_string = implode( ',', $in_call_list );
           }
 
-          $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_string ), 'webphone', false );
-          $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_string ), 'in_call', false );
+          $select->add_column( sprintf( 'user.id IN ( %s )', $webphone_string ), 'webphone', false, 'boolean' );
+          $select->add_column( sprintf( 'user.id IN ( %s )', $in_call_string ), 'in_call', false, 'boolean' );
         }
         catch( \cenozo\exception\runtime $e )
         {

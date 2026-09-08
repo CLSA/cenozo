@@ -7,6 +7,7 @@ import { CN_modal_confirm } from "../modal/confirm.mjs"
 import { CN_modal_input } from "../modal/input.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
 import { CN_session } from "../session.mjs"
+import { CN_voip } from "../voip.mjs"
 
 export class CN_model_user extends CN_base_model {
   constructor() {
@@ -29,7 +30,7 @@ export class CN_model_user extends CN_base_model {
         },
         last_access_datetime: {
           title: "Last Used",
-          type: "datetime",
+          type: "datetimesecond",
           help: "The last time the user accessed this application.",
           table_prefix: false,
         },
@@ -138,6 +139,7 @@ export class CN_model_user extends CN_base_model {
           `,
           is_hidden: () => "view" == this.get_action_name(),
         },
+        in_call: { meta: {}, type: "boolean", is_hidden: () => true },
       },
     });
   }
@@ -151,9 +153,49 @@ export class CN_model_user extends CN_base_model {
     if ("overview" == this.get_action_name()) {
       delete columns.active;
       delete columns.email;
-      columns.site = { title: "Site", column: "site.name" };
-      columns.role = { title: "Role", column: "role.name" };
-      columns.last_datetime = { title: "Last Activity", column: "access.datetime", type: "datetimesecond" };
+      delete columns.role_list;
+      delete columns.site_list;
+      CN_common.insert_property(
+        columns,
+        "before",
+        "last_access_datetime",
+        "site",
+        { title: "Site", column: "site.name", is_hidden: () => !CN_session.get("role", "all_sites") }
+      );
+      CN_common.insert_property(
+        columns,
+        "before",
+        "last_access_datetime",
+        "role",
+        { title: "Role", column: "role.name" }
+      );
+
+      if (CN_session.get_module("interview")) {
+        CN_common.insert_property(
+          columns,
+          "before",
+          "last_access_datetime",
+          "assignment_uid",
+          { title: "Assignment", table_prefix: false }
+        );
+      }
+
+      if (CN_session.get("application", "voip_enabled")) {
+        CN_common.insert_property(
+          columns,
+          "before",
+          "last_access_datetime",
+          "webphone",
+          { title: "Webphone", type: "boolean", table_prefix: false }
+        );
+        CN_common.insert_property(
+          columns,
+          "before",
+          "last_access_datetime",
+          "in_call",
+          { title: "In Call", type: "boolean", table_prefix: false }
+        );
+      }
     }
 
     return columns;
@@ -311,6 +353,40 @@ export class CN_overview_user extends CN_action_list {
 }
 
 export class CN_view_user extends CN_action_view {
+  #listening_to_call = false;
+
+  /**
+   * Extends the parent method
+   */
+  update_element() {
+    super.update_element();
+
+    const listen_btn_el = this.get_footer_element().querySelector("button[name=listen]");
+    if (
+      /*
+      1 < CN_session.get("role", "tier") &&
+      CN_session.get("application", "voip_enabled") &&
+      this.get_property_value("in_call")
+      */
+      true
+    ) {
+      listen_btn_el.classList.remove("d-none");
+    } else {
+      listen_btn_el.classList.add("d-none");
+    }
+
+    const info = CN_voip.get_info();
+    //this.constructor.set_disabled(listen_btn_el, !info || "Reachable" != info.status);
+  }
+
+  /**
+   * Extends the parent method
+   */
+  async on_load() {
+    // also update the voip info so we know whether to enable the listen button
+    await Promise.all([super.on_load(), CN_voip.update()]);
+  }
+
   /**
    * Extends the parent method
    */
@@ -353,6 +429,46 @@ export class CN_view_user extends CN_action_view {
     });
     footer_el.querySelector("div[name=left-btn-group]").append(reset_password_btn_el);
 
+    const listen_btn_el = this.constructor.html(`
+      <button
+        name="listen"
+        type="button"
+        class="btn btn-warning d-none"
+      >Listen to Call</button>
+    `);
+    listen_btn_el.addEventListener("click", async () => {
+      if (this.#listening_to_call) {
+        await this.#stop_listening();
+        listen_btn_el.innerHTML = "Listen to Call";
+      } else {
+        await this.#start_listening();
+        listen_btn_el.innerHTML = "Stop Listening";
+      }
+    });
+    footer_el.querySelector("div[name=left-btn-group]").append(listen_btn_el);
+
     return footer_el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #start_listening() {
+    await CN_api.patch(`voip/${this.get_model().get_identifier()}`, { operation: "spy" });
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #stop_listening() {
+    try {
+      await CN_voip.delete("voip/0");
+    } catch (error) {
+      if (CN_common.is_uri_error(error, 404)) {
+        // ignore 404 errors, it just means the user wasn't listening to a call
+      } else {
+        throw error;
+      }
+    }
   }
 }
