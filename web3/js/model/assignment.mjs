@@ -53,6 +53,7 @@ export class CN_model_assignment extends CN_base_model {
           get_max: () => CN_common.get_date(),
         },
         participant_id: { meta: { table: "participant", column: "id" }, is_hidden: () => true },
+        note_count: { meta: {}, is_hidden: () => true },
       },
     });
   }
@@ -70,6 +71,9 @@ export class CN_view_assignment extends CN_action_view {
     if (close_btn_el) {
       this.constructor.set_disabled(close_btn_el, "(empty)" != this.get_property_value("end_datetime"));
     }
+
+    const notes_btn_el = this.get_footer_element().querySelector("button[name=notes]");
+    notes_btn_el.innerHTML = `Notes (${this.get_property_value("note_count")})`;
   }
 
   /**

@@ -63,6 +63,26 @@ class module extends \cenozo\service\site_restricted_participant_module
 
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
 
+    // add the note count column if requested
+    if( $select->has_column( 'note_count' ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'participant' );
+      $join_sel->add_column( 'id', 'participant_id' );
+      $join_sel->add_column( 'IF( note.id IS NULL, 0, COUNT(*) )', 'note_count', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->left_join( 'note', 'participant.id', 'note.participant_id' );
+      $join_mod->group( 'participant.id' );
+
+      $modifier->join(
+        sprintf( '( %s %s ) AS participant_count_join_note', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'participant.id',
+        'participant_count_join_note.participant_id'
+      );
+      $select->add_table_column( 'participant_count_join_note', 'note_count' );
+    }
+
     // restrict by site (or provide link to participant_site table
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) || $select->has_table_columns( 'effective_site' ) )

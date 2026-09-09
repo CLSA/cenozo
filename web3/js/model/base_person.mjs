@@ -7,6 +7,7 @@ import { CN_session } from "../session.mjs"
 
 export class CN_model_base_person extends CN_base_model {
   constructor(params) {
+    params.properties.note_count = { meta: {}, is_hidden: () => true };
     super(params);
 
     if ("CN_model_base_person" == this.constructor) {
@@ -29,6 +30,16 @@ export class CN_view_base_person extends CN_action_view {
     if ("CN_view_base_person" == this.constructor) {
       throw new Error("Abstract class CN_view_base_person can't be instantiated.");
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    const notes_btn_el = this.get_footer_element().querySelector("button[name=notes]");
+    notes_btn_el.innerHTML = `Notes (${this.get_property_value("note_count")})`;
   }
 
   /**

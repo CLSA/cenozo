@@ -57,6 +57,7 @@ export class CN_model_interview extends CN_base_model {
         note: { column: "interview.note", title: "Note", type: "text" },
         participant_id: { meta: { table: "participant", column: "id" }, is_hidden: () => true },
         effective_site_id: { meta: { table: "effective_site", column: "id" }, is_hidden: () => true },
+        note_count: { meta: {}, is_hidden: () => true },
       },
     });
   }
@@ -90,6 +91,16 @@ export class CN_list_interview extends CN_action_list {
 }
 
 export class CN_view_interview extends CN_action_view {
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    const notes_btn_el = this.get_footer_element().querySelector("button[name=notes]");
+    notes_btn_el.innerHTML = `Notes (${this.get_property_value("note_count")})`;
+  }
+
   /**
    * Extend parent method
    */

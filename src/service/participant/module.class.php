@@ -184,6 +184,9 @@ class module extends \cenozo\service\site_restricted_participant_module
                          'left', 'preferred_site' );
     }
 
+    // add the note count column if requested
+    if( $select->has_column( 'note_count' ) ) $this->add_count_column( 'note_count', 'note', $select, $modifier );
+
     // restrict by site
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) )

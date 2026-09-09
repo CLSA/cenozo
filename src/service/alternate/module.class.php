@@ -105,6 +105,9 @@ class module extends \cenozo\service\site_restricted_participant_module
     if( !is_null( $db_restrict_site ) ) $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
 
     $this->add_list_column( 'alternate_type_list', 'alternate_type', 'title', $select, $modifier );
+
+    // add the note count column if requested
+    if( $select->has_column( 'note_count' ) ) $this->add_count_column( 'note_count', 'note', $select, $modifier );
   }
 
   /**

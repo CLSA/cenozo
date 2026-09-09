@@ -124,7 +124,7 @@ class module extends \cenozo\service\site_restricted_participant_module
     if( $select->has_table_columns( 'role' ) )
       $modifier->left_join( 'role', 'assignment.role_id', 'role.id' );
 
-    if( $select->has_table_columns( 'participant' ) )
+    if( $select->has_table_columns( 'participant' ) || $select->has_column( 'note_count' ) )
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
 
     if( $select->has_column( 'phone_call_count' ) )
@@ -180,6 +180,26 @@ class module extends \cenozo\service\site_restricted_participant_module
       $modifier->join_modifier( 'participant_last_consent', $join_mod, '', 'participant_last_usedm_consent' );
       $modifier->left_join( 'consent', 'participant_last_usedm_consent.consent_id', 'usedm_consent.id', 'usedm_consent' );
       $select->add_column( 'usedm_consent.accept', 'use_decision_maker', false, 'boolean' );
+    }
+
+    // add the note count column if requested
+    if( $select->has_column( 'note_count' ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'participant' );
+      $join_sel->add_column( 'id', 'participant_id' );
+      $join_sel->add_column( 'IF( note.id IS NULL, 0, COUNT(*) )', 'note_count', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->left_join( 'note', 'participant.id', 'note.participant_id' );
+      $join_mod->group( 'participant.id' );
+
+      $modifier->join(
+        sprintf( '( %s %s ) AS participant_count_join_note', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'participant.id',
+        'participant_count_join_note.participant_id'
+      );
+      $select->add_table_column( 'participant_count_join_note', 'note_count' );
     }
   }
 
