@@ -97,4 +97,36 @@ export class CN_modal_password extends CN_modal_base_form {
 
     return body_el;
   }
+
+  /**
+   * Implements the parent method
+   */
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
+
+    // add the "show passwords" button in the left button group
+    const show_passwords_btn_el = this.constructor.html(
+      '<button type="button" name="show-passwords" class="btn btn-light">Show Passwords</button>'
+    );
+    show_passwords_btn_el.addEventListener("click", () => {
+      const current_password_el = this.get_input("current_password").form_input.get_control_element();
+      const new_password_el = this.get_input("new_password").form_input.get_control_element();
+      const new_password_check_el = this.get_input("new_password_check").form_input.get_control_element();
+
+      if ("password" == current_password_el.type) {
+        current_password_el.type = "string";
+        new_password_el.type = "string";
+        new_password_check_el.type = "string";
+        show_passwords_btn_el.innerHTML = "Hide Passwords";
+      } else {
+        current_password_el.type = "password";
+        new_password_el.type = "password";
+        new_password_check_el.type = "password";
+        show_passwords_btn_el.innerHTML = "Show Passwords";
+      }
+    });
+    footer_el.querySelector("div[name=left-btn-group]").append(show_passwords_btn_el);
+
+    return footer_el;
+  }
 }
