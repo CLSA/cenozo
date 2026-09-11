@@ -8,9 +8,9 @@ export class CN_model_base_export_child extends CN_base_model {
   constructor(type) {
     super({
       wording: {
-        singular: `export ${type}`,
-        plural: `export ${type}s`,
-        posessive: `export ${type}'s`,
+        singular: type,
+        plural: `${type}s`,
+        posessive: `${type}'s`,
       },
       columns: {
         rank: { title: "Rank", type: "rank" },
