@@ -109,7 +109,7 @@ export class CN_action_base_record extends CN_base_action {
    *     get_min: an async function that returns the minimum number or Date object
    *     get_max: an async function that returns the maximum number or Date object
    *
-   * Mandatory property for the "enum" type:
+   * Optional property for the "enum" type (must be provided unless the enum list is in the column definition):
    *   enum: an object with one of three sets of properties:
    *     static list of enum values:
    *       values: an array containing all possible enum values (each having a key, value and disabled property)
@@ -166,6 +166,14 @@ export class CN_action_base_record extends CN_base_action {
       // numerical properties may have min/max values
       prop.min = prop.hasOwnProperty("min") ? prop.min : (prop.type.match(/unsigned/) ? 0 : null);
       prop.max = prop.hasOwnProperty("max") ? prop.max : null;
+    } else if ("enum" == prop.type) {
+      // if no enum object was provided then get the enum list from the module's property
+      if (!prop.hasOwnProperty("enum")) {
+        const module_prop = this.get_model().get_module().get_property(prop.name);
+        if (module_prop && CN_common.is_array(module_prop.enum_list)) {
+          prop.enum = { values: module_prop.enum_list.map(v => ({ key: v, value: v, disabled: false })) };
+        }
+      }
     }
 
     // make sure all properties have the is_constant, is_hidden and get_default functions
@@ -469,7 +477,7 @@ export class CN_action_base_record extends CN_base_action {
     });
 
     prop.form_input.set_parent_element(prop.element);
-    if (!prop.is_hidden()) prop.element.append(prop.form_input.get_element());
+    prop.element.append(prop.form_input.get_element());
   }
 
   /**
@@ -520,8 +528,8 @@ export class CN_action_base_record extends CN_base_action {
       } else if ("rank" == prop.type) {
         // define the max rank
         if (!CN_common.is_function(input_config.max_rank)) {
-          input_config.max_rank = async (form_input) => {
-            const model = form_input.get_action().get_model();
+          input_config.max_rank = async () => {
+            const model = this.get_model();
             const response = await CN_api.get(model.get_base_path("api"), {
               select: { column: {
                 column: `max(${model.get_name()}.rank)`,

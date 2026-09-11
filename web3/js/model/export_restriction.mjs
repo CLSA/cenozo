@@ -1,70 +1,73 @@
-import { CN_action_view } from "../action/view.mjs"
-import { CN_base_model } from "./base_model.mjs"
-import { CN_model_export } from "./export.mjs"
+import { CN_api } from "../api.mjs"
+import { CN_base_action } from "../action/base_action.mjs"
+import { CN_common } from "../common.mjs"
+import { CN_model_base_export_child } from "./base_export_child.mjs"
+import { CN_session } from "../session.mjs"
 
-export class CN_model_export_restriction extends CN_base_model {
+export class CN_model_export_restriction extends CN_model_base_export_child {
   constructor() {
-    super({
-      wording: {
-        singular: "export restriction",
-        plural: "export restrictions",
-        posessive: "export restriction's",
-      },
-      columns: {
-        export: { column: "export.title", title: "Export Type" },
-        rank: { title: "Rank", type: "rank" },
-        logic: { title: "Logic" },
-        ...CN_model_export.get_export_columns(),
-        test: { title: "Test" },
-        value: { title: "Value" },
-      },
-      properties: {
-        rank: {
-          title: "Rank",
-          type: "rank",
-          on_change: async (form_input, valid) => {
-            const action = form_input.get_action();
-
-            // run the default behaviour
-            await action.on_property_change("rank", valid);
-
-            // re-run the action so the changed property is applied in the view and all child lists
-            if (valid) action.run(true);
-          },
-        },
-        logic: {
-          title: "Logic",
-          type: "enum",
-          // don't show logic if this is the first restriction
-          is_hidden: () => {
-            const rank = this.get_action().get_property_value("rank");
-            return !rank || 1 == rank;
-          },
-        },
-        ...CN_model_export.get_export_properties(),
-        test: { title: "Test", type: "enum" },
-        value: { title: "Value" },
-      },
-    });
+    super("restriction");
   }
-}
 
-export class CN_view_export_restriction extends CN_action_view {
   /**
    * Extend parent method
    */
-  async on_set_property(prop_name, run = true) {
-    await super.on_set_property(prop_name, false);
+  async clone_columns() {
+    const columns = await super.clone_columns();
+    return {
+      rank: columns.rank,
+      logic: { title: "Logic" },
+      table_name: columns.table_name,
+      subtype: columns.subtype,
+      column_name: columns.column_name,
+      test: { title: "Test" },
+      value: { title: "Value" },
+    };
+  }
 
-    // if the table name has changed then make sure to update the column_name as well
-    if ("table_name" == prop_name) {
-      await this.set_property_value(
-        "column_name",
-        this.get_property(prop_name).form_input.get_config("enum").values[0].key
-      );
-      await super.on_set_property("column_name", false);
-    }
+  /**
+   * Extend parent method
+   */
+  async clone_properties() {
+    const properties = await super.clone_properties();
+    return {
+      rank: properties.rank,
+      logic: {
+        title: "Logic",
+        type: "enum",
+        // don't show logic if this is the first restriction
+        is_hidden: () => {
+          const rank = this.get_action().get_property_value("rank");
+          return !rank || 1 == rank;
+        },
+      },
+      table_name: properties.table_name,
+      subtype: properties.subtype,
+      column_name: properties.column_name,
+      test: { title: "Test", type: "enum" },
+      value: { title: "Value" },
+    };
+  }
+}
 
-    if (run) await this.run();
+export class CN_list_export_restriction extends CN_base_action {
+  constructor(parent_el, model) {
+    super("list", parent_el, model);
+  }
+
+  /**
+   * Returns the formatted record count
+   * @return string
+   */
+  get_formatted_record_count() {
+    // TODO: implement
+    return "[0]";
+  }
+
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    return "Not Yet Implemented";
   }
 }

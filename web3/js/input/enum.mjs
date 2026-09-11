@@ -80,7 +80,7 @@ export class CN_input_enum extends CN_base_input {
     let new_values = true;
     if (CN_common.is_function(enum_obj.get_enums)) {
       // check if a get_enums function exists in the params
-      enum_obj.values = await enum_obj.get_enums(this);
+      enum_obj.values = await enum_obj.get_enums();
     } else if (enum_obj.path) {
       // check if a path property exists in the params (may be a string or a function)
       // build the params object for getting the enum values
@@ -103,17 +103,6 @@ export class CN_input_enum extends CN_base_input {
         });
         return list;
       }, []);
-    } else {
-      // check for enums in the column definition (only for inputs linked to an action)
-      const action = this.get_action();
-      if (action) {
-        const module_prop = action.get_model().get_module().get_property(control_el.getAttribute("name"));
-        if (module_prop && CN_common.is_array(module_prop.enum_list)) {
-          enum_obj.values = module_prop.enum_list.map(v => ({ key: v, value: v, disabled: false }));
-        } else {
-          new_values = false;
-        }
-      }
     }
 
     if (
@@ -126,11 +115,7 @@ export class CN_input_enum extends CN_base_input {
 
       // get the default value
       const required = this.get_config("required");
-      const default_value = (
-        this.has_config("get_default") ?
-        this.get_config("get_default")(this.get_action() ? this.get_action().get_model() : null) :
-        null
-      );
+      const default_value = this.has_config("get_default") ?  this.get_config("get_default")() : null;
       const value = this.get_value();
 
       // add a placeholder option

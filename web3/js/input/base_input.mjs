@@ -11,7 +11,6 @@ import { CN_state } from "../state.mjs"
  * @event undovalue: ran when the input's value is undone
  */
 export class CN_base_input extends CN_base_element {
-  #action;
   #state;
   #record_state;
   #control_id;
@@ -39,10 +38,6 @@ export class CN_base_input extends CN_base_element {
     delete config.id;
     const name = config.name;
     delete config.name;
-
-    // the action parameter is used to optionally track the action this input belongs to, not the root element
-    const action = config.action;
-    delete config.action;
 
     // don't replace classes, append them instead
     config.class = ["d-flex align-items-center", config.class].join(" ").trim();
@@ -74,7 +69,6 @@ export class CN_base_input extends CN_base_element {
       }
     }
 
-    this.#action = action;
     this.#control_id = id;
     this.#control_name = name;
     this.#state = new CN_state(value => this._calculate_value_for_record(value));
@@ -92,13 +86,6 @@ export class CN_base_input extends CN_base_element {
    */
   set_event_listeners(enable) {
     this.#event_listeners = enable;
-  }
-
-  /**
-   * ADD DOCS
-   */
-  get_action() {
-    return this.#action;
   }
 
   /**
@@ -437,7 +424,7 @@ export class CN_base_input extends CN_base_element {
 
     // set the value to the default (only if it hasn't been set yet)
     if (null === this.get_value() && this.has_config("get_default")) {
-      const default_value = this.get_config("get_default")(this.#action ? this.#action.get_model() : null);
+      const default_value = this.get_config("get_default")();
       this.set_value(default_value);
     }
     this.#control_div_el.append(this.#control_el);

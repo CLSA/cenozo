@@ -115,7 +115,7 @@ export class CN_model_application extends CN_base_model {
           type: "color",
           help: "The primary colour to use for the application's user interface.",
           on_change: async (form_input, valid) => {
-            const action = form_input.get_action();
+            const action = this.get_action();
 
             // run the default behaviour
             await action.on_property_change("primary_color", valid);
@@ -129,7 +129,7 @@ export class CN_model_application extends CN_base_model {
           type: "color",
           help: "The secondary colour to use for the application's user interface.",
           on_change: async (form_input, valid) => {
-            const action = form_input.get_action();
+            const action = this.get_action();
 
             // run the default behaviour
             await action.on_property_change("secondary_color", valid);

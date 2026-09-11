@@ -32,7 +32,7 @@ export class CN_model_address extends CN_model_traceable {
           type: "boolean",
           help: "Cannot be changed once the address has been created.",
           on_change: async (form_input, valid) => {
-            const action = form_input.get_action();
+            const action = this.get_action();
 
             // run the default behaviour
             await action.on_property_change("international", valid);

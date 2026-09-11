@@ -228,7 +228,7 @@ export class CN_model_participant extends CN_model_base_person {
                   enum: { path: "site" },
                   is_hidden: () => !CN_session.get("application", "site_based"),
                   on_change: async (form_input, valid) => {
-                    const action = form_input.get_action();
+                    const action = this.get_action();
                     let proceed = true;
                     let access_to_participant_lost = false;
 
@@ -902,7 +902,6 @@ export class CN_multiedit_participant extends CN_base_action {
 
           CN_input_boolean.append(sticky_row_el, {
             id: sticky_prop_id,
-            action: this,
             required: true,
             name: "sticky",
             class: "col-sm-9",
@@ -922,7 +921,6 @@ export class CN_multiedit_participant extends CN_base_action {
 
           CN_input_text.append(note_row_el, {
             id: note_prop_id,
-            action: this,
             required: true,
             name: "note",
             class: "col-sm-9",
@@ -932,7 +930,7 @@ export class CN_multiedit_participant extends CN_base_action {
           });
           fields_el.append(note_row_el);
         } else if (mod.enum) {
-          const pretty_module_name = CN_common.pretty_print("table", module_name);
+          const pretty_module_name = CN_common.uc_words(module_name.replace(/_/g, " "));
 
           // add the opertion enum (add/remove)
           let op_prop_id = `${module_name}_operation`;
@@ -946,7 +944,6 @@ export class CN_multiedit_participant extends CN_base_action {
 
           CN_input_enum.append(op_row_el, {
             id: op_prop_id,
-            action: this,
             required: true,
             name: "operation",
             get_default: () => "add",
@@ -972,7 +969,6 @@ export class CN_multiedit_participant extends CN_base_action {
 
           CN_input_enum.append(item_row_el, {
             id: item_prop_id,
-            action: this,
             required: true,
             name: "item",
             class: "d-flex align-items-center col-sm-9",
@@ -1060,7 +1056,7 @@ export class CN_multiedit_participant extends CN_base_action {
 
     for (const module_name in this.#module_list) {
       const mod = this.#module_list[module_name];
-      const pretty_module_name = CN_common.pretty_print("table", module_name);
+      const pretty_module_name = CN_common.uc_words(module_name.replace(/_/g, " "));
 
       nav_el.append(this.constructor.html(`
         <li class="nav-item" role="presentation">
@@ -1472,7 +1468,7 @@ export class CN_element_participant_selection extends CN_base_element {
     this.#identifier_list_form_input = CN_input.create_input("text", card_body_el, {
       id: identifier_list_id,
       rows: 5,
-      on_input: (form_input) => {
+      on_input: () => {
         this.#count_el.innerHTML = `(unconfirmed)`;
         this.update_element();
 
@@ -1507,7 +1503,7 @@ export class CN_element_participant_selection extends CN_base_element {
       // add the confirm button as a postfix to the identifier-type selector
       postfix: (el) => el.append(this.#confirm_btn_el),
       enum: {
-        get_enums: async (form_input) => {
+        get_enums: async () => {
           const list = await CN_api.get("identifier", {
             select: { column: ["id", "name", "regex"] },
             modifier: { order: "name" },

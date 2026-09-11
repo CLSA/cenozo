@@ -484,6 +484,19 @@ export class CN_common {
   }
 
   /**
+   * Converts a snake_case string to Spaced First Letter Capitol string
+   * @param string str
+   * @return string
+   */
+  static format_variable_name(str) {
+    return (
+      this.is_string(str) ?
+      this.uc_words(str.replace(/_/g, " ")).replace(/\b(Id|Uid)\b/, x => x.toUpperCase()) :
+      str
+    )
+  }
+
+  /**
    * Returns a number along with its ordinal suffix (1st, 2nd, 3rd, 4th, etc)
    * @param integer number
    * @return string
@@ -594,27 +607,6 @@ export class CN_common {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(link.href);
-  }
-
-  /**
-   * Converts a column or table name to a user-friendly string
-   * @param string type
-   * @param string name
-   * @return string
-   */
-  static pretty_print(type, name) {
-    if ("column" == type) {
-      return (
-        this.is_string(name) ?
-        this.uc_words(name.replace(/_/g, " ")).replace(/\b(Id|Uid)\b/, x => x.toUpperCase()) :
-        name
-      )
-    } else if ("table" == type) {
-      return this.is_string(name) ? this.uc_words(name.replace(/_/g, " ")) : name;
-    }
-
-    console.warn(`Tried to pretty-print type "${type}" which isn't implemented.`);
-    return name;
   }
 
   /**
