@@ -57,7 +57,7 @@ export class CN_input_enum extends CN_base_input {
     await super.set_value(value, value_for_record);
 
     const control_el = this.get_control_element();
-    if (control_el) {
+    if (control_el && 0 < control_el.innerHTML.length) {
       this.get_config("enum").values.forEach(option => {
         const option_el = control_el.querySelector(`option[value="${option.key}"]`);
         if (test_option(option, value)) {
