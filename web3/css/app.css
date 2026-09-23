@@ -81,6 +81,12 @@ body.loading:before {
   --bs-tooltip-max-width: 500px !important;
 }
 
+.text-bg-secondary {
+  .btn.disabled, .btn:disabled, fieldset:disabled .btn {
+    background-color: lightgray;
+  }
+}
+
 .btn-pulse-danger:not(:hover) {
   animation: pulse-danger 1s linear infinite alternate;
 }

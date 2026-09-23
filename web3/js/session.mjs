@@ -610,10 +610,11 @@ class session extends CN_base_object {
       this.close_menu();
       const response = await CN_modal_account.create_and_open();
       if (
-        null != response &&
-        this.#data.user.first_name != response.first_name &&
-        this.#data.user.last_name != response.last_name &&
-        this.#data.user.email != response.email
+        null != response && (
+          this.#data.user.first_name != response.first_name ||
+          this.#data.user.last_name != response.last_name ||
+          this.#data.user.email != response.email
+        )
       ) {
         await CN_api.patch("self/0", { user: response });
         this.#data.user = { ...this.#data.user, ...response };
