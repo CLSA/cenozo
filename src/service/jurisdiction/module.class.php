@@ -39,6 +39,8 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::prepare_read( $select, $modifier );
 
+    $modifier->join( 'site', 'jurisdiction.site_id', 'site.id' );
+
     $db_application = lib::create( 'business\session' )->get_application();
 
     // only include jurisdictions which belong to this application
