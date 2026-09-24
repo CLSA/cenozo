@@ -6,6 +6,7 @@ import { CN_session } from "../session.mjs"
 
 export class CN_element_time_picker extends CN_base_element {
   #time_el;
+  #time = { hours: null, minutes: null, seconds: null };
   #hours_input;
   #minutes_input;
   #seconds_input;
@@ -28,37 +29,45 @@ export class CN_element_time_picker extends CN_base_element {
       },
       ...config,
     });
+
+    this.set_time(this.get_config("hours"), this.get_config("minutes"), this.get_config("seconds"));
   }
 
   /**
    * ADD DOCS
    */
   get_time() {
-    return {
-      hours: this.#hours_input.get_value(),
-      minutes: this.#minutes_input.get_value(),
-      seconds: this.get_config("show_seconds") ? this.#seconds_input.get_value() : 0,
-    };
+    return this.#time;
   }
 
   /**
    * ADD DOCS
    */
-  async set_time(hours = 12, minutes = 0, seconds = 0) {
-    const promise_list = [
-      this.#hours_input.set_value(hours),
-      this.#minutes_input.set_value(minutes),
-    ];
-    if (this.get_config("show_seconds")) promise_list.push(this.#seconds_input.set_value(seconds));
-    await Promise.all(promise_list);
-  }
-
-  /**
-   * ADD DOCS
-   */
-  async set_to_now() {
+  get_time_as_date() {
     const date = CN_common.get_date();
-    await this.set_time(date.getHours(), date.getMinutes(), date.getSeconds());
+    date.setHours(this.#time.hours);
+    date.setMinutes(this.#time.minutes);
+    if (this.get_config("show_seconds")) date.setSeconds(this.#time.seconds);
+    date.setMilliseconds(0);
+    return date;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_time(hours = 12, minutes = 0, seconds = 0) {
+    this.#time.hours = Number(hours);
+    this.#time.minutes = Number(minutes);
+    this.#time.seconds = Number(seconds);
+    this.update_element();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_to_now() {
+    const date = CN_common.get_date();
+    this.set_time(date.getHours(), date.getMinutes(), date.getSeconds());
     this.update_element();
   }
 
@@ -66,26 +75,25 @@ export class CN_element_time_picker extends CN_base_element {
    * ADD DOCS
    */
   async on_time_change() {
+    console.log("on_time_change");
+
+    this.set_time(
+      this.#hours_input.get_value_for_record(),
+      this.#minutes_input.get_value_for_record(),
+      this.get_config("show_seconds") ? this.#seconds_input.get_value_for_record() : 0
+    );
+
     const min = this.get_config("get_min")();
     const max = this.get_config("get_max")();
 
     if (CN_common.is_date(min)) {
-      const date = CN_common.clone(min);
-      date.setHours(Number(this.#hours_input.get_value()));
-      date.setMinutes(Number(this.#minutes_input.get_value()));
-      if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));
-      date.setMilliseconds(0);
-      if (min > date) await this.set_time(min.getHours(), min.getMinutes(), min.getSeconds());
+      if (min > this.get_time_as_date()) await this.set_time(min.getHours(), min.getMinutes(), min.getSeconds());
     }
 
     if (CN_common.is_date(max)) {
-      const date = CN_common.clone(max);
-      date.setHours(Number(this.#hours_input.get_value()));
-      date.setMinutes(Number(this.#minutes_input.get_value()));
-      if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));
-      date.setMilliseconds(0);
-      if (max < date) await this.set_time(max.getHours(), max.getMinutes(), max.getSeconds());
+      if (max < this.get_time_as_date()) await this.set_time(max.getHours(), max.getMinutes(), max.getSeconds());
     }
+
     this.update_element();
   }
 
@@ -95,19 +103,26 @@ export class CN_element_time_picker extends CN_base_element {
   update_element() {
     super.update_element();
 
-    const date = CN_common.get_date();
-    date.setHours(Number(this.#hours_input.get_value()));
-    date.setMinutes(Number(this.#minutes_input.get_value()));
-    if (this.get_config("show_seconds")) date.setSeconds(Number(this.#seconds_input.get_value()));
-    date.setMilliseconds(0);
-    this.#time_el.innerHTML = CN_common.format_time(date, this.get_config("show_seconds"));
+    if (
+      !this.#time_el ||
+      !this.#hours_input ||
+      !this.#minutes_input ||
+      (this.get_config("show_seconds") && !this.#seconds_input)
+    ) return;
+
+    this.#hours_input.set_value(this.#time.hours);
+    this.#minutes_input.set_value(this.#time.minutes);
+    if (this.get_config("show_seconds")) this.#seconds_input.set_value(this.#time.seconds);
+
+    let time_string = CN_common.format_time(this.get_time_as_date(), this.get_config("show_seconds"));
     if (this.get_config("tz")) {
       const tz = Intl.DateTimeFormat(
         'en-CA',
         { timeZone: CN_session.get("user", "timezone"), timeZoneName: "short" }
       ).formatToParts(CN_common.get_date()).find(o => o.type == "timeZoneName").value;
-      this.#time_el.innerHTML += ` ${tz}`;
+      time_string += ` ${tz}`;
     }
+    this.#time_el.innerHTML = time_string;
   }
 
   /**
@@ -130,7 +145,7 @@ export class CN_element_time_picker extends CN_base_element {
       class: "col-9",
       min: 0,
       max: 23,
-      get_default: () => this.get_config("hours"),
+      get_default: () => this.#time.hours,
       on_input: async (form_input, valid) => await this.on_time_change(),
     });
     hours_div_el.append(this.#hours_input.get_element());
@@ -143,7 +158,7 @@ export class CN_element_time_picker extends CN_base_element {
       class: "col-9",
       min: 0,
       max: 59,
-      get_default: () => this.get_config("minutes"),
+      get_default: () => this.#time.minutes,
       on_input: async (form_input, valid) => await this.on_time_change(),
     });
     minutes_div_el.append(this.#minutes_input.get_element());
@@ -157,16 +172,10 @@ export class CN_element_time_picker extends CN_base_element {
         class: "col-9",
         min: 0,
         max: 59,
-        get_default: () => this.get_config("seconds"),
+        get_default: () => this.#time.seconds,
         on_input: async (form_input, valid) => await this.on_time_change(),
       });
       seconds_div_el.append(this.#seconds_input.get_element());
-
-      // update the element once the time's initial value has been set
-      this.#seconds_input.add_event_listener("setvalue", (form_input) => this.on_time_change(), true);
-    } else {
-      // update the element once the time's initial value has been set
-      this.#minutes_input.add_event_listener("setvalue", (form_input) => this.on_time_change(), true);
     }
 
     return el;
