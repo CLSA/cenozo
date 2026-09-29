@@ -644,6 +644,12 @@ export class CN_action_list extends CN_base_action {
       }
     }
 
+    // rebuild the table header
+    const thead_el = body_el.querySelector("thead");
+    thead_el.innerHTML = "";
+    thead_el.append(this._create_table_header());
+
+    // rebuild the table body 
     const tbody_el = body_el.querySelector("tbody");
     tbody_el.innerHTML = "";
 
@@ -772,65 +778,6 @@ export class CN_action_list extends CN_base_action {
   }
 
   /**
-   * Creates the table header element and adds listeners to the filter buttons that belong to each header
-   * @param {*} column
-   * @returns
-   */
-  create_table_header_element(column, placeholder = false) {
-    const help = (
-      column.help ?
-      `<i
-        class="bi bi-info-circle-fill"
-        data-bs-toggle="tooltip"
-        data-bs-html="true"
-        data-bs-title="${column.help.replace(/"/g, "&quot;")}"
-      ></i>` :
-      ""
-    );
-    const filter_icon = 0 < column.condition_list.length ? "bi-filter-circle-fill" : "bi-filter";
-    const header_el = this.constructor.html(`
-      <th name="${column.name}" class="border border-light border-2 border-top-0 p-0" scope="col">
-        <div class="d-flex">
-          <button
-            type="button"
-            name="sort-button"
-            class="btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold px-3"
-          >
-            ${help}
-            ${column.title}
-            <i name="sort-icon" class="bi d-inline-block"></i>
-          </button>
-          <button type="button" name="filter-button" class="btn btn-secondary rounded-0 fw-bold">
-            <i name="filter-icon" class="bi ${filter_icon}"></i>
-          </button>
-        </div>
-      </th>
-    `);
-    const filter_btn = header_el.querySelector("button[name=filter-button]")
-
-    if (column.help) new bootstrap.Tooltip(header_el.querySelector(".bi-info-circle-fill"));
-
-    if (!placeholder) {
-      header_el.addEventListener("click", this.on_sort_column.bind(this, column));
-      filter_btn.addEventListener("click", async (event) => {
-        event.stopPropagation();
-        const response = await CN_modal_column_filter.create_and_open({
-          table: CN_common.uc_words(this.get_model().get_singular()),
-          column: column,
-          model: this.get_model(),
-        });
-        if (response) {
-          column.condition_list = response;
-          this.write_query_parameters();
-          await this.run();
-        }
-      });
-    }
-
-    return header_el;
-  }
-
-  /**
    * Extends parent method
    */
   _create_header_element() {
@@ -932,24 +879,7 @@ export class CN_action_list extends CN_base_action {
       </div>
     `);
 
-    // build the header row
-    let header_tr_el = this.constructor.html("<tr></tr>");
-
-    const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
-    visible_columns.forEach(col_name => {
-      const th_el = this.create_table_header_element(this.#columns[col_name]);
-      header_tr_el.append(th_el);
-    });
-
-    // remove the outer most white borders
-    const th_el_list = header_tr_el.querySelectorAll("th");
-    const len = th_el_list.length;
-    if (0 < len) {
-      th_el_list[0].classList.add("border-start-0");
-      th_el_list[len-1].classList.add("border-end-0");
-    }
-
-    table_el.querySelector("thead").append(header_tr_el);
+    table_el.querySelector("thead").append(this._create_table_header())
     return table_el;
   }
 
@@ -966,25 +896,7 @@ export class CN_action_list extends CN_base_action {
       </div>
     `);
 
-    // build the header row
-    let header_tr_el = this.constructor.html("<tr></tr>");
-
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      if (!column.is_hidden(this.get_model())) {
-        header_tr_el.append(this.create_table_header_element(column, true));
-      }
-    }
-
-    // remove the outer most white borders
-    const th_el_list = header_tr_el.querySelectorAll("th");
-    const len = th_el_list.length;
-    if (0 < len) {
-      th_el_list[0].classList.add("border-start-0");
-      th_el_list[len-1].classList.add("border-end-0");
-    }
-
-    table_el.querySelector("thead").append(header_tr_el);
+    table_el.querySelector("thead").append(this._create_table_header(true))
 
     return table_el;
   }
@@ -1018,6 +930,88 @@ export class CN_action_list extends CN_base_action {
     const el = super._create_element();
     el.querySelector("div.card-body").classList.add("p-0");
     return el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  _create_table_header(placeholder = false) {
+    let el = this.constructor.html("<tr></tr>");
+
+    Object.keys(this.#columns)
+      // only show visible columns
+      .filter(c => !this.#columns[c].is_hidden(this.get_model()))
+      // create a header for each column
+      .forEach(col_name => el.append(this._create_table_header_element(this.#columns[col_name], placeholder)));
+
+    // remove the outer most white borders
+    const th_el_list = el.querySelectorAll("th");
+    const len = th_el_list.length;
+    if (0 < len) {
+      th_el_list[0].classList.add("border-start-0");
+      th_el_list[len-1].classList.add("border-end-0");
+    }
+
+    return el;
+  }
+
+  /**
+   * Creates the table header element and adds listeners to the filter buttons that belong to each header
+   * @param {*} column
+   * @returns
+   */
+  _create_table_header_element(column, placeholder = false) {
+    const help = (
+      column.help ?
+      `<i
+        class="bi bi-info-circle-fill"
+        data-bs-toggle="tooltip"
+        data-bs-html="true"
+        data-bs-title="${column.help.replace(/"/g, "&quot;")}"
+      ></i>` :
+      ""
+    );
+    const filter_icon = 0 < column.condition_list.length ? "bi-filter-circle-fill" : "bi-filter";
+    const header_el = this.constructor.html(`
+      <th name="${column.name}" class="border border-light border-2 border-top-0 p-0" scope="col">
+        <div class="d-flex">
+          <button
+            type="button"
+            name="sort-button"
+            class="btn btn-secondary flex-grow-1 text-start text-nowrap rounded-0 fw-bold px-3"
+          >
+            ${help}
+            ${column.title}
+            <i name="sort-icon" class="bi d-inline-block"></i>
+          </button>
+          <button type="button" name="filter-button" class="btn btn-secondary rounded-0 fw-bold">
+            <i name="filter-icon" class="bi ${filter_icon}"></i>
+          </button>
+        </div>
+      </th>
+    `);
+    const filter_btn = header_el.querySelector("button[name=filter-button]")
+
+    if (column.help) new bootstrap.Tooltip(header_el.querySelector(".bi-info-circle-fill"));
+
+    if (!placeholder) {
+      header_el.addEventListener("click", this.on_sort_column.bind(this, column));
+      filter_btn.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        const response = await CN_modal_column_filter.create_and_open({
+          table: CN_common.uc_words(this.get_model().get_singular()),
+          column: column,
+          model: this.get_model(),
+        });
+        if (response) {
+          column.condition_list = response;
+          this.write_query_parameters();
+          await this.run();
+        }
+      });
+    }
+
+    return header_el;
   }
 
   /**
