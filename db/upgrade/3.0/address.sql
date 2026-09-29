@@ -9,7 +9,7 @@ CREATE PROCEDURE patch_address()
     AND table_name = "address";
 
     IF @test = 1 THEN
-      SELECT "Updating timezone/DST for addresses in BC, Alberta, Saskatchewan and Manitoba" AS "";
+      SELECT "Updating timezone/DST for addresses in BC, Alberta, NWT, Saskatchewan and Manitoba" AS "";
 
       -- first drop triggers to speed things up
       DROP TRIGGER address_AFTER_UPDATE;
