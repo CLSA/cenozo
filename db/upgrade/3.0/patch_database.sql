@@ -8,6 +8,8 @@ SOURCE trace_type_mail.sql
 SOURCE study.sql
 SOURCE study_phase.sql
 SOURCE study_phase_status.sql
+SOURCE address.sql
+SOURCE postcode.sql
 
 SOURCE update_version_number.sql
 
