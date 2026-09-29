@@ -61,6 +61,10 @@ export class CN_action_calendar extends CN_base_action {
       return `${CN_common.uc_words(this.get_model().get_singular())} Calendar`;
     }
 
+    if ("view_parent" == type) {
+      return `View ${CN_common.uc_words(this.get_model().get_singular())} List`;
+    }
+
     return await super.get_text(type);
   }
 
@@ -124,6 +128,13 @@ export class CN_action_calendar extends CN_base_action {
    */
   get_formatted_record_count() {
     return `[${null === this.#total_records ? "..." : this.#total_records}]`;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_navigate_to_list() {
+    await CN_session.navigate_to(this.get_model().get_list_url());
   }
 
   /**
@@ -348,13 +359,12 @@ export class CN_action_calendar extends CN_base_action {
     // add a view list button (if listing is allowed)
     const model = this.get_model();
     if (model.allow_list()) {
-      const list_btn_el = this.constructor.html(`
-        <button type="button" name="list" class="btn btn-primary">
-          View ${CN_common.uc_words(model.get_singular())} List
-        </button>
-      `);
+      const list_btn_el = this.constructor.html(
+        '<button type="button" name="list" class="btn btn-primary">Back</button>'
+      );
       footer_el.querySelector("div[name=right-btn-group]").append(list_btn_el);
-      list_btn_el.addEventListener("click", () => CN_session.navigate_to(model.get_list_url()));
+      list_btn_el.addEventListener("click", this.on_navigate_to_list.bind(this));
+      (async () => { list_btn_el.innerHTML = await this.get_text("view_parent"); })();
     }
 
     return footer_el;

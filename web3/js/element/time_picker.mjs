@@ -75,8 +75,6 @@ export class CN_element_time_picker extends CN_base_element {
    * ADD DOCS
    */
   async on_time_change() {
-    console.log("on_time_change");
-
     this.set_time(
       this.#hours_input.get_value_for_record(),
       this.#minutes_input.get_value_for_record(),

@@ -553,7 +553,7 @@ export class CN_element_calendar extends CN_base_element {
       const year = date.getFullYear();
       const month = date.getMonth();
       if (month != current_month) {
-        cell_td_el.classList.add("bg-light");
+        cell_td_el.querySelector("div").classList.add("bg-light");
 
         // clicking on days outside of the current month will transition to that month
         cell_td_el.addEventListener("click", (event) => {
@@ -640,6 +640,7 @@ export class CN_element_calendar extends CN_base_element {
         const cell_td_el = this.#create_cell_element(date);
         cell_td_el.setAttribute("width", "14.286%");
         cell_td_el.classList.add(0 == hour_index % 2 ? "border-bottom-0" : "border-top-0");
+        if ([0,6].includes(day_index)) cell_td_el.classList.add("bg-light");
         body_tr_el.append(cell_td_el);
 
         // move to the next day of the week
