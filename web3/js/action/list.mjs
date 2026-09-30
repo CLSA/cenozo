@@ -1023,9 +1023,6 @@ export class CN_action_list extends CN_base_action {
       value = column.empty_label;
     } else if ("boolean" == column.type) {
       value = value ? "Yes" : "No";
-    } else if (["string", "text"].includes(column.type) && column.html) {
-      // escape HTML as a plain-text string (leveraging the <option> element to convert HTML to string)
-      value = (new Option(value)).innerHTML
     } else if ("size" == column.type) {
       value = CN_common.format_filesize(value);
     } else if (CN_common.is_datetime_type(column.type, "date")) {
@@ -1042,6 +1039,11 @@ export class CN_action_list extends CN_base_action {
       if (value.length > column.limit) {
         value = value.substring(0, column.limit) + " ...";
       }
+    }
+
+    if ("text" == column.type) {
+      // display newlines in text types
+      value = value.replace(/\n/g, "<br/>\n");
     }
 
     let td_el = null;
