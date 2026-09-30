@@ -113,14 +113,7 @@ export class CN_action_calendar extends CN_base_action {
   // getters
   get_mode() { return this.#calendar.get_mode(); }
   get_date() { return this.#calendar.get_date(); }
-
-  /**
-   * Returns the record count
-   * @return integer
-   */
-  get_record_count() {
-    return this.#total_records;
-  }
+  get_record_count() { return this.#total_records; }
 
   /**
    * Returns the formatted record count (eg: [num] followed by * if the table is filtered)
@@ -128,6 +121,15 @@ export class CN_action_calendar extends CN_base_action {
    */
   get_formatted_record_count() {
     return `[${null === this.#total_records ? "..." : this.#total_records}]`;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  set_date(date) {
+    const new_date = CN_common.is_date(date) ? date : CN_common.get_date(date);
+    this.#calendar.set_date(new_date);
+    this.#placeholder_calendar.set_date(new_date);
   }
 
   /**
