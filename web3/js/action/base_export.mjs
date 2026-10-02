@@ -101,20 +101,6 @@ export class CN_action_base_export extends CN_base_action {
     trace: { column_enum_list: null },
   };
 
-  constructor(parent_el, model) {
-    super("list", parent_el, model);
-
-    if (CN_session.get_module("interview")) {
-      this.add_table("interview", {
-        column_enum_list: null,
-        subtype_promise: CN_api.get("qnaire", {
-          select: { column: { column: 'CONCAT(rank, ". ", name)', alias: "value", table_prefix: false } },
-          modifier: { order: "rank" },
-        }),
-      });
-    }
-  }
-
   get_total_records() { return this.#total_records; }
   get_record_list() { return this.#record_list; }
   get_table(name) { return this.#tables[name]; }
