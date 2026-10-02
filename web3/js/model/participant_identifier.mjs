@@ -1,5 +1,6 @@
 import { CN_action_add } from "../action/add.mjs"
 import { CN_action_list } from "../action/list.mjs"
+import { CN_action_view } from "../action/view.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_model_participant } from "./participant.mjs"
 
@@ -45,6 +46,10 @@ export class CN_model_participant_identifier extends CN_base_model {
           meta: { table: "identifier", column: "locked" },
           is_hidden: () => true,
         },
+        identifier: {
+          meta: { table: "identifier", column: "name" },
+          is_hidden: () => true,
+        },
       }
     });
   }
@@ -76,6 +81,19 @@ export class CN_list_participant_identifier extends CN_action_list {
         await super.get_text("header")
       )
     }
+    return await super.get_text(type);
+  }
+}
+
+export class CN_view_participant_identifier extends CN_action_view {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return this.get_property_value("identifier");
+    }
+
     return await super.get_text(type);
   }
 }

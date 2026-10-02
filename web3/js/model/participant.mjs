@@ -621,6 +621,7 @@ export class CN_multiedit_participant extends CN_base_action {
     participant: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       properties: {
         availability_type_id: null,
         email: null,
@@ -639,6 +640,7 @@ export class CN_multiedit_participant extends CN_base_action {
     collection: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       enum: {
         path: `application/${CN_session.get("application", "id")}/collection`,
         select: { column: ["name", { column: "locked", alias: "disabled" }] },
@@ -651,6 +653,7 @@ export class CN_multiedit_participant extends CN_base_action {
     consent: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       properties: {
         consent_type_id: null,
         accept: null,
@@ -662,6 +665,7 @@ export class CN_multiedit_participant extends CN_base_action {
     event: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       properties: {
         event_type_id: null,
         datetime: null,
@@ -670,6 +674,7 @@ export class CN_multiedit_participant extends CN_base_action {
     hold: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       properties: {
         hold_type_id: null,
         datetime: null,
@@ -678,11 +683,13 @@ export class CN_multiedit_participant extends CN_base_action {
     note: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       // special so properties are not required
     },
     proxy: {
       module: null,
       proceed_btn_el: null,
+      form_input_list: {},
       properties: {
         proxy_type_id: null,
         datetime: null,
@@ -692,11 +699,12 @@ export class CN_multiedit_participant extends CN_base_action {
       module: null,
       proceed_btn_el: null,
       enum: { path: "study" },
+      form_input_list: {},
     },
   };
 
   #participant_selection = new CN_element_participant_selection();
-  #selected_participant_properties = {};
+  #selected_participant_properties = [];
 
   constructor(parent_el, model) {
     super("multiedit", parent_el, model);
@@ -731,7 +739,7 @@ export class CN_multiedit_participant extends CN_base_action {
     await super.on_load();
 
     // reset the list and edit components
-    this.#selected_participant_properties = {};
+    this.#selected_participant_properties = [];
     await this.#participant_selection.reset();
 
     // make sure the module's classes have been loaded, then create a new model
@@ -786,6 +794,21 @@ export class CN_multiedit_participant extends CN_base_action {
    * Extend parent method
    */
   update_element() {
+    // Private function used to test a module's form to make sure all inputs are valid
+    async function validate_form(module) {
+      // never valid if there are no form inputs
+      if (0 == module.form_input_list.length) return false;
+
+      // make sure all properties are valid
+      let all_valid = true;
+      await Promise.all(
+        Object.keys(module.form_input_list).map(
+          name => (async () => { if (!(await module.form_input_list[name].validate())) all_valid = false; })
+        )
+      );
+      return all_valid;
+    }
+
     // do nothing if the modules haven't been loaded yet
     if (null == this.#module_list.participant.module) return;
 
@@ -795,92 +818,92 @@ export class CN_multiedit_participant extends CN_base_action {
       const fields_el = this.get_body_element().querySelector(`#${module_name}-tab-pane div[name=fields]`);
       if ("participant" == module_name) {
         // get all input values
-        const prev_params = Array.from(
-          fields_el.querySelectorAll(".form-control, .form-select")
-        ).reduce((obj, el) => {
-          if (el.id) obj[el.id.replace(/^participant_/, "")] = 0 == el.value.length ? null : el.value;
+        const prev_values = Object.keys(mod.form_input_list).reduce((obj, name) => {
+          obj[name] = mod.form_input_list[name].get_value();
           return obj;
         }, {});
 
         fields_el.innerHTML = "";
+        mod.form_input_list = {};
+        this.constructor.set_disabled(mod.proceed_btn_el, true);
 
         // create a list of all selected participant properties
-        const participant_properties = Object.keys(this.#selected_participant_properties).sort();
-        participant_properties.forEach(prop_name => {
-          const module_prop = this.#module_list.participant.module.get_property(prop_name);
+        this.#selected_participant_properties.forEach(prop_name => {
+          const module_prop = mod.module.get_property(prop_name);
           const prop = mod.properties[prop_name];
           const prop_id = `participant_${prop_name}`;
           const row_el = this.constructor.html('<div class="row mb-3"></div>');
 
-          CN_element_label.append(row_el, { for: prop_id, value: prop.title, class: "col-sm-3" });
+          CN_element_label.append(row_el, {
+            for: prop_id,
+            value: prop.title,
+            class: "col-sm-3",
+            help: prop.help
+          });
 
           // determine the property's UI element based on the type
-          let params = CN_common.clone(prop);
-          params.id = prop_id;
-          params.action = this;
-          params.class = "d-flex align-items-center col-sm-9";
-          params.name = prop_name;
+          const params = {
+            ...CN_common.clone(prop),
+            ...{
+              id: prop_id,
+              action: this,
+              class: "d-flex align-items-center col-sm-9",
+              name: prop_name,
+              get_default: () => prev_values.hasOwnProperty(prop_name) ? prev_values[prop_name] : null,
+              on_change: async () => {
+                // make sure all properties are valid
+                this.constructor.set_disabled(mod.proceed_btn_el, !(await validate_form(mod)));
+              },
+              postfix: (el) => {
+                const btn_el = this.constructor.html(`
+                  <button name="remove" type="button" class="btn btn-danger ms-2">
+                    <i class="bi bi-x-circle-fill"></i>
+                  </button>
+                `);
+                btn_el.addEventListener(
+                  "click",
+                  async () => {
+                    this.#selected_participant_properties =
+                      this.#selected_participant_properties.filter(p => p != prop_name);
+                    this.update_element();
+                  },
+                );
+                el.append(btn_el);
+              },
+            },
+          };
           if (!params.type) params.type = "string";
           if (undefined === params.required) params.required = module_prop ? module_prop.required : false;
           if (undefined === params.placeholder) params.placeholder = "(empty)";
-
-          params.get_default = () => null;
-
-          // restore any previous values
-          if ("enum" != params.type && prev_params[prop_name]) params.value = prev_params[prop_name];
-
           if (undefined === params.max_length && module_prop && module_prop.max_length) {
             params.max_length = module_prop.max_length;
           }
 
-          params.on_change = async () => {
-            // validate all participant properties before we proceed
-            let invalid = false;
-            await Promise.all(
-              Object.keys(this.#selected_participant_properties).map(property => (async () => {
-                if (!(await this.#selected_participant_properties[property].validate())) invalid = true;
-              })())
-            );
-            this.constructor.set_disabled(mod.proceed_btn_el, invalid);
-          };
-
-          params.postfix = (el) => {
-            const btn_el = this.constructor.html(`
-              <button name="remove" type="button" class="btn btn-danger ms-2">
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            `);
-            btn_el.addEventListener(
-              "click",
-              async () => {
-                delete this.#selected_participant_properties[prop_name];
-                if (0 == Object.keys(this.#selected_participant_properties).length) {
-                  this.constructor.set_disabled(mod.proceed_btn_el, true);
-                }
-                this.update_element();
-              },
-            );
-            el.append(btn_el);
-          };
-
-          this.#selected_participant_properties[prop_name] = CN_input.create_input(params.type, row_el, params);
-          row_el.append(this.#selected_participant_properties[prop_name].get_element());
+          const form_input = CN_input.create_input(params.type, row_el, params);
+          mod.form_input_list[prop_name] = form_input;
+          row_el.append(form_input.get_element());
           fields_el.append(row_el);
         });
+
+        // update whether the proceed button is disabled or not
+        (async () => { this.constructor.set_disabled(mod.proceed_btn_el, !(await validate_form(mod))); })();
 
         // create a way to select participant properties
         const select_el = this.constructor.html(
           '<select class="form-select mb-3" name="participant_column_select"></select>'
         );
         select_el.append(this.constructor.html('<option>Select which column to edit</option>'));
-        for (const prop_name in mod.properties) {
-          if (!participant_properties.includes(prop_name)) {
-            const prop = mod.properties[prop_name];
-            select_el.append(this.constructor.html(`<option value="${prop_name}">${prop.title}</option>`));
+        for (const p in mod.properties) {
+          if (!this.#selected_participant_properties.includes(p)) {
+            const prop = mod.properties[p];
+            select_el.append(this.constructor.html(`<option value="${p}">${prop.title}</option>`));
           }
         }
         select_el.addEventListener("change", () => {
-          this.#selected_participant_properties[select_el.value] = null;
+          if (!this.#selected_participant_properties.includes(select_el.value)) {
+            this.#selected_participant_properties.push(select_el.value);
+            this.#selected_participant_properties.sort();
+          }
           select_el.value = undefined;
           this.update_element();
         });
@@ -900,7 +923,7 @@ export class CN_multiedit_participant extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input_boolean.append(sticky_row_el, {
+          mod.form_input_list.sticky = CN_input_boolean.append(sticky_row_el, {
             id: sticky_prop_id,
             required: true,
             name: "sticky",
@@ -919,13 +942,14 @@ export class CN_multiedit_participant extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input_text.append(note_row_el, {
+          mod.form_input_list.note = CN_input_text.append(note_row_el, {
             id: note_prop_id,
             required: true,
             name: "note",
             class: "col-sm-9",
-            on_change: (form_input, valid) => {
-              this.constructor.set_disabled(mod.proceed_btn_el, !valid);
+            on_change: async () => {
+              // validate all properties before we proceed
+              this.constructor.set_disabled(mod.proceed_btn_el, !(await validate_form(mod)));
             },
           });
           fields_el.append(note_row_el);
@@ -942,7 +966,7 @@ export class CN_multiedit_participant extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input_enum.append(op_row_el, {
+          mod.form_input_list.operation = CN_input_enum.append(op_row_el, {
             id: op_prop_id,
             required: true,
             name: "operation",
@@ -967,12 +991,16 @@ export class CN_multiedit_participant extends CN_base_action {
             class: "col-sm-3",
           });
 
-          CN_input_enum.append(item_row_el, {
+          mod.form_input_list.id = CN_input_enum.append(item_row_el, {
             id: item_prop_id,
             required: true,
             name: "item",
             class: "d-flex align-items-center col-sm-9",
             enum: mod.enum,
+            on_change: async () => {
+              // validate all properties before we proceed
+              this.constructor.set_disabled(mod.proceed_btn_el, !(await validate_form(mod)));
+            },
           });
           fields_el.append(item_row_el);
         } else if (mod.hasOwnProperty("properties")) {
@@ -989,22 +1017,29 @@ export class CN_multiedit_participant extends CN_base_action {
             });
 
             // determine the property's UI element based on the type
-            let params = CN_common.clone(prop);
-            params.id = prop_id;
-            params.action = this;
-            params.class = "d-flex align-items-center col-sm-9";
-            params.name = prop_name;
-            params.get_default = () => module_prop.default;
-
+            const params = {
+              ...CN_common.clone(prop),
+              ...{
+                id: prop_id,
+                action: this,
+                class: "d-flex align-items-center col-sm-9",
+                name: prop_name,
+                get_default: () => module_prop.default,
+                on_change: async () => {
+                  // validate all properties before we proceed
+                  this.constructor.set_disabled(mod.proceed_btn_el, !(await validate_form(mod)));
+                },
+              }
+            };
             if (!params.type) params.type = "string";
             if (undefined === params.required) params.required = module_prop.required;
             if (undefined === params.placeholder) params.placeholder = "(empty)";
-
             if (undefined === params.max_length && module_prop.max_length) {
               params.max_length = module_prop.max_length;
             }
 
             const form_input = CN_input.create_input(params.type, row_el, params);
+            mod.form_input_list[prop_name] = form_input;
             row_el.append(form_input.get_element());
             fields_el.append(row_el);
           }
@@ -1116,17 +1151,14 @@ export class CN_multiedit_participant extends CN_base_action {
           const data = {
             identifier_id: this.#participant_selection.get_idtype(),
             identifier_list: this.#participant_selection.get_identifier_list(),
-          }
+          };
 
           // build the data object posted to the server
-          data["participant" == module_name ? "input_list" : module_name] = Array.from(
-            tab_el.querySelectorAll(".form-control, .form-select")
-          ).reduce((obj, el) => {
-            if (el.id) {
-              obj[el.id.replace(new RegExp(`^${module_name}_`), "")] = 0 == el.value.length ? null : el.value;
-            }
-            return obj;
-          }, {});
+          data["participant" == module_name ? "input_list" : module_name] =
+            Object.keys(mod.form_input_list).reduce((obj, name) => {
+              obj[name] = mod.form_input_list[name].get_value_for_record();
+              return obj;
+            }, {});
 
           if ("participant" == module_name && 0 == Object.keys(data.input_list).length) {
             await CN_modal_message.create_and_open({

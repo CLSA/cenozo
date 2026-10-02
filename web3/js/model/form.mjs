@@ -1,4 +1,4 @@
-import { CN_action_list } from "../action/list.mjs"
+import { CN_action_view } from "../action/view.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
@@ -21,29 +21,28 @@ export class CN_model_form extends CN_base_model {
           title: "UID",
         },
         date: { title: "Date", type: "date" },
-
-        // needed by the CN_list_form.on_row_click() method below
-        form_type_id: { is_hidden: () => true }
       },
       properties: {
-        form_type_id: {
+        form_type: {
           title: "Form Type",
-          type: "enum",
-          enum: { path: "form_type" },
+          meta: { table: "form_type", column: "title" },
         },
         date: { title: "Date", type: "date", get_max: () => CN_common.get_date() },
+        participant_id: { is_hidden: () => true },
       },
     });
   }
 }
 
-export class CN_list_form extends CN_action_list {
-  async on_row_click(record) {
-    if (!this.is_choosing() && this.get_model().allow_view()) {
-      // always view forms using the form_type as the parent
-      await CN_session.navigate_to(`form_type/view/${record.form_type_id}/form/view/${record.id}`);
-    } else {
-      await super.on_row_click(record);
+export class CN_view_form extends CN_action_view {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return this.get_property_value("form_type");
     }
+
+    return await super.get_text(type);
   }
 }

@@ -174,7 +174,7 @@ class session extends CN_base_object {
    * Reloads the page at a particular path
    * @param boolean path: Which path to load (true for the application root, empty for the current URL)
    */
-  reload(path = false) {
+  reload(path = false, query_params = null) {
     // show loading indicator in breadcrumb trail
     this.#breadcrumb_trail.set_config("loading", true);
     this.#breadcrumb_trail.update_element();
@@ -187,7 +187,12 @@ class session extends CN_base_object {
     `));
     this.#set_loading_state(true);
     if (path) {
-      window.location.assign(CN_common.is_string(path) ? `${ROOT_URL}/${path}` : ROOT_URL);
+      const query = (
+        CN_common.is_object(query_params) && 0 < Object.keys(query_params).length ?
+        "?" + (new URLSearchParams(query_params)).toString() :
+        ""
+      );
+      window.location.assign(CN_common.is_string(path) ? `${ROOT_URL}/${path}${query}` : ROOT_URL);
     } else {
       window.location.reload();
     }
@@ -649,7 +654,7 @@ class session extends CN_base_object {
       (null == this.#data.menus.utilities ? 0 : 1) +
       (null == this.#data.menus.reports ? 0 : 1)
     );
-    const col_width = 1 < total_menus ?  12/(total_menus + (split_lists?1:0)) : null;
+    const col_width = 1 < total_menus ? 12/(total_menus + (split_lists?1:0)) : null;
 
     // build the lists sub-menu
     if (null != this.#data.menus.lists) {

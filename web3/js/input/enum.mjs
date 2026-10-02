@@ -115,7 +115,7 @@ export class CN_input_enum extends CN_base_input {
 
       // get the default value
       const required = this.get_config("required");
-      const default_value = this.has_config("get_default") ?  this.get_config("get_default")() : null;
+      const default_value = this.has_config("get_default") ? this.get_config("get_default")() : null;
       const value = this.get_value();
 
       // add a placeholder option

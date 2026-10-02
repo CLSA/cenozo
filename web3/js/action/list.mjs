@@ -235,7 +235,6 @@ export class CN_action_list extends CN_base_action {
       if (0 == Object.keys(tables)) tables = null;
     }
 
-
     this.set_query_parameter("tables", null == tables ? null : JSON.stringify(tables));
   }
 
@@ -571,30 +570,6 @@ export class CN_action_list extends CN_base_action {
       }
     }
 
-    // set the column sort and filter icons
-    for (const col_name in this.#columns) {
-      const column = this.#columns[col_name];
-      const th_el = body_el.querySelector(`th[name=${column.name}]`);
-
-      if (th_el) {
-        const sort_icon_el = th_el.querySelector("i[name=sort-icon]");
-        sort_icon_el.classList.remove("bi-sort-up");
-        sort_icon_el.classList.remove("bi-sort-down");
-        if (null != column.order) {
-          sort_icon_el.classList.add(column.order ? "bi-sort-up" : "bi-sort-down");
-        }
-
-        const filter_icon_el = th_el.querySelector("i[name=filter-icon]");
-        if (0 < column.condition_list.length) {
-          filter_icon_el.classList.remove("bi-filter")
-          filter_icon_el.classList.add("bi-filter-circle-fill")
-        } else {
-          filter_icon_el.classList.remove("bi-filter-circle-fill")
-          filter_icon_el.classList.add("bi-filter")
-        }
-      }
-    }
-
     const btn_group_el = footer_el.querySelector("div.btn-group");
     let btn_el = footer_el.querySelector(`[name=${this.#list_mode}]`);
 
@@ -649,7 +624,7 @@ export class CN_action_list extends CN_base_action {
     thead_el.innerHTML = "";
     thead_el.append(this._create_table_header());
 
-    // rebuild the table body 
+    // rebuild the table body
     const tbody_el = body_el.querySelector("tbody");
     tbody_el.innerHTML = "";
 
@@ -879,7 +854,6 @@ export class CN_action_list extends CN_base_action {
       </div>
     `);
 
-    table_el.querySelector("thead").append(this._create_table_header())
     return table_el;
   }
 
@@ -971,7 +945,7 @@ export class CN_action_list extends CN_base_action {
       ></i>` :
       ""
     );
-    const filter_icon = 0 < column.condition_list.length ? "bi-filter-circle-fill" : "bi-filter";
+
     const header_el = this.constructor.html(`
       <th name="${column.name}" class="border border-light border-2 border-top-0 p-0" scope="col">
         <div class="d-flex">
@@ -982,21 +956,28 @@ export class CN_action_list extends CN_base_action {
           >
             ${help}
             ${column.title}
-            <i name="sort-icon" class="bi d-inline-block"></i>
-          </button>
-          <button type="button" name="filter-button" class="btn btn-secondary rounded-0 fw-bold">
-            <i name="filter-icon" class="bi ${filter_icon}"></i>
           </button>
         </div>
       </th>
     `);
-    const filter_btn = header_el.querySelector("button[name=filter-button]")
-
     if (column.help) new bootstrap.Tooltip(header_el.querySelector(".bi-info-circle-fill"));
 
     if (!placeholder) {
+      // add the sort icon if the table is sorted by the column
+      if (null !== column.order) {
+        header_el.querySelector("button[name=sort-button]").append(this.constructor.html(`
+          <i class="bi ${column.order ? "bi-sort-up" : "bi-sort-down"} d-inline-block"></i>
+        `));
+      }
       header_el.addEventListener("click", this.on_sort_column.bind(this, column));
-      filter_btn.addEventListener("click", async (event) => {
+
+      // add the filter button
+      const filter_btn_el = this.constructor.html(`
+        <button type="button" name="filter-button" class="btn btn-secondary rounded-0 fw-bold">
+          <i class="bi ${0 < column.condition_list.length ? "bi-filter-circle-fill" : "bi-filter"}"></i>
+        </button>
+      `);
+      filter_btn_el.addEventListener("click", async (event) => {
         event.stopPropagation();
         const response = await CN_modal_column_filter.create_and_open({
           table: CN_common.uc_words(this.get_model().get_singular()),
@@ -1009,6 +990,7 @@ export class CN_action_list extends CN_base_action {
           await this.run();
         }
       });
+      header_el.querySelector("div.d-flex").append(filter_btn_el);
     }
 
     return header_el;

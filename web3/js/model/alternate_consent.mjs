@@ -23,7 +23,20 @@ export class CN_model_alternate_consent extends CN_base_model {
         alternate_consent_type_id: {
           title: "Consent Type",
           type: "enum",
-          enum: { path: "alternate_consent_type" },
+          enum: {
+            path: "alternate_consent_type",
+            select: { column: [
+              "access", // needed for the current_role_has_alternate_consent_type statement below
+              "name",
+              {
+                // Here, "current_role_has_alternate_consent_type.alternate_consent_type_id IS NULL"
+                // determines if the role has access
+                column: "current_role_has_alternate_consent_type.alternate_consent_type_id IS NULL",
+                alias: "disabled",
+                table_prefix: false,
+              },
+            ]},
+          },
           is_constant: () => "view" == this.get_action_name(),
         },
         accept: {

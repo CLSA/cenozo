@@ -54,15 +54,11 @@ export class CN_modal_clock_settings extends CN_modal_base_form {
     return check;
   }
 
-  /**
-   * Implements the parent method
-   */
   _create_body_element() {
     const body_el = super._create_body_element();
     body_el.querySelector("div[name=description]").append(this.constructor.html(`
       <div class="text-info-emphasis">
-        Select which timezone you would like times to be displayed in.<br />
-        Note that most timezones have multiple names, you may choose any.
+        Select which timezone you would like times to be displayed in.
       </div>
     `));
 

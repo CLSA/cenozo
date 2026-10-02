@@ -1,3 +1,4 @@
+import { CN_action_view } from "../action/view.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_session } from "../session.mjs"
@@ -30,7 +31,7 @@ export class CN_model_consent extends CN_base_model {
                 column: "current_role_has_consent_type.consent_type_id IS NULL",
                 alias: "disabled",
                 table_prefix: false,
-              }
+              },
             ]},
           },
         },
@@ -47,7 +48,24 @@ export class CN_model_consent extends CN_base_model {
         },
         datetime: { title: "Date & Time", type: "datetimesecond", get_max: () => CN_common.get_date() },
         note: { title: "Note", type: "text" },
+        consent_type: {
+          meta: { table: "consent_type", column: "name" },
+          is_hidden: () => true,
+        },
       },
     });
+  }
+}
+
+export class CN_view_consent extends CN_action_view {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return this.get_property_value("consent_type");
+    }
+
+    return await super.get_text(type);
   }
 }

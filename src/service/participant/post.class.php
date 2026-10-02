@@ -82,7 +82,10 @@ class post extends \cenozo\service\service
       {
         $identifier_id = property_exists( $file, 'identifier_id' ) ? $file->identifier_id : NULL;
         $db_identifier = is_null( $identifier_id ) ? NULL : lib::create( 'database\identifier', $identifier_id );
-        $identifier_list = $participant_class_name::get_valid_identifier_list( $db_identifier, $file->identifier_list );
+        $identifier_list = $participant_class_name::get_valid_identifier_list(
+          $db_identifier,
+          $file->identifier_list
+        );
 
         $select = lib::create( 'database\select' );
         $select->from( 'participant' );
@@ -190,6 +193,16 @@ class post extends \cenozo\service\service
           $db_note->user_id = $db_user->id;
           $db_note->datetime = $util_class_name::get_datetime_object();
           $this->set_data( $db_note->save_list( $select, $modifier ) );
+        }
+        else if( property_exists( $file, 'proxy' ) )
+        { // add the given proxy record
+          $db_proxy = lib::create( 'database\proxy' );
+          $db_proxy->site_id = $db_site->id;
+          $db_proxy->user_id = $db_user->id;
+          $db_proxy->role_id = $db_role->id;
+          $db_proxy->application_id = $db_application->id;
+          foreach( $file->proxy as $column => $value ) $db_proxy->$column = $value;
+          $this->set_data( $db_proxy->save_list( $select, $modifier ) );
         }
         else if( property_exists( $file, 'study' ) )
         { // add/remove participants from the given study

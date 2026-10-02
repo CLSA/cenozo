@@ -41,7 +41,7 @@ export class CN_module extends CN_base_object {
           if (data_type.match(/int|float/) && null != this.#properties[prop_name].default) {
             // cast boolean, int and float column defaults from strings to boolean/numbers
             const value = this.#properties[prop_name].default;
-            this.#properties[prop_name].default = "tinyint" == data_type ?  "1" == value : Number(value);
+            this.#properties[prop_name].default = "tinyint" == data_type ? "1" == value : Number(value);
           } else if ("enum" == data_type) {
             // get enum lists
             const matches = this.#properties[prop_name].type.match(/^enum\('(.+)'\)$/);

@@ -71,6 +71,13 @@ export class CN_action_base_export extends CN_base_action {
     proxy: { column_enum_list: null },
     site: {
       column_enum_list: null,
+      subtype_promise: CN_api.get("application", {
+        select: { column: { column: "title", alias: "value" } },
+        modifier: {
+          where: { column: "site_based", operator: "=", value: true },
+          order: "title",
+        },
+      }),
       subtype_enum_list: [
         { key: "effective", value: "Effective" },
         { key: "default", value: "Default" },
@@ -79,7 +86,7 @@ export class CN_action_base_export extends CN_base_action {
     },
     stratum: {
       column_enum_list: null,
-      subtype_promise: CN_api.get("stratum", {
+      subtype_promise: CN_api.get("study", {
         select: { column: "name" },
         modifier: { order: "name" },
       }),
@@ -179,26 +186,35 @@ export class CN_action_base_export extends CN_base_action {
 
     const response_list = await Promise.all([
       CN_api.get(this.get_on_load_path(), this.get_on_load_parameters(), true),
-      ...Object.keys(this.#tables).reduce((list, t) => {
-        const table = this.#tables[t];
+      ...Object.keys(this.#tables).reduce((promise_list, table_name) => {
+        const table = this.#tables[table_name];
         if (table.hasOwnProperty("subtype_promise")) {
-          list.push((async () => {
+          promise_list.push((async () => {
             // replace enum promise with an enum list
             const response = await Promise.resolve(table.subtype_promise);
             table.subtype_enum_list = (
               CN_common.is_array(response) ?
-              response.map(subtype => {
-                return {
-                  key: subtype.id,
-                  value: subtype.value ? subtype.value : subtype.name,
-                };
-              }) :
+              response.reduce((subtype_list, subtype) => {
+                if ("site" == table_name) {
+                  ["effective", "default", "preferred"].forEach(site_type => subtype_list.push({
+                    key: `${site_type}_${subtype.id}`,
+                    value: `${subtype.value}: ${CN_common.uc_words(site_type)}`,
+                  }));
+                } else {
+                  subtype_list.push({
+                    key: subtype.id,
+                    value: subtype.value ? subtype.value : subtype.name,
+                  });
+                }
+
+                return subtype_list;
+              }, []) :
               []
             );
             delete table.subtype_promise;
           })());
         }
-        return list;
+        return promise_list;
       }, []),
     ]);
 

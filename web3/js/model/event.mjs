@@ -1,3 +1,4 @@
+import { CN_action_view } from "../action/view.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 
@@ -96,7 +97,24 @@ export class CN_model_event extends CN_base_model {
             },
           },
         },
+        event_type: {
+          meta: { table: "event_type", column: "name" },
+          is_hidden: () => true,
+        },
       },
     });
+  }
+}
+
+export class CN_view_event extends CN_action_view {
+  /**
+   * Extends the parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return this.get_property_value("event_type");
+    }
+
+    return await super.get_text(type);
   }
 }

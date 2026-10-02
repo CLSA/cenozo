@@ -44,16 +44,15 @@ export class CN_model_study_phase_status extends CN_base_model {
 }
 
 export class CN_view_study_phase_status extends CN_action_view {
-  #view_participant_btn_el;
-  #view_study_phase_btn_el;
-
   /**
    * Extends the parent method
    */
-  set_disabled(disabled) {
-    super.set_disabled(disabled);
-    this.constructor.set_disabled(this.#view_participant_btn_el, disabled);
-    this.constructor.set_disabled(this.#view_study_phase_btn_el, disabled);
+  async get_text(type) {
+    if ("crumb" == type) {
+      return `${this.get_property_value("study")}: ${this.get_property_value("study_phase")}`;
+    }
+
+    return await super.get_text(type);
   }
 
   /**
@@ -66,11 +65,11 @@ export class CN_view_study_phase_status extends CN_action_view {
     const parent_model = this.get_model().get_parent_model();
     const right_btn_group_el = footer_el.querySelector("div[name=right-btn-group]");
     if (null == parent_model || "participant" != parent_model.get_name()) {
-      this.#view_participant_btn_el = this.constructor.html(
+      const view_participant_btn_el = this.constructor.html(
         '<button name="view-participant" type="button" class="btn btn-primary">View Participant</button>'
       );
-      right_btn_group_el.prepend(this.#view_participant_btn_el);
-      this.#view_participant_btn_el.addEventListener("click", () => {
+      right_btn_group_el.prepend(view_participant_btn_el);
+      view_participant_btn_el.addEventListener("click", () => {
         CN_session.navigate_to(
           `participant/view/${this.get_property_value_for_record("participant_id")}`,
           { tab: "study_phase_status" },
@@ -80,11 +79,11 @@ export class CN_view_study_phase_status extends CN_action_view {
 
     // add a view-study-phase button when the parent model isn't the study_phase
     if (null == parent_model || "study_phase" != parent_model.get_name()) {
-      this.#view_study_phase_btn_el = this.constructor.html(
+      const view_study_phase_btn_el = this.constructor.html(
         '<button name="view-study_phase" type="button" class="btn btn-primary">View Study Phase</button>'
       );
-      right_btn_group_el.append(this.#view_study_phase_btn_el);
-      this.#view_study_phase_btn_el.addEventListener("click", () => {
+      right_btn_group_el.append(view_study_phase_btn_el);
+      view_study_phase_btn_el.addEventListener("click", () => {
         const study_id = this.get_property_value_for_record("study_id");
         const study_phase_id = this.get_property_value_for_record("study_phase_id");
         CN_session.navigate_to(

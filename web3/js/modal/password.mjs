@@ -89,7 +89,7 @@ export class CN_modal_password extends CN_modal_base_form {
   _create_body_element() {
     const body_el = super._create_body_element();
     body_el.querySelector("div[name=description]").append(this.constructor.html(
-      '<div class="text-info-emphasis">Fill out this form to change your password.</div>'
+      '<div class="text-info-emphasis">Update your password here.</div>'
     ));
     body_el.querySelector("div[name=description]").append(this.constructor.html(
       '<div class="text-warning-emphasis">Note that passwords must be at least 8 characters long.</div>'
