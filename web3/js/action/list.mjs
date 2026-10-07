@@ -638,18 +638,6 @@ export class CN_action_list extends CN_base_action {
       tbody_el.append(tr_el);
     } else {
       const visible_columns = Object.keys(this.#columns).filter(c => !this.#columns[c].is_hidden(model));
-      const last_col_name = 0 == visible_columns.length ? null : visible_columns[visible_columns.length-1];
-
-      const last_column_el = body_el.querySelector("thead th:last-child div.d-flex");
-      if (last_column_el) {
-        if ("choose" != this.#list_mode && model.allow_delete()) {
-          last_column_el.classList.add("pe-2");
-          last_column_el.classList.add("me-5");
-        } else {
-          last_column_el.classList.remove("pe-2");
-          last_column_el.classList.remove("me-5");
-        }
-      }
 
       this.#records.map(record => {
         let tr_el = this.constructor.html(`<tr ${cursor}></tr>`);
@@ -660,10 +648,23 @@ export class CN_action_list extends CN_base_action {
         tr_el.addEventListener("click", this.on_row_click.bind(this, record));
 
         visible_columns.forEach(col_name => {
-          tr_el.append(
-            this._create_column_element(col_name, this.#columns[col_name], record, last_col_name == col_name)
-          );
+          tr_el.append(this._create_column_element(col_name, this.#columns[col_name], record));
         });
+
+        if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
+          const td_el = this.constructor.html(`
+            <td class="text-center border border-light border-2 px-0" width="45">
+              <button type="button" name="delete" class="btn btn-sm btn-danger">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </td>
+          `);
+          td_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.on_delete(record);
+          });
+          tr_el.append(td_el);
+        }
 
         // remove the outer most white borders
         const td_el_list = tr_el.querySelectorAll("td");
@@ -918,6 +919,16 @@ export class CN_action_list extends CN_base_action {
       // create a header for each column
       .forEach(col_name => el.append(this._create_table_header_element(this.#columns[col_name], placeholder)));
 
+    if ("choose" != this.#list_mode && this.get_model().allow_delete()) {
+      el.append(this.constructor.html(`
+        <th
+          name="delete-record"
+          class="border border-light border-2 border-top-0 p-0 bg-secondary"
+          scope="col"
+        ></th>
+      `));
+    }
+
     // remove the outer most white borders
     const th_el_list = el.querySelectorAll("th");
     const len = th_el_list.length;
@@ -947,7 +958,7 @@ export class CN_action_list extends CN_base_action {
     );
 
     const header_el = this.constructor.html(`
-      <th name="${column.name}" class="border border-light border-2 border-top-0 p-0" scope="col">
+      <th name="${column.name}" class="border border-light border-2 border-top-0 p-0 bg-secondary" scope="col">
         <div class="d-flex">
           <button
             type="button"
@@ -999,7 +1010,7 @@ export class CN_action_list extends CN_base_action {
   /**
    * ADD DOCS
    */
-  _create_column_element(col_name, column, record, last_column) {
+  _create_column_element(col_name, column, record) {
     let value = record[col_name];
     if (null === value) {
       value = column.empty_label;
@@ -1028,32 +1039,10 @@ export class CN_action_list extends CN_base_action {
       value = value.replace(/\n/g, "<br/>\n");
     }
 
-    let td_el = null;
-    if (last_column && "choose" != this.#list_mode && this.get_model().allow_delete()) {
-      td_el = this.constructor.html(`
-        <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-          <div class="d-flex">
-            <div class="w-100">${value}</div>
-            <div class="flex-shrink-1">
-              <button type="button" name="delete" class="btn btn-sm btn-danger">
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            </div>
-          </div>
-        </td>
-      `);
-      td_el.querySelector("button[name=delete]").addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.on_delete(record);
-      });
-    } else {
-      td_el = this.constructor.html(`
-        <td class="text-${column.align} text-truncate border border-light border-2 px-3">
-          ${value}
-        </td>
-      `);
-    }
-
-    return td_el;
+    return this.constructor.html(`
+      <td class="text-${column.align} text-truncate border border-light border-2 px-3">
+        ${value}
+      </td>
+    `);
   }
 }
