@@ -26,6 +26,10 @@
   z-index: 10000 !important;
 }
 
+.modal, .modal-backdrop {
+  z-index: 10001 !important;
+}
+
 body:before {
   content: ' ';
   display: block;
