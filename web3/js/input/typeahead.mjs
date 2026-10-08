@@ -230,6 +230,8 @@ export class CN_input_typeahead extends CN_base_input {
         this.#active_item = null;
         let li_el_list = [];
         if (null != value && typeahead.min_length <= value.length) {
+          const re = new RegExp(RegExp.escape(value), "gi");
+
           // generate the list if the get_list() function exists
           if (CN_common.is_function(typeahead.get_list)) {
             typeahead.list = null === value ? [] : await typeahead.get_list(value, this);
@@ -242,31 +244,29 @@ export class CN_input_typeahead extends CN_base_input {
 
           // now create a list of <li> elements for the typeahead's <ul> element
           // NOTE: it's important to do this before replacing the <ul> children below (based on execute time)
-          if (null != value) {
-            li_el_list = this.#get_matching_list(value).map((item, index) => {
-              if (0 == index) this.#active_item = item;
+          li_el_list = this.#get_matching_list(value).map((item, index) => {
+            if (0 == index) this.#active_item = item;
 
-              const item_el = this.constructor.html(`
-                <li>
-                  <button
-                    name="${item.key}"
-                    type="button"
-                    class="dropdown-item ${item.key == this.#active_item.key ? "text-bg-primary" : ""}"
-                  >${item.value}</button>
-                </li>
-              `);
-              item_el.addEventListener("click", async () => {
-                this.#active_item = item;
-                await this.update();
+            const item_el = this.constructor.html(`
+              <li>
+                <button
+                  name="${item.key}"
+                  type="button"
+                  class="dropdown-item ${item.key == this.#active_item.key ? "text-bg-primary" : ""}"
+                >${item.value.replace(re, '<span class="fw-bold">$&</span>')}</button>
+              </li>
+            `);
+            item_el.addEventListener("click", async () => {
+              this.#active_item = item;
+              await this.update();
 
-                this.get_config("typeahead").on_select(this, item);
-                this.#selection_made = true;
-                this.#input_changed = false;
-                this.#dropdown_bs.hide();
-              });
-              return item_el;
-            }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
-          }
+              this.get_config("typeahead").on_select(this, item);
+              this.#selection_made = true;
+              this.#input_changed = false;
+              this.#dropdown_bs.hide();
+            });
+            return item_el;
+          }).slice(0, 20); // only use the first 20 results (to limit the size of the dropdown list)
         }
 
         // now replace the dropdown's list with the matching items
@@ -303,9 +303,8 @@ export class CN_input_typeahead extends CN_base_input {
 
     // Make sure only matching items are included
     // (this is already done in get_list() but not when the list isn't dynamic)
+    const re = new RegExp(RegExp.escape(value), "i");
     const list = this.get_config("typeahead").list;
-    return CN_common.is_array(list) ? this.get_config("typeahead").list.filter(
-      item => item.value.match(new RegExp(RegExp.escape(value), "i"))
-    ) : [];
+    return CN_common.is_array(list) ? this.get_config("typeahead").list.filter(item => item.value.match(re)) : [];
   }
 }

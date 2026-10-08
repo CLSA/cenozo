@@ -21,6 +21,26 @@ export class CN_model_system_message extends CN_base_model {
           title: "Application",
           type: "enum",
           enum: {
+            get_enums: async () => {
+              // do not fetch enums if the property is hidden (user won't have access)
+              if (3 > CN_session.get("role", "tier")) return [];
+
+              return (await CN_api.get("application", {
+                select: { column: {
+                  table: "application",
+                  column: "title",
+                  alias: "name",
+                } },
+                modifier: {
+                  where: { column: "application.id", operator: "=", value: CN_session.get("application", "id") },
+                  order: "title",
+                },
+              })).map(record => ({
+                key: record.id,
+                value: record.name,
+                disabled: false,
+              }));
+            },
             path: "application",
             select: { column: {
               table: "application",

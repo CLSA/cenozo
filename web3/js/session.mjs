@@ -142,7 +142,11 @@ class session extends CN_base_object {
           const parent_model = model.get_parent_model();
           crumb_list.push({
             name: CN_common.uc_words(model.get_plural()),
-            path: parent_model ? `${parent_model.get_view_url()}?tab=${model.get_name()}` : model.get_list_url(),
+            path: (
+              parent_model ?
+              (parent_model.allow_view() ? `${parent_model.get_view_url()}?tab=${model.get_name()}` : null) :
+              (model.allow_list() ? model.get_list_url() : null)
+            ),
           });
         }
 
