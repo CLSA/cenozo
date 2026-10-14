@@ -188,21 +188,25 @@ class util
    */
   public static function get_timezone_name( $offset, $daylight_savings, $db_region = NULL )
   {
-    $is_bc = !is_null( $db_region ) && 'British Columbia' == $db_region->name;
-    if( $is_bc && -7 == $offset ) return 'Canada/Pacific';
-
     if( $daylight_savings )
     {
-      if( -8 == $offset || ( $is_bc && -7 == $offset ) ) return 'Canada/Pacific';
+      // TODO: remove -8, -7 and -6 after 2026-11-01
+      if( -8 == $offset ) return 'Canada/Pacific';
       if( -7 == $offset ) return 'Canada/Mountain';
       if( -6 == $offset ) return 'Canada/Central';
       if( -5 == $offset ) return 'Canada/Eastern';
       if( -4 == $offset ) return 'Canada/Atlantic';
       if( -3.5 == $offset ) return 'Canada/Newfoundland';
     }
+    else
+    {
+      // These timezones no longer observer DST and are now permanently forward by one hour
+      if( -7 == $offset ) return 'Canada/Pacific';
+      if( -6 == $offset ) return 'Canada/Mountain';
+      if( -5 == $offset ) return 'Canada/Central';
+    }
 
     // north american timezone not found, return the Etc timezone instead
-    $offset = $offset;
     if( $daylight_savings && 1 == date( 'I' ) ) $offset++;
     $offset = -$offset; // Etc has +/- reversed, 'cause that's not confusing...
     if( 0 <= $offset ) $offset = '+'.abs( $offset ); // because we can have -0 for some reason...
