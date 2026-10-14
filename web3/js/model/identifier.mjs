@@ -37,6 +37,18 @@ export class CN_model_identifier extends CN_base_model {
 
 export class CN_view_identifier extends CN_action_view {
   /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    this.constructor.set_disabled(
+      this.get_footer_element().querySelector("button[name=upload]"),
+      this.get_property_value("locked")
+    );
+  }
+
+  /**
    * Add extra operations to the footer
    */
   _create_footer_element() {
@@ -74,48 +86,48 @@ export class CN_upload_identifier extends CN_action_upload {
   update_element() {
     super.update_element();
 
+    if (!this.upload_is_valid()) return;
+
     const summary_data = this.get_summary_data();
-    if (CN_common.is_object(summary_data)) {
-      const summary_card_el = this.get_body_element().querySelector("[name=summary] div.card-body");
+    const summary_card_el = this.get_body_element().querySelector("[name=summary] div.card-body");
 
-      summary_card_el.append(this.constructor.html(`
+    summary_card_el.append(this.constructor.html(`
+      <div class="container">
+        <div class="fs-5 fw-bold">Identifier Data:</div>
+        <ul>
+          <li>Number of valid participant identifiers: ${summary_data.valid_count}</li>
+          <li>Number of errors: ${summary_data.error_count}</li>
+          <li>Number of warnings: ${summary_data.warning_count}</li>
+        </ul>
+      </div>
+    `));
+
+    if (0 < summary_data.error_list.length) {
+      const invalid_el = this.constructor.html(`
         <div class="container">
-          <div class="fs-5 fw-bold">Results</div>
-          <ul>
-            <li>Number of valid participant identifiers: ${summary_data.valid_count}</li>
-            <li>Number of errors: ${summary_data.error_count}</li>
-            <li>Number of warnings: ${summary_data.warning_count}</li>
-          </ul>
+          <div class="fs-5 fw-bold">Errors</div>
         </div>
-      `));
+      `);
+      const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
+      summary_data.error_list.forEach(
+        error => ul_el.append(this.constructor.html(`<li>Line ${error.line}: ${error.message}</li>`))
+      );
+      invalid_el.append(ul_el);
+      summary_card_el.append(invalid_el);
+    }
 
-      if (0 < summary_data.error_list.length) {
-        const invalid_el = this.constructor.html(`
-          <div class="container">
-            <div class="fs-5 fw-bold">Errors</div>
-          </div>
-        `);
-        const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
-        summary_data.error_list.forEach(
-          error => ul_el.append(this.constructor.html(`<li>Line ${error.line}: ${error.message}</li>`))
-        );
-        invalid_el.append(ul_el);
-        summary_card_el.append(invalid_el);
-      }
-
-      if (0 < summary_data.warning_list.length) {
-        const invalid_el = this.constructor.html(`
-          <div class="container">
-            <div class="fs-5 fw-bold">Warnings</div>
-          </div>
-        `);
-        const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
-        summary_data.warning_list.forEach(
-          warning => ul_el.append(this.constructor.html(`<li>Line ${warning.line}: ${warning.message}</li>`))
-        );
-        invalid_el.append(ul_el);
-        summary_card_el.append(invalid_el);
-      }
+    if (0 < summary_data.warning_list.length) {
+      const invalid_el = this.constructor.html(`
+        <div class="container">
+          <div class="fs-5 fw-bold">Warnings</div>
+        </div>
+      `);
+      const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
+      summary_data.warning_list.forEach(
+        warning => ul_el.append(this.constructor.html(`<li>Line ${warning.line}: ${warning.message}</li>`))
+      );
+      invalid_el.append(ul_el);
+      summary_card_el.append(invalid_el);
     }
   }
 

@@ -26,7 +26,7 @@ export class CN_action_upload extends CN_base_action {
    * Extends the parent method
    */
   async get_text(type) {
-    const singular = this.get_model().get_singular();
+    const singular = CN_common.uc_words(this.get_model().get_singular());
     const name = (
       !this.#parent_record ?
       null :
@@ -58,6 +58,13 @@ export class CN_action_upload extends CN_base_action {
    */
   upload_is_valid() {
     return false;
+  }
+
+  /**
+   * Extends parent method
+   */
+  async on_navigate_to_parent() {
+    await CN_session.navigate_to(this.get_model().get_view_url());
   }
 
   /**

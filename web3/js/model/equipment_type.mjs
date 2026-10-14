@@ -74,34 +74,34 @@ export class CN_upload_equipment_type extends CN_action_upload {
   update_element() {
     super.update_element();
 
+    if (!this.upload_is_valid()) return;
+
     const summary_data = this.get_summary_data();
-    if (CN_common.is_object(summary_data)) {
-      const summary_card_el = this.get_body_element().querySelector("[name=summary] div.card-body");
+    const summary_card_el = this.get_body_element().querySelector("[name=summary] div.card-body");
 
-      summary_card_el.append(this.constructor.html(`
-        <div class="container">
-          <span class="fs-5 fw-bold">Equipment Data:</span>
-          ${summary_data.equipment.new} new, ${summary_data.equipment.update} existing
-        </div>
-      `));
-      summary_card_el.append(this.constructor.html(`
-        <div class="container">
-          <span class="fs-5 fw-bold">Loan Data:</span>
-          ${summary_data.loan.new} new, ${summary_data.loan.update} existing
-        </div>
-      `));
+    summary_card_el.append(this.constructor.html(`
+      <div class="container">
+        <span class="fs-5 fw-bold">Equipment Data:</span>
+        ${summary_data.equipment.new} new, ${summary_data.equipment.update} existing
+      </div>
+    `));
+    summary_card_el.append(this.constructor.html(`
+      <div class="container">
+        <span class="fs-5 fw-bold">Loan Data:</span>
+        ${summary_data.loan.new} new, ${summary_data.loan.update} existing
+      </div>
+    `));
 
-      if (0 < summary_data.invalid.length) {
-        const invalid_el = this.constructor.html(`
-          <div class="container">
-            <div class="fs-5 fw-bold">Equipment Data:</div>
-          </div>
-        `);
-        const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
-        summary_data.invalid.forEach(message => ul_el.append(this.constructor.html(`<li>${message}</li>`)));
-        invalid_el.append(ul_el);
-        summary_card_el.append(invalid_el);
-      }
+    if (0 < summary_data.invalid.length) {
+      const invalid_el = this.constructor.html(`
+        <div class="container">
+          <div class="fs-5 fw-bold">Equipment Data:</div>
+        </div>
+      `);
+      const ul_el = this.constructor.html('<ul class="text-danger"></ul>');
+      summary_data.invalid.forEach(message => ul_el.append(this.constructor.html(`<li>${message}</li>`)));
+      invalid_el.append(ul_el);
+      summary_card_el.append(invalid_el);
     }
   }
 

@@ -95,7 +95,7 @@ export class CN_model_home extends CN_base_model {
     return CN_base_element.html(`
       <div class="container-fluid rounded bg-white p-2">
         <div class="row">
-          <div class="col-sm-6">
+          <div name="config" class="col-sm-6">
             <div class="text-primary fs-4">Welcome to ${CN_session.get("application", "title")}</div>
             <div class="row ms-3">
               <label class="col-sm-3 col-form-label fw-bold">Version:</label>
@@ -125,7 +125,7 @@ export class CN_model_home extends CN_base_model {
               <div name="uptime" class="col-sm-9 col-form-label">Unknown</div>
             </div>
           </div>
-          <div class="col-sm-6">
+          <div name="logo" class="col-sm-6">
             <img
               class="w-100"
               src="${CN_session.get("application", "cenozo_url")}/img/branding.png"
