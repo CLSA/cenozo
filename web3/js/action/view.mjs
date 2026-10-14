@@ -185,14 +185,6 @@ export class CN_action_view extends CN_action_base_record {
   /**
    * Extends parent method
    */
-  set_disabled(disabled) {
-    super.set_disabled(disabled);
-    this.constructor.set_disabled(this.#delete_btn_el, disabled);
-  }
-
-  /**
-   * Extends parent method
-   */
   update_property_element(prop_name) {
     // update the input's value and flash the border to indicate that the data has been updated
     const prop = this.get_property(prop_name);
@@ -328,7 +320,6 @@ export class CN_action_view extends CN_action_base_record {
       </button>
     `);
     this.#delete_btn_el.addEventListener("click", this.on_delete.bind(this));
-    this.constructor.set_disabled(this.#delete_btn_el, this.get_disabled());
 
     // create the back button
     this.#back_btn_el = this.constructor.html(
