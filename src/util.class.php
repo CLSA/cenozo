@@ -527,7 +527,7 @@ class util
    */
   public static function convert_charset( $string )
   {
-    return is_null( $string ) ? NULL : iconv( 'UTF-8', 'Windows-1252//TRANSLIT' );
+    return is_null( $string ) ? NULL : iconv( 'UTF-8', 'Windows-1252//TRANSLIT', $string );
   }
 
   /**
