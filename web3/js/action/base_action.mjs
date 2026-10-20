@@ -23,6 +23,8 @@ export class CN_base_action extends CN_base_element {
   #placeholder_show_delay = 200;
   #simple_mode = false;
   #footer_at_top = false;
+  #documentation_tooltip = null;
+  #refresh_tooltip = null;
 
   /**
    * Constructor
@@ -238,6 +240,23 @@ export class CN_base_action extends CN_base_element {
   }
 
   /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    if (this.#documentation_tooltip) {
+      this.#documentation_tooltip.dispose();
+      this.#documentation_tooltip = null;
+    }
+
+    if (this.#refresh_tooltip) {
+      this.#refresh_tooltip.dispose();
+      this.#refresh_tooltip = null;
+    }
+  }
+
+  /**
    * When running the action this method is always called before on_load()
    */
   on_pre_loading() {
@@ -369,9 +388,10 @@ export class CN_base_action extends CN_base_element {
     `);
     notation_btn_el.addEventListener("click", this.open_notation.bind(this));
     el.append(notation_btn_el);
-    new bootstrap.Tooltip(notation_btn_el, {
+    this.#documentation_tooltip = new bootstrap.Tooltip(notation_btn_el, {
       title: "Documentation",
       trigger: "hover",
+      placement: "bottom",
       delay: { "show": 1000, "hide": 100 },
     });
 
@@ -383,9 +403,10 @@ export class CN_base_action extends CN_base_element {
     `);
     refresh_btn_el.addEventListener("click", this.run.bind(this));
     el.append(refresh_btn_el);
-    new bootstrap.Tooltip(refresh_btn_el, {
+    this.#refresh_tooltip = new bootstrap.Tooltip(refresh_btn_el, {
       title: "Refresh Data",
       trigger: "hover",
+      placement: "bottom",
       delay: { "show": 1000, "hide": 100 },
     });
 

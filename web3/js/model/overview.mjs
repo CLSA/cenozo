@@ -22,6 +22,7 @@ export class CN_model_overview extends CN_base_model {
 
 export class CN_view_overview extends CN_action_view {
   #record = {};
+  #download_tooltip = null;
 
   get_record() { return this.#record; }
 
@@ -35,6 +36,18 @@ export class CN_view_overview extends CN_action_view {
       return this.#record.title;
     }
     return super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    if (this.#download_tooltip) {
+      this.#download_tooltip.dispose();
+      this.#download_tooltip = null;
+    }
   }
 
   /**
@@ -131,9 +144,10 @@ export class CN_view_overview extends CN_action_view {
       </div>
     `);
 
-    new bootstrap.Tooltip(report_div_el, {
+    this.#download_tooltip = new bootstrap.Tooltip(report_div_el, {
       title: "Download list",
       trigger: "hover",
+      placement: "bottom",
       delay: { "show": 1000, "hide": 100 },
     });
 

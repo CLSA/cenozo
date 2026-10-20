@@ -2,6 +2,8 @@ import { CN_base_element } from "./base_element.mjs"
 import { CN_common } from "../common.mjs"
 
 export class CN_element_label extends CN_base_element {
+  #tooltip = null;
+
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
       throw new Error("Non-object config argument passed to CN_element_label constructor");
@@ -25,6 +27,18 @@ export class CN_element_label extends CN_base_element {
   /**
    * Extend parent method
    */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    if (this.#tooltip) {
+      this.#tooltip.dispose();
+      this.#tooltip = null;
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   _create_element() {
     const el = super._create_element();
     el.innerHTML = this.get_config("value");
@@ -42,7 +56,7 @@ export class CN_element_label extends CN_base_element {
           data-bs-title="${help.replace(/"/g, "&quot;")}"
         ></i> ${el.innerHTML}
       `;
-      new bootstrap.Tooltip(el.querySelector(".bi-info-circle-fill"));
+      this.#tooltip = new bootstrap.Tooltip(el.querySelector(".bi-info-circle-fill"));
     }
 
     return el;

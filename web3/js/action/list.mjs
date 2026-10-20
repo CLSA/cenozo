@@ -14,6 +14,7 @@ export class CN_action_list extends CN_base_action {
   #current_page = 1;
   #is_choosing = false;
   #choose_list = {};
+  #download_tooltip = null;
   #valid_type_list = [
     "boolean", "date", "datetime", "datetimesecond", "dob", "dod", "email",
     "float", "integer", "rank", "size", "string", "text", "time"
@@ -327,6 +328,26 @@ export class CN_action_list extends CN_base_action {
   async on_cancel_choose() {
     this.#is_choosing = false;
     await this.run();
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    if (this.#download_tooltip) {
+      this.#download_tooltip.dispose();
+      this.#download_tooltip = null;
+    }
+
+    for (const col_name in this.#columns) {
+      const column = this.#columns[col_name];
+      if (column.help_tooltip) {
+        column.help_tooltip.dispose();
+        column.help_tooltip = null;
+      }
+    }
   }
 
   /**
@@ -793,9 +814,10 @@ export class CN_action_list extends CN_base_action {
       </div>
     `);
 
-    new bootstrap.Tooltip(report_div_el, {
+    this.#download_tooltip = new bootstrap.Tooltip(report_div_el, {
       title: "Download list",
       trigger: "hover",
+      placement: "bottom",
       delay: { "show": 1000, "hide": 100 },
     });
 
@@ -971,7 +993,10 @@ export class CN_action_list extends CN_base_action {
         </div>
       </th>
     `);
-    if (column.help) new bootstrap.Tooltip(header_el.querySelector(".bi-info-circle-fill"));
+    if (!placeholder && column.help) {
+      if (column.help_tooltip) column.help_tooltip.dispose();
+      column.help_tooltip = new bootstrap.Tooltip(header_el.querySelector(".bi-info-circle-fill"));
+    }
 
     if (!placeholder) {
       // add the sort icon if the table is sorted by the column
