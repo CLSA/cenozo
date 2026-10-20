@@ -871,11 +871,19 @@ abstract class service extends \cenozo\base_object
         }
         else if( in_array( $mime_type, ['text/plain', 'text/sql'] ) )
         {
-          $this->encoded_data = $util_class_name::convert_charset( $this->encoded_data );
+          $this->encoded_data = (
+            is_null( $this->encoded_data ) ?
+            '' :
+            $util_class_name::convert_charset( $this->encoded_data )
+          );
         }
         else // 'application/json' == $encoding
         {
-          $this->encoded_data = is_null( $this->encoded_data ) ? '' : $util_class_name::json_encode( $this->encoded_data );
+          $this->encoded_data = (
+            is_null( $this->encoded_data ) ?
+            '' :
+            $util_class_name::json_encode( $this->encoded_data )
+          );
         }
       }
     }
