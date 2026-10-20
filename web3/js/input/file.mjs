@@ -19,20 +19,23 @@ export class CN_input_file extends CN_base_input {
     await super.set_value(value, value_for_record);
 
     const prefix_div_el = this.get_prefix_div_element();
-    prefix_div_el.innerHTML = "";
-    if (value) {
-      prefix_div_el.classList.add("text-nowrap", "pe-3");
-      const download_btn = this.constructor.html(
-        '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
-      );
-      download_btn.addEventListener("click", async () => CN_common.download_file(
-        this.get_value().data,
-        await this.get_config("file").get_filename()
-      ));
-      prefix_div_el.append(download_btn);
-      prefix_div_el.append(this.constructor.html(`
-        <span name="filesize" class="col-form-label ps-2">${CN_common.format_filesize(value.size)}</span>
-      `));
+
+    if (prefix_div_el) {
+      prefix_div_el.innerHTML = "";
+      if (value) {
+        prefix_div_el.classList.add("text-nowrap", "pe-3");
+        const download_btn = this.constructor.html(
+          '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
+        );
+        download_btn.addEventListener("click", async () => CN_common.download_file(
+          this.get_value().data,
+          await this.get_config("file").get_filename()
+        ));
+        prefix_div_el.append(download_btn);
+        prefix_div_el.append(this.constructor.html(`
+          <span name="filesize" class="col-form-label ps-2">${CN_common.format_filesize(value.size)}</span>
+        `));
+      }
     }
   }
 
