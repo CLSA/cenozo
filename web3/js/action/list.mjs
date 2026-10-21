@@ -288,7 +288,7 @@ export class CN_action_list extends CN_base_action {
     });
 
     if (await modal.open()) {
-      await CN_api.delete(`${this.get_model().get_name()}/${record.id}`);
+      await CN_api.delete(this.get_model().get_view_url(record.id, "api"));
       await this.run();
     }
   }

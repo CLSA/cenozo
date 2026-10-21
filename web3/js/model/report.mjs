@@ -131,11 +131,11 @@ export class CN_model_report extends CN_base_model {
                   await CN_api.get(prop.subject, {
                     select: {
                       column: [
-                        { column: "id", alias: "key" },
-                        { column: "name", alias: "value", table_prefix: false }
+                        { table: prop.subject, column: "id", alias: "key" },
+                        { table: prop.subject, column: "name", alias: "value" }
                       ]
                     },
-                    modifier: { order: "name", limit: 1000000 },
+                    modifier: { order: `${prop.subject}.name`, limit: 1000000 },
                   })
                 );
                 if (prop.null_allowed) {

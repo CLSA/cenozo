@@ -31,7 +31,7 @@ export class CN_action_report_view extends CN_action_view {
         }
       }
 
-      const response = await CN_api.file(`${model.get_name()}/${model.get_identifier()}`, mime_type, {}, true);
+      const response = await CN_api.file(model.get_view_url(null, "api"), mime_type, {}, true);
       CN_common.download_file(
         await response.blob(),
         response.headers.get('content-disposition').match(/filename=(.*);/)[1],

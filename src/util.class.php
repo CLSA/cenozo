@@ -693,7 +693,7 @@ class util
           if( !in_array( $key, array( 'update_timestamp', 'create_timestamp' ) ) )
           {
             // convert timezones
-            if( preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
+            if( is_string( $value ) && preg_match( '/T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\+00:00/', $value ) )
             {
               $datetime_obj = static::get_datetime_object( $value );
               $datetime_obj->setTimezone( $db_user->get_timezone_object() );
