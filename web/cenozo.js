@@ -4820,7 +4820,7 @@
               ":mm" +
               (seconds ? ":ss" : "") +
               (this.user.use12hourClock ? "a" : "") +
-              (timezone ? " z" : "")
+              (timezone ? " (Z)" : "")
             );
           },
 
