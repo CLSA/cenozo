@@ -78,6 +78,21 @@ export class CN_model_collection extends CN_base_model {
 
 export class CN_list_collection extends CN_action_list {
   /**
+   * Extend parent method
+   */
+  get_on_load_parameters() {
+    const params = super.get_on_load_parameters();
+
+    // when the parent model is participant only show active collections
+    const parent_model = this.get_model().get_parent_model();
+    if (parent_model && "participant" == parent_model.get_name()) {
+      params.modifier.where.push({ column: "collection.active", operator: "=", value: true });
+    }
+
+    return params;
+  }
+
+  /**
    * Extend parent method to change the user's child title
    */
   is_choose_disabled(record) {

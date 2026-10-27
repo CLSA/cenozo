@@ -101,13 +101,11 @@ export class CN_history_base_person extends CN_base_action {
 
     this.set_footer_at_top(true);
 
-    const base_path = this.get_model().get_view_url(null, "api");
     this.#category_list = [{
       subject: "address",
-      path: `${base_path}/address`,
       get_data: async function () {
         try {
-          return (await CN_api.get(this.path, {
+          return (await CN_api.get(`${model.get_view_url(null, "api")}/address`, {
             select: { column: [
               "create_timestamp",
               "rank",
@@ -140,10 +138,9 @@ export class CN_history_base_person extends CN_base_action {
       },
     }, {
       subject: "note",
-      path: `${base_path}/note`,
       get_data: async function () {
         try {
-          return (await CN_api.get(this.path, {
+          return (await CN_api.get(`${model.get_view_url(null, "api")}/note`, {
             select: { column: [
               "datetime",
               "note",
@@ -166,10 +163,9 @@ export class CN_history_base_person extends CN_base_action {
       },
     }, {
       subject: "phone",
-      path: `${base_path}/phone`,
       get_data: async function () {
         try {
-          return (await CN_api.get(this.path, {
+          return (await CN_api.get(`${model.get_view_url(null, "api")}/phone`, {
             select: { column: [
               "create_timestamp",
               "rank",
@@ -197,10 +193,9 @@ export class CN_history_base_person extends CN_base_action {
       // add participant-only categories
       this.#category_list = this.#category_list.concat([{
         subject: "alternate",
-        path: `${base_path}/alternate`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/alternate`, {
               select: { column: [
                 "create_timestamp",
                 "association",
@@ -227,10 +222,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "consent",
-        path: `${base_path}/consent`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/consent`, {
               select: { column: [
                 "datetime",
                 "accept",
@@ -255,10 +249,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "event",
-        path: `${base_path}/event`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/event`, {
               select: { column: [
                 "datetime",
                 { table: "event_type", column: "name" },
@@ -280,10 +273,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "form",
-        path: `${base_path}/form`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/form`, {
               select: { column: [
                 "date",
                 { table: "form_type", column: "name" },
@@ -305,10 +297,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "hold",
-        path: `${base_path}/hold`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/hold`, {
               select: { column: [
                 "datetime",
                 { table: "hold_type", column: "name" },
@@ -331,10 +322,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "mail",
-        path: `${base_path}/mail`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/mail`, {
               select: { column: [
                 "sent_datetime",
                 "subject",
@@ -356,10 +346,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "proxy",
-        path: `${base_path}/proxy`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/proxy`, {
               select: { column: [
                 "datetime",
                 { table: "proxy_type", column: "name" },
@@ -381,10 +370,9 @@ export class CN_history_base_person extends CN_base_action {
         },
       }, {
         subject: "trace",
-        path: `${base_path}/trace`,
         get_data: async function () {
           try {
-            return (await CN_api.get(this.path, {
+            return (await CN_api.get(`${model.get_view_url(null, "api")}/trace`, {
               select: { column: [
                 "datetime",
                 "note",
@@ -410,58 +398,12 @@ export class CN_history_base_person extends CN_base_action {
         },
       }]);
 
-      if (CN_session.get_module("assignment")) {
-        this.#category_list.push({
-          subject: "assignment",
-          path: `${base_path}/assignment`,
-          get_data: async function () {
-            try {
-              return (await CN_api.get(this.path, {
-                select: { column: [
-                  "start_datetime",
-                  "end_datetime",
-                  { table: "user", column: "first_name", alias: "user_first" },
-                  { table: "user", column: "last_name", alias: "user_last" },
-                  { table: "site", column: "name", alias: "site" },
-                  { table: "script", column: "name", alias: "script" },
-                ]},
-              })).reduce((list, row) => {
-                list.push({
-                  category: this,
-                  datetime: row.start_datetime,
-                  title: `started by ${row.user_first} ${row.user_last}`,
-                  description:
-                    `Started an assignment for the "${row.script}" questionnaire.\n` +
-                    `Assigned from the ${row.site} site.`,
-                });
-                list.push({
-                  category: this,
-                  datetime: row.end_datetime,
-                  title: `completed by ${row.user_first} ${row.user_last}`,
-                  description:
-                    `Completed an assignment for the "${row.script}" questionnaire.\n` +
-                    `Assigned from the ${row.site} site.`,
-                });
-                return list;
-              }, []);
-            } catch (error) {
-              // ignore 404s, it just means we don't have access to reading the data
-              if (!CN_common.is_uri_error(error, 404)) throw error;
-            }
-
-            // return an empty list if the data failed to load
-            return [];
-          },
-        });
-      }
-
       if (CN_session.get_module("equipment")) {
         this.#category_list.push({
           subject: "equipment",
-          path: `${base_path}/equipment_loan`,
           get_data: async function () {
             try {
-              return (await CN_api.get(this.path, {
+              return (await CN_api.get(`${model.get_view_url(null, "api")}/equipment_loan`, {
                 select: { column: [
                   "start_datetime",
                   "end_datetime",
@@ -500,8 +442,22 @@ export class CN_history_base_person extends CN_base_action {
         });
       }
     }
-
     this.#category_list.sort((a,b) => a.subject > b.subject);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  add_category(category) {
+    this.#category_list.push(category);
+    this.#category_list.sort((a,b) => a.subject > b.subject);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  remove_category(subject) {
+    this.#category_list = this.#category_list.filter(category => category.subject != subject);
   }
 
   /**

@@ -319,7 +319,9 @@ export class CN_action_list extends CN_base_action {
     // toggle the is_choosing state
     this.#choose_list = {};
     this.#is_choosing = !this.#is_choosing;
-    await this.run();
+
+    // re-run by going to page 1 (otherwise we may be out of bounds)
+    await this.set_page(1);
   }
 
   /**
@@ -327,7 +329,9 @@ export class CN_action_list extends CN_base_action {
    */
   async on_cancel_choose() {
     this.#is_choosing = false;
-    await this.run();
+
+    // re-run by going to page 1 (otherwise we may be out of bounds)
+    await this.set_page(1);
   }
 
   /**
@@ -622,7 +626,7 @@ export class CN_action_list extends CN_base_action {
           // create the cancel button if it doesn't exist
           if (null == cancel_btn_el) {
             cancel_btn_el = this.constructor.html(
-              '<button name="cancel-choose" type="button" class="btn btn-outline-primary">Cancel</button>'
+              '<button name="cancel-choose" type="button" class="btn btn-light btn-outline-primary">Cancel</button>'
             );
             cancel_btn_el.addEventListener("click", this.on_cancel_choose.bind(this));
             btn_el.parentElement.prepend(cancel_btn_el);

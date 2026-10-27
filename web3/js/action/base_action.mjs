@@ -18,7 +18,7 @@ export class CN_base_action extends CN_base_element {
   #placeholder_el;
   #footer_el;
   #topfooter_el;
-  #is_placeholder = true;
+  #showing_placeholder = true;
   #placeholder_timeout_id = null;
   #placeholder_show_delay = 200;
   #simple_mode = false;
@@ -47,6 +47,7 @@ export class CN_base_action extends CN_base_element {
   get_model() { return this.#model }
   get_disabled() { return this.#disabled; }
   set_disabled(disabled) { this.#disabled = disabled; }
+  get_showing_placeholder() { return this.#showing_placeholder; }
   get_query_parameter(key) {
     return this.#model.get_module().get_action_query_parameter(this.#type, key);
   }
@@ -149,7 +150,7 @@ export class CN_base_action extends CN_base_element {
    * Replaces all dynamic elements with a placeholder
    */
   show_placeholder() {
-    this.#is_placeholder = true;
+    this.#showing_placeholder = true;
     const model_el = this.#model.get_element();
 
     const placeholder_el = this.get_placeholder_element();
@@ -184,7 +185,7 @@ export class CN_base_action extends CN_base_element {
    * Removes placeholders from all dynamic elements
    */
   hide_placeholder() {
-    this.#is_placeholder = false;
+    this.#showing_placeholder = false;
     const model_el = this.#model.get_element();
 
     if (this.#simple_mode) {
@@ -287,7 +288,7 @@ export class CN_base_action extends CN_base_element {
         clearTimeout(this.#placeholder_timeout_id);
         this.#placeholder_timeout_id = null;
       }
-      if (this.#is_placeholder) this.hide_placeholder();
+      if (this.#showing_placeholder) this.hide_placeholder();
     }
   }
 

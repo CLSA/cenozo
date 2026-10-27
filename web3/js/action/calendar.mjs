@@ -7,7 +7,6 @@ import { CN_session } from "../session.mjs"
 
 export class CN_action_calendar extends CN_base_action {
   #calendar;
-  #placeholder_calendar;
   #records = [];
   #total_records = null;
 
@@ -41,12 +40,6 @@ export class CN_action_calendar extends CN_base_action {
 
     if (CN_common.is_string(calendar.date)) calendar.date = CN_common.get_date(`${calendar.date} 12:00:00`);
     this.#calendar = new CN_element_calendar(null, calendar);
-
-    // the placeholder calendar can use the same config, just remove the interactions
-    const placeholder_calendar = CN_common.clone(calendar);
-    placeholder_calendar.allow_selection = false;
-    placeholder_calendar.on_click_cell = null;
-    this.#placeholder_calendar = new CN_element_calendar(null, placeholder_calendar);
   }
 
   /**
@@ -129,7 +122,6 @@ export class CN_action_calendar extends CN_base_action {
   set_date(date) {
     const new_date = CN_common.is_date(date) ? date : CN_common.get_date(date);
     this.#calendar.set_date(new_date);
-    this.#placeholder_calendar.set_date(new_date);
   }
 
   /**
@@ -220,6 +212,23 @@ export class CN_action_calendar extends CN_base_action {
   /**
    * Extends parent method
    */
+  show_placeholder() {
+    super.show_placeholder();
+    this.#calendar.set_selection_disabled(true);
+    this.#calendar.set_events([]);
+  }
+
+  /**
+   * Extends parent method
+   */
+  hide_placeholder() {
+    super.hide_placeholder();
+    this.#calendar.set_selection_disabled(false);
+  }
+
+  /**
+   * Extends parent method
+   */
   _create_body_element() {
     const body_el = this.constructor.html('<div></div>');
 
@@ -227,15 +236,11 @@ export class CN_action_calendar extends CN_base_action {
     body_el.append(this.#calendar.get_element());
 
     this.#calendar.add_event_listener("modechanged", async () => {
-      this.#placeholder_calendar.set_mode(this.#calendar.get_mode());
-      this.#placeholder_calendar.update_element();
       this.write_query_parameters();
       await this.run();
     });
 
     this.#calendar.add_event_listener("datechanged", async () => {
-      this.#placeholder_calendar.set_date(this.#calendar.get_date());
-      this.#placeholder_calendar.update_element();
       this.write_query_parameters();
       await this.run();
     });
@@ -254,10 +259,7 @@ export class CN_action_calendar extends CN_base_action {
    * Extends parent method
    */
   _create_placeholder_element() {
-    const placeholder_el = this.constructor.html('<div class="container-fluid"></div>');
-    this.#placeholder_calendar.set_parent_element(placeholder_el);
-    placeholder_el.append(this.#placeholder_calendar.get_element());
-    return placeholder_el;
+    return this.get_body_element();
   }
 
   /**

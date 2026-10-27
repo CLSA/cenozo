@@ -469,11 +469,23 @@ export class CN_view_participant extends CN_view_base_person {
     }
 
     if ("header" == type) {
-      const full_name = [
-        this.get_property_value("honorific"),
-        this.get_property_value("first_name"),
-        this.get_property_value("last_name"),
-      ].join(" ");
+      const honorific = this.get_property_value("honorific");
+      const first_name = this.get_property_value("first_name");
+      const other_name = this.get_property_value("other_name");
+      const last_name = this.get_property_value("last_name");
+
+      let full_name = "";
+      if ([honorific, first_name, other_name, last_name].includes("(censored)")) {
+        full_name = `${this.get_property_value("uid")} (censored)`;
+      } else {
+        let parts = [];
+        if (honorific) parts.push(honorific);
+        if (first_name) parts.push(first_name);
+        if (other_name) parts.push(`(${other_name})`);
+        if (last_name) parts.push(last_name);
+        full_name = parts.join(" ");
+      }
+
       return `Participant Details for ${full_name}`;
     }
 

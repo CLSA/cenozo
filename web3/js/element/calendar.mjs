@@ -24,6 +24,7 @@ export class CN_element_calendar extends CN_base_element {
   #selected_cell_list = [];
   #pending_resize = false;
   #pending_animation = false;
+  #selection_disabled = false;
 
   constructor(parent_el, config = {}) {
     if (!CN_common.is_object(config)) {
@@ -47,12 +48,11 @@ export class CN_element_calendar extends CN_base_element {
     this.#mode = this.get_config("mode");
   }
 
-  /**
-   * ADD DOCS
-   */
-  get_mode() {
-    return this.#mode;
-  }
+  // getters and setters
+  get_selection_disabled() { return this.#selection_disabled; }
+  set_selection_disabled(disabled) { this.#selection_disabled = disabled; }
+  get_mode() { return this.#mode; }
+  get_events() { return this.#events; }
 
   /**
    * Sets the view mode
@@ -63,13 +63,6 @@ export class CN_element_calendar extends CN_base_element {
     this.update_element();
     this.#scroll_to_time(this.get_config("scroll_time"));
     this.run_event_listeners("modechanged");
-  }
-
-  /**
-   * ADD DOCS
-   */
-  get_events() {
-    return this.#events;
   }
 
   /**
@@ -355,7 +348,7 @@ export class CN_element_calendar extends CN_base_element {
       document.body.append(this.#selection_el);
 
       this.#table_el.addEventListener("mousedown", (e) => {
-        if (0 == e.button) {
+        if (!this.#selection_disabled && 0 == e.button) {
           this.#selecting = true;
           this.#select_x = e.clientX;
           this.#select_y = e.clientY;
@@ -363,7 +356,7 @@ export class CN_element_calendar extends CN_base_element {
       });
 
       this.#table_el.addEventListener("mouseup", (e) => {
-        if (0 == e.button && this.#selecting) {
+        if (!this.#selection_disabled && 0 == e.button && this.#selecting) {
           this.#selecting = false;
           this.#select_x = null;
           this.#select_y = null;
@@ -379,7 +372,7 @@ export class CN_element_calendar extends CN_base_element {
       });
 
       this.#table_el.addEventListener("mouseleave", (e) => {
-        if (this.#selecting) {
+        if (!this.#selection_disabled && this.#selecting) {
           this.#selecting = false;
           this.#select_x = null;
           this.#select_y = null;
@@ -401,7 +394,7 @@ export class CN_element_calendar extends CN_base_element {
       });
 
       this.#table_el.addEventListener("mousemove", (e) => {
-        if (this.#selecting) {
+        if (!this.#selection_disabled && this.#selecting) {
           if (!this.#pending_animation) {
             this.#pending_animation = true;
             window.requestAnimationFrame(() => {
