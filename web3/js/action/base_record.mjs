@@ -126,7 +126,11 @@ export class CN_action_base_record extends CN_base_action {
    *     typeahead values returned by a user-defined function:
    *       get_list: an async function that returns the typeahead values, with arguments:
    *         value: the search value provided by the user
-   *         form_input: the property's form_input object
+   *       The returned typeahead values can either be a string or an object with the following properties:
+   *         key: An identifier representing the record's value in the database
+   *         value: The matching value as a string
+   *         prefix_value: An optional prefix string that is not part of the matching value
+   *         postfix_value: An optional postfix string that is not part of the matching value
    *       Note that this function is often provided by a get_typeahead() function in the related model
    *
    * Mandatory property for the "file" type:

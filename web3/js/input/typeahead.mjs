@@ -247,13 +247,16 @@ export class CN_input_typeahead extends CN_base_input {
           li_el_list = this.#get_matching_list(value).map((item, index) => {
             if (0 == index) this.#active_item = item;
 
+            let label = item.value.replace(re, '<span class="fw-bold">$&</span>');
+            if (CN_common.is_string(item.value_prefix)) label = `${item.value_prefix}${label}`;
+            if (CN_common.is_string(item.value_postfix)) label = `${label}${item.value_postfix}`;
             const item_el = this.constructor.html(`
               <li>
                 <button
                   name="${item.key}"
                   type="button"
                   class="dropdown-item ${item.key == this.#active_item.key ? "text-bg-primary" : ""}"
-                >${item.value.replace(re, '<span class="fw-bold">$&</span>')}</button>
+                >${label}</button>
               </li>
             `);
             item_el.addEventListener("click", async () => {
