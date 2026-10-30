@@ -377,7 +377,14 @@ export class CN_common {
   static format_time(value, seconds = false, am_pm = CN_session.get("user", "am_pm")) {
     let options = { hour12: am_pm, hour: am_pm ? "numeric" : "2-digit", minute: "2-digit" };
     if (seconds) options.second = "2-digit";
-    return new Intl.DateTimeFormat('en-CA', options).format(new Date(value));
+
+    const date = new Date(value);
+    if (isNaN(date)) {
+      console.error("Tried to format time for invalid date.");
+      return null;
+    }
+
+    return new Intl.DateTimeFormat('en-CA', options).format(date);
   }
 
   /**
@@ -393,6 +400,11 @@ export class CN_common {
       return null;
     } else if (this.is_string(value)) {
       value = new Date(value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) ? `${value} 12:00:00` : value);
+    }
+
+    if (isNaN(value)) {
+      console.error("Tried to format datetime for invalid date.");
+      return null;
     }
 
     if ("record" == format) {
