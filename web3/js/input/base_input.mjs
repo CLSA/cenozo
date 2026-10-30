@@ -117,6 +117,14 @@ export class CN_base_input extends CN_base_element {
   }
 
   /**
+   * Determines whether the input's control element currently has user focus
+   * @return boolean
+   */
+  has_focus() {
+    return this.#control_el == document.activeElement;
+  }
+
+  /**
    * ADD DOCS
    */
   async on_dom_add() {
@@ -440,6 +448,11 @@ export class CN_base_input extends CN_base_element {
       // only listen to input events if there's a function to do so with
       if (this.has_config("on_input")) {
         this.#control_el.addEventListener("input", () => this.get_config("on_input")(this));
+      }
+
+      // only listen to input events if there's a function to do so with
+      if (this.has_config("on_keydown")) {
+        this.#control_el.addEventListener("keydown", (event) => this.get_config("on_keydown")(this, event));
       }
 
       // validate and call on_change function when the value changes

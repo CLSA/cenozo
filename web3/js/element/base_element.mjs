@@ -239,14 +239,14 @@ export class CN_base_element extends CN_base_object {
   /**
    * ADD DOCS
    */
-  static create(config) {
+  static create(config = {}) {
     return (new this(null, config)).get_element();
   }
 
   /**
    * ADD DOCS
    */
-  static append(parent_el, config) {
+  static append(parent_el, config = {}) {
     const obj = new this(parent_el, config)
     if (parent_el) parent_el.append(obj.get_element());
     return obj;
@@ -255,7 +255,16 @@ export class CN_base_element extends CN_base_object {
   /**
    * ADD DOCS
    */
-  static replace(parent_el, config) {
+  static prepend(parent_el, config = {}) {
+    const obj = new this(parent_el, config)
+    if (parent_el) parent_el.prepend(obj.get_element());
+    return obj;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  static replace(parent_el, config = {}) {
     const obj = new this(parent_el, config);
     if (parent_el) parent_el.replaceChildren(obj.get_element());
     return obj;

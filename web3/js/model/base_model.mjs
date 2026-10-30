@@ -59,6 +59,7 @@ export class CN_base_model extends CN_base_object {
   is_rendered() { return this.#is_rendered; }
   get_module() { return this.#module; }
   get_unique_id() { return this.#unique_id; }
+  get_root_model() { return this.#parent_model ? this.#parent_model.get_root_model() : this; }
   get_parent_model() { return this.#parent_model; }
   get_child_model_list() { return this.#child_model_list; }
   get_action_name() { return this.#action_name; }

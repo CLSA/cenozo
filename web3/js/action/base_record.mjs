@@ -117,7 +117,10 @@ export class CN_action_base_record extends CN_base_action {
    *       path: the API path to get enum values
    *       select: a select property to be used when calling the API for enum values
    *       modifier: a modifier property to be used when calling the API for enum values
-   *     get_enums: an async function that returns enum values
+   *     get_enums: an async function that returns enum values as objects with the following properties:
+   *       key: An identifier representing the record's value in the database
+   *       value: The enum value as it appears in the UI dropdown
+   *       disabled: Whether or not the option can be selected (omitting this property enables all options)
    *
    * Mandatory property for the "typeahead" type:
    *   typeahead: an object with one of the two sets of properties:
