@@ -150,7 +150,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
       return `Manage ${this.#stratum.name} Participants`;
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**

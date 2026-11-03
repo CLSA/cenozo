@@ -734,7 +734,7 @@ export class CN_multiedit_participant extends CN_base_action {
       return "Participant Multi-Edit";
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**
@@ -1265,7 +1265,7 @@ export class CN_scripts_participant extends CN_base_action {
       `;
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**

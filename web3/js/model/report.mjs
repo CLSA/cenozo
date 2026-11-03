@@ -179,7 +179,7 @@ export class CN_add_report extends CN_action_add {
       return `Run ${CN_common.uc_words(this.get_model().get_singular())}`;
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**

@@ -35,7 +35,7 @@ export class CN_view_overview extends CN_action_view {
     } else if (["crumb", "name"].includes(type)) {
       return this.#record.title;
     }
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**
