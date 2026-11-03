@@ -17,7 +17,7 @@ export class CN_action_list extends CN_base_action {
   #download_tooltip = null;
   #valid_type_list = [
     "boolean", "date", "datetime", "datetimesecond", "dob", "dod", "email",
-    "float", "integer", "rank", "size", "string", "text", "time"
+    "float", "integer", "rank", "size", "string", "text", "time", "timesecond"
   ];
 
   /**
@@ -1055,7 +1055,8 @@ export class CN_action_list extends CN_base_action {
       value = CN_common.format_time(
         CN_common.is_string(value) ?
         new Date(`${CN_common.format_datetime(CN_common.get_date(), "date")} ${value}`) :
-        value
+        value,
+        column.type
       );
     } else if (CN_common.is_string(value) && 0 < column.limit) {
       if (value.length > column.limit) {
