@@ -23,6 +23,7 @@ export class CN_common {
     if ("element" == type) return this.is_type(x, "object") && (x instanceof Element || x instanceof HTMLDocument);
     if ("filelist" == type) return this.is_type(x, "object") && x instanceof FileList;
     if ("function" == type) return "function" === typeof x;
+    if ("boolean" == type) return "boolean" === typeof x;
     if ("string" == type) return "string" === typeof x;
     if ("float" == type) return !isNaN(parseFloat(x)) && !isNaN(x-0);
     if ("integer" == type) return !isNaN(x) && parseInt(Number(x)) == x && !isNaN(parseInt(x, 10));
@@ -84,6 +85,13 @@ export class CN_common {
    * @return boolean
    */
   static is_function(x) { return this.is_type(x, "function"); }
+
+  /**
+   * Returns whether a variable is a boolean
+   * @param (dynamic) x: the variable to test
+   * @return boolean
+   */
+  static is_boolean(x) { return this.is_type(x, "boolean"); }
 
   /**
    * Returns whether a variable is a string

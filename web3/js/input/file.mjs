@@ -2,6 +2,15 @@ import { CN_base_input } from "./base_input.mjs"
 import { CN_common } from "../common.mjs"
 
 export class CN_input_file extends CN_base_input {
+  constructor(parent_el, config = {}) {
+    super(parent_el, {
+      ...{
+        hide_download: false,
+      },
+      ...config,
+    });
+  }
+
   /**
    * Extends the parent method
    */
@@ -18,23 +27,25 @@ export class CN_input_file extends CN_base_input {
   async set_value(value, value_for_record = undefined) {
     await super.set_value(value, value_for_record);
 
-    const prefix_div_el = this.get_prefix_div_element();
+    if (!this.get_config("hide_download")) {
+      const prefix_div_el = this.get_prefix_div_element();
 
-    if (prefix_div_el) {
-      prefix_div_el.innerHTML = "";
-      if (value) {
-        prefix_div_el.classList.add("text-nowrap", "pe-3");
-        const download_btn = this.constructor.html(
-          '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
-        );
-        download_btn.addEventListener("click", async () => CN_common.download_file(
-          this.get_value().data,
-          await this.get_config("file").get_filename()
-        ));
-        prefix_div_el.append(download_btn);
-        prefix_div_el.append(this.constructor.html(`
-          <span name="filesize" class="col-form-label ps-2">${CN_common.format_filesize(value.size)}</span>
-        `));
+      if (prefix_div_el) {
+        prefix_div_el.innerHTML = "";
+        if (value) {
+          prefix_div_el.classList.add("text-nowrap", "pe-3");
+          const download_btn = this.constructor.html(
+            '<button name="download" type="button" class="btn btn-outline-primary">Download</button>'
+          );
+          download_btn.addEventListener("click", async () => CN_common.download_file(
+            this.get_value().data,
+            await this.get_config("file").get_filename()
+          ));
+          prefix_div_el.append(download_btn);
+          prefix_div_el.append(this.constructor.html(`
+            <span name="filesize" class="col-form-label ps-2">${CN_common.format_filesize(value.size)}</span>
+          `));
+        }
       }
     }
   }
