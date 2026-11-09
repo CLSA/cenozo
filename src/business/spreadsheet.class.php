@@ -197,7 +197,7 @@ class spreadsheet extends \cenozo\base_object
           {
             $datetime_obj = $util_class_name::get_datetime_object( $value );
             if( !is_null( $db_user ) ) $datetime_obj->setTimezone( $db_user->get_timezone_object() );
-            $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
+            $value = $datetime_obj->format( 'Y-m-d '.$time_format.' (P)' );
           }
           else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
 

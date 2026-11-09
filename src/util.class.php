@@ -697,7 +697,7 @@ class util
             {
               $datetime_obj = static::get_datetime_object( $value );
               $datetime_obj->setTimezone( $db_user->get_timezone_object() );
-              $value = $datetime_obj->format( 'Y-m-d '.$time_format.' T' );
+              $value = $datetime_obj->format( 'Y-m-d '.$time_format.' (P)' );
             }
             else if( is_bool( $value ) ) $value = $value ? 'yes' : 'no';
 
