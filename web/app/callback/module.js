@@ -30,7 +30,7 @@ cenozoApp.defineModule({
         */
         date.tz(timezone);
         const parts = date.format("Z").match(/(.*):(.*)/);
-        const offset = -(Number(parts[1]) * 60 + Number(parts[2]));
+        const offset = Number(parts[1]) * 60 + Number(parts[2]) * (0 > Number(parts[1]) ? -1 : 1);
 
         // get the identifier now and not in the getIdentifier() function below
         var identifier = participant.getIdentifier();
@@ -39,8 +39,8 @@ cenozoApp.defineModule({
             return identifier;
           },
           title: participant.uid,
-          start: moment(participant.callback).subtract(offset, "minutes"),
-          end: moment(participant.callback).subtract(offset - 60, "minutes"),
+          start: moment(participant.callback).add(offset, "minutes"),
+          end: moment(participant.callback).add(offset - 60, "minutes"),
         };
       }
     }
