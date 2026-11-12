@@ -79,13 +79,13 @@ export class CN_element_breadcrumb_trail extends CN_base_element {
       last_crumb_el = crumb_el;
       el.append(crumb_el);
       if (null == crumb.path) {
-        this.constructor.set_disabled(crumb_el, true);
+        this.constructor.disable(crumb_el);
       } else {
         crumb_el.addEventListener("click", () => CN_session.navigate_to(crumb.path));
       }
     });
 
     // the last crumb shuold always be disabled
-    if (last_crumb_el) this.constructor.set_disabled(last_crumb_el, true);
+    if (last_crumb_el) this.constructor.disable(last_crumb_el);
   }
 }

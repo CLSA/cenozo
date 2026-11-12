@@ -18,8 +18,9 @@ export class CN_input_rank extends CN_input_enum {
     // create the parent enum property based on the max_rank
     cnf.enum = {
       get_enums: async () => {
-        const max_rank = Number(CN_common.is_function(cnf.max_rank) ? (await cnf.max_rank(this)) : cnf.max_rank);
-        return CN_common.get_list_of_numbers(max_rank).map(i => ({
+        const max_rank = this.get_config("max_rank");
+        const max = Number(CN_common.is_function(max_rank) ? await max_rank(this) : max_rank);
+        return CN_common.get_list_of_numbers(max).map(i => ({
           key: i+1,
           value: CN_common.ordinal_suffix(i+1),
           disabled: false,

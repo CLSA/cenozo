@@ -837,7 +837,7 @@ export class CN_multiedit_participant extends CN_base_action {
 
         fields_el.innerHTML = "";
         mod.form_input_list = {};
-        this.constructor.set_disabled(mod.proceed_btn_el, true);
+        this.constructor.disable(mod.proceed_btn_el);
 
         // create a list of all selected participant properties
         this.#selected_participant_properties.forEach(prop_name => {
@@ -1087,11 +1087,10 @@ export class CN_multiedit_participant extends CN_base_action {
 
     this.#participant_selection.add_event_listener("selectionchanged", () => {
       const participant_edit_el = body_el.querySelector("[name=participant-edit]");
-      if (this.#participant_selection.get_identifier_list().length) {
-        participant_edit_el.classList.remove("d-none");
-      } else {
-        participant_edit_el.classList.add("d-none");
-      }
+      this.constructor.set_hidden(
+        participant_edit_el,
+        0 == this.#participant_selection.get_identifier_list().length
+      );
     });
 
     const participant_list_el = body_el.querySelector("[name=participant-list]");
@@ -1155,7 +1154,7 @@ export class CN_multiedit_participant extends CN_base_action {
           `Add ${pretty_module_name}`
         }</button>
       `);
-      this.constructor.set_disabled(mod.proceed_btn_el, true);
+      this.constructor.disable(mod.proceed_btn_el);
 
       mod.proceed_btn_el.addEventListener("click", async () => {
         let response = null;
@@ -1530,7 +1529,7 @@ export class CN_element_participant_selection extends CN_base_element {
     this.#confirm_btn_el = this.constructor.html(
       '<button name="confirm" type="button" class="btn btn-primary ms-2">Confirm List</button>'
     );
-    this.constructor.set_disabled(this.#confirm_btn_el, true);
+    this.constructor.disable(this.#confirm_btn_el);
 
     const row_el = element.querySelector("div.row");
     CN_element_label.append(row_el, {

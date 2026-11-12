@@ -392,14 +392,14 @@ export class CN_action_base_export extends CN_base_action {
       await this._add_subtype_form_input.update();
       this._add_subtype_form_input.get_control_element().querySelector('option[value=""]').remove();
       await this._add_subtype_form_input.set_value(table.subtype_enum_list[0].key);
-      footer_el.querySelector("label[for=add_subtype]").classList.remove("d-none");
-      this._add_subtype_form_input.get_element().classList.remove("d-none");
+      this.constructor.show(footer_el.querySelector("label[for=add_subtype]"));
+      this.constructor.show(this._add_subtype_form_input.get_element());
     } else {
       this._add_subtype_form_input.set_config("enum", { values: [] });
       await this._add_subtype_form_input.update();
       await this._add_subtype_form_input.set_value(null);
-      footer_el.querySelector("label[for=add_subtype]").classList.add("d-none");
-      this._add_subtype_form_input.get_element().classList.add("d-none");
+      this.constructor.hide(footer_el.querySelector("label[for=add_subtype]"));
+      this.constructor.hide(this._add_subtype_form_input.get_element());
     }
   }
 }

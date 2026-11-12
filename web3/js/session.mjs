@@ -276,7 +276,7 @@ class session extends CN_base_object {
     const webphone_btn_el = this.#main_menu_header_el.querySelector("button[name=webphone]");
     if (this.get("application", "voip_enabled")) {
       webphone_btn_el.replaceChildren(CN_base_element.html('<i class="bi bi-three-dots"></i>'));
-      webphone_btn_el.classList.remove("d-none");
+      CN_base_element.show(webphone_btn_el);
 
       await CN_voip.update();
 
@@ -287,7 +287,7 @@ class session extends CN_base_object {
         '<span class="bi-overlap-group"><i class="bi bi-slash-lg"></i><i class="bi bi-headset"></i></span>'
       ));
     } else {
-      webphone_btn_el.classList.add("d-none");
+      CN_base_element.hide(webphone_btn_el);
     }
   }
 
@@ -669,7 +669,7 @@ class session extends CN_base_object {
           </div>
         </div>
       `);
-      CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
+      CN_base_element.disable(sub_menu_el.querySelector("button"));
       if (null != col_width) sub_menu_el.classList.add(`col-${split_lists ? 2*col_width : col_width}`);
       this.#menu_el.append(sub_menu_el);
 
@@ -728,7 +728,7 @@ class session extends CN_base_object {
           </div>
         </div>
       `);
-      CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
+      CN_base_element.disable(sub_menu_el.querySelector("button"));
       if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
       this.#menu_el.append(sub_menu_el);
 
@@ -759,7 +759,7 @@ class session extends CN_base_object {
           </div>
         </div>
       `);
-      CN_base_element.set_disabled(sub_menu_el.querySelector("button"), true);
+      CN_base_element.disable(sub_menu_el.querySelector("button"));
       if (null != col_width) sub_menu_el.classList.add(`col-${col_width}`);
       this.#menu_el.append(sub_menu_el);
 

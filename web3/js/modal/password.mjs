@@ -74,7 +74,7 @@ export class CN_modal_password extends CN_modal_base_form {
     const ok_btn_el = this.get_resolve_button("OK").element;
     if (pw_form_input.get_value() != new_pw_form_input.get_value()) {
       new_pw_form_input.show_error("Does not match new password", 0);
-      this.constructor.set_disabled(ok_btn_el, true);
+      this.constructor.disable(ok_btn_el);
       return false;
     }
 

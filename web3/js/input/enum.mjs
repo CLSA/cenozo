@@ -46,7 +46,7 @@ export class CN_input_enum extends CN_base_input {
   get_value() {
     // cast integer values as a number instead of a string
     const value = super.get_value();
-    return CN_common.is_integer(value) ? Number(value) : value;
+    return CN_common.is_string(value) && value == String(Number(value)) ? Number(value) : value;
   }
 
   /**
@@ -132,7 +132,7 @@ export class CN_input_enum extends CN_base_input {
 
       enum_obj.values.forEach(option => {
         const option_el = this.constructor.html(`<option value="${option.key}">${option.value}</option>`);
-        if (option.disabled) this.constructor.set_disabled(option_el, true);
+        if (option.disabled) this.constructor.disable(option_el);
 
         // determine which option is selected
         if (test_option(option, value)) {

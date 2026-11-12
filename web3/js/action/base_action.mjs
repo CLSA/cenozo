@@ -349,14 +349,14 @@ export class CN_base_action extends CN_base_element {
     const notation_module = CN_session.get_module("notation");
     const notation = this.get_model().get_module().get_notation(this.#type);
     if (notation || (notation_module && notation_module.action_allowed("edit"))) {
-      notation_btn_el.classList.remove("d-none");
+      this.constructor.show(notation_btn_el);
       if (notation) {
         notation_btn_el.querySelector("i").classList.add("text-warning");
       } else {
         notation_btn_el.querySelector("i").classList.remove("text-warning");
       }
     } else {
-      notation_btn_el.classList.add("d-none");
+      this.constructor.hide(notation_btn_el);
     }
   }
 
@@ -383,10 +383,11 @@ export class CN_base_action extends CN_base_element {
 
     // add a data notation button (not shown until update_element() is called)
     const notation_btn_el = this.constructor.html(`
-      <button type="button" name="notation" class="btn btn-primary px-2 py-0 d-none">
+      <button type="button" name="notation" class="btn btn-primary px-2 py-0">
         <i class="bi bi-info-circle fs-5"></i>
       </button>
     `);
+    this.constructor.hide(notation_btn_el);
     notation_btn_el.addEventListener("click", this.open_notation.bind(this));
     el.append(notation_btn_el);
     this.#documentation_tooltip = new bootstrap.Tooltip(notation_btn_el, {

@@ -227,9 +227,9 @@ export class CN_element_calendar extends CN_base_element {
     const el = this.get_element();
     el.querySelectorAll("li a").forEach(a_el => {
       if (a_el.getAttribute("name") == this.#mode) {
-        this.constructor.set_disabled(a_el, true);
+        this.constructor.disable(a_el);
       } else {
-        this.constructor.set_disabled(a_el, false);
+        this.constructor.enable(a_el);
       }
     });
     if ("month" == this.#mode) {

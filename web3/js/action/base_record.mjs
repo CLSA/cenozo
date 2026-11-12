@@ -292,23 +292,15 @@ export class CN_action_base_record extends CN_base_action {
       const group = this.#property_groups[group_name];
       if ("$main" != group_name) {
         const group_el = this.get_element().querySelector(`.accordion-item[name=${group_name}]`);
-        if (group_el) {
-          if (group.is_hidden()) {
-            group_el.classList.add("d-none");
-          } else {
-            group_el.classList.remove("d-none");
-          }
-        }
+        if (group_el) this.constructor.set_hidden(group_el, group.is_hidden());
       }
       for (const prop_name in group.properties) {
         const prop = group.properties[prop_name];
         const prop_el = this.get_element().querySelector(`[name=${prop.id}]`);
         if (prop_el) {
           // remove any properties that evaluate to hidden
-          if (prop.is_hidden()) {
-            prop_el.classList.add("d-none");
-          } else {
-            prop_el.classList.remove("d-none");
+          this.constructor.set_hidden(prop_el, prop.is_hidden());
+          if (!prop.is_hidden()) {
             prop.form_input.update_element();
 
             // disable any properties that evaluate to constant

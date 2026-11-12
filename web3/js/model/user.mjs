@@ -362,15 +362,13 @@ export class CN_view_user extends CN_action_view {
     super.update_element();
 
     const listen_btn_el = this.get_footer_element().querySelector("button[name=listen]");
-    if (
-      1 < CN_session.get("role", "tier") &&
-      CN_session.get("application", "voip_enabled") &&
-      this.get_property_value("in_call")
-    ) {
-      listen_btn_el.classList.remove("d-none");
-    } else {
-      listen_btn_el.classList.add("d-none");
-    }
+
+    this.constructor.set_hidden(
+      listen_btn_el, 
+      1 >= CN_session.get("role", "tier") ||
+      !CN_session.get("application", "voip_enabled") ||
+      !this.get_property_value("in_call")
+    );
 
     const info = CN_voip.get_info();
     //this.constructor.set_disabled(listen_btn_el, !info || "Reachable" != info.status);
@@ -430,9 +428,10 @@ export class CN_view_user extends CN_action_view {
       <button
         name="listen"
         type="button"
-        class="btn btn-warning d-none"
+        class="btn btn-warning"
       >Listen to Call</button>
     `);
+    this.constructor.hide(listen_btn_el);
     listen_btn_el.addEventListener("click", async () => {
       if (this.#listening_to_call) {
         await this.#stop_listening();

@@ -262,11 +262,7 @@ export class CN_mass_participant_stratum extends CN_base_action {
     this.#participant_selection.get_element().classList.add("py-2");
     this.#participant_selection.add_event_listener("selectionchanged", () => {
       const confirm_el = body_el.querySelector("[name=participant-confirm]");
-      if (this.#participant_selection.get_identifier_list().length) {
-        confirm_el.classList.remove("d-none");
-      } else {
-        confirm_el.classList.add("d-none");
-      }
+      this.constructor.set_hidden(confirm_el, 0 == this.#participant_selection.get_identifier_list().length);
       this.update_element();
     });
 

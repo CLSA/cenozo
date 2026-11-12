@@ -160,6 +160,25 @@ export class CN_base_element extends CN_base_object {
       }
     }
   }
+  static disable(element) { this.set_disabled(element, true); }
+  static enable(element) { this.set_disabled(element, false); }
+
+  /**
+   * ADD DOCS
+   */
+  static set_hidden(element, hidden) {
+    if (!CN_common.is_element(element)) {
+      if (element) console.error(`Tried to set hidden state on non element.`);
+    } else {
+      if (hidden) {
+        element.classList.add("d-none");
+      } else {
+        element.classList.remove("d-none");
+      }
+    }
+  }
+  static hide(element) { this.set_hidden(element, true); }
+  static show(element) { this.set_hidden(element, false); }
 
   /**
    * Creates a "please wait" blocking modal

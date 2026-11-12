@@ -107,11 +107,11 @@ export class CN_modal_webphone extends CN_base_modal {
     if (info && "Reachable" == info.status) {
       status_el.classList.add("text-success");
       status_el.classList.remove("text-danger");
-      this.constructor.set_disabled(this.#audio_btn_el, false);
+      this.constructor.enable(this.#audio_btn_el);
     } else {
       status_el.classList.add("text-danger");
       status_el.classList.remove("text-success");
-      this.constructor.set_disabled(this.#audio_btn_el, true);
+      this.constructor.disable(this.#audio_btn_el);
     }
 
     el.querySelector("div[name=agent]").innerHTML = info ? info.agent : "N/A";
@@ -221,7 +221,8 @@ export class CN_modal_webphone extends CN_base_modal {
     for (const key in this.#audio_inputs) {
       if (this.#audio_inputs.hasOwnProperty(key)) {
         const input = this.#audio_inputs[key];
-        const row_el = this.constructor.html(`<div name="${key}" class="row pb-1 d-none"></div>`);
+        const row_el = this.constructor.html(`<div name="${key}" class="row pb-1"></div>`);
+        this.constructor.hide(row_el);
         CN_element_label.append(row_el, { for: key, value: input.title, class: "col-sm-4" });
 
         if ("language" == key) {
@@ -375,23 +376,23 @@ export class CN_modal_webphone extends CN_base_modal {
       // now update the active recording's properties
       const language_form_input = this.#audio_inputs.language.form_input;
       if (this.#active_recording.record) {
-        language_row_el.classList.add("d-none");
+        this.constructor.hide(language_row_el);
 
         language_form_input.set_config("enum", { values: [] });
         await language_form_input.update();
         language_form_input.set_value(null);
 
-        volume_row_el.classList.add("d-none");
+        this.constructor.hide(volume_row_el);
 
         this.#audio_inputs.time_limit.element.innerHTML = (
           this.#active_recording.timer ?
           CN_common.seconds_to_string(this.#active_recording.timer) :
           "no limit"
         );
-        time_limit_row_el.classList.remove("d-none");
+        this.constructor.show(time_limit_row_el);
 
         this.#audio_inputs.time_elapsed.element.innerHTML = "0 seconds";
-        time_elapsed_row_el.classList.remove("d-none");
+        this.constructor.show(time_elapsed_row_el);
       } else {
         // if we have never selected a language make note of the first one in the file list now
         if (!this.#audio_inputs.language.last_label && 0 < this.#active_recording.file_list.length)
@@ -415,15 +416,14 @@ export class CN_modal_webphone extends CN_base_modal {
           null
         );
 
-        language_row_el.classList.remove("d-none");
-        volume_row_el.classList.remove("d-none");
-        time_limit_row_el.classList.add("d-none");
+        this.constructor.show(language_row_el);
+        this.constructor.show(volume_row_el);
+        this.constructor.hide(time_limit_row_el);
         this.#audio_inputs.time_limit.element.innerHTML = "";
-        time_elapsed_row_el.classList.add("d-none");
+        this.constructor.hide(time_elapsed_row_el);
         this.#audio_inputs.time_elapsed.element.innerHTML = "";
       }
     }
-
   }
 
   /**
@@ -431,7 +431,7 @@ export class CN_modal_webphone extends CN_base_modal {
    */
   async #play_audio() {
     try {
-      this.constructor.set_disabled(this.#audio_btn_el, true);
+      this.constructor.disable(this.#audio_btn_el);
       await CN_api.patch("voip/0", {
         operation: "play_sound",
         recording_file_id: this.#audio_inputs.language.form_input.get_value_for_record(),
@@ -449,7 +449,7 @@ export class CN_modal_webphone extends CN_base_modal {
         throw error;
       }
     } finally {
-      this.constructor.set_disabled(this.#audio_btn_el, false);
+      this.constructor.enable(this.#audio_btn_el);
     }
   }
 

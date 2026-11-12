@@ -60,12 +60,12 @@ export class CN_model_export extends CN_base_model {
                 "click",
                 async () => {
                   await this.get_action().set_property_value("participant_count", "(calculating...)");
-                  CN_base_element.set_disabled(btn_el, true);
+                  CN_base_element.disable(btn_el);
                   await this.get_action().set_property_value(
                     "participant_count",
                     await CN_api.count(`${this.get_view_url(null, "api")}/participant`)
                   );
-                  CN_base_element.set_disabled(btn_el, false);
+                  CN_base_element.enable(btn_el);
                 },
               );
               el.append(btn_el);

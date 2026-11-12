@@ -53,7 +53,7 @@ export class CN_model_home extends CN_base_model {
 
         const btn_el = message_el.querySelector("button");
         btn_el.addEventListener("click", async () => {
-          CN_base_element.set_disabled(btn_el, true);
+          CN_base_element.disable(btn_el);
 
           const message = this.#system_message_list[message_index];
           if (message.unread) {
@@ -68,7 +68,7 @@ export class CN_model_home extends CN_base_model {
           CN_session.update_breadcrumbs();
           this.update_element();
 
-          CN_base_element.set_disabled(btn_el, false);
+          CN_base_element.enable(btn_el);
         });
         sm_el.append(message_el);
       });

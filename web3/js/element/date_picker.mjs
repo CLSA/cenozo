@@ -189,7 +189,7 @@ export class CN_element_date_picker extends CN_base_element {
         `<button type="button" class="btn btn-light w-100 rounded-0">${day}</button>`
       );
       date_td_el.append(date_btn_el);
-      if (restricted || month != this.#month) this.constructor.set_disabled(date_btn_el, true);
+      if (restricted || month != this.#month) this.constructor.disable(date_btn_el);
 
       // highlight if the calendar date matches the date selected by the user
       if (
