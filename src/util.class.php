@@ -618,6 +618,36 @@ class util
   }
 
   /**
+   * Converts a string representing CSV data into an array
+   * 
+   * The only way to accurately parse a CSV file is using the fgetcsv command since the get_getcsv command
+   * does not handle cells with newlines correctly.  This method provides a way to get all CSV data from CSV
+   * data stored in a string (that is not already in a file).
+   * @param string $string CSV data stored in a string
+   * @param string $separator The field separator (must be a single byte character).
+   * @param string $enclosure The field enclosure character (must be a single byte character).
+   * @return associative array
+   * @static
+   * @access public
+   */
+  public static function parse_csv_string( $string, $separator = ",", $enclosure = '"' )
+  {
+    // write string to a temporary file
+    $filename = sprintf( '%s/%s.csv', TEMP_PATH, bin2hex( openssl_random_pseudo_bytes( 16 ) ) );
+    file_put_contents( $filename, $string );
+    $handle = fopen( $filename, "r" );
+
+    $data = [];
+    while( $fields = fgetcsv( $handle, NULL, $separator, $enclosure, '' ) ) $data[] = $fields;
+
+    // make sure to close and delete the temporary file
+    fclose( $handle );
+    unlink( $filename );
+
+    return $data;
+  }
+
+  /**
    * Converts raw data from the database into CSV format
    * 
    * This method will alter the data including:

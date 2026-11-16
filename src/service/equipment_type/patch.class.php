@@ -23,12 +23,17 @@ class patch extends \cenozo\service\patch
    */
   protected function execute()
   {
+    $util_class_name = lib::get_class_name( 'util' );
+
     if( $import = $this->get_argument( 'import', false ) )
     {
       $db_equipment_type = $this->get_leaf_record();
-      $csv_data = str_getcsv( $this->get_file_as_raw(), "\n" );
-      foreach( $csv_data as &$row ) $row = str_getcsv( $row );
-      $this->set_data( $db_equipment_type->import_from_array( $csv_data, 'apply' == $import ) );
+      $this->set_data(
+        $db_equipment_type->import_from_array(
+          $util_class_name::parse_csv_string( $this->get_file_as_raw() ),
+          'apply' == $import
+        )
+      );
     }
     else
     {
