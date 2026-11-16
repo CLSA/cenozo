@@ -364,7 +364,7 @@ export class CN_view_user extends CN_action_view {
     const listen_btn_el = this.get_footer_element().querySelector("button[name=listen]");
 
     this.constructor.set_hidden(
-      listen_btn_el, 
+      listen_btn_el,
       1 >= CN_session.get("role", "tier") ||
       !CN_session.get("application", "voip_enabled") ||
       !this.get_property_value("in_call")

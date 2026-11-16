@@ -5,9 +5,9 @@ import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_element_card } from "../element/card.mjs"
 import { CN_element_label } from "../element/label.mjs"
+import { CN_element_participant_selection } from "../element/participant_selection.mjs"
 import { CN_input_enum } from "../input/enum.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
-import { CN_element_participant_selection } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_model_stratum extends CN_base_model {
