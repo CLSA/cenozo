@@ -84,7 +84,8 @@ export class CN_action_base_record extends CN_base_action {
    *     (the default value is "string")
    *   help: text that will appear when hovering over the property's label
    *     (the default is undefined - no help text)
-   *   format: restricts the property's value to a predefined format ("alphanum", "alpha_num" or "identifier")
+   *   format: restricts the property's value to a predefined format.
+   *     Must be one of the following: "alphanum", "alpha_num", "alpha-num or "alpha_-num"
    *     (the default is undefined - no format)
    *   regex: restricts the property's value to a regular expression as a string (or array of strings)
    *     (the default is undefined - no regex)

@@ -16,7 +16,7 @@ export class CN_model_report_type extends CN_base_model {
         description: { title: "Description", align: "left" },
       },
       properties: {
-        title: { title: "Title", format: "identifier" },
+        title: { title: "Title" },
         subject: { title: "Subject" },
         description: { title: "Description", type: "text" },
       },

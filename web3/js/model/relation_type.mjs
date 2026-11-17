@@ -16,7 +16,7 @@ export class CN_model_relation_type extends CN_base_model {
         relation_count: { title: "Participants", type: "integer", table_prefix: false },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         rank: { title: "Rank", type: "rank" },
       },
     });

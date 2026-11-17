@@ -33,7 +33,6 @@ export class CN_model_participant_identifier extends CN_base_model {
         },
         value: {
           title: "Value",
-          format: "identifier",
           is_constant: () => {
             return (
               "view" == this.get_action_name() ?

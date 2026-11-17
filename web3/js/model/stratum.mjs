@@ -53,7 +53,7 @@ export class CN_model_stratum extends CN_base_model {
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         participant_count: {
           meta: {}, // predefined by the service
           title: "Total Participants",

@@ -42,7 +42,7 @@ export class CN_model_equipment extends CN_base_model {
             !CN_session.get("role", "all_sites") ||
             "site" == this.get_parent_model().get_name(),
         },
-        serial_number: { title: "Serial Number", format: "identifier" },
+        serial_number: { title: "Serial Number" },
         status: {
           title: "Status",
           is_constant: () => true,

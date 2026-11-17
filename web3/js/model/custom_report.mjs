@@ -19,7 +19,7 @@ export class CN_model_custom_report extends CN_base_model {
         description: { title: "Description", type: "text", align: "left", limit: 500 },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         data: {
           title: "SQL Report",
           type: "file",

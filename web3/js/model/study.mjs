@@ -15,7 +15,7 @@ export class CN_model_study extends CN_base_model {
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         consent_type_id: {
           title: "Extra Consent Type",
           type: "enum",

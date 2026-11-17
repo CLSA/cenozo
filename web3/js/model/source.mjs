@@ -14,7 +14,7 @@ export class CN_model_source extends CN_base_model {
         participant_count: { title: "Participants", type: "integer", table_prefix: false },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         override_stratum: { title: "Override Stratum Restrictions", type: "boolean" },
         description: { title: "Description", type: "text" },
       },

@@ -37,7 +37,7 @@ export class CN_model_alternate_type extends CN_base_model {
           format: "alpha_num",
           help: "May only contain letters, numbers and underscores.",
         },
-        title: { title: "Title", format: "identifier" },
+        title: { title: "Title" },
         alternate_consent_type_id: {
           title: "Alternate Consent Type",
           type: "enum",

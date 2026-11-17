@@ -17,7 +17,7 @@ export class CN_model_hold_type extends CN_base_model {
       },
       properties: {
         type: { title: "Type", type: "enum" },
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         description: { title: "Description", type: "text" },
       },
     });

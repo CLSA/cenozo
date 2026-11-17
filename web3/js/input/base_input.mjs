@@ -61,11 +61,11 @@ export class CN_base_input extends CN_base_element {
     // make sure format config value is valid
     if (this.has_config("format")) {
       const format = this.get_config("format");
-      if (format && !["alphanum", "alpha_num", "identifier"].includes(format)) {
-        throw new Error(
-          `Invalid format "${format}" set for input "${name}", ` +
-          `must be one of "alphanum", "alpha_num", or "identifier"`
-        );
+      const valid_format_list = ["alphanum", "alpha_num", "alpha-num", "alpha_-num"];
+      if (format && !valid_format_list.includes(format)) {
+        throw new Error(`
+          Invalid format "${format}" set for input "${name}", must be one of: ${valid_format_list.join(", ")}
+        `);
       }
     }
 
@@ -254,7 +254,8 @@ export class CN_base_input extends CN_base_element {
         const format = this.get_config("format");
         if ("alphanum" == format) re = /^[a-zA-Z0-9]+$/;
         else if ("alpha_num" == format) re = /^[a-zA-Z0-9_]+$/;
-        else if ("identifier" == format) re = /^[^;=\/]+$/;
+        else if ("alpha-num" == format) re = /^[a-zA-Z0-9-]+$/;
+        else if ("alpha_-num" == format) re = /^[a-zA-Z0-9_-]+$/;
         if (re && !re.test(value)) error = "Invalid format";
       }
 

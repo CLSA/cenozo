@@ -15,7 +15,7 @@ export class CN_model_event_type extends CN_base_model {
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         record_address: {
           title: "Track Address",
           type: "boolean",

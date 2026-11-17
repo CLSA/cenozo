@@ -39,7 +39,7 @@ export class CN_model_export extends CN_base_model {
         description: { column: "export.description", title: "Description", type: "text" },
       },
       properties: {
-        title: { title: "Title", format: "identifier" },
+        title: { title: "Title" },
         user_id: {
           title: "Owner",
           type: "typeahead",

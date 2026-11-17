@@ -22,7 +22,7 @@ export class CN_model_equipment_type extends CN_base_model {
         description: { title: "Description", align: "left" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         regex: { title: "Format" },
         description: { title: "Description", type: "text" },
       },

@@ -15,7 +15,7 @@ export class CN_model_proxy_type extends CN_base_model {
         description: { title: "Description", type: "text" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
+        name: { title: "Name" },
         description: { title: "Description", type: "text" },
         prompt: {
           title: "Prompt",

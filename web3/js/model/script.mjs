@@ -17,7 +17,7 @@ export class CN_model_script extends CN_base_model {
         access: { title: "In Application", type: "boolean", table_prefix: false },
       },
       properties: {
-        name: { title: "Name", format: "identifier", },
+        name: { title: "Name", },
         pine_qnaire_id: {
           title: "Pine Questionnaire",
           type: "enum",

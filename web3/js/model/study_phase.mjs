@@ -20,8 +20,8 @@ export class CN_model_study_phase extends CN_base_model {
         identifier: { column: "identifier.name", title: "Identifier" },
       },
       properties: {
-        name: { title: "Name", format: "identifier" },
-        code: { title: "Code", format: "identifier" },
+        name: { title: "Name" },
+        code: { title: "Code" },
         rank: { title: "Rank", type: "rank" },
         identifier_id: {
           title: "Special Identifier",
