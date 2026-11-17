@@ -1,8 +1,8 @@
 import { CN_api } from "../api.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_model_country } from "./country.mjs"
-import { CN_session } from "../session.mjs"
 import { CN_model_traceable, CN_add_traceable, CN_list_traceable, CN_view_traceable } from "./traceable_model.mjs"
+import { CN_session } from "../session.mjs"
 
 export class CN_model_address extends CN_model_traceable {
   constructor() {

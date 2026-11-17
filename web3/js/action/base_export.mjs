@@ -2,8 +2,8 @@ import { CN_api } from "../api.mjs"
 import { CN_base_action } from "../action/base_action.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_element_label } from "../element/label.mjs"
-import { CN_input_enum } from "../input/enum.mjs"
 import { CN_input } from "../input/input.mjs"
+import { CN_input_enum } from "../input/enum.mjs"
 import { CN_session } from "../session.mjs"
 
 export class CN_action_base_export extends CN_base_action {

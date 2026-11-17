@@ -1,11 +1,7 @@
 import { CN_action_notes } from "../action/notes.mjs"
 import { CN_api } from "../api.mjs"
-import {
-  CN_model_base_person,
-  CN_view_base_person,
-  CN_history_base_person,
-} from "./base_person.mjs"
 import { CN_common } from "../common.mjs"
+import { CN_model_base_person, CN_view_base_person, CN_history_base_person } from "./base_person.mjs"
 import { CN_model_participant } from "./participant.mjs"
 import { CN_session } from "../session.mjs"
 

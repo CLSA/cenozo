@@ -3,8 +3,8 @@ import { CN_api } from "../api.mjs"
 import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
 import { CN_modal_message } from "../modal/message.mjs"
-import { CN_model_trace_type } from "./trace_type.mjs"
 import { CN_model_participant } from "./participant.mjs"
+import { CN_model_trace_type } from "./trace_type.mjs"
 
 export class CN_model_trace_type_mail extends CN_base_model {
   constructor() {

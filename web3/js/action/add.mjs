@@ -106,7 +106,8 @@ export class CN_action_add extends CN_action_base_record {
     } catch (error) {
       if (CN_common.is_uri_error(error, 409)) {
         JSON.parse(error.body).forEach(prop_name => {
-          this.get_property(prop_name).form_input.show_error("Conflicts with existing record", 0);
+          const prop = this.get_property(prop_name);
+          if (prop) prop.form_input.show_error("Conflicts with existing record", 0);
         });
       } else {
         throw error;

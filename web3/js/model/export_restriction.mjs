@@ -1,10 +1,10 @@
 import { CN_action_base_export } from "../action/base_export.mjs"
 import { CN_api } from "../api.mjs"
+import { CN_base_model } from "./base_model.mjs"
 import { CN_common } from "../common.mjs"
+import { CN_input } from "../input/input.mjs"
 import { CN_input_enum } from "../input/enum.mjs"
 import { CN_input_rank } from "../input/rank.mjs"
-import { CN_input } from "../input/input.mjs"
-import { CN_base_model } from "./base_model.mjs"
 
 export class CN_model_export_restriction extends CN_base_model {
   constructor() {

@@ -1,8 +1,7 @@
 import { CN_base_modal } from "./base_modal.mjs"
 import { CN_common } from "../common.mjs"
-
-import { CN_input } from "../input/input.mjs";
 import { CN_element_label } from "../element/label.mjs";
+import { CN_input } from "../input/input.mjs";
 
 export class CN_modal_base_form extends CN_base_modal {
   #input_list = [];
