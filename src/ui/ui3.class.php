@@ -628,7 +628,7 @@ class ui3 extends \cenozo\base_object
       $this->add_menu_item( 'list', 'Assignments', 'assignment' );
     }
 
-    if( 2 <= $db_role->tier )
+    if( 2 <= $db_role->tier || 'readonly' == $db_role->name )
     {
       $this->add_menu_item( 'list', 'Overviews', 'overview' );
       $this->add_menu_item( 'list', 'System Messages', 'system_message' );
