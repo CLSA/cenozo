@@ -304,8 +304,9 @@ export class CN_action_base_record extends CN_base_action {
           if (!prop.is_hidden()) {
             prop.form_input.update_element();
 
-            // disable any properties that evaluate to constant
+            // disable any properties that evaluate to constant, also disable undoing
             if (prop.is_constant()) prop.form_input.set_disabled(true);
+            prop.form_input.set_config("undo", !prop.is_constant());
 
             // now update the property element (this varies in the child action_add and action_view classes)
             this.update_property_element(prop.name);
