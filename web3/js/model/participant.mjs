@@ -430,11 +430,24 @@ export class CN_model_participant extends CN_model_base_person {
       !("view" == this.get_action_name() && "Yes" != this.get_action().get_property_value("exclusion"))
     );
   }
+
+  /**
+   * Extend parent method
+   */
+  get_child_model_list() {
+    const action = this.get_action();
+    return (
+      "view" == action.get_type() && !action.get_show_study_phase_status() ?
+      super.get_child_model_list().filter(model => "study_phase_status" != model.get_name()) :
+      super.get_child_model_list()
+    );
+  }
+
 }
 
 export class CN_list_participant extends CN_action_list {
   /**
-   * Extends the parent method
+   * Extend parent method
    */
   _create_footer_element() {
     const footer_el = super._create_footer_element();
@@ -456,8 +469,10 @@ export class CN_list_participant extends CN_action_list {
 export class CN_view_participant extends CN_view_base_person {
   #show_study_phase_status = false;
 
+  get_show_study_phase_status() { return this.#show_study_phase_status; }
+
   /**
-   * Extends the parent method
+   * Extend parent method
    */
   async get_text(type) {
     if ("crumb" == type) {
@@ -489,20 +504,18 @@ export class CN_view_participant extends CN_view_base_person {
   }
 
   /**
-   * Extends the parent method
+   * Extend parent method
    */
   get_selector_child_list() {
-    return super.get_selector_child_list()
-      .filter(child => {
-        // make participant identifier title more user friendly
-        if ("participant_identifier" == child.model.get_name()) child.title = "Identifier";
-        // only include the study phase status child if needed
-        return this.#show_study_phase_status || "study_phase_status" != child.model.get_name();
-      });
+    return super.get_selector_child_list().map(child => {
+      // make participant identifier title more user friendly
+      if ("participant_identifier" == child.model.get_name()) child.title = "Identifier";
+      return child;
+    }).sort((a,b) => a.title>b.title);
   }
 
   /**
-   * Extends the parent method
+   * Extend parent method
    */
   async on_load() {
     // also update the study phase status ever time the action is loaded
@@ -546,6 +559,9 @@ export class CN_view_participant extends CN_view_base_person {
     return footer_el;
   }
 
+  /**
+   * ADD DOCS
+   */
   async #update_show_study_phase_status() {
     let count = 0;
     try {

@@ -201,18 +201,18 @@ export class CN_model_application extends CN_base_model {
 
     return columns;
   }
-}
 
-export class CN_view_application extends CN_action_view {
   /**
    * Extend the parent method to remove the collection and role list for all applications except the current one.
    * This is because only the current application can get collections and roles from the server.
    */
-  get_selector_child_list() {
+  get_child_model_list() {
+    const app_name = CN_session.get("application", "name");
+    const action = this.get_action();
     return (
-      CN_session.get("application", "name") == this.get_property_value("name") ?
-      super.get_selector_child_list() :
-      super.get_selector_child_list().filter(child => !["collection", "role"].includes(child.model.get_name()))
+      "view" == action.get_type() && action.get_property_value("name") != app_name ?
+      super.get_child_model_list().filter(model => !["collection", "role"].includes(model.get_name())) :
+      super.get_child_model_list()
     );
   }
 }

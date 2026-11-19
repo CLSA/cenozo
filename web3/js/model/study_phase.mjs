@@ -63,18 +63,16 @@ export class CN_model_study_phase extends CN_base_model {
       },
     };
   }
-}
 
-export class CN_view_study_phase extends CN_action_view {
   /**
    * Extends parent method
    */
-  get_selector_child_list() {
-    const child_list = super.get_selector_child_list();
+  get_child_model_list() {
+    const action = this.get_action();
     return (
-      !this.get_property_value("enable_status") ?
-      child_list.filter(child => "study_phase_status" != child.model.get_name()) :
-      child_list
+      "view" == action.get_type() && !action.get_property_value("enable_status") ?
+      super.get_child_model_list().filter(model => "study_phase_status" != model.get_name()) :
+      super.get_child_model_list()
     );
   }
 }

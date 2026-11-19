@@ -33,7 +33,7 @@ export class CN_action_view extends CN_action_base_record {
   }
 
   /**
-   * Extends the parent method
+   * Extend parent method
    */
   async get_text(type) {
     const model = this.get_model();
