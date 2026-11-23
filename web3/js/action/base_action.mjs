@@ -29,10 +29,12 @@ export class CN_base_action extends CN_base_element {
   /**
    * Constructor
    * @param string type: The type of action ("add", "list", "view", etc)
+   * @param Element parent_el: The action's parent element
    * @param base_model model: The model that the action belongs to
+   * @param {} i18n_data: Optional i18n data (for language translations)
    */
-  constructor(type, parent_el, model) {
-    super(parent_el, { name: type });
+  constructor(type, parent_el, model, i18n_data = null) {
+    super(parent_el, { name: type, i18n_data: i18n_data });
 
     if ("CN_base_action" == this.constructor) {
       throw new Error("Abstract class CN_base_action can't be instantiated.");

@@ -1,5 +1,6 @@
 import { CN_base_object } from "../base_object.mjs"
 import { CN_common } from "../common.mjs"
+import { CN_i18n } from "../i18n.mjs"
 
 /**
  * Base class for all elements
@@ -12,10 +13,12 @@ export class CN_base_element extends CN_base_object {
 
   #element;
   #parent_el;
+  #i18n;
   #event_listeners = {};
 
   /**
    * Constructor
+   * @param Element parent_el: The element's parent element
    * @param object config: A set of key/value pairs containing all of the modal's configuration parameters
    */
   constructor(parent_el, config = {}) {
@@ -31,6 +34,7 @@ export class CN_base_element extends CN_base_object {
         name: null, // will be added to the element as an attribute if defined
         class: null, // will be added to the element as an attribute if defined
         style: null, // will be added to the element as an attribute if defined
+        i18n_data: null, // i18n data object can be passed if needed (see t() method)
       },
       ...config
     });
@@ -41,6 +45,19 @@ export class CN_base_element extends CN_base_object {
 
     // store all properties in the config parameter
     this.set_parent_element(parent_el);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  t(lang, path, params = {}) {
+    // create i18n object on demand
+    if (!this.#i18n) {
+      this.#i18n = new CN_i18n();
+      const i18n_data = this.get_config("i18n_data");
+      if (i18n_data) this.#i18n.set_data(i18n_data);
+    }
+    return this.#i18n.get(lang, path, params);
   }
 
   /**
