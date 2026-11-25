@@ -17,11 +17,11 @@ export class CN_model_assignment extends CN_base_model {
         uid: {
           column: "participant.uid",
           title: "UID",
-          is_hidden: () => "assignment" != CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "assignment" != CN_session.get_leaf_name(),
         },
         qnaire_name: {
           title: "Questionnaire",
-          is_hidden: () => "assignment" != CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "assignment" != CN_session.get_leaf_name(),
           table_prefix: false,
         },
         user: { column: "user.name", title: "User" },

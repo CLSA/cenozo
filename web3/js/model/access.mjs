@@ -26,7 +26,10 @@ export class CN_model_access extends CN_base_model {
           typeahead: CN_model_user.get_typeahead({
             modifier: { where: { column: "user.active", operator: "=", value: true } },
           }),
-          is_hidden: () => "user" == CN_session.get_leaf_model().get_parent_model().get_name(),
+          is_hidden: () => {
+            const leaf_model = CN_session.get_leaf_model();
+            return leaf_model && "user" == leaf_model.get_parent_model().get_name();
+          },
         },
         role_id: {
           title: "Role",
@@ -61,7 +64,10 @@ export class CN_model_access extends CN_base_model {
               }));
             },
           },
-          is_hidden: () => "site" == CN_session.get_leaf_model().get_parent_model().get_name(),
+          is_hidden: () => {
+            const leaf_model = CN_session.get_leaf_model();
+            return leaf_model && "site" == leaf_model.get_parent_model().get_name();
+          },
         },
       },
     });

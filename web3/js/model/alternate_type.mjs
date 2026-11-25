@@ -18,12 +18,12 @@ export class CN_model_alternate_type extends CN_base_model {
           title: "Has Consent",
           type: "boolean",
           table_prefix: false,
-          is_hidden: () => "alternate" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "alternate" == CN_session.get_leaf_name(),
         },
         alternate_count: {
           title: "Alternates",
           table_prefix: false,
-          is_hidden: () => "alternate" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "alternate" == CN_session.get_leaf_name(),
         },
         description: { title: "Description", type: "text" },
 
@@ -55,10 +55,9 @@ export class CN_list_alternate_type extends CN_action_list {
    */
   is_choose_disabled(record) {
     // when selecting an alternate's alternate_type, restrict by role
-    const leaf_model = CN_session.get_leaf_model();
     return (
-      "alternate" == leaf_model.get_name() &&
-      "view" == leaf_model.get_action_name() &&
+      "alternate" == CN_session.get_leaf_name() &&
+      "view" == CN_session.get_leaf_action_name() &&
       0 < record.role_count &&
       !record.access
     );

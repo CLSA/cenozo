@@ -68,6 +68,38 @@ class session extends CN_base_object {
   /**
    * ADD DOCS
    */
+  get_leaf_name() {
+    const leaf_model = this.get_leaf_model();
+    return leaf_model ? leaf_model.get_name() : null;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_leaf_action_name() {
+    const leaf_model = this.get_leaf_model();
+    return leaf_model ? leaf_model.get_action_name() : null;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_root_name() {
+    const root_model = this.get_root_model();
+    return root_model ? root_model.get_name() : null;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  get_root_action_name() {
+    const root_model = this.get_root_model();
+    return root_model ? root_model.get_action_name() : null;
+  }
+
+  /**
+   * ADD DOCS
+   */
   has_data() { return null !== this.#data; }
 
   /**

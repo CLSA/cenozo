@@ -141,11 +141,10 @@ export class CN_model_mail extends CN_base_model {
    */
   allow_delete() {
     // Only allow email to be deleted if it hasn't been sent
-    const leaf_model = CN_session.get_leaf_model();
     return (
       super.allow_delete() &&
-      "mail" == leaf_model.get_name() &&
-      "view" == leaf_model.get_action_name() &&
+      "mail" == CN_session.get_leaf_name() &&
+      "view" == CN_session.get_leaf_action_name() &&
       "(empty)" == this.get_action().get_property_value("sent_datetime")
     );
   }

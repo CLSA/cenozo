@@ -452,7 +452,7 @@ export class CN_list_participant extends CN_action_list {
   _create_footer_element() {
     const footer_el = super._create_footer_element();
 
-    if ("participant" == CN_session.get_leaf_model().get_name()) {
+    if ("participant" == CN_session.get_leaf_name()) {
       const search_btn_el = this.constructor.html(
         '<button type="button" name="search" class="btn btn-light btn-outline-primary">Search</button>'
       );

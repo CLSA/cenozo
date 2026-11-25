@@ -64,7 +64,7 @@ export class CN_base_model extends CN_base_object {
   get_action_name() { return this.#action_name; }
   get_identifier() { return this.#identifier; }
   get_action() { return this.#action; }
-  get_name() { return this.#module.get_name(); }
+  get_name() { return this.#module ? this.#module.get_name() : null; }
   get_singular() { return this.#wording.singular; }
   get_plural() { return this.#wording.plural; }
   get_posessive() { return this.#wording.posessive; }

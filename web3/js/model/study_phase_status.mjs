@@ -15,7 +15,7 @@ export class CN_model_study_phase_status extends CN_base_model {
         study: {
           column: "study.name",
           title: "Study",
-          is_hidden: () => "study_phase" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "study_phase" == CN_session.get_leaf_name(),
         },
         study_phase: { column: "study_phase.name", title: "Phase" },
         status: { title: "Status" },
@@ -23,7 +23,7 @@ export class CN_model_study_phase_status extends CN_base_model {
       },
       get_default_order: () => {
         return (
-          "study_phase" == CN_session.get_leaf_model().get_name() ?
+          "study_phase" == CN_session.get_leaf_name() ?
           "uid" :
           ["study.name", "study_phase.rank"]
         );

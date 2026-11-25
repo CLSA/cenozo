@@ -18,48 +18,48 @@ export class CN_model_application extends CN_base_model {
         application_type: {
           column: "application_type.name",
           title: "Type",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         study_phase: {
           title: "Study Phase",
           table_prefix: false,
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         version: {
           title: "Version",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         active: {
           title: "Active",
           type: "boolean",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         release_based: {
           title: "Released",
           type: "boolean",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         site_based: {
           title: "Site Based",
           type: "boolean",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         update_queue: {
           title: "Queued",
           type: "boolean",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         participant_count: {
           title: "Participants",
           type: "integer",
           table_prefix: false,
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         site_count: {
           title: "Sites",
           type: "integer",
           table_prefix: false,
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
       },
       properties: {

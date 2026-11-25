@@ -16,14 +16,14 @@ export class CN_model_collection extends CN_base_model {
         active: {
           title: "Active",
           type: "boolean",
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
         locked: { title: "Locked", type: "boolean" },
         participant_count: { title: "Participants", type: "integer", table_prefix: false },
         user_list: {
           title: "Users",
           table_prefix: false,
-          is_hidden: () => "participant" == CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "participant" == CN_session.get_leaf_name(),
         },
       },
       properties: {
